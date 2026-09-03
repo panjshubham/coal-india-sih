@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { Link } from 'react-router-dom';
 
@@ -12,29 +12,20 @@ export default function Dashboard() {
     activeViolations: 7,
     complianceRate: 98.4,
   });
-  const [recentViolations, setRecentViolations] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadData() {
       const { count: minesCount } = await supabase.from('mines').select('*', { count: 'exact', head: true });
       const { count: violationsCount } = await supabase.from('violations').select('*', { count: 'exact', head: true }).eq('status', 'OPEN');
-      const { data: violations } = await supabase
-        .from('violations')
-        .select(`id, description, status, severity, created_at, mines ( name )`)
-        .order('created_at', { ascending: false })
-        .limit(3);
       
       setStats({
         totalMines: minesCount || 342,
         activeViolations: violationsCount || 7,
         complianceRate: 98.4,
       });
-      if (violations) setRecentViolations(violations);
     }
     loadData();
   }, []);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const totalSlides = 5;
 
   useEffect(() => {
     const timer = setInterval(() => {

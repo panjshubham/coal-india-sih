@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from "react";
-import { Activity, ShieldAlert, Wifi, HardHat, Compass } from "lucide-react";
+import { useState } from "react";
+import { HardHat, Compass } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function LiveMiningHero() {
   const navigate = useNavigate();
-  const [telemetry, setTelemetry] = useState({
+  const [telemetry] = useState({
     bweRpm: "4.8 RPM",
     lhdStatus: "HAULING (BENCH 3)",
     sdlStatus: "DISCHARGING",

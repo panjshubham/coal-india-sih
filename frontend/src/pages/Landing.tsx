@@ -1,4 +1,3 @@
-import React from 'react';
 import LiveMiningHero from '../components/LiveMiningHero';
 
 export default function Landing() {
