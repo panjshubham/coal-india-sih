@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { Link } from 'react-router-dom';
+import { getProfile, type InspectorProfile } from '../services/profileService';
 
 export default function Dashboard() {
   const [time, setTime] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
   const totalSlides = 5;
+  const [profile, setProfile] = useState<InspectorProfile>(getProfile());
 
   const [stats, setStats] = useState({
     totalMines: 342,
     activeViolations: 7,
     complianceRate: 98.4,
   });
+
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfile(getProfile());
+    };
+    window.addEventListener('coalguard:profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('coalguard:profileUpdated', handleProfileUpdate);
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -134,15 +144,19 @@ export default function Dashboard() {
               <span className="hidden sm:inline group-hover:underline">Emergency Hazard Alert</span>
             </button>
             
-            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+            <Link
+              to="/profile"
+              title="Click to manage Officer Profile & Secondary Family Contacts"
+              className="flex items-center gap-2.5 pl-2 border-l border-slate-200 hover:bg-slate-100/70 p-1.5 rounded-xl transition-all group cursor-pointer"
+            >
               <div className="text-right hidden md:block leading-tight">
-                <div className="text-xs font-bold text-slate-800">Shri R. K. Mahapatra</div>
-                <div className="text-[10px] font-mono text-slate-500">Chief Inspector of Mines (DGMS)</div>
+                <div className="text-xs font-bold text-slate-800 group-hover:text-blue-900 transition-colors">{profile.fullName}</div>
+                <div className="text-[10px] font-mono text-amber-700 font-semibold">Sec: {profile.secondaryPhone} (Family)</div>
               </div>
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-[#0f2b5c] to-blue-700 text-white font-semibold text-xs flex items-center justify-center shadow-subtle ring-2 ring-blue-100 hover:ring-amber-300 transition-all cursor-pointer">
-                CIM
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-[#0f2b5c] to-blue-700 text-white font-semibold text-xs flex items-center justify-center shadow-subtle ring-2 ring-blue-100 group-hover:ring-amber-400 transition-all">
+                {profile.fullName.split(' ').map(n => n[0]).slice(0, 2).join('')}
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </header>
@@ -165,27 +179,24 @@ export default function Dashboard() {
             
             <div className="space-y-1">
               <div className="px-3 text-[10px] font-mono uppercase tracking-wider font-bold text-slate-600 pb-1">Command Core</div>
-              <a className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold bg-[#0f2b5c] text-white shadow-sm hover:bg-[#133777] transition-all" href="#">
+              <Link to="/dashboard" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold bg-[#0f2b5c] text-white shadow-sm hover:bg-[#133777] transition-all">
                 <span className="material-symbols-outlined text-[18px] text-amber-300">grid_view</span>
                 <span>Mission Cockpit</span>
-              </a>
-              <a className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group" href="#">
+              </Link>
+              <Link to="/inspections" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
                 <span className="material-symbols-outlined text-[18px] text-slate-500 group-hover:text-blue-900">fact_check</span>
                 <span>Inspections Feed</span>
                 <span className="ml-auto bg-amber-100 text-amber-800 text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold group-hover:bg-amber-200 transition-colors">12 New</span>
-              </a>
-              <a className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group" href="#">
-                <span className="material-symbols-outlined text-[18px] text-slate-500 group-hover:text-blue-900">shield</span>
-                <span>Statutory Directives</span>
-              </a>
-              <a className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group" href="#">
+              </Link>
+              <Link to="/map" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
                 <span className="material-symbols-outlined text-[18px] text-slate-500 group-hover:text-blue-900">model_training</span>
                 <span>Slope Stability Radar</span>
-              </a>
-              <a className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group" href="#">
-                <span className="material-symbols-outlined text-[18px] text-slate-500 group-hover:text-blue-900">local_shipping</span>
-                <span>RFID Dispatch Ledger</span>
-              </a>
+              </Link>
+              <Link to="/profile" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-amber-50/90 border border-amber-200/60 transition-all group">
+                <span className="material-symbols-outlined text-[18px] text-amber-600 group-hover:text-amber-700">contact_phone</span>
+                <span>Profile & Family SOS</span>
+                <span className="ml-auto bg-red-100 text-red-800 text-[10px] font-mono px-1.5 py-0.5 rounded font-bold">SEC NO</span>
+              </Link>
             </div>
             
             <div className="space-y-1 pt-2 border-t border-slate-100">

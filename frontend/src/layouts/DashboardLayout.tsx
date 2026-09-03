@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Settings, Menu, X, LogOut, Pickaxe } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Settings, Menu, X, LogOut, Pickaxe, UserCheck } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getProfile, type InspectorProfile } from '../services/profileService';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,11 +15,21 @@ const navigation = [
   { name: 'Violations', href: '/violations', icon: AlertTriangle },
   { name: 'Mines Map', href: '/map', icon: MapIcon },
   { name: 'Contractors', href: '/contractors', icon: Users },
+  { name: 'Officer Profile', href: '/profile', icon: UserCheck },
 ];
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profile, setProfile] = useState<InspectorProfile>(getProfile());
   const location = useLocation();
+
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfile(getProfile());
+    };
+    window.addEventListener('coalguard:profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('coalguard:profileUpdated', handleProfileUpdate);
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -67,9 +78,9 @@ export default function DashboardLayout() {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
-          <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
+          <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
             <Settings className="w-5 h-5 text-gray-400" />
-            Settings
+            Settings & Contacts
           </Link>
           <button className="w-full mt-1 flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
             <LogOut className="w-5 h-5" />
@@ -90,15 +101,15 @@ export default function DashboardLayout() {
           </button>
           
           <div className="flex-1 flex justify-end">
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium">Mine Inspector</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Inspector Role</p>
+            <Link to="/profile" className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors group">
+              <div className="text-right hidden sm:block leading-tight">
+                <p className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">{profile.fullName}</p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 font-mono">Sec: {profile.secondaryPhone} (Family)</p>
               </div>
-              <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
-                MI
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0f2b5c] to-blue-700 border border-amber-400/80 flex items-center justify-center text-white font-bold text-xs shadow-sm group-hover:scale-105 transition-transform">
+                {profile.fullName.split(' ').map(n => n[0]).slice(0, 2).join('')}
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 

@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { MapPin, Camera, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { MapPin, Camera, AlertCircle, CheckCircle2, UserCheck, Phone } from 'lucide-react';
+import { getProfile, type InspectorProfile } from '../services/profileService';
 
 export default function Inspections() {
+  const [profile, setProfile] = useState<InspectorProfile>(getProfile());
   const [mines, setMines] = useState<any[]>([]);
   const [contractors, setContractors] = useState<any[]>([]);
   const [loadingLocation, setLoadingLocation] = useState(false);
@@ -10,7 +13,7 @@ export default function Inspections() {
   const [formData, setFormData] = useState({
     mine_id: '',
     contractor_id: '',
-    inspector_name: 'Mine Inspector',
+    inspector_name: getProfile().fullName,
     lat: null as number | null,
     lng: null as number | null,
   });
@@ -25,6 +28,14 @@ export default function Inspections() {
       if (cData) setContractors(cData);
     }
     fetchData();
+
+    const handleProfileUpdate = (e: any) => {
+      const updated = e.detail || getProfile();
+      setProfile(updated);
+      setFormData(prev => ({ ...prev, inspector_name: updated.fullName }));
+    };
+    window.addEventListener('coalguard:profileUpdated', handleProfileUpdate);
+    return () => window.removeEventListener('coalguard:profileUpdated', handleProfileUpdate);
   }, []);
 
   const captureLocation = () => {
@@ -59,29 +70,67 @@ export default function Inspections() {
     
     const { error } = await supabase
       .from('inspections')
-      .insert({
-        mine_id: parseInt(formData.mine_id),
-        contractor_id: formData.contractor_id ? parseInt(formData.contractor_id) : null,
-        inspector_name: formData.inspector_name,
-        // we can store lat/lng in a new column or as JSON if schema is updated
-        // For MVP, we'll log it if the schema allows it, or just ignore for now since it's not in the base schema
-      });
+      .insert([
+        {
+          mine_id: Number(formData.mine_id),
+          contractor_id: formData.contractor_id ? Number(formData.contractor_id) : null,
+          inspector_name: formData.inspector_name,
+        }
+      ]);
 
     if (error) {
-      console.error(error);
+      console.error('Error submitting inspection', error);
       setStatus('error');
     } else {
       setStatus('success');
-      setTimeout(() => setStatus('idle'), 3000);
-      setFormData(prev => ({ ...prev, mine_id: '', contractor_id: '', lat: null, lng: null }));
+      setFormData({
+        mine_id: '',
+        contractor_id: '',
+        inspector_name: profile.fullName,
+        lat: null,
+        lng: null,
+      });
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Submit Field Inspection</h1>
-        <p className="text-gray-500 dark:text-gray-400">Record a new inspection with geo-tagged location and photos.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Submit Field Inspection</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Record statutory field inspection with geo-tagged compliance coordinates.</p>
+        </div>
+        <Link
+          to="/profile"
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-300 transition-colors w-fit flex items-center gap-1.5"
+        >
+          <UserCheck className="w-3.5 h-3.5" />
+          <span>Update Officer Profile</span>
+        </Link>
+      </div>
+
+      {/* Emergency Officer Safety & Family Contact Card */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-amber-200 dark:border-gray-700 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold">
+            <Phone className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <span>Inspector: {profile.fullName}</span>
+              <span className="text-[10px] font-mono bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-1.5 py-0.2 rounded font-semibold">{profile.badgeId}</span>
+            </div>
+            <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-0.5">
+              Secondary Family SOS: <strong className="font-mono text-amber-700 dark:text-amber-400">{profile.secondaryPhone}</strong> ({profile.familyContactName} - {profile.familyRelationship})
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/profile"
+          className="text-[11px] font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 underline underline-offset-2 shrink-0"
+        >
+          Change Secondary Contact
+        </Link>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">

@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import MinesMap from './pages/MinesMap';
 import Inspections from './pages/Inspections';
 import Landing from './pages/Landing';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
         <Route path="/" element={<DashboardLayout />}>
           <Route path="map" element={<MinesMap />} />
           <Route path="inspections" element={<Inspections />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Profile />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
