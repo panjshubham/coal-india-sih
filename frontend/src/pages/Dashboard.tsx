@@ -9,6 +9,40 @@ export default function Dashboard() {
   const totalSlides = 5;
   const [profile, setProfile] = useState<InspectorProfile>(getProfile());
 
+  const [emergencyActive, setEmergencyActive] = useState(false);
+
+  const triggerEmergency = () => {
+    if (emergencyActive) return;
+    setEmergencyActive(true);
+    
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioContext) {
+      const ctx = new AudioContext();
+      const playBeep = (time: number, freq: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(0.2, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
+        osc.start(time);
+        osc.stop(time + 0.4);
+      };
+      
+      const now = ctx.currentTime;
+      for (let i = 0; i < 6; i++) {
+        playBeep(now + i * 0.6, 800);
+        playBeep(now + i * 0.6 + 0.3, 600);
+      }
+    }
+
+    setTimeout(() => {
+      setEmergencyActive(false);
+    }, 4000);
+  };
+
   const [stats, setStats] = useState({
     totalMines: 342,
     activeViolations: 7,
@@ -139,9 +173,17 @@ export default function Dashboard() {
               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">AQI 184 PM10</span>
             </div>
             
-            <button className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 hover:border-red-300 text-xs font-semibold transition-all shadow-subtle active:scale-95 group">
-              <span className="material-symbols-outlined text-[16px] text-red-600 animate-bounce">e911_emergency</span>
-              <span className="hidden sm:inline group-hover:underline">Emergency Hazard Alert</span>
+            <button 
+              onClick={triggerEmergency}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-subtle group ${
+                emergencyActive 
+                  ? 'bg-red-600 text-white animate-pulse border border-red-500 scale-105' 
+                  : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 hover:border-red-300 active:scale-95'
+              }`}>
+              <span className={`material-symbols-outlined text-[16px] ${emergencyActive ? 'text-white' : 'text-red-600 animate-bounce'}`}>e911_emergency</span>
+              <span className="hidden sm:inline group-hover:underline">
+                {emergencyActive ? 'SYSTEM ALERT ACTIVE' : 'Emergency Hazard Alert'}
+              </span>
             </button>
             
             <Link
