@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Settings, Menu, X, LogOut, Pickaxe, UserCheck } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Settings, Menu, X, LogOut, Pickaxe, UserCheck, Moon, Sun } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getProfile, type InspectorProfile } from '../services/profileService';
+import { useTheme } from '../context/ThemeContext';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -22,6 +23,7 @@ export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<InspectorProfile>(getProfile());
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleProfileUpdate = () => {
@@ -100,7 +102,15 @@ export default function DashboardLayout() {
             <Menu className="w-6 h-6" />
           </button>
           
-          <div className="flex-1 flex justify-end">
+          <div className="flex-1 flex items-center justify-end gap-4">
+            <button 
+              onClick={toggleTheme}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            </button>
+            <div className="h-6 w-px bg-gray-300 dark:bg-gray-600 hidden sm:block"></div>
             <Link to="/profile" className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors group">
               <div className="text-right hidden sm:block leading-tight">
                 <p className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">{profile.fullName}</p>
