@@ -527,7 +527,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="pt-6">
-                  <button className="w-full py-2.5 px-4 rounded-lg bg-slate-100 hover:bg-[#0f2b5c] text-slate-800 hover:text-white text-xs font-bold transition-all border border-slate-200">Launch Suite</button>
+                  <Link to="/inspections" className="block text-center w-full py-2.5 px-4 rounded-lg bg-slate-100 hover:bg-[#0f2b5c] text-slate-800 hover:text-white text-xs font-bold transition-all border border-slate-200">Launch Suite</Link>
                 </div>
               </div>
               
