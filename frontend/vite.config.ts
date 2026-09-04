@@ -15,7 +15,9 @@ export default defineConfig({
         name: 'CoalGuard | DGMS Statutory Compliance',
         short_name: 'CoalGuard',
         description: 'Industry Expert Level Application for Coal Mine Statutory Compliance & Inspections - Offline Capable',
-        theme_color: '#0f2b5c',
+        theme_color: '#0F172A',
+        background_color: '#0F172A',
+        display: 'standalone',
         icons: [
           {
             src: 'favicon.svg',

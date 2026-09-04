@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { Link } from 'react-router-dom';
 import { getProfile, type InspectorProfile } from '../services/profileService';
+import AlertBell from '../components/AlertBell';
+import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
+  const { t, i18n: i18nInstance } = useTranslation();
   const [time, setTime] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
   const totalSlides = 5;
@@ -60,15 +63,26 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadData() {
       const { count: minesCount } = await supabase.from('mines').select('*', { count: 'exact', head: true });
-      const { count: violationsCount } = await supabase.from('violations').select('*', { count: 'exact', head: true }).eq('status', 'OPEN');
+      const { count: violationsCount } = await supabase.from('violations').select('*', { count: 'exact', head: true }).eq('status', 'open');
       
-      setStats({
+      setStats(prev => ({
+        ...prev,
         totalMines: minesCount || 342,
-        activeViolations: violationsCount || 7,
-        complianceRate: 98.4,
-      });
+        activeViolations: violationsCount || 0,
+      }));
     }
     loadData();
+
+    const channel = supabase.channel('dashboard-metrics')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'violations' }, () => {
+        // Refetch on any violation change
+        loadData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -174,6 +188,13 @@ export default function Dashboard() {
             </div>
             
             <button 
+              onClick={() => i18nInstance.changeLanguage(i18nInstance.language === 'hi' ? 'en' : 'hi')}
+              className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded border border-slate-300 transition-colors mr-2"
+            >
+              {i18nInstance.language === 'hi' ? 'EN' : 'हिन्दी'}
+            </button>
+            
+            <button 
               onClick={triggerEmergency}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-subtle group ${
                 emergencyActive 
@@ -185,6 +206,8 @@ export default function Dashboard() {
                 {emergencyActive ? 'SYSTEM ALERT ACTIVE' : 'Emergency Hazard Alert'}
               </span>
             </button>
+            
+            <AlertBell />
             
             <Link
               to="/profile"
@@ -282,15 +305,30 @@ export default function Dashboard() {
         <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1740px] mx-auto overflow-hidden">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/80">
             <div className="flex items-center gap-2 text-xs text-slate-500 font-medium pl-0">
-              <span className="text-slate-800 font-semibold hover:text-blue-900 cursor-pointer transition-colors">National Command</span>
+              <span className="text-slate-800 font-semibold hover:text-blue-900 cursor-pointer transition-colors">{t('dashboard_title')}</span>
               <span className="text-slate-300">/</span>
-              <span className="text-slate-700 font-semibold hover:text-blue-900 cursor-pointer transition-colors">Subsidiary Radar</span>
+              <span className="text-slate-700 font-semibold hover:text-blue-900 cursor-pointer transition-colors">{t('subsidiary_radar')}</span>
               <span className="text-slate-300">/</span>
               <span className="text-[#0f2b5c] font-bold">Bharat Coking Coal Limited (BCCL VII Benches)</span>
             </div>
             <div className="flex items-center gap-2 text-xs font-mono text-slate-600">
+              <button 
+                onClick={async () => {
+                  try {
+                    await fetch(`${import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000'}/analyze/all`, { method: 'POST' });
+                    alert('AI Risk Scores updated successfully!');
+                    window.location.reload();
+                  } catch (e) {
+                    alert('Failed to connect to AI Service. Is it running?');
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-blue-600 border border-blue-700 font-semibold text-white shadow-subtle hover:bg-blue-700 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[14px]">psychology</span>
+                {t('recalculate')}
+              </button>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white border border-slate-200 font-semibold text-slate-700 shadow-subtle hover:border-slate-300 transition-colors">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> DGMS AUDIT CYCLE: FY 2024-25 Q3
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> {t('dgms_audit')}: FY 2024-25 Q3
               </span>
             </div>
           </div>
@@ -395,8 +433,8 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl p-5 border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group cursor-pointer hover:border-blue-200">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[11px] font-bold font-mono tracking-wider text-slate-600 uppercase">Surveillance Perimeter</span>
-                  <h3 className="text-xs font-semibold text-slate-700 mt-0.5 group-hover:text-blue-900 transition-colors">Active Mines Under Radar</h3>
+                  <span className="text-[11px] font-bold font-mono tracking-wider text-slate-600 uppercase">{t('surveillance')}</span>
+                  <h3 className="text-xs font-semibold text-slate-700 mt-0.5 group-hover:text-blue-900 transition-colors">{t('active_mines')}</h3>
                 </div>
                 <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-800 border border-blue-100 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-100 transition-all">
                   <span className="material-symbols-outlined text-[20px]">account_balance</span>
@@ -422,8 +460,8 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl p-5 border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group cursor-pointer hover:border-emerald-200">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[11px] font-bold font-mono tracking-wider text-slate-600 uppercase">Regulatory Rating</span>
-                  <h3 className="text-xs font-semibold text-slate-700 mt-0.5 group-hover:text-emerald-900 transition-colors">DGMS Statutory Compliance</h3>
+                  <span className="text-[11px] font-bold font-mono tracking-wider text-slate-600 uppercase">{t('regulatory')}</span>
+                  <h3 className="text-xs font-semibold text-slate-700 mt-0.5 group-hover:text-emerald-900 transition-colors">{t('compliance')}</h3>
                 </div>
                 <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-100 transition-all">
                   <span className="material-symbols-outlined text-[20px]">verified</span>
@@ -449,8 +487,8 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl p-5 border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group cursor-pointer hover:border-red-200">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[11px] font-bold font-mono tracking-wider text-red-600 uppercase">Emergency Protocol</span>
-                  <h3 className="text-xs font-semibold text-slate-700 mt-0.5 group-hover:text-red-800 transition-colors">Active Pit Alerts & Hazards</h3>
+                  <span className="text-[11px] font-bold font-mono tracking-wider text-red-600 uppercase">{t('emergency')}</span>
+                  <h3 className="text-xs font-semibold text-slate-700 mt-0.5 group-hover:text-red-800 transition-colors">{t('active_alerts')}</h3>
                 </div>
                 <div className="w-9 h-9 rounded-lg bg-red-50 text-red-700 border border-red-100 flex items-center justify-center group-hover:scale-110 group-hover:bg-red-100 transition-all">
                   <span className="material-symbols-outlined text-[20px] animate-bounce">report</span>
@@ -476,8 +514,8 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl p-5 border border-slate-200/90 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group cursor-pointer hover:border-amber-200">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[11px] font-bold font-mono tracking-wider text-slate-600 uppercase">Cryptographic Audit</span>
-                  <h3 className="text-xs font-semibold text-slate-700 mt-0.5 group-hover:text-blue-900 transition-colors">Verified Dispatch Ledger</h3>
+                  <span className="text-[11px] font-bold font-mono tracking-wider text-slate-600 uppercase">{t('crypto_audit')}</span>
+                  <h3 className="text-xs font-semibold text-slate-700 mt-0.5 group-hover:text-blue-900 transition-colors">{t('verified_ledger')}</h3>
                 </div>
                 <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-100 transition-all">
                   <span className="material-symbols-outlined text-[20px]">enhanced_encryption</span>
