@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { getPendingSubmissions } from '../services/db';
-import { CloudOff, CloudTick, MapPin } from 'lucide-react';
+import { CheckCircle2, CloudOff, MapPin } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 
@@ -41,7 +41,7 @@ export default function MySubmissions() {
     try {
       // 1. Fetch Offline Submissions
       const pendingItems = await getPendingSubmissions();
-      setPending(pendingItems);
+      setPending(pendingItems as unknown as PendingSubmission[]);
 
       // 2. Fetch Synced Submissions (Recent violations for their mine if mine_official)
       let query = supabase.from('violations').select('id, category, severity, created_at, mines(name)').order('created_at', { ascending: false }).limit(20);
@@ -55,7 +55,7 @@ export default function MySubmissions() {
 
       const { data: syncedData } = await query;
       if (syncedData) {
-        setSynced(syncedData as SyncedSubmission[]);
+        setSynced((syncedData || []) as unknown as SyncedSubmission[]);
       }
 
     } catch (e) {
@@ -125,7 +125,7 @@ export default function MySubmissions() {
         <div className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-100 bg-emerald-50 flex justify-between items-center">
             <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-900 flex items-center gap-2">
-              <CloudTick className="w-4 h-4" /> Synced to Server
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" /> Synced to Server
             </h3>
           </div>
           <div className="divide-y divide-slate-100">
@@ -142,7 +142,7 @@ export default function MySubmissions() {
                 </div>
                 <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between">
                   <span className="text-xs font-medium text-emerald-600 mb-1 flex items-center gap-1">
-                    Synced <CloudTick className="w-3 h-3" />
+                    Synced <CheckCircle2 className="w-3 h-3" />
                   </span>
                   <span className="text-xs text-slate-400 mr-4 sm:mr-0">{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
                   <Link to={`/violations/${item.id}`} className="text-xs font-bold text-blue-600 hover:underline sm:hidden mt-2">View</Link>

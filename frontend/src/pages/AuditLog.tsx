@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { Search, Hash, Clock, ShieldAlert, ShieldCheck, ChevronLeft, ChevronRight, Key } from 'lucide-react';
+import { Search, Hash, Clock, ShieldCheck, ChevronLeft, ChevronRight, Key } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface AuditRecord {

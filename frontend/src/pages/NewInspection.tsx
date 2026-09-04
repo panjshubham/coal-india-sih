@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { savePendingSubmission } from '../services/db';
-import { MapPin, Camera, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
+import { MapPin, Camera, AlertTriangle, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function NewInspection() {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Settings, Menu, X, LogOut, Pickaxe, UserCheck, Moon, Sun, ShieldCheck, Languages } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Menu, X, LogOut, Pickaxe, UserCheck, Moon, Sun, ShieldCheck, Languages } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getProfile, type InspectorProfile } from '../services/profileService';

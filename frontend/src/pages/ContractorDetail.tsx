@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { ChevronLeft, ShieldAlert, AlertTriangle, Building2, Calendar, FileText } from 'lucide-react';
+import { ChevronLeft, ShieldAlert, Building2, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Contractor {

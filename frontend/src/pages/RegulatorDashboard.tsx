@@ -104,7 +104,7 @@ export default function RegulatorDashboard() {
         `)
         .order('score', { ascending: false });
 
-      const risks = (riskData || []) as MineRisk[];
+      const risks = (riskData || []) as unknown as MineRisk[];
       setRiskScores(risks);
 
       const avgRisk = risks.length > 0 

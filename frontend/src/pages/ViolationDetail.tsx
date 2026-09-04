@@ -177,7 +177,7 @@ export default function ViolationDetail() {
   if (loading) return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-amber-500" /></div>;
   if (!violation) return <div className="p-8 text-center text-red-500">Violation not found.</div>;
 
-  const timelineStages = ['open', 'in_progress', 'under_review', 'closed'];
+  // const timelineStages = ['open', 'in_progress', 'under_review', 'closed'];
   
   // Map current status to timeline stage index
   let currentIndex = 0;

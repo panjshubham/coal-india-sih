@@ -3,9 +3,10 @@ import { useAuth } from '../context/AuthContext';
 
 interface ProtectedRouteProps {
   allowedRoles?: ("mine_official" | "corporate" | "regulator")[];
+  children?: React.ReactNode;
 }
 
-export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
+export default function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) {
   const { user, role, loading } = useAuth();
 
   if (loading) {
@@ -28,5 +29,5 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     return <Navigate to="/" replace />; // Fallback
   }
 
-  return <Outlet />;
+  return children ? <>{children}</> : <Outlet />;
 }

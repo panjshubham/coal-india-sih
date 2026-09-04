@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { Search, Users, AlertTriangle, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Search, Users, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface Contractor {
