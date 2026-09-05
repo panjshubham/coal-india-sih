@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase';
 
 export default function GeospatialMap() {
   const [time, setTime] = useState('');
   const [activeMarker, setActiveMarker] = useState<string | null>(null);
   const [showViolations, setShowViolations] = useState(true);
+  const [hotspots, setHotspots] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,12 +15,33 @@ export default function GeospatialMap() {
       const istTime = now.toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false });
       setTime(istTime + ' IST');
     }, 1000);
+    
+    fetchHotspots();
+    
     return () => clearInterval(timer);
   }, []);
+
+  async function fetchHotspots() {
+    const { data } = await supabase.from('risk_scores').select('mine_id, contributing_factors, mines(name)');
+    if (data) {
+      const activeHotspots = data.filter(d => (d.contributing_factors as any)?.hotspot);
+      setHotspots(activeHotspots);
+    }
+  }
 
   const toggleRiskPill = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.classList.toggle('ring-1');
     e.currentTarget.classList.toggle('ring-white/40');
+  };
+  
+  // Helper to map a mine name to its hardcoded abstract canvas position
+  const getMinePosition = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes('jharia')) return { top: '48%', left: '62%' };
+    if (n.includes('korba')) return { top: '53%', left: '36%' };
+    if (n.includes('singrauli')) return { top: '28%', left: '82%' };
+    if (n.includes('raniganj')) return { top: '38%', left: '73%' };
+    return { top: '50%', left: '50%' };
   };
 
   return (
@@ -52,6 +75,13 @@ export default function GeospatialMap() {
         @keyframes radar-sweep-anim {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        .heat-pulse {
+          animation: heat-pulse-anim 3s ease-in-out infinite alternate;
+        }
+        @keyframes heat-pulse-anim {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+          100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; }
         }
         .bg-canvas { background-color: #0B1120; }
         .bg-canvas-deep { background-color: #080D1A; }
@@ -130,6 +160,20 @@ export default function GeospatialMap() {
 
         {/* 2. MINE MARKERS & HIERARCHY */}
         <div className="absolute inset-0 z-20 pointer-events-none">
+          {/* Render Dynamic Hotspot Overlays */}
+          {hotspots.map((hs, idx) => {
+            const pos = getMinePosition(hs.mines?.name || '');
+            return (
+              <div 
+                key={`hotspot-${idx}`}
+                className="absolute pointer-events-none heat-pulse"
+                style={{ top: pos.top, left: pos.left, width: '120px', height: '120px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(248,113,113,0.3) 0%, rgba(248,113,113,0) 70%)' }}
+              >
+                <div className="absolute top-0 right-0 bg-red-500/20 border border-red-500/50 text-red-300 font-mono text-[8px] px-1 rounded uppercase">Hotspot</div>
+              </div>
+            );
+          })}
+
           <div 
             className="absolute top-[48%] left-[62%] -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group" 
             title="Jharia Open Cast Pit IV"

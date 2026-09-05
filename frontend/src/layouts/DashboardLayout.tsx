@@ -53,7 +53,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-[#0B1120] text-slate-200 font-sans antialiased overflow-hidden selection:bg-amber-500/30">
+    <div className="flex h-screen bg-transparent text-slate-200 font-sans antialiased overflow-hidden selection:bg-amber-500/30">
       
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -178,7 +178,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-[#0B1120] relative">
+        <main className="flex-1 overflow-auto bg-transparent relative">
            <Outlet />
         </main>
       </div>

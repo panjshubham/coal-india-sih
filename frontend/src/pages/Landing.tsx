@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const HERO_IMAGES = [
+  'https://images.unsplash.com/photo-1578319439584-104c94d37305?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+  'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+  'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'
+];
 
 export default function Landing() {
   const { user, role } = useAuth();
   const navigate = useNavigate();
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImgIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleDashboardClick = () => {
     if (!user) {
@@ -147,7 +161,17 @@ export default function Landing() {
             
             {/* HERO SECTION */}
             <section id="overview" className="relative w-full overflow-hidden bg-surface-container-lowest -mt-16 pt-20 pb-16 md:pb-24">
-              <div className="absolute inset-0 w-full h-full bg-cover bg-center mix-blend-luminosity opacity-30 scale-105 transform duration-1000" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBcAyv0qRrC9LYYyWlpZj9M6Q39GG79MMTT2jz4e9SfRxhNuJlPHsyKDba-Gg_8xLZ-So8FzkKwMlPjwyw-4g5yt8Ftk2HDxIwVCAD0gD9UzoGda18iwGZV24QSknfri7S_aFLx-Mjf0f9kqKKoatQB4-UHOvmZ219Xr-ACzQM3rsQ9A89Fs1Uk3RarsOQjUvkdqS-j_I9-yhy4F8Vbmp1ABcazO5DZg43ux7Ss5knGAP0kGcZFe_Mw')" }}></div>
+              <AnimatePresence mode="popLayout">
+                <motion.div
+                  key={currentImgIndex}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 0.3, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 1.5, ease: "easeInOut" }}
+                  className="absolute inset-0 w-full h-full bg-cover bg-center mix-blend-luminosity"
+                  style={{ backgroundImage: `url('${HERO_IMAGES[currentImgIndex]}')` }}
+                />
+              </AnimatePresence>
               <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/90 to-surface-container-lowest/80"></div>
               <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/80 to-transparent"></div>
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#38bdf80a_1px,transparent_1px),linear-gradient(to_bottom,#38bdf80a_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none"></div>

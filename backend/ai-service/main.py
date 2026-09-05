@@ -25,8 +25,20 @@ if not url or not key:
 
 supabase: Client = create_client(url, key)
 
+import math
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371000 # Radius of earth in meters
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    delta_phi = math.radians(lat2 - lat1)
+    delta_lambda = math.radians(lon2 - lon1)
+    a = math.sin(delta_phi / 2.0) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2.0) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
+
 class AnalyzeMineResponse(BaseModel):
-    mine_id: int
+    mine_id: str
     risk_score: float
     risk_level: str
     flags: list[str]
@@ -37,10 +49,17 @@ def health_check():
     return {"status": "ok"}
 
 @app.post("/analyze/mine/{mine_id}", response_model=AnalyzeMineResponse)
-def analyze_mine(mine_id: int):
+def analyze_mine(mine_id: str):
     now = datetime.now(timezone.utc)
     date_180_days_ago = (now - timedelta(days=180)).isoformat()
     date_90_days_ago = (now - timedelta(days=90)).isoformat()
+
+    # Query mine data
+    m_res = supabase.table('mines').select('*').eq('id', mine_id).execute()
+    mine_data = m_res.data[0] if m_res.data else {}
+    mine_lat = mine_data.get('latitude', 0.0)
+    mine_lng = mine_data.get('longitude', 0.0)
+    mine_radius = mine_data.get('radius_m', 5000)
 
     # 1. Query violations (last 180 days) and compliance_items
     v_res = supabase.table('violations').select('*').eq('mine_id', mine_id).gte('created_at', date_180_days_ago).execute()
@@ -49,11 +68,13 @@ def analyze_mine(mine_id: int):
     c_res = supabase.table('compliance_items').select('*').eq('mine_id', mine_id).execute()
     compliance_items = c_res.data or []
 
-    # 2. overdue_count
     overdue_count = sum(1 for c in compliance_items if c.get('status') == 'overdue')
 
-    # 3. severity_weight across open violations
     severity_weight = 0
+    recent_90d_violations = []
+    location_anomaly = False
+    
+    # 2. Location anomaly check & Severity Weight
     for v in violations:
         if v.get('status') == 'open':
             sev = str(v.get('severity', '')).lower()
@@ -62,31 +83,84 @@ def analyze_mine(mine_id: int):
             elif sev == 'medium': severity_weight += 2
             elif sev == 'low': severity_weight += 1
 
-    # 4. recurring_flag (category appears 3+ times in last 90 days)
-    recurring_flag = False
+        lat = v.get('latitude')
+        lng = v.get('longitude')
+        if lat and lng and mine_lat and mine_lng:
+            dist = haversine(mine_lat, mine_lng, lat, lng)
+            if dist > mine_radius:
+                location_anomaly = True
+                
+        created_at_str = v.get('created_at')
+        if created_at_str and created_at_str >= date_90_days_ago:
+            recent_90d_violations.append(v)
+
+    # 3. Within-site clustering (Hotspots)
+    hotspot_flag = False
+    hotspot_data = None
     recurring_category = None
     category_counts = {}
-    
-    for v in violations:
-        created_at_str = v.get('created_at')
-        if not created_at_str: continue
-        
-        # Parse Supabase timestamp, handle python < 3.11 fromisoformat issues by taking first 19 chars if needed
-        # Or simply string comparison since ISO format preserves order
-        if created_at_str >= date_90_days_ago:
-            cat = v.get('category')
-            if cat:
-                category_counts[cat] = category_counts.get(cat, 0) + 1
-                if category_counts[cat] >= 3:
-                    recurring_flag = True
-                    recurring_category = cat
-                    break
 
-    # 5. risk_score
-    raw_score = (overdue_count * 5) + severity_weight + (25 if recurring_flag else 0)
+    for i in range(len(recent_90d_violations)):
+        v1 = recent_90d_violations[i]
+        
+        # Track recurring categories
+        cat = v1.get('category')
+        if cat:
+            category_counts[cat] = category_counts.get(cat, 0) + 1
+            if category_counts[cat] >= 3:
+                recurring_category = cat
+                
+        lat1, lng1 = v1.get('latitude'), v1.get('longitude')
+        if not lat1 or not lng1: continue
+        
+        cluster = [v1]
+        for j in range(i + 1, len(recent_90d_violations)):
+            v2 = recent_90d_violations[j]
+            lat2, lng2 = v2.get('latitude'), v2.get('longitude')
+            if lat2 and lng2:
+                dist = haversine(lat1, lng1, lat2, lng2)
+                if dist <= 200:
+                    cluster.append(v2)
+                    
+        if len(cluster) >= 3:
+            hotspot_flag = True
+            avg_lat = sum(c.get('latitude') for c in cluster) / len(cluster)
+            avg_lng = sum(c.get('longitude') for c in cluster) / len(cluster)
+            hotspot_data = {"count": len(cluster), "latitude": avg_lat, "longitude": avg_lng}
+            break
+
+    # 4. Time-pattern detection
+    time_pattern = None
+    if len(recent_90d_violations) >= 5:
+        hour_counts = [0] * 24
+        for v in recent_90d_violations:
+            ts = v.get('timestamp') or v.get('created_at')
+            if ts:
+                try:
+                    dt = datetime.fromisoformat(ts.replace('Z', '+00:00'))
+                    hour_counts[dt.hour] += 1
+                except:
+                    pass
+        
+        total_recent = len(recent_90d_violations)
+        # Check sliding 4-hour windows
+        for start_hr in range(24):
+            window_count = sum(hour_counts[(start_hr + k) % 24] for k in range(4))
+            if window_count / total_recent >= 0.6:
+                if 5 <= start_hr <= 11:
+                    time_pattern = 'morning-concentrated'
+                elif 12 <= start_hr <= 16:
+                    time_pattern = 'afternoon-concentrated'
+                elif 17 <= start_hr <= 21:
+                    time_pattern = 'evening-concentrated'
+                else:
+                    time_pattern = 'night-concentrated'
+                break
+
+    # 5. Risk score
+    raw_score = (overdue_count * 5) + severity_weight + (25 if recurring_category else 0) + (15 if hotspot_flag else 0)
     risk_score = min(100.0, float(raw_score))
 
-    # 6. risk_level
     if risk_score > 75:
         risk_level = "critical"
     elif risk_score >= 45:
@@ -94,25 +168,38 @@ def analyze_mine(mine_id: int):
     else:
         risk_level = "compliant"
 
-    # 7. explanation
-    explanation = f"Flagged due to {overdue_count} overdue compliance items"
-    if recurring_flag:
-        explanation += f" and a recurring pattern of {recurring_category} violations."
-    else:
-        explanation += "."
-
-    # flags
+    # 6. Explanations & Flags
     flags = []
+    explanation = f"Flagged due to {overdue_count} overdue compliance items"
+    if recurring_category:
+        explanation += f" and a recurring pattern of {recurring_category} violations"
+        flags.append(f"Recurring {recurring_category} violations")
+    
+    explanation += "."
+
+    if hotspot_flag:
+        explanation += f" {hotspot_data['count']} violations clustered within 200m at the site - possible localized hazard."
+        flags.append("Spatial Hotspot Detected")
+    
+    if location_anomaly:
+        explanation += " GPS coordinates for 1 or more recent violations fall outside the mine's registered boundary - flagged for verification."
+        flags.append("Location Anomaly")
+        
+    if time_pattern:
+        explanation += f" Incidents show a distinct {time_pattern} trend."
+        flags.append(f"Time Pattern: {time_pattern}")
+
     if overdue_count > 0: flags.append(f"{overdue_count} overdue items")
-    if recurring_flag: flags.append(f"Recurring {recurring_category} violations")
     if severity_weight > 0: flags.append(f"Severity weight: {severity_weight}")
 
-    # 8. Upsert into risk_scores
     contributing_factors = {
         "overdue_count": overdue_count,
         "severity_weight": severity_weight,
-        "recurring_flag": recurring_flag,
-        "category": recurring_category
+        "recurring_flag": bool(recurring_category),
+        "category": recurring_category,
+        "location_anomaly": location_anomaly,
+        "hotspot": hotspot_data,
+        "time_pattern": time_pattern
     }
 
     payload = {
@@ -124,13 +211,9 @@ def analyze_mine(mine_id: int):
         "last_updated": now.isoformat()
     }
 
-    # Use upsert based on mine_id. If mine_id is PK, upsert works directly.
-    # Otherwise, check existing and update or insert.
     existing = supabase.table('risk_scores').select('mine_id, risk_level').eq('mine_id', mine_id).execute()
     
-    prev_level = None
     if existing.data:
-        prev_level = existing.data[0].get('risk_level')
         supabase.table('risk_scores').update(payload).eq('mine_id', mine_id).execute()
     else:
         supabase.table('risk_scores').insert(payload).execute()

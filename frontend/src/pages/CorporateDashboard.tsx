@@ -70,7 +70,7 @@ export default function CorporateDashboard() {
       const { data: riskData } = await supabase
         .from('risk_scores')
         .select(`
-          mine_id, score, explanation, last_updated,
+          mine_id, score, explanation, last_updated, contributing_factors,
           mines (name)
         `)
         .order('score', { ascending: false });
@@ -245,8 +245,29 @@ export default function CorporateDashboard() {
           <div className="p-5 space-y-4 flex-1 relative z-10">
             {riskScores.slice(0, 3).map(risk => (
               <div key={risk.mine_id} className="p-3 bg-black/40 rounded border border-amber-500/20 text-sm">
-                <div className="font-bold text-amber-400 mb-1">{risk.mines?.name} (Score: {risk.score})</div>
-                <div className="text-amber-200/70 leading-relaxed text-xs">{risk.explanation || 'No AI explanation generated yet.'}</div>
+                <div className="font-bold text-amber-400 mb-1 flex items-center justify-between">
+                  <span>{risk.mines?.name} (Score: {risk.score})</span>
+                </div>
+                <div className="text-amber-200/70 leading-relaxed text-xs mb-2">{risk.explanation || 'No AI explanation generated yet.'}</div>
+                {(risk as any).contributing_factors && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {(risk as any).contributing_factors.location_anomaly && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-500/20 border border-rose-500/30 text-[9px] font-mono font-medium text-rose-400 uppercase tracking-wider">
+                        <AlertCircle className="w-2.5 h-2.5" /> Loc Anomaly
+                      </span>
+                    )}
+                    {(risk as any).contributing_factors.hotspot && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/30 text-[9px] font-mono font-medium text-amber-400 uppercase tracking-wider">
+                        <Activity className="w-2.5 h-2.5" /> Spatial Hotspot
+                      </span>
+                    )}
+                    {(risk as any).contributing_factors.time_pattern && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/20 border border-blue-500/30 text-[9px] font-mono font-medium text-blue-400 uppercase tracking-wider">
+                        <RefreshCw className="w-2.5 h-2.5" /> {(risk as any).contributing_factors.time_pattern}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
             {riskScores.length === 0 && (
