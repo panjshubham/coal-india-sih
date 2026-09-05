@@ -21,6 +21,7 @@ interface Violation {
   photo_url: string;
   regulation_ref: string;
   created_at: string;
+  timestamp?: string;
   mines?: { name: string, region: string, state: string };
   approver?: { email: string };
 }
@@ -216,8 +217,8 @@ export default function ViolationDetail() {
           </div>
           
           <div className="text-right">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Logged Date</span>
-            <span className="text-sm font-bold text-slate-700">{format(new Date(violation.created_at), 'PPP p')}</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Field Capture Timestamp</span>
+            <span className="text-sm font-bold text-slate-700">{format(new Date(violation.timestamp || violation.created_at), 'PPP p')}</span>
           </div>
         </div>
       </div>
@@ -267,9 +268,14 @@ export default function ViolationDetail() {
               </div>
             )}
             {violation.latitude && violation.longitude && (
-              <div className="bg-[#0B1120] text-slate-300 p-3 flex items-center gap-3 text-sm font-mono border-t border-slate-800">
-                <MapPin className="w-4 h-4 text-emerald-500" />
-                GPS: {violation.latitude.toFixed(6)}, {violation.longitude.toFixed(6)}
+              <div className="bg-[#0B1120] text-slate-300 p-3 flex items-center justify-between gap-3 text-sm font-mono border-t border-slate-800">
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-4 h-4 text-emerald-500" />
+                  <span>GPS: {violation.latitude.toFixed(6)}, {violation.longitude.toFixed(6)}</span>
+                </div>
+                <Link to="/map" className="flex items-center gap-1 text-amber-400 hover:text-amber-300 transition-colors text-xs uppercase font-sans font-bold tracking-wider bg-amber-400/10 px-2 py-1 rounded">
+                  View on Map
+                </Link>
               </div>
             )}
           </div>

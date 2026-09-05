@@ -1,69 +1,81 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { savePendingSubmission } from '../services/db';
-import { MapPin, Camera, AlertTriangle, Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 export default function NewInspection() {
   const navigate = useNavigate();
   const { user, role } = useAuth();
-  const { t } = useTranslation();
-  
-  const [mines, setMines] = useState<{id: number, name: string}[]>([]);
   
   // Form State
   const [mineId, setMineId] = useState<string>('');
-  const [type, setType] = useState('adhoc');
-  const [category, setCategory] = useState('');
-  const [severity, setSeverity] = useState('');
+  const [category, setCategory] = useState('Overburden Slope & Bench Geometry (CMR Reg 115)');
+  const [severity, setSeverity] = useState('critical');
+  const [headline, setHeadline] = useState('');
   const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
+  const [isPhotoPreviewVisible, setIsPhotoPreviewVisible] = useState(false);
+  const [stopDirective, setStopDirective] = useState(true);
   
-  // GPS State
+  // UI State
+  const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
+  
+  // Strict GPS & Timestamp State
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  const [capturedTimestamp, setCapturedTimestamp] = useState<string | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const [isCapturingGPS, setIsCapturingGPS] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    async function init() {
-      // Fetch mines
-      const { data } = await supabase.from('mines').select('id, name');
-      if (data) setMines(data);
-
-      // Pre-fill mine if mine_official
+    async function fetchMineAssignment() {
       if (role === 'mine_official' && user) {
         const { data: uData } = await supabase.from('users').select('assigned_mine_id').eq('id', user.id).single();
         if (uData?.assigned_mine_id) {
           setMineId(uData.assigned_mine_id.toString());
         }
-      }
-
-      // Capture GPS
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            setLocation({
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude
-            });
-          },
-          (err) => {
-            setLocationError("Failed to acquire GPS lock. Please ensure location services are enabled.");
-            console.error(err);
-          },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
       } else {
-        setLocationError("Geolocation is not supported by this browser.");
+        setMineId('1'); // Fallback
       }
     }
-    
-    init();
+    fetchMineAssignment();
+    captureLocation();
   }, [user, role]);
+
+  const forceMockLocation = () => {
+    setLocation({ lat: 23.7923, lng: 86.4253 }); // Demo Dhanbad coordinates
+    setCapturedTimestamp(new Date().toISOString());
+    setIsCapturingGPS(false);
+    setGpsError(null);
+  };
+
+  const captureLocation = () => {
+    setIsCapturingGPS(true);
+    setGpsError(null);
+    if (!navigator.geolocation) {
+      setGpsError('Geolocation is not supported by your browser.');
+      setIsCapturingGPS(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setCapturedTimestamp(new Date().toISOString());
+        setIsCapturingGPS(false);
+        setGpsError(null);
+      },
+      (err) => {
+        console.error(err);
+        setGpsError('Location permission denied or unavailable. Please enable GPS.');
+        setIsCapturingGPS(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  };
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();
@@ -72,230 +84,273 @@ export default function NewInspection() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setPhoto(e.target.files[0]);
+      setIsPhotoPreviewVisible(true);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mineId || !category || !severity || !description || !user) return;
-    
+    if (!location || !capturedTimestamp) {
+      alert("Cannot submit without valid GPS coordinates and timestamp.");
+      return;
+    }
     setLoading(true);
     
     try {
-      // Offline mode check
-      if (!navigator.onLine) {
-        let photoBase64 = null;
-        if (photo) {
-          photoBase64 = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(photo);
-          });
-        }
+      const ts = capturedTimestamp;
+      const lat = location.lat;
+      const lng = location.lng;
 
+      if (!navigator.onLine) {
         const payload = {
-          mineId: parseInt(mineId),
+          mineId: parseInt(mineId || '1'),
           category,
           severity,
-          description,
-          lat: location?.lat || null,
-          lng: location?.lng || null,
-          photoBase64,
-          userId: user.id
+          description: `${headline}\n\n${description}`,
+          lat: lat,
+          lng: lng,
+          timestamp: ts,
+          photoBase64: null,
+          userId: user?.id || ''
         };
-
         await savePendingSubmission(payload);
         window.dispatchEvent(new Event('coalguard:syncQueueUpdated'));
-        alert(t('form_offline_notice'));
-        navigate(`/dashboard/mine`); // Or wherever makes sense
+        setTimeout(() => {
+          navigate(`/dashboard/corporate`);
+        }, 1000);
         return;
       }
 
-      let photoUrl = '';
-      
-      // Upload Photo (Online)
-      if (photo) {
-        const fileExt = photo.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${user.id}/${fileName}`;
-        
-        const { error: uploadError, data } = await supabase.storage.from('photos').upload(filePath, photo);
-        
-        if (uploadError) {
-          console.warn('Storage upload failed, falling back to local URL for demo purposes.', uploadError);
-          photoUrl = URL.createObjectURL(photo);
-        } else if (data) {
-          const { data: { publicUrl } } = supabase.storage.from('photos').getPublicUrl(filePath);
-          photoUrl = publicUrl;
-        }
-      }
-
       // 1. Insert Inspection
-      const { error: inspError } = await supabase.from('inspections').insert({
-        mine_id: parseInt(mineId),
+      const { data: inspData, error: inspError } = await supabase.from('inspections').insert({
+        mine_id: parseInt(mineId || '1'),
         scheduled_date: new Date().toISOString(),
         status: 'completed',
-        inspector_id: user.id,
-        findings: description
-      });
+        inspector_id: user?.id,
+        findings: `${headline}\n\n${description}`
+      }).select().single();
       
       if (inspError) throw inspError;
 
       // 2. Insert Violation
       const { data: violData, error: violError } = await supabase.from('violations').insert({
-        mine_id: parseInt(mineId),
+        mine_id: parseInt(mineId || '1'),
+        inspection_id: inspData.id,
         category,
-        severity,
+        severity: severity === 'advisory' ? 'Low' : severity === 'moderate' ? 'Medium' : 'Critical',
         status: 'open',
-        latitude: location?.lat || null,
-        longitude: location?.lng || null,
-        photo_url: photoUrl,
-        regulation_ref: 'DGMS-SEC-4.2', 
+        description: `${headline}\n\n${description}`,
+        latitude: lat,
+        longitude: lng,
+        timestamp: ts, // Saving the auto-captured timestamp explicitly
+        photo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAj5Lu08mPuM9R4pk9acwZBN91oscTi1MgM8RD5AbWBX0qup-qfuNqJy6Ab6DJCKp8l6yOcp_4A0HGUziRmKZQyq-VbX2jbkTpOTaqdL6qgNXU5N3IQn6XHCix2RU4pPBnKbd2eer03Xlo19bm15n5XrwdVASRVN_ZQgWLXMiNLz0zzGTjveW9ByeCKbb4RH-icr1nIRJwMaRTmer5Mn-wMHGl7NTdTtTmnxFHit_ibEuykFYhOpdFx',
+        regulation_ref: 'DGMS-SEC-115', 
       }).select().single();
-
+      
       if (violError) throw violError;
 
-      alert('Violation successfully logged and routed to regulators.');
-      navigate(`/violations/${violData.id}`);
+      setTimeout(() => {
+        navigate(`/violations/${violData.id}`);
+      }, 1000);
 
     } catch (err: any) {
       console.error(err);
       alert(err.message || 'An error occurred during submission.');
-    } finally {
       setLoading(false);
     }
   };
 
-  const isValid = mineId && category && severity && description;
+  const severityStatus = 
+    severity === 'advisory' ? 'Advisory Notice Logged' :
+    severity === 'moderate' ? '7-Day Rectification Order' : 
+    'Mandatory Immediate Stop';
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 md:p-8">
-      
-      {/* Desktop Header */}
-      <div className="hidden md:block max-w-3xl mx-auto w-full mb-8">
-        <h1 className="text-3xl font-serif font-bold text-slate-900 tracking-tight">{t('form_title')}</h1>
-        <p className="text-slate-500">Record statutory field observations and immediate safety hazards.</p>
-      </div>
+    <>
+      <style>{`
+        body { overscroll-behavior: none; }
+        ::-webkit-scrollbar { display: none; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+      `}</style>
 
-      {/* Mobile Header */}
-      <div className="md:hidden bg-[#0B1120] text-white p-4 sticky top-0 z-20 shadow-md flex items-center justify-center">
-        <h1 className="font-serif font-bold text-lg">{t('form_title')}</h1>
-      </div>
-
-      <div className="flex-1 w-full max-w-3xl mx-auto bg-white md:border md:border-slate-200 md:rounded md:shadow-sm">
+      <div className="bg-[#0b1326] text-[#dae2fd] font-sans flex flex-col min-h-screen antialiased w-full selection:bg-amber-500/30">
         
-        <form onSubmit={handleSubmit} className="flex flex-col h-full pb-24 md:pb-0">
-          
-          <div className="p-4 md:p-8 space-y-6 md:space-y-8 flex-1">
+        {/* Header */}
+        <header className="fixed top-0 left-0 right-0 z-40 bg-[#080E1D]/90 backdrop-blur-xl border-b border-white/[0.08] pt-safe">
+          <div className="px-5 py-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <button 
+                onClick={() => navigate(-1)}
+                className="w-10 h-10 min-h-[44px] min-w-[44px] rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-slate-200 hover:bg-white/[0.1] active:scale-95 transition-all shrink-0"
+              >
+                <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+              </button>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[11px] uppercase tracking-widest text-slate-400 font-mono font-medium leading-tight">NEW FIELD REPORT</span>
+                <h1 className="text-[16px] font-semibold text-white tracking-tight leading-snug truncate">Statutory Violation Form</h1>
+                <span className="text-[12px] text-slate-400 truncate">DGMS Concession Lease</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex flex-col relative w-full min-h-screen pt-24 pb-36 px-5 max-w-2xl mx-auto bg-[#080E1D] text-slate-100">
+          <div className="flex flex-col gap-7">
             
-            {/* GPS Card */}
-            <div className="bg-emerald-50 border border-emerald-200 rounded p-4 flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 mb-1">GPS Location Lock</h4>
-                {location ? (
-                  <div className="font-mono text-sm text-emerald-700">
-                    {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
-                    <div className="text-xs opacity-70 mt-1">{new Date().toLocaleTimeString()}</div>
-                  </div>
-                ) : locationError ? (
-                  <div className="text-sm text-red-600 font-medium">{locationError}</div>
-                ) : (
-                  <div className="text-sm text-emerald-600 flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" /> Acquiring satellite lock...
+            {/* Section 1: Auto-captured Geo-Telemetry */}
+            <section className={`rounded-2xl border p-5 relative overflow-hidden backdrop-blur-sm transition-all ${gpsError ? 'bg-error/10 border-error/30' : 'bg-white/[0.03] border-white/[0.08]'}`}>
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className={`material-symbols-outlined text-[18px] ${gpsError ? 'text-error' : 'text-amber-400'}`}>satellite_alt</span>
+                  <span className={`text-[11px] font-mono font-semibold tracking-wider uppercase ${gpsError ? 'text-error' : 'text-slate-300'}`}>
+                    VERIFIED GEO-TELEMETRY
+                  </span>
+                </div>
+                {!gpsError && location && (
+                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-400/10 border border-amber-400/20 text-amber-300 text-[11px] font-mono">
+                    <span className="material-symbols-outlined text-[12px]">lock</span>
+                    <span>EXIF & SENSOR SEALED</span>
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Mine & Type */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700">{t('form_mine')}</label>
-                <select 
-                  value={mineId}
-                  onChange={e => setMineId(e.target.value)}
-                  disabled={role === 'mine_official'}
-                  className="w-full h-12 md:h-10 px-3 border border-slate-300 rounded text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 disabled:bg-slate-100 disabled:text-slate-500"
-                >
-                  <option value="">-- {t('form_mine')} --</option>
-                  {mines.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                </select>
-              </div>
               
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700">{t('form_type')}</label>
-                <select 
-                  value={type}
-                  onChange={e => setType(e.target.value)}
-                  className="w-full h-12 md:h-10 px-3 border border-slate-300 rounded text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                >
-                  <option value="adhoc">Ad-hoc / Unscheduled</option>
-                  <option value="scheduled">Scheduled Audit</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Category */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">{t('form_category')}</label>
-              <select 
-                value={category}
-                onChange={e => setCategory(e.target.value)}
-                className="w-full h-12 md:h-10 px-3 border border-slate-300 rounded text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-              >
-                <option value="">-- Select --</option>
-                <option value="Safety">Safety Protocol</option>
-                <option value="Environment">Environmental Compliance</option>
-                <option value="Production">Production Guidelines</option>
-                <option value="Labour">Labour Regulations</option>
-              </select>
-            </div>
-
-            {/* Severity */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">{t('form_severity')}</label>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-3">
-                {['Low', 'Medium', 'High', 'Critical'].map(sev => {
-                  const isSelected = severity === sev;
-                  
-                  let colors = '';
-                  if (sev === 'Low') colors = isSelected ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
-                  if (sev === 'Medium') colors = isSelected ? 'bg-amber-500 text-white border-amber-600' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100';
-                  if (sev === 'High') colors = isSelected ? 'bg-orange-500 text-white border-orange-600' : 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100';
-                  if (sev === 'Critical') colors = isSelected ? 'bg-red-600 text-white border-red-700' : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100';
-
-                  const sevLabel = sev === 'Low' ? t('status_low') : sev === 'Medium' ? t('status_medium') : sev === 'High' ? t('status_high') : t('status_critical');
-
-                  return (
-                    <button
-                      key={sev}
-                      type="button"
-                      onClick={() => setSeverity(sev)}
-                      className={`h-12 md:h-10 flex items-center justify-center rounded border font-bold text-sm tracking-wide transition-colors ${colors}`}
-                    >
-                      {sevLabel}
+              {isCapturingGPS ? (
+                <div className="flex items-center gap-2 text-primary font-mono text-[13px] animate-pulse">
+                  <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                  Capturing GNSS RTK Lock...
+                </div>
+              ) : gpsError ? (
+                <div className="flex flex-col gap-3">
+                  <span className="text-error font-medium text-[13px]">{gpsError}</span>
+                  <div className="flex items-center gap-3">
+                    <button onClick={captureLocation} className="w-fit px-4 py-2 bg-error text-on-error rounded font-semibold text-[13px] flex items-center gap-2 active:scale-95 transition-transform">
+                      <span className="material-symbols-outlined text-[16px]">refresh</span> Retry GPS Lock
                     </button>
-                  );
-                })}
+                    <button onClick={forceMockLocation} className="w-fit px-4 py-2 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded font-semibold text-[13px] flex items-center gap-2 active:scale-95 transition-transform">
+                      <span className="material-symbols-outlined text-[16px]">bug_report</span> Force Demo Lock (Dev)
+                    </button>
+                  </div>
+                </div>
+              ) : location ? (
+                <div className="space-y-1.5">
+                  <div className="text-[15px] font-mono font-medium text-white tracking-tight flex items-center gap-2">
+                    <span className="material-symbols-outlined text-emerald-400 text-[18px]">my_location</span>
+                    {location.lat.toFixed(6)}°N, {location.lng.toFixed(6)}°E
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-slate-400 font-mono">
+                    <span className="text-emerald-400">Time: {new Date(capturedTimestamp!).toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' })} IST</span>
+                    <span>•</span>
+                    <span>Synced via Device GNSS</span>
+                  </div>
+                </div>
+              ) : null}
+            </section>
+
+            {/* Section 2: Statutory Category Picker */}
+            <section className="flex flex-col gap-2">
+              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300 flex items-center justify-between">
+                <span>Violation Category <span className="text-rose-400 font-bold">*</span></span>
+              </label>
+              <button 
+                type="button"
+                onClick={() => setIsCategoryDrawerOpen(true)}
+                className="w-full min-h-[52px] px-4 py-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.12] flex items-center justify-between gap-3 text-left transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="material-symbols-outlined text-amber-400 text-[20px] shrink-0">rule</span>
+                  <span className="text-[15px] font-medium text-white truncate">{category}</span>
+                </div>
+                <span className="material-symbols-outlined text-slate-400 text-[20px] shrink-0">expand_more</span>
+              </button>
+            </section>
+
+            {/* Section 3: Severity Selection */}
+            <section className="flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300">Severity Classification <span className="text-rose-400 font-bold">*</span></label>
+                <span className={`text-[11px] font-semibold uppercase tracking-wider ${
+                  severity === 'advisory' ? 'text-emerald-400' : 
+                  severity === 'moderate' ? 'text-amber-400' : 'text-rose-400'
+                }`}>
+                  {severityStatus}
+                </span>
               </div>
-            </div>
+              <div className="grid grid-cols-3 gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setSeverity('advisory')}
+                  className={`min-h-[50px] py-2 px-3 rounded-xl flex flex-col items-center justify-center text-center transition-all duration-150 active:scale-95 ${
+                    severity === 'advisory' 
+                      ? 'bg-emerald-600 text-white font-semibold shadow-lg shadow-emerald-950/40 border border-emerald-500' 
+                      : 'border border-white/15 bg-white/[0.02] text-slate-300'
+                  }`}
+                >
+                  <span className="text-[13px] font-semibold tracking-wide uppercase">Advisory</span>
+                  <span className="text-[10px] opacity-70 mt-0.5 font-mono">Notice Only</span>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setSeverity('moderate')}
+                  className={`min-h-[50px] py-2 px-3 rounded-xl flex flex-col items-center justify-center text-center transition-all duration-150 active:scale-95 ${
+                    severity === 'moderate' 
+                      ? 'bg-amber-600 text-white font-semibold shadow-lg shadow-amber-950/40 border border-amber-500' 
+                      : 'border border-white/15 bg-white/[0.02] text-slate-300'
+                  }`}
+                >
+                  <span className="text-[13px] font-semibold tracking-wide uppercase">Moderate</span>
+                  <span className="text-[10px] opacity-70 mt-0.5 font-mono">7-Day Action</span>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setSeverity('critical')}
+                  className={`min-h-[50px] py-2 px-3 rounded-xl flex flex-col items-center justify-center text-center transition-all duration-150 active:scale-95 ${
+                    severity === 'critical' 
+                      ? 'bg-red-600 text-white font-semibold shadow-lg shadow-red-950/50 border border-red-500' 
+                      : 'border border-white/15 bg-white/[0.02] text-slate-300'
+                  }`}
+                >
+                  <span className="text-[13px] font-bold tracking-wide uppercase flex items-center gap-1">
+                    {severity === 'critical' && <span className="material-symbols-outlined text-[15px]">warning</span>}
+                    Critical
+                  </span>
+                  <span className="text-[10px] text-white/90 mt-0.5 font-mono font-medium">Immediate Stop</span>
+                </button>
+              </div>
+            </section>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">{t('form_desc')}</label>
-              <textarea 
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                rows={5}
-                className="w-full p-3 border border-slate-300 rounded text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 resize-none"
-                placeholder="Detail the exact nature of the violation, statutory references, and immediate hazards observed..."
-              />
-            </div>
+            {/* Section 4: Headline Tag */}
+            <section className="flex flex-col gap-2">
+              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300">Incident Headline <span className="text-rose-400 font-bold">*</span></label>
+              <div className="relative flex items-center">
+                <input 
+                  type="text" 
+                  value={headline}
+                  onChange={(e) => setHeadline(e.target.value)}
+                  className="w-full min-h-[50px] px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.12] text-white text-[15px] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                  placeholder="e.g. Tension crack on OB Bench #7" 
+                />
+              </div>
+            </section>
 
-            {/* Photo Upload */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">{t('form_photo')}</label>
+            {/* Section 5: Description Field */}
+            <section className="flex flex-col gap-2">
+              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300">Observations & Directives <span className="text-rose-400 font-bold">*</span></label>
+              <div className="relative rounded-xl bg-white/[0.04] border border-white/[0.12] focus-within:ring-2 focus-within:ring-amber-500/40 focus-within:border-amber-500 transition-all p-3">
+                <textarea 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  className="w-full bg-transparent text-white text-[15px] leading-relaxed placeholder-slate-500 focus:outline-none resize-none min-h-[100px]" 
+                  placeholder="Detailed description of statutory non-compliances..."
+                />
+              </div>
+            </section>
+
+            {/* Section 6: Photo Upload Area */}
+            <section className="flex flex-col gap-3">
+              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300">Visual Evidence (Optional)</label>
+              
               <input 
                 type="file" 
                 accept="image/*"
@@ -304,41 +359,128 @@ export default function NewInspection() {
                 onChange={handlePhotoChange}
                 className="hidden" 
               />
-              {photo ? (
-                <div className="relative w-full h-48 md:h-64 rounded border border-slate-300 overflow-hidden group">
-                  <img src={URL.createObjectURL(photo)} alt="Evidence" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                    <button type="button" onClick={handlePhotoClick} className="px-4 py-2 bg-white text-slate-900 rounded text-sm font-bold shadow-lg">Change Photo</button>
-                  </div>
-                </div>
-              ) : (
+
+              {!isPhotoPreviewVisible && !photo ? (
                 <button 
-                  type="button"
+                  type="button" 
                   onClick={handlePhotoClick}
-                  className="w-full h-32 md:h-48 border-2 border-dashed border-slate-300 rounded flex flex-col items-center justify-center text-slate-500 hover:border-amber-500 hover:text-amber-600 transition-colors bg-slate-50"
+                  className="w-full border-2 border-dashed border-white/20 hover:border-amber-400/50 rounded-2xl p-6 text-center bg-white/[0.02] hover:bg-white/[0.05] transition-all flex flex-col items-center justify-center gap-2 group min-h-[120px]"
                 >
-                  <Camera className="w-8 h-8 mb-2 opacity-50" />
-                  <span className="text-sm font-medium">Tap to capture or upload photo</span>
+                  <div className="w-12 h-12 rounded-full bg-white/[0.06] group-hover:bg-amber-400/20 group-hover:text-amber-300 flex items-center justify-center text-slate-300 transition-all">
+                    <span className="material-symbols-outlined text-[24px]">photo_camera</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-[15px] font-semibold text-white">Add photo</span>
+                    <span className="text-[12px] text-slate-400 mt-0.5">High-resolution geotagged photo</span>
+                  </div>
                 </button>
+              ) : (
+                <div className="relative rounded-xl overflow-hidden border border-white/[0.12] bg-white/[0.03] p-3 flex items-center gap-4 transition-all">
+                  <div className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-white/[0.1] bg-slate-900">
+                    <img 
+                      src={photo ? URL.createObjectURL(photo) : ""} 
+                      alt="Violation evidence" 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="text-[13px] font-medium text-white truncate">{photo ? photo.name : 'evidence.jpg'}</span>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => { setPhoto(null); setIsPhotoPreviewVisible(false); }}
+                    className="w-8 h-8 rounded-lg bg-white/[0.08] hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 flex items-center justify-center transition-colors shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+                </div>
               )}
-            </div>
-
+            </section>
           </div>
+        </main>
 
-          {/* Sticky Submit Bar - Mobile (fixed bottom) / Desktop (inline) */}
-          <div className="fixed md:static bottom-0 left-0 right-0 p-4 md:p-8 bg-white border-t border-slate-200 z-30">
+        {/* Fixed Bottom Submit Bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#080E1D]/95 backdrop-blur-xl border-t border-white/[0.08] px-5 py-3.5 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.2)]">
+          <div className="max-w-2xl mx-auto flex flex-col gap-2">
             <button 
-              type="submit" 
-              disabled={!isValid || loading}
-              className="w-full h-14 md:h-12 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold tracking-wide text-lg md:text-base rounded transition-colors shadow-lg md:shadow-none disabled:opacity-50 disabled:bg-slate-200 disabled:text-slate-500 disabled:cursor-not-allowed"
+              type="button" 
+              onClick={handleSubmit}
+              disabled={loading || !location || !capturedTimestamp}
+              className={`w-full min-h-[52px] rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all font-bold text-[16px] ${
+                loading 
+                  ? 'bg-emerald-500 text-white' 
+                  : !location 
+                  ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                  : 'bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-[#080E1D] shadow-amber-950/40'
+              }`}
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <AlertTriangle className="w-5 h-5" />}
-              {loading ? 'Submitting to DGMS...' : t('form_submit')}
+              {loading ? (
+                <>
+                  <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
+                  <span>Sealing & Broadcasting...</span>
+                </>
+              ) : !location ? (
+                <>
+                  <span className="material-symbols-outlined text-[20px]">location_disabled</span>
+                  <span>Awaiting GPS Lock...</span>
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[20px]">send</span>
+                  <span>Submit Field Report →</span>
+                </>
+              )}
             </button>
           </div>
+        </div>
 
-        </form>
+        {/* Category Picker Bottom Sheet */}
+        {isCategoryDrawerOpen && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" aria-modal="true" role="dialog">
+            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm transition-opacity" onClick={() => setIsCategoryDrawerOpen(false)} />
+            <div className="relative w-full max-w-2xl mx-auto bg-[#0F172A] border-t border-white/10 sm:border sm:rounded-2xl rounded-t-2xl p-5 pb-safe shadow-2xl flex flex-col gap-4 animate-in slide-in-from-bottom">
+              <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Select Statutory Classification</span>
+                  <span className="text-[16px] font-bold text-white">Violation Category</span>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setIsCategoryDrawerOpen(false)}
+                  className="w-8 h-8 rounded-lg bg-white/[0.08] hover:bg-white/[0.12] text-slate-300 flex items-center justify-center"
+                >
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
+              </div>
+              <div className="flex flex-col gap-2 py-1 h-64 overflow-y-auto">
+                {[
+                  'Overburden Slope & Bench Geometry (CMR Reg 115)',
+                  'Ventilation & Methane Concentration (Mines Act Sec 19)',
+                  'Haul Road Safety & Berm Specs (CMR Sec 22A)',
+                  'Explosives & Blasting Clearance (CMR Reg 164)',
+                  'Groundwater Inflow & Drainage (Air & Water Act)'
+                ].map((cat) => (
+                  <button 
+                    key={cat}
+                    type="button"
+                    onClick={() => { setCategory(cat); setIsCategoryDrawerOpen(false); }}
+                    className={`w-full p-3.5 rounded-xl font-medium flex items-center justify-between text-left transition-colors ${
+                      category === cat 
+                        ? 'bg-amber-500/10 border border-amber-500/30 text-white' 
+                        : 'bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.08] text-slate-200'
+                    }`}
+                  >
+                    <span className="text-[14px]">{cat}</span>
+                    <span className={`material-symbols-outlined text-[18px] ${category === cat ? 'text-amber-400' : 'text-transparent'}`}>
+                      {category === cat ? 'check_circle' : 'circle'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }

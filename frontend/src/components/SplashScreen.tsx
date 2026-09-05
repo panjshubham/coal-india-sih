@@ -7,12 +7,11 @@ interface SplashScreenProps {
 }
 
 const SLIDE_DURATION_MS = 5000;
-const TOTAL_DURATION_MS = 15000;
+const TOTAL_DURATION_MS = 10000;
 const FADE_DURATION_MS = 350;
 
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [progress, setProgress] = useState(0);
   const [isFading, setIsFading] = useState(false);
   const startTimeRef = useRef<number>(Date.now());
   const completedRef = useRef(false);
@@ -49,10 +48,8 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     startTimeRef.current = Date.now();
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
-      const progressPercent = Math.min((elapsed / TOTAL_DURATION_MS) * 100, 100);
-      setProgress(progressPercent);
-
-      const targetSlide = Math.min(Math.floor(elapsed / SLIDE_DURATION_MS), 2);
+      
+      const targetSlide = Math.min(Math.floor(elapsed / SLIDE_DURATION_MS), 1);
       setCurrentSlide((prev) => {
         if (prev !== targetSlide) {
           setIsFading(true);
@@ -70,14 +67,25 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     return () => clearInterval(interval);
   }, []);
 
+  const slides = [
+    {
+      kicker: 'NATIONAL CONCESSION OVERSIGHT DESK',
+      title: 'CoalGuard',
+      subtitle: 'AI-BASED SMART GOVERNANCE AND COMPLIANCE MONITORING SYSTEM',
+      tags: ['DGMS MANDATE 1952', 'MINES ACT S 48', 'TELEMETRY INGESTION ACTIVE']
+    },
+    {
+      kicker: 'SOVEREIGN REGULATORY INFRASTRUCTURE',
+      title: 'Centralized. Transparent. Real-Time.',
+      subtitle: 'EMPOWERING 418 COAL CONCESSIONS WITH INSAR GEOSPATIAL RADAR, AUTOMATED VIOLATION DETECTION & TAMPER-PROOF AUDIT TRAILS',
+    }
+  ];
+
   return (
-    <div className="fixed inset-0 z-[100] w-screen h-screen bg-slate-950 text-white select-none overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[100] w-screen h-screen bg-slate-950 text-white select-none overflow-hidden flex flex-col font-sans">
       
       {/* Background Images with Crossfade */}
       <div className="absolute inset-0 w-full h-full overflow-hidden bg-slate-900">
-        {/* Thin dark overlay across the entire image (15% opacity) */}
-        <div className="absolute inset-0 bg-slate-950/15 z-10 pointer-events-none" />
-        
         {/* Slide 1 */}
         <div
           className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-[350ms] ease-in-out ${
@@ -92,87 +100,123 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           }`}
           style={{ backgroundImage: "url('/assets/splash-2.jpg')" }}
         />
-        {/* Slide 3 */}
-        <div
-          className={`absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-[350ms] ease-in-out ${
-            currentSlide === 2 ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{ backgroundImage: "url('/assets/splash-3.jpg')" }}
-        />
+        
+        {/* 15% flat black overlay */}
+        <div className="absolute inset-0 bg-black/15 pointer-events-none z-10" />
       </div>
 
-      {/* Top Center Logos */}
-      <header className="relative z-20 w-full pt-8 flex justify-center items-start">
-        <div className="flex flex-col items-center gap-2 drop-shadow-lg">
-           {/* Placeholders for Ashoka Emblem and Coal India Logo */}
-           <div className="flex items-center gap-4">
-              <div className="w-12 h-16 bg-white/20 backdrop-blur-sm rounded-sm border border-white/30 flex items-center justify-center">
-                <span className="text-[10px] text-white/70 font-mono text-center leading-tight">Ashoka<br/>Emblem</span>
+      {/* Top Header Pill */}
+      <div className="absolute top-6 left-0 right-0 w-full flex justify-center z-50 px-6">
+        <div className="flex items-center justify-between w-full max-w-[1400px]">
+          <div className="flex-1"></div>
+          
+          <div className="flex items-center gap-4 px-6 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 text-amber-500">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13h-13L12 6.5z"/></svg>
               </div>
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 flex items-center justify-center">
-                 <span className="text-[10px] text-white/70 font-mono text-center leading-tight">Coal<br/>India</span>
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold tracking-wider">सत्यमेव जयते</span>
+                <span className="text-[8px] tracking-widest text-slate-300">GOVT. OF INDIA</span>
               </div>
-           </div>
+            </div>
+            
+            <div className="w-px h-6 bg-white/20 mx-2"></div>
+            
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 text-amber-500">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm4 2h4v8h-4V8z"/></svg>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold tracking-wider">COAL INDIA</span>
+                <span className="text-[8px] tracking-widest text-slate-300">MINISTRY OF COAL</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1 flex justify-end">
+            <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold tracking-widest text-amber-500 shadow-lg">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              SLIDE {currentSlide + 1}/2
+            </div>
+          </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content Area */}
-      <main className="relative z-20 flex-1 flex flex-col items-center justify-center px-6">
+      <main className="relative z-40 flex-1 flex flex-col items-center justify-center text-center px-4">
         <div 
-          className={`relative flex flex-col items-center text-center transition-all duration-[350ms] ease-out ${
+          className={`relative max-w-4xl mx-auto flex flex-col items-center transition-all duration-[350ms] ease-out ${
             isFading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
           }`}
         >
-          {/* Tighter dark vignette directly behind text to pop the text without darkening the whole image */}
-          <div className="absolute inset-0 -mx-12 -my-8 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-950/70 via-slate-950/30 to-transparent blur-xl pointer-events-none rounded-full" />
+          {/* Tighter dark vignette directly behind text */}
+          <div className="absolute inset-0 -mx-12 -my-8 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-black/80 via-black/40 to-transparent blur-2xl pointer-events-none rounded-full" />
           
           <div className="relative z-10 flex flex-col items-center">
-            {currentSlide === 0 && (
-              <>
-                <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tight text-white mb-4" style={{ textShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-                  CoalGuard
-                </h1>
-                <p className="text-lg md:text-xl text-slate-200 max-w-2xl font-medium tracking-wide" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.6)' }}>
-                  AI-Based Smart Governance and Compliance Monitoring System
-                </p>
-              </>
-            )}
+            <div className="mb-4">
+              <span className="inline-block relative">
+                <span className="text-[10px] font-bold tracking-[0.2em] text-amber-500 uppercase">{slides[currentSlide].kicker}</span>
+                <div className="absolute top-1/2 -left-12 w-8 h-px bg-amber-500/50"></div>
+                <div className="absolute top-1/2 -right-12 w-8 h-px bg-amber-500/50"></div>
+              </span>
+            </div>
 
-            {currentSlide === 1 && (
-              <h2 className="text-4xl md:text-5xl font-sans font-extrabold tracking-tight text-white leading-tight" style={{ textShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-                Centralized. Transparent. Real-Time.
-              </h2>
-            )}
+            <h1 className={`font-serif text-white tracking-tight leading-tight ${currentSlide === 0 ? 'text-7xl md:text-[90px]' : 'text-5xl md:text-7xl'} mb-6 drop-shadow-2xl`}>
+              {currentSlide === 0 ? slides[currentSlide].title : (
+                <span className="leading-tight">
+                  <span className="italic font-light">Centralized. </span><br className="md:hidden" />
+                  <span className="italic font-light">Transparent. </span>
+                  <span className="font-bold">Real-Time.</span>
+                </span>
+              )}
+            </h1>
 
-            {currentSlide === 2 && (
-              <h2 className="text-4xl md:text-5xl font-sans font-extrabold tracking-tight text-white leading-tight" style={{ textShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-                Governance. Simplified.
-              </h2>
-            )}
+            <p className="text-xs md:text-sm font-bold tracking-[0.15em] text-slate-200 uppercase max-w-2xl leading-relaxed mb-10 drop-shadow-lg">
+              {slides[currentSlide].subtitle}
+            </p>
+
+            <div className="h-16 flex items-center justify-center">
+              {currentSlide === 0 && (
+                <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] font-bold tracking-widest text-slate-300">
+                  <span className="px-3 py-1 rounded bg-black/60 backdrop-blur border border-white/20">{slides[0].tags?.[0]}</span>
+                  <span className="text-amber-500">•</span>
+                  <span className="px-3 py-1 rounded bg-black/60 backdrop-blur border border-white/20">{slides[0].tags?.[1]}</span>
+                  <span className="text-amber-500">•</span>
+                  <span className="px-3 py-1 rounded bg-black/60 backdrop-blur border border-white/20 text-emerald-400">{slides[0].tags?.[2]}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
 
-      {/* Bottom Section: Skip & Progress */}
-      <div className="relative z-20 w-full pb-8 px-8 flex justify-end items-end">
-         <button
-          type="button"
-          onClick={handleFinish}
-          className="group flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/40 hover:bg-slate-900/60 backdrop-blur-md border border-white/20 text-sm font-medium text-white transition-all shadow-lg"
-        >
-          Skip Intro
-          <ArrowRight className="w-4 h-4 text-amber-500 transition-transform group-hover:translate-x-1" />
-        </button>
+      {/* Bottom Footer Ticker and Skip Button */}
+      <div className="absolute bottom-6 left-0 right-0 w-full z-50 flex justify-center px-6">
+        <div className="w-full max-w-[1400px] flex items-center justify-between border-t border-amber-500/30 pt-4">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-[8px] font-mono font-bold tracking-widest text-emerald-400 uppercase">
+              CONNECTED TO SUPABASE · LIVE DATA SYNC
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-6">
+            <span className="text-[8px] font-mono font-bold tracking-widest text-slate-400 uppercase">
+              18 MINES MONITORED
+            </span>
+            
+            <button
+              type="button"
+              onClick={handleFinish}
+              className="group flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/20 text-[10px] font-bold tracking-widest text-white transition-all shadow-lg"
+            >
+              SKIP INTRO
+              <ArrowRight className="w-3 h-3 text-amber-500 transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+        </div>
       </div>
-
-      {/* Continuous Amber Progress Line at the very bottom */}
-      <div className="absolute bottom-0 left-0 w-full h-1.5 bg-slate-800/50 z-30">
-        <div 
-          className="h-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]"
-          style={{ width: `${progress}%`, transition: 'width 50ms linear' }}
-        />
-      </div>
-
     </div>
   );
 }

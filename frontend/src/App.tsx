@@ -4,7 +4,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import CorporateDashboard from './pages/CorporateDashboard';
 import MineDashboard from './pages/MineDashboard';
 import RegulatorDashboard from './pages/RegulatorDashboard';
-import MinesMap from './pages/MinesMap';
+import GeospatialMap from './pages/GeospatialMap';
 import Inspections from './pages/Inspections';
 import Landing from './pages/Landing';
 import NewInspection from './pages/NewInspection';
@@ -37,6 +37,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         
         <Route element={<ProtectedRoute />}>
+          <Route path="/map" element={<GeospatialMap />} />
+          
           <Route path="/" element={<DashboardLayout />}>
             <Route path="dashboard/mine" element={
               <ProtectedRoute allowedRoles={['mine_official']}>
@@ -57,7 +59,6 @@ function App() {
             <Route path="compliance" element={<Compliance />} />
             <Route path="violations" element={<Violations />} />
             <Route path="violations/:id" element={<ViolationDetail />} />
-            <Route path="map" element={<MinesMap />} />
             <Route path="inspections" element={<Inspections />} />
             <Route path="inspections/new" element={<NewInspection />} />
             <Route path="submissions" element={<MySubmissions />} />

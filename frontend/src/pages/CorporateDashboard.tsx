@@ -129,17 +129,17 @@ export default function CorporateDashboard() {
   };
 
   const getRiskColor = (score: number) => {
-    if (score > 70) return 'bg-red-500';
-    if (score >= 40) return 'bg-amber-500';
-    return 'bg-emerald-500';
+    if (score > 70) return 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]';
+    if (score >= 40) return 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]';
+    return 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]';
   };
 
   const getSeverityBadge = (sev: string) => {
     switch(sev.toLowerCase()) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-amber-100 text-amber-800 border-amber-200';
-      default: return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'critical': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'high': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+      case 'medium': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+      default: return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
     }
   };
 
@@ -147,44 +147,44 @@ export default function CorporateDashboard() {
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8 w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Corporate Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Enterprise-wide telemetric and statutory oversight.</p>
+          <h1 className="text-2xl font-serif font-bold text-white tracking-tight">Corporate Dashboard</h1>
+          <p className="text-sm text-slate-400 mt-1">Enterprise-wide telemetric and statutory oversight.</p>
         </div>
       </div>
 
       {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded border border-slate-200 p-5 shadow-sm flex flex-col">
+        <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-blue-500/50 transition-colors">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Mines</span>
-            <Activity className="w-5 h-5 text-blue-500" />
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Mines</span>
+            <Activity className="w-5 h-5 text-blue-400" />
           </div>
-          <span className="text-3xl font-serif font-bold text-slate-900">{stats.totalMines}</span>
+          <span className="text-3xl font-serif font-bold text-white">{stats.totalMines}</span>
         </div>
 
-        <div className="bg-white rounded border border-slate-200 p-5 shadow-sm flex flex-col">
+        <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-amber-500/50 transition-colors">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Violations</span>
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Violations</span>
+            <AlertTriangle className="w-5 h-5 text-amber-400" />
           </div>
-          <span className="text-3xl font-serif font-bold text-slate-900">{stats.activeViolations}</span>
+          <span className="text-3xl font-serif font-bold text-white">{stats.activeViolations}</span>
         </div>
 
-        <div className="bg-white rounded border border-slate-200 p-5 shadow-sm flex flex-col">
+        <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-red-500/50 transition-colors">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Overdue Compliance</span>
-            <AlertCircle className="w-5 h-5 text-red-500" />
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overdue Compliance</span>
+            <AlertCircle className="w-5 h-5 text-red-400" />
           </div>
-          <span className="text-3xl font-serif font-bold text-slate-900">{stats.overdueCompliance}</span>
+          <span className="text-3xl font-serif font-bold text-white">{stats.overdueCompliance}</span>
         </div>
 
-        <div className="bg-white rounded border border-slate-200 p-5 shadow-sm flex flex-col">
+        <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-indigo-500/50 transition-colors">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Risk Score</span>
-            <BarChart2 className="w-5 h-5 text-indigo-500" />
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Risk Score</span>
+            <BarChart2 className="w-5 h-5 text-indigo-400" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-serif font-bold text-slate-900">{stats.avgRiskScore}</span>
+            <span className="text-3xl font-serif font-bold text-white">{stats.avgRiskScore}</span>
             <span className="text-sm font-medium text-slate-500">/ 100</span>
           </div>
         </div>
@@ -194,28 +194,28 @@ export default function CorporateDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left: Risk Ranked Mines */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded shadow-sm flex flex-col">
-          <div className="p-5 border-b border-slate-100">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">Risk-Ranked Subsidiaries</h3>
+        <div className="lg:col-span-2 bg-[#121A2F]/80 backdrop-blur-md border border-white/10 rounded shadow-sm flex flex-col">
+          <div className="p-5 border-b border-white/5">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">Risk-Ranked Subsidiaries</h3>
           </div>
           <div className="p-0 overflow-y-auto max-h-[400px]">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 text-xs text-slate-500 sticky top-0">
+              <thead className="bg-black/20 text-xs text-slate-400 sticky top-0 backdrop-blur-md">
                 <tr>
                   <th className="px-5 py-3 font-medium">Mine</th>
                   <th className="px-5 py-3 font-medium">Risk Score</th>
                   <th className="px-5 py-3 font-medium">Telemetry Bar</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-white/5">
                 {riskScores.map(risk => (
-                  <tr key={risk.mine_id} className="hover:bg-slate-50">
-                    <td className="px-5 py-3 font-medium text-slate-900">{risk.mines?.name}</td>
+                  <tr key={risk.mine_id} className="hover:bg-white/5 transition-colors">
+                    <td className="px-5 py-3 font-medium text-slate-200">{risk.mines?.name}</td>
                     <td className="px-5 py-3">
-                      <span className="font-mono font-medium text-slate-700">{risk.score}</span>
+                      <span className="font-mono font-medium text-slate-300">{risk.score}</span>
                     </td>
                     <td className="px-5 py-3 w-1/2">
-                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden border border-white/5">
                         <div 
                           className={`h-full ${getRiskColor(risk.score)}`} 
                           style={{ width: `${risk.score}%` }}
@@ -235,29 +235,29 @@ export default function CorporateDashboard() {
         </div>
 
         {/* Right: AI Insights */}
-        <div className="bg-[#FFFBEB] border-2 border-amber-500/50 rounded shadow-sm flex flex-col relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <ShieldAlert className="w-24 h-24 text-amber-700" />
+        <div className="bg-amber-500/5 backdrop-blur-md border border-amber-500/20 rounded shadow-sm flex flex-col relative overflow-hidden group hover:border-amber-500/40 transition-colors">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <ShieldAlert className="w-24 h-24 text-amber-500" />
           </div>
-          <div className="p-5 border-b border-amber-500/20 relative z-10 flex justify-between items-center">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-amber-900">AI Risk Insights</h3>
+          <div className="p-5 border-b border-amber-500/10 relative z-10 flex justify-between items-center">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-amber-500">AI Risk Insights</h3>
           </div>
           <div className="p-5 space-y-4 flex-1 relative z-10">
             {riskScores.slice(0, 3).map(risk => (
-              <div key={risk.mine_id} className="p-3 bg-white/60 rounded border border-amber-500/20 text-sm">
-                <div className="font-bold text-amber-900 mb-1">{risk.mines?.name} (Score: {risk.score})</div>
-                <div className="text-amber-800/80 leading-relaxed text-xs">{risk.explanation || 'No AI explanation generated yet.'}</div>
+              <div key={risk.mine_id} className="p-3 bg-black/40 rounded border border-amber-500/20 text-sm">
+                <div className="font-bold text-amber-400 mb-1">{risk.mines?.name} (Score: {risk.score})</div>
+                <div className="text-amber-200/70 leading-relaxed text-xs">{risk.explanation || 'No AI explanation generated yet.'}</div>
               </div>
             ))}
             {riskScores.length === 0 && (
-              <p className="text-sm text-amber-800">Insufficient data for AI insights.</p>
+              <p className="text-sm text-amber-500/70">Insufficient data for AI insights.</p>
             )}
           </div>
-          <div className="p-4 border-t border-amber-500/20 bg-amber-500/5 relative z-10">
+          <div className="p-4 border-t border-amber-500/10 bg-black/20 relative z-10">
             <button 
               onClick={handleRecalculate}
               disabled={calculatingRisk}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 text-sm font-bold rounded transition-colors disabled:opacity-70"
+              className="w-full flex items-center justify-center gap-2 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-sm font-bold rounded transition-colors disabled:opacity-50"
             >
               {calculatingRisk ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               {calculatingRisk ? 'Recalculating...' : 'Recalculate Risk Scores'}
@@ -268,17 +268,17 @@ export default function CorporateDashboard() {
       </div>
 
       {/* Bottom: Recent Violations Feed */}
-      <div className="bg-white border border-slate-200 rounded shadow-sm flex flex-col">
-        <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">Live Violations Feed</h3>
-          <span className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
+      <div className="bg-[#121A2F]/80 backdrop-blur-md border border-white/10 rounded shadow-sm flex flex-col">
+        <div className="p-5 border-b border-white/5 flex justify-between items-center">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">Live Violations Feed</h3>
+          <span className="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             REALTIME ACTIVE
           </span>
         </div>
         <div className="p-0 overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50 text-xs text-slate-500">
+            <thead className="bg-black/20 text-xs text-slate-400">
               <tr>
                 <th className="px-5 py-3 font-medium">Mine</th>
                 <th className="px-5 py-3 font-medium">Category</th>
@@ -287,22 +287,22 @@ export default function CorporateDashboard() {
                 <th className="px-5 py-3 font-medium">Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-white/5">
               {violations.map(v => (
-                <tr key={v.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-5 py-3 font-medium text-slate-900">{v.mines?.name || `Mine #${v.mine_id}`}</td>
-                  <td className="px-5 py-3 text-slate-600">{v.category}</td>
+                <tr key={v.id} className="hover:bg-white/5 transition-colors">
+                  <td className="px-5 py-3 font-medium text-slate-200">{v.mines?.name || `Mine #${v.mine_id}`}</td>
+                  <td className="px-5 py-3 text-slate-400">{v.category}</td>
                   <td className="px-5 py-3">
                     <span className={`inline-flex px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide ${getSeverityBadge(v.severity)}`}>
                       {v.severity}
                     </span>
                   </td>
                   <td className="px-5 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${v.status === 'open' ? 'text-amber-700 bg-amber-100' : 'text-slate-600 bg-slate-100'}`}>
+                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] border font-bold uppercase tracking-wider ${v.status === 'open' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'}`}>
                       {v.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-slate-500 text-xs">
+                  <td className="px-5 py-3 text-slate-500 text-xs font-mono">
                     {formatDistanceToNow(new Date(v.created_at), { addSuffix: true })}
                   </td>
                 </tr>

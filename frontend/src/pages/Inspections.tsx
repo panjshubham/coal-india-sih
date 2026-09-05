@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { MapPin, Camera, AlertCircle, CheckCircle2, UserCheck, RefreshCw } from 'lucide-react';
 import { getProfile, type InspectorProfile } from '../services/profileService';
 import { savePendingSubmission, getPendingSubmissions, removePendingSubmission } from '../services/db';
 import Tesseract from 'tesseract.js';
@@ -32,8 +31,6 @@ export default function Inspections() {
 
   useEffect(() => {
     async function fetchData() {
-      // If offline, we might not be able to fetch these, but PWA cache might serve previous requests
-      // Alternatively we could cache mines/contractors in IDB too. For now, rely on standard caching.
       try {
         const { data: mData } = await supabase.from('mines').select('id, name');
         const { data: cData } = await supabase.from('contractors').select('id, name');
@@ -54,14 +51,13 @@ export default function Inspections() {
     
     const handleOnline = () => {
       setIsOnline(true);
-      autoSync(); // Trigger sync when coming back online
+      autoSync();
     };
     const handleOffline = () => setIsOnline(false);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Initial sync check
     if (navigator.onLine) {
       autoSync();
     }
@@ -79,14 +75,11 @@ export default function Inspections() {
     try {
       const pending = await getPendingSubmissions();
       for (const item of pending) {
-        // We first need to create an inspection record, then a violation record
-        // The payload combines both for simplicity
         const p = item.payload;
-        
         const { data: inspData, error: inspErr } = await supabase.from('inspections').insert([{
           mine_id: Number(p.mine_id),
           contractor_id: p.contractor_id ? Number(p.contractor_id) : null,
-          inspector_id: p.inspector_id, // assuming we have this, else omit or handle
+          inspector_id: p.inspector_id,
           type: 'routine',
           scheduled_date: new Date().toISOString().split('T')[0],
         }]).select('id').single();
@@ -99,7 +92,7 @@ export default function Inspections() {
           category: p.category,
           severity: p.severity,
           description: p.description,
-          photo_url: p.photo_base64, // In real app, upload base64 to storage, save URL. Here we just save the base64 string directly for demo.
+          photo_url: p.photo_base64,
           latitude: p.lat,
           longitude: p.lng,
           timestamp: p.timestamp,
@@ -180,7 +173,6 @@ export default function Inspections() {
     e.preventDefault();
     setStatus('submitting');
     
-    // We need the inspector's ID from auth context in a real scenario
     const { data: { session } } = await supabase.auth.getSession();
     const inspector_id = session?.user?.id;
     
@@ -257,206 +249,306 @@ export default function Inspections() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Log Violation</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Record a statutory violation with geo-tags (Offline supported).</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {syncing && (
-            <span className="text-xs font-medium text-blue-600 flex items-center gap-1">
-              <RefreshCw className="w-3 h-3 animate-spin" /> Syncing...
-            </span>
-          )}
-          <Link
-            to="/profile"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-300 transition-colors w-fit flex items-center gap-1.5"
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            <span>Profile</span>
-          </Link>
-        </div>
-      </div>
+    <>
+      <style>{`
+        .bg-surface { background-color: #0b1326; }
+        .bg-surface-container-low { background-color: #131b2e; }
+        .bg-surface-container-lowest { background-color: #060e20; }
+        .bg-surface-container { background-color: #171f33; }
+        .bg-surface-container-high { background-color: #222a3d; }
+        .bg-surface-container-highest { background-color: #2d3449; }
+        .bg-surface-bright { background-color: #31394d; }
+        .bg-primary { background-color: #8ed5ff; }
+        .bg-primary-container { background-color: #38bdf8; }
+        .bg-secondary { background-color: #ffb95f; }
+        .bg-secondary-container { background-color: #ee9800; }
+        .bg-error { background-color: #ffb4ab; }
+        .bg-error-container { background-color: #93000a; }
+        .bg-tertiary { background-color: #afcfff; }
+        .bg-outline { background-color: #87929a; }
+        .bg-outline-variant { background-color: #3e484f; }
+        
+        .text-on-surface { color: #dae2fd; }
+        .text-on-surface-variant { color: #bdc8d1; }
+        .text-primary { color: #8ed5ff; }
+        .text-primary-container { color: #38bdf8; }
+        .text-on-primary-container { color: #004965; }
+        .text-on-primary { color: #00354a; }
+        .text-secondary { color: #ffb95f; }
+        .text-on-secondary { color: #472a00; }
+        .text-tertiary { color: #afcfff; }
+        .text-error { color: #ffb4ab; }
+        .text-on-error { color: #690005; }
+        .text-outline { color: #87929a; }
+        .text-outline-variant { color: #3e484f; }
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Select Mine *</label>
-              <select 
-                required
-                value={formData.mine_id}
-                onChange={e => setFormData(prev => ({...prev, mine_id: e.target.value}))}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">-- Choose Mine --</option>
-                {mines.map(m => (
-                  <option key={m.id} value={m.id}>{m.name}</option>
-                ))}
-              </select>
+        .px-space-xs { padding-left: 0.25rem; padding-right: 0.25rem; }
+        .py-space-xs { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-space-2xs { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+        .px-space-sm { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .py-space-sm { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .px-space-md { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .py-space-md { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .px-space-lg { padding-left: 1rem; padding-right: 1rem; }
+        .py-space-lg { padding-top: 1rem; padding-bottom: 1rem; }
+        .px-space-xl { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .p-space-xs { padding: 0.25rem; }
+        .p-space-sm { padding: 0.5rem; }
+        .p-space-md { padding: 0.75rem; }
+        .p-space-lg { padding: 1rem; }
+        .p-space-xl { padding: 1.5rem; }
+        
+        .gap-space-2xs { gap: 0.125rem; }
+        .gap-space-xs { gap: 0.25rem; }
+        .gap-space-sm { gap: 0.5rem; }
+        .gap-space-md { gap: 0.75rem; }
+        .gap-space-lg { gap: 1rem; }
+        
+        .font-headline-lg { font-family: 'Hanken Grotesk', sans-serif; font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: -0.015em; }
+        .font-headline-md { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; line-height: 28px; font-weight: 500; letter-spacing: -0.01em; }
+        .font-headline-sm { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; line-height: 24px; font-weight: 500; }
+        .font-body-lg { font-family: 'Geist', sans-serif; font-size: 15px; line-height: 24px; font-weight: 400; }
+        .font-body-md { font-family: 'Geist', sans-serif; font-size: 13px; line-height: 20px; font-weight: 400; }
+        .font-body-sm { font-family: 'Geist', sans-serif; font-size: 12px; line-height: 18px; font-weight: 400; }
+        .font-label-md { font-family: 'Geist', sans-serif; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; }
+        .font-code-sm { font-family: 'Geist', monospace; font-size: 12px; line-height: 16px; font-weight: 400; }
+      `}</style>
+
+      <div className="w-full bg-surface min-h-screen text-on-surface font-body-md p-space-lg flex flex-col gap-space-lg items-center">
+        
+        <div className="w-full max-w-4xl flex flex-col gap-space-lg">
+          {/* HEADER */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+            <div className="space-y-space-xs">
+              <div className="flex items-center gap-space-xs font-label-md text-primary tracking-widest uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                INSPECTORATE TERMINAL
+              </div>
+              <h1 className="font-headline-lg text-on-surface font-semibold tracking-tight">
+                Log New Violation
+              </h1>
+              <p className="font-body-md text-on-surface-variant max-w-2xl">
+                Draft a statutory show-cause dossier with cryptographic GPS-tagging and offline syncing capabilities.
+              </p>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Contractor (Optional)</label>
-              <select 
-                value={formData.contractor_id}
-                onChange={e => setFormData(prev => ({...prev, contractor_id: e.target.value}))}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">-- None --</option>
-                {contractors.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Category *</label>
-              <select 
-                required
-                value={formData.category}
-                onChange={e => setFormData(prev => ({...prev, category: e.target.value}))}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="safety">Safety</option>
-                <option value="environment">Environment</option>
-                <option value="production">Production</option>
-                <option value="labour">Labour</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Severity *</label>
-              <select 
-                required
-                value={formData.severity}
-                onChange={e => setFormData(prev => ({...prev, severity: e.target.value}))}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Description *</label>
-            <textarea 
-              required
-              rows={3}
-              value={formData.description}
-              onChange={e => setFormData(prev => ({...prev, description: e.target.value}))}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Detailed description of the violation..."
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Location Tracking *</label>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={captureLocation}
-                disabled={loadingLocation}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
-              >
-                <MapPin className="w-4 h-4" />
-                {loadingLocation ? 'Capturing...' : 'Capture GPS Coordinates'}
-              </button>
-              
-              {formData.lat && formData.lng && (
-                <span className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <CheckCircle2 className="w-4 h-4" />
-                  {formData.lat.toFixed(4)}, {formData.lng.toFixed(4)}
+            <div className="flex flex-col items-end gap-space-2xs">
+              {syncing && (
+                <span className="text-xs font-medium text-primary flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded">
+                  <span className="material-symbols-outlined text-[14px] animate-spin">sync</span> Syncing Ledger...
                 </span>
               )}
-            </div>
-            {formData.lat && (
-              <p className="text-xs text-gray-500">Timestamp: {new Date().toLocaleTimeString()}</p>
-            )}
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Photo Evidence</label>
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 flex flex-col items-center justify-center text-center">
-              {formData.photo_base64 ? (
-                <div className="relative">
-                  <img src={formData.photo_base64} alt="Evidence" className="h-32 object-cover rounded" />
-                  <button type="button" onClick={() => setFormData(p => ({...p, photo_base64: ''}))} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs">X</button>
-                </div>
-              ) : (
-                <>
-                  <Camera className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-500">Tap to take a photo</p>
-                </>
-              )}
-              <input 
-                type="file" 
-                accept="image/*" 
-                capture="environment" 
-                className="hidden" 
-                id="camera-input" 
-                ref={fileInputRef}
-                onChange={handlePhotoCapture}
-              />
-              <div className="flex items-center gap-2 mt-4">
-                {!formData.photo_base64 && (
-                  <label htmlFor="camera-input" className="px-4 py-2 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-md text-sm font-medium cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/50">
-                    Open Camera
-                  </label>
-                )}
-                {formData.photo_base64 && (
-                  <button type="button" onClick={handleOcr} disabled={isOcrLoading} className="px-4 py-2 bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 rounded-md text-sm font-medium cursor-pointer hover:bg-amber-100 transition-colors flex items-center gap-2">
-                    {isOcrLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span className="material-symbols-outlined text-[16px]">document_scanner</span>}
-                    {isOcrLoading ? 'Scanning...' : 'Extract Text (OCR)'}
-                  </button>
-                )}
-              </div>
+              <Link
+                to="/profile"
+                className="font-label-md uppercase tracking-wider px-space-sm py-space-xs rounded bg-surface-container-high hover:bg-surface-container-highest transition-colors flex items-center gap-1.5 text-on-surface-variant"
+              >
+                <span className="material-symbols-outlined text-[16px]">account_circle</span>
+                <span>Active Duty: {profile.fullName || 'Inspector'}</span>
+              </Link>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="submit"
-              disabled={status === 'submitting' || !formData.lat}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {status === 'submitting' ? 'Submitting...' : 'Submit Violation'}
-            </button>
-            
-            {!formData.lat && (
-              <p className="text-xs text-red-500 mt-2 flex items-center justify-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                GPS coordinates are required
-              </p>
-            )}
-            
-            {status === 'success_online' && (
-              <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded border border-emerald-200 dark:border-emerald-800 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 shrink-0" />
-                <p className="text-sm font-medium">Violation logged successfully to database.</p>
+          {/* FORM CONTAINER */}
+          <div className="bg-surface-container-low rounded-xl shadow-md overflow-hidden border border-surface-container-high/50">
+            <div className="p-space-md bg-surface-container-lowest border-b border-surface-container-high/50 flex items-center justify-between">
+              <div className="flex items-center gap-space-xs">
+                <span className="material-symbols-outlined text-primary text-[18px]">rule</span>
+                <span className="font-headline-sm font-semibold">Incident Dossier</span>
               </div>
-            )}
-            
-            {status === 'success_offline' && (
-              <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded border border-amber-200 dark:border-amber-800 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 shrink-0" />
-                <p className="text-sm font-medium">Saved offline - will sync automatically when connected.</p>
+              <div className="flex items-center gap-space-sm font-code-sm text-outline">
+                <span>Network Status:</span>
+                <span className={`px-2 py-0.5 rounded ${isOnline ? 'bg-primary/20 text-primary' : 'bg-error/20 text-error'}`}>
+                  {isOnline ? 'ONLINE' : 'OFFLINE (QUEUED)'}
+                </span>
               </div>
-            )}
-            
-            {status === 'error' && (
-              <p className="text-sm text-red-600 mt-2 text-center">Failed to submit violation.</p>
-            )}
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-space-xl space-y-space-lg flex flex-col gap-space-md">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-space-xl">
+                <div className="space-y-space-xs">
+                  <label className="font-label-md uppercase tracking-wider text-outline">Concession / Mine Site *</label>
+                  <select 
+                    required
+                    value={formData.mine_id}
+                    onChange={e => setFormData(prev => ({...prev, mine_id: e.target.value}))}
+                    className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
+                  >
+                    <option value="" className="bg-surface-container-high">-- Select Grid Target --</option>
+                    {mines.map(m => (
+                      <option key={m.id} value={m.id} className="bg-surface-container-high">{m.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-space-xs">
+                  <label className="font-label-md uppercase tracking-wider text-outline">Operating Contractor</label>
+                  <select 
+                    value={formData.contractor_id}
+                    onChange={e => setFormData(prev => ({...prev, contractor_id: e.target.value}))}
+                    className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
+                  >
+                    <option value="" className="bg-surface-container-high">-- Direct CIL Operator --</option>
+                    {contractors.map(c => (
+                      <option key={c.id} value={c.id} className="bg-surface-container-high">{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-space-xl">
+                <div className="space-y-space-xs">
+                  <label className="font-label-md uppercase tracking-wider text-outline">Violation Category *</label>
+                  <select 
+                    required
+                    value={formData.category}
+                    onChange={e => setFormData(prev => ({...prev, category: e.target.value}))}
+                    className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
+                  >
+                    <option value="safety" className="bg-surface-container-high">Safety & Strata</option>
+                    <option value="environment" className="bg-surface-container-high">Environmental Hazard</option>
+                    <option value="production" className="bg-surface-container-high">Unauthorized Extraction</option>
+                    <option value="labour" className="bg-surface-container-high">Labour & Welfare</option>
+                  </select>
+                </div>
+
+                <div className="space-y-space-xs">
+                  <label className="font-label-md uppercase tracking-wider text-outline">Threat Severity *</label>
+                  <select 
+                    required
+                    value={formData.severity}
+                    onChange={e => setFormData(prev => ({...prev, severity: e.target.value}))}
+                    className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
+                  >
+                    <option value="low" className="bg-surface-container-high">Standard (Monitor)</option>
+                    <option value="medium" className="bg-surface-container-high">Elevated (Notice Issue)</option>
+                    <option value="high" className="bg-surface-container-high">Critical (Immediate Halt)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-space-xs">
+                <label className="font-label-md uppercase tracking-wider text-outline">Dossier Narrative *</label>
+                <textarea 
+                  required
+                  rows={4}
+                  value={formData.description}
+                  onChange={e => setFormData(prev => ({...prev, description: e.target.value}))}
+                  className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm resize-none"
+                  placeholder="Provide statutory findings, exact regulatory breaches, and immediate directives..."
+                />
+              </div>
+
+              <div className="space-y-space-xs">
+                <label className="font-label-md uppercase tracking-wider text-outline flex items-center justify-between">
+                  <span>Geospatial RTK Tracking *</span>
+                  {formData.lat && <span className="text-primary normal-case font-code-sm flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">my_location</span> Latched: {new Date().toLocaleTimeString()}</span>}
+                </label>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-space-md bg-surface-container p-space-sm rounded border border-surface-container-highest">
+                  <button
+                    type="button"
+                    onClick={captureLocation}
+                    disabled={loadingLocation}
+                    className="flex items-center justify-center gap-2 px-space-md py-space-xs bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded transition-colors font-body-sm min-w-[200px]"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">satellite_alt</span>
+                    {loadingLocation ? 'Locking GNSS...' : 'Sync GNSS Coordinates'}
+                  </button>
+                  
+                  {formData.lat && formData.lng ? (
+                    <div className="flex items-center gap-space-xs text-primary font-code-sm bg-primary/10 px-3 py-1 rounded">
+                      <span>{formData.lat.toFixed(6)}° N, {formData.lng.toFixed(6)}° E</span>
+                      <span className="text-outline">± 2.4m RTK Error</span>
+                    </div>
+                  ) : (
+                    <span className="text-outline-variant font-code-sm italic">Awaiting GNSS uplink...</span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-space-xs">
+                <label className="font-label-md uppercase tracking-wider text-outline flex items-center justify-between">
+                  <span>Visual Evidence Archive</span>
+                  {formData.photo_base64 && (
+                    <button type="button" onClick={handleOcr} disabled={isOcrLoading} className="text-secondary hover:text-secondary-container normal-case font-body-sm flex items-center gap-1 transition-colors">
+                      {isOcrLoading ? <span className="material-symbols-outlined text-[14px] animate-spin">sync</span> : <span className="material-symbols-outlined text-[14px]">document_scanner</span>}
+                      {isOcrLoading ? 'Running OCR...' : 'Extract Text (OCR)'}
+                    </button>
+                  )}
+                </label>
+                <div className="border-2 border-dashed border-surface-container-highest rounded-lg p-space-xl flex flex-col items-center justify-center text-center bg-surface-container/50 hover:bg-surface-container transition-colors relative overflow-hidden group">
+                  {formData.photo_base64 ? (
+                    <div className="relative w-full h-48 flex justify-center">
+                      <img src={formData.photo_base64} alt="Evidence" className="h-full object-contain rounded" />
+                      <button type="button" onClick={() => setFormData(p => ({...p, photo_base64: ''}))} className="absolute top-2 right-2 bg-error/90 hover:bg-error text-on-error rounded-full w-8 h-8 flex items-center justify-center transition-colors backdrop-blur">
+                        <span className="material-symbols-outlined text-[18px]">close</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-12 h-12 rounded bg-surface-container-high flex items-center justify-center text-outline mb-space-sm group-hover:text-primary transition-colors">
+                        <span className="material-symbols-outlined text-[24px]">add_a_photo</span>
+                      </div>
+                      <p className="font-body-sm text-outline-variant">Initialize field camera to capture evidence.</p>
+                      <label htmlFor="camera-input" className="mt-space-md px-space-md py-space-xs bg-surface-container-high text-on-surface hover:bg-surface-bright rounded text-sm font-medium cursor-pointer transition-colors border border-surface-container-highest">
+                        Open Field Camera
+                      </label>
+                    </>
+                  )}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    capture="environment" 
+                    className="hidden" 
+                    id="camera-input" 
+                    ref={fileInputRef}
+                    onChange={handlePhotoCapture}
+                  />
+                </div>
+              </div>
+
+              <div className="pt-space-md">
+                <button
+                  type="submit"
+                  disabled={status === 'submitting' || !formData.lat}
+                  className="w-full flex items-center justify-center gap-space-xs px-space-md py-space-sm bg-primary text-on-primary rounded font-headline-sm text-[15px] hover:bg-primary-container transition-all shadow-[0_0_12px_rgba(142,213,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                >
+                  <span className="material-symbols-outlined text-[20px]">send</span>
+                  {status === 'submitting' ? 'Encrypting & Dispatching...' : 'File Statutory Dossier'}
+                </button>
+                
+                {!formData.lat && (
+                  <p className="font-code-sm text-error mt-space-sm flex items-center justify-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">warning</span>
+                    GNSS uplink lock required before dispatch.
+                  </p>
+                )}
+                
+                {status === 'success_online' && (
+                  <div className="mt-space-md p-space-sm bg-primary/10 text-primary rounded border border-primary/20 flex items-center gap-space-sm">
+                    <span className="material-symbols-outlined text-[20px] shrink-0">verified</span>
+                    <p className="font-body-sm">Dossier successfully logged to DGMS Central Ledger.</p>
+                  </div>
+                )}
+                
+                {status === 'success_offline' && (
+                  <div className="mt-space-md p-space-sm bg-secondary/10 text-secondary rounded border border-secondary/20 flex items-center gap-space-sm">
+                    <span className="material-symbols-outlined text-[20px] shrink-0">cloud_off</span>
+                    <p className="font-body-sm">Dossier encrypted locally. Will synchronize upon network restoration.</p>
+                  </div>
+                )}
+                
+                {status === 'error' && (
+                  <div className="mt-space-md p-space-sm bg-error/10 text-error rounded border border-error/20 flex items-center justify-center gap-space-sm">
+                    <span className="material-symbols-outlined text-[20px]">error</span>
+                    <p className="font-body-sm">Cryptographic handshake failed. Attempting local save.</p>
+                  </div>
+                )}
+              </div>
+              
+            </form>
           </div>
-          
-        </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

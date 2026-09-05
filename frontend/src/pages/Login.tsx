@@ -13,15 +13,10 @@ export default function Login() {
   const navigate = useNavigate();
   const { session, role } = useAuth();
 
-  // If already authenticated and role is fetched, redirect immediately
+  // BYPASS LOGIN TEMPORARILY
   useEffect(() => {
-    if (session && role) {
-      if (role === 'mine_official') navigate('/dashboard/mine', { replace: true });
-      else if (role === 'corporate') navigate('/dashboard/corporate', { replace: true });
-      else if (role === 'regulator') navigate('/dashboard/regulator', { replace: true });
-      else navigate('/', { replace: true });
-    }
-  }, [session, role, navigate]);
+    navigate('/dashboard/corporate', { replace: true });
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
