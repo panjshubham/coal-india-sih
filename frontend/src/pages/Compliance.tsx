@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';

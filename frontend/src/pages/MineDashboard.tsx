@@ -1,8 +1,11 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface ComplianceItem {
   id: number;

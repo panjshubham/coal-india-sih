@@ -168,7 +168,7 @@ export default function DashboardLayout() {
             <Link to="/profile" className="flex items-center gap-2.5 p-1 rounded hover:bg-white/5 transition-colors group cursor-pointer">
               <div className="text-right hidden sm:block leading-tight">
                 <p className="text-[11px] font-bold text-slate-200 group-hover:text-amber-400 transition-colors uppercase tracking-wider">{profile.fullName}</p>
-                <p className="text-[9px] text-slate-500 font-mono">ID: {profile.id}</p>
+                <p className="text-[9px] text-slate-500 font-mono">ID: {profile.badgeId}</p>
               </div>
               <div className="w-8 h-8 rounded-full bg-[#121A2F] border border-amber-500/30 flex items-center justify-center text-amber-500 font-bold text-xs shadow-[0_0_10px_rgba(245,158,11,0.1)] group-hover:border-amber-400 transition-colors">
                 {profile.fullName.split(' ').map(n => n[0]).slice(0, 2).join('')}

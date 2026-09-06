@@ -4,27 +4,105 @@
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  line-height: 1.6; /* Generous line height */
   font-weight: 400;
+  font-size: 14px; /* Body text 14px */
 
   color-scheme: dark;
-  background-color: #030712;
+  background-color: #0B1120;
 }
+
 @layer base {
   body {
-    background-color: #030712;
-    background-image: 
-      radial-gradient(circle at 15% 50%, rgba(245, 158, 11, 0.04), transparent 25%),
-      radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.04), transparent 25%);
-    background-attachment: fixed;
-    color: #f8fafc;
+    background-color: #0B1120;
+    color: #F1F5F9; /* Text primary */
     -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Fraunces', 'Merriweather', serif;
+    font-weight: 600;
   }
 }
+
+@layer components {
+  /* Inputs */
+  .form-input, input[type="text"], input[type="email"], input[type="password"], textarea, select {
+    background-color: #131B2E;
+    border: 1px solid #2D3748;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #F1F5F9;
+    transition: all 250ms ease;
+    outline: none;
+  }
+  .form-input:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
+    border-color: #F59E0B;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 1); /* Solid amber ring */
+  }
+
+  /* Buttons */
+  .btn-primary {
+    background-color: #F59E0B;
+    color: #0B1120; /* Dark navy text */
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 250ms ease;
+    border: none;
+    cursor: pointer;
+    opacity: 0.9;
+  }
+  .btn-primary:hover {
+    opacity: 1.0;
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: #F59E0B;
+    border: 1px solid #F59E0B;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 250ms ease;
+    cursor: pointer;
+    opacity: 0.9;
+  }
+  .btn-secondary:hover {
+    opacity: 1.0;
+    background-color: rgba(245, 158, 11, 0.05);
+  }
+
+  /* Cards */
+  .card-surface {
+    background-color: #131B2E;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); /* 1px hairline border */
+    transition: all 250ms ease;
+  }
+  
+  /* Small Labels */
+  .label-sm {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+  
+  /* Hover effects: Avoid transforms globally by overriding any active:scale / hover:translate */
+  * {
+    --tw-translate-y: 0 !important;
+    --tw-scale-x: 1 !important;
+    --tw-scale-y: 1 !important;
+  }
+}
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+::-webkit-scrollbar-track { background: #131B2E; }
+::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #4A5568; }
 
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
@@ -48,4 +126,3 @@
 .active-slide .slide-img {
   transform: scale(1.05);
 }
-
