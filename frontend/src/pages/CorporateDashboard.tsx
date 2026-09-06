@@ -249,6 +249,16 @@ export default function CorporateDashboard() {
                   <span>{risk.mines?.name} (Score: {risk.score})</span>
                 </div>
                 <div className="text-amber-200/70 leading-relaxed text-xs mb-2">{risk.explanation || 'No AI explanation generated yet.'}</div>
+                {(risk as any).contributing_factors?.ml_probability !== undefined && (
+                  <div className="mt-2 mb-2 p-2 bg-[#060913]/60 rounded border border-indigo-500/30">
+                    <p className="text-xs text-indigo-300">
+                      <span className="font-bold text-indigo-400">ML model confidence:</span> {Math.round((risk as any).contributing_factors.ml_probability)}% high-risk
+                      {((risk as any).contributing_factors.ml_top_factors || []).length > 0 && (
+                        <span>, driven primarily by {((risk as any).contributing_factors.ml_top_factors).join(' and ')}</span>
+                      )}.
+                    </p>
+                  </div>
+                )}
                 {(risk as any).contributing_factors && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {(risk as any).contributing_factors.location_anomaly && (

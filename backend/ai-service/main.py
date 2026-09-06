@@ -5,6 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client, Client
 from pydantic import BaseModel
 from dotenv import load_dotenv
+import pandas as pd
+import numpy as np
+import joblib
+import shap
 
 load_dotenv()
 
@@ -27,6 +31,13 @@ supabase: Client = create_client(url, key)
 
 import math
 
+try:
+    ml_model = joblib.load('model.pkl')
+    ml_explainer = joblib.load('explainer.pkl')
+except Exception as e:
+    ml_model = None
+    ml_explainer = None
+
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371000 # Radius of earth in meters
     phi1 = math.radians(lat1)
@@ -43,6 +54,8 @@ class AnalyzeMineResponse(BaseModel):
     risk_level: str
     flags: list[str]
     explanation: str
+    ml_probability: float = None
+    ml_top_factors: list[str] = []
 
 @app.get("/health")
 def health_check():
@@ -202,6 +215,84 @@ def analyze_mine(mine_id: str):
         "time_pattern": time_pattern
     }
 
+    ml_probability = None
+    ml_top_factors = []
+    
+    if ml_model and ml_explainer:
+        vc_30 = sum(1 for v in violations if v.get('created_at', '') >= (now - timedelta(days=30)).isoformat())
+        vc_90 = len(recent_90d_violations)
+        
+        open_v = [v for v in violations if v.get('status') == 'open']
+        open_c = len(open_v)
+        s_tot = 0
+        for v in open_v:
+            s = str(v.get('severity', '')).lower()
+            if s == 'critical': s_tot += 10
+            elif s == 'high': s_tot += 5
+            elif s == 'medium': s_tot += 2
+            elif s == 'low': s_tot += 1
+        avg_sev = s_tot / open_c if open_c > 0 else 0
+        
+        total_c = len(compliance_items)
+        overdue_ratio = overdue_count / total_c if total_c > 0 else 0
+        
+        last_i_dt = None
+        i_res = supabase.table('inspections').select('*').eq('mine_id', mine_id).execute()
+        for i in (i_res.data or []):
+            dt_str = i.get('scheduled_date') or i.get('created_at')
+            if dt_str:
+                try:
+                    dt = datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+                    if dt <= now:
+                        if not last_i_dt or dt > last_i_dt:
+                            last_i_dt = dt
+                except:
+                    pass
+        days_since_i = (now - last_i_dt).days if last_i_dt else 365
+        
+        recurring_flag = 1 if recurring_category else 0
+        
+        contractor_inc = 0
+        for v in violations:
+            d = str(v.get('description', '')).lower()
+            c = str(v.get('corrective_action', '')).lower()
+            if 'contractor' in d or 'contractor' in c:
+                contractor_inc += 1
+                
+        df_input = pd.DataFrame([{
+            'violation_count_30d': vc_30,
+            'violation_count_90d': vc_90,
+            'avg_severity_score': avg_sev,
+            'overdue_compliance_ratio': overdue_ratio,
+            'days_since_last_inspection': min(days_since_i, 365),
+            'recurring_category_flag': recurring_flag,
+            'contractor_incident_count': contractor_inc
+        }])
+        
+        prob = ml_model.predict_proba(df_input)[0][1]
+        ml_probability = round(float(prob * 100), 1)
+        
+        shap_vals = ml_explainer.shap_values(df_input)
+        sv = shap_vals[0]
+        feature_names = list(df_input.columns)
+        
+        friendly_names = {
+            'violation_count_30d': 'recent 30-day violations',
+            'violation_count_90d': 'historical 90-day violations',
+            'avg_severity_score': 'high average severity of open violations',
+            'overdue_compliance_ratio': 'overdue safety compliance',
+            'days_since_last_inspection': 'time since last inspection',
+            'recurring_category_flag': 'recurring violation pattern',
+            'contractor_incident_count': 'contractor-related incidents'
+        }
+        
+        sorted_indices = np.argsort(np.abs(sv))[::-1]
+        top_2 = sorted_indices[:2]
+        ml_top_factors = [friendly_names[feature_names[i]] for i in top_2 if np.abs(sv[i]) > 0.01]
+        
+        contributing_factors["ml_probability"] = ml_probability
+        contributing_factors["ml_top_factors"] = ml_top_factors
+
     payload = {
         "mine_id": mine_id,
         "score": risk_score,
@@ -223,7 +314,9 @@ def analyze_mine(mine_id: str):
         "risk_score": risk_score,
         "risk_level": risk_level,
         "flags": flags,
-        "explanation": explanation
+        "explanation": explanation,
+        "ml_probability": ml_probability,
+        "ml_top_factors": ml_top_factors
     }
 
 @app.post("/analyze/all")

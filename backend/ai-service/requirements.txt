@@ -3,3 +3,8 @@ uvicorn
 supabase
 pydantic
 python-dotenv
+pandas
+xgboost
+shap
+scikit-learn
+joblib

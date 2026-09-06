@@ -4,24 +4,26 @@ import crypto from 'crypto';
 const client = new Client({ connectionString: 'postgresql://postgres:Shubham%40123@db.pkynukxdzwlywrxcwtay.supabase.co:5432/postgres' });
 
 const minesData = [
-  { name: 'Jharia Block II', type: 'Opencast', subsidiary: 'BCCL', region: 'Jharkhand', state: 'Jharkhand', lat: 23.75, lng: 86.41, radius_m: 5000, status: 'active' },
-  { name: 'Gevra OCP', type: 'Opencast', subsidiary: 'SECL', region: 'Chhattisgarh', state: 'Chhattisgarh', lat: 22.33, lng: 82.53, radius_m: 6000, status: 'active' },
-  { name: 'Kusmunda OCP', type: 'Opencast', subsidiary: 'SECL', region: 'Chhattisgarh', state: 'Chhattisgarh', lat: 22.33, lng: 82.60, radius_m: 5500, status: 'active' },
-  { name: 'Dipka OCP', type: 'Opencast', subsidiary: 'SECL', region: 'Chhattisgarh', state: 'Chhattisgarh', lat: 22.32, lng: 82.55, radius_m: 5000, status: 'active' },
-  { name: 'Jayant OCP', type: 'Opencast', subsidiary: 'NCL', region: 'Madhya Pradesh', state: 'Madhya Pradesh', lat: 24.12, lng: 82.64, radius_m: 4500, status: 'active' },
-  { name: 'Dudhichua OCP', type: 'Opencast', subsidiary: 'NCL', region: 'Madhya Pradesh', state: 'Madhya Pradesh', lat: 24.13, lng: 82.66, radius_m: 4000, status: 'active' },
-  { name: 'Nigahi OCP', type: 'Opencast', subsidiary: 'NCL', region: 'Madhya Pradesh', state: 'Madhya Pradesh', lat: 24.11, lng: 82.60, radius_m: 4200, status: 'active' },
-  { name: 'Khadia OCP', type: 'Opencast', subsidiary: 'NCL', region: 'Uttar Pradesh', state: 'Uttar Pradesh', lat: 24.14, lng: 82.70, radius_m: 3800, status: 'active' },
-  { name: 'Talcher OCP', type: 'Opencast', subsidiary: 'MCL', region: 'Odisha', state: 'Odisha', lat: 20.95, lng: 85.23, radius_m: 7000, status: 'active' },
-  { name: 'Ib Valley OCP', type: 'Opencast', subsidiary: 'MCL', region: 'Odisha', state: 'Odisha', lat: 21.82, lng: 83.92, radius_m: 4500, status: 'active' },
-  { name: 'Singareni Collieries', type: 'Underground', subsidiary: 'SCCL', region: 'Telangana', state: 'Telangana', lat: 17.55, lng: 80.62, radius_m: 3500, status: 'active' },
-  { name: 'Neyveli Lignite', type: 'Opencast', subsidiary: 'NLC', region: 'Tamil Nadu', state: 'Tamil Nadu', lat: 11.53, lng: 79.48, radius_m: 6500, status: 'active' },
-  { name: 'Rajmahal OCP', type: 'Opencast', subsidiary: 'ECL', region: 'Jharkhand', state: 'Jharkhand', lat: 25.03, lng: 87.35, radius_m: 3000, status: 'active' },
-  { name: 'Raniganj Coalfield', type: 'Underground', subsidiary: 'ECL', region: 'West Bengal', state: 'West Bengal', lat: 23.62, lng: 87.13, radius_m: 5500, status: 'active' },
-  { name: 'Wardha Valley', type: 'Opencast', subsidiary: 'WCL', region: 'Maharashtra', state: 'Maharashtra', lat: 19.95, lng: 79.28, radius_m: 4200, status: 'active' },
-  { name: 'Umrer OCP', type: 'Opencast', subsidiary: 'WCL', region: 'Maharashtra', state: 'Maharashtra', lat: 20.85, lng: 79.31, radius_m: 3500, status: 'active' },
-  { name: 'Makum Coalfield', type: 'Opencast', subsidiary: 'NEC', region: 'Assam', state: 'Assam', lat: 27.28, lng: 95.73, radius_m: 2500, status: 'active' },
-  { name: 'Kamptee Coalfield', type: 'Opencast', subsidiary: 'WCL', region: 'Maharashtra', state: 'Maharashtra', lat: 21.22, lng: 79.18, radius_m: 3200, status: 'active' }
+  // 12 specific mines
+  { name: 'Govindpur Colliery', type: 'Opencast', subsidiary: 'CCL', region: 'Bokaro', state: 'Jharkhand', lat: 23.79, lng: 85.87, radius_m: 3000, status: 'active' },
+  { name: 'Dhori Khas', type: 'Opencast', subsidiary: 'CCL', region: 'Bokaro', state: 'Jharkhand', lat: 23.77, lng: 85.98, radius_m: 3500, status: 'active' },
+  { name: 'Karo Spl', type: 'Opencast', subsidiary: 'CCL', region: 'Bokaro', state: 'Jharkhand', lat: 23.78, lng: 85.90, radius_m: 4000, status: 'active' },
+  { name: 'Tetaria Khar', type: 'Opencast', subsidiary: 'CCL', region: 'Latehar', state: 'Jharkhand', lat: 23.74, lng: 84.50, radius_m: 3000, status: 'active' },
+  { name: 'Kathautia OCP', type: 'Opencast', subsidiary: 'HIL/CCL', region: 'Palamu', state: 'Jharkhand', lat: 24.03, lng: 84.07, radius_m: 2500, status: 'active' },
+  { name: 'Rajhara', type: 'Opencast', subsidiary: 'CCL', region: 'Palamu', state: 'Jharkhand', lat: 24.03, lng: 84.03, radius_m: 3000, status: 'active' },
+  { name: 'Choritand Tiliaya', type: 'Opencast', subsidiary: 'JSMDC', region: 'Bokaro', state: 'Jharkhand', lat: 23.80, lng: 86.00, radius_m: 3200, status: 'active' },
+  { name: 'Jogeshwar & Khas Jogeshwar', type: 'Opencast', subsidiary: 'CCL', region: 'Bokaro', state: 'Jharkhand', lat: 23.85, lng: 85.80, radius_m: 3500, status: 'active' },
+  { name: 'Rabodih OCP', type: 'Opencast', subsidiary: 'CCL', region: 'Bokaro', state: 'Jharkhand', lat: 23.82, lng: 85.85, radius_m: 2800, status: 'active' },
+  { name: 'Rohne', type: 'Opencast', subsidiary: 'CCL', region: 'Hazaribagh', state: 'Jharkhand', lat: 23.78, lng: 85.30, radius_m: 4000, status: 'active' },
+  { name: 'Urtan North', type: 'Underground', subsidiary: 'SECL', region: 'Anuppur', state: 'Madhya Pradesh', lat: 23.50, lng: 80.50, radius_m: 5000, status: 'active' },
+  { name: 'North of Arkhapal Srirampur', type: 'Opencast', subsidiary: 'MCL', region: 'Angul', state: 'Odisha', lat: 20.95, lng: 85.15, radius_m: 6000, status: 'active' },
+  // 6 additional realistic subsidiary mines
+  { name: 'Moonidih Project', type: 'Underground', subsidiary: 'BCCL', region: 'Dhanbad', state: 'Jharkhand', lat: 23.75, lng: 86.35, radius_m: 3000, status: 'active' },
+  { name: 'Rajmahal OCP', type: 'Opencast', subsidiary: 'ECL', region: 'Godda', state: 'Jharkhand', lat: 25.03, lng: 87.35, radius_m: 4500, status: 'active' },
+  { name: 'Gevra OCP', type: 'Opencast', subsidiary: 'SECL', region: 'Korba', state: 'Chhattisgarh', lat: 22.33, lng: 82.58, radius_m: 7000, status: 'active' },
+  { name: 'Bhubaneswari OCP', type: 'Opencast', subsidiary: 'MCL', region: 'Talcher', state: 'Odisha', lat: 20.97, lng: 85.18, radius_m: 5500, status: 'active' },
+  { name: 'Jayant OCP', type: 'Opencast', subsidiary: 'NCL', region: 'Singrauli', state: 'Madhya Pradesh', lat: 24.13, lng: 82.65, radius_m: 4800, status: 'active' },
+  { name: 'Umrer OCP', type: 'Opencast', subsidiary: 'WCL', region: 'Nagpur', state: 'Maharashtra', lat: 20.85, lng: 79.32, radius_m: 3500, status: 'active' }
 ];
 
 const contractorsData = [
@@ -43,6 +45,11 @@ async function runSeed() {
   try {
     await client.connect();
     console.log("Connected to database. Starting seed process...");
+
+    // Truncate tables to prevent duplicates
+    await client.query('TRUNCATE TABLE public.mines CASCADE;');
+    await client.query('TRUNCATE TABLE public.contractors CASCADE;');
+    console.log("Existing data truncated.");
 
     // Insert Mines
     const mineIds = [];

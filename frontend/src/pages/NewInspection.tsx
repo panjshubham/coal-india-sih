@@ -103,23 +103,44 @@ export default function NewInspection() {
       const lng = location.lng;
 
       if (!navigator.onLine) {
+        // Encode photo to base64 so it's preserved in IDB for later sync
+        let photoBase64 = null;
+        if (photo) {
+          photoBase64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(photo);
+          });
+        }
         const payload = {
           mineId: parseInt(mineId || '1'),
           category,
           severity,
           description: `${headline}\n\n${description}`,
-          lat: lat,
-          lng: lng,
-          timestamp: ts,
-          photoBase64: null,
+          lat, lng, timestamp: ts, photoBase64,
           userId: user?.id || ''
         };
         await savePendingSubmission(payload);
         window.dispatchEvent(new Event('coalguard:syncQueueUpdated'));
-        setTimeout(() => {
-          navigate(`/dashboard/corporate`);
-        }, 1000);
+        alert('Saved offline. Will auto-sync when reconnected.');
+        setTimeout(() => navigate('/submissions'), 500);
         return;
+      }
+
+      // Upload photo to Supabase Storage (real upload, not hardcoded)
+      let photoUrl: string | null = null;
+      if (photo) {
+        const ext = photo.name.split('.').pop() || 'jpg';
+        const filePath = `${user?.id || 'anon'}/${Date.now()}.${ext}`;
+        const { data: upData, error: upErr } = await supabase.storage
+          .from('photos')
+          .upload(filePath, photo, { contentType: photo.type });
+        if (!upErr && upData) {
+          const { data: { publicUrl } } = supabase.storage.from('photos').getPublicUrl(filePath);
+          photoUrl = publicUrl;
+        } else {
+          console.warn('Photo upload failed, proceeding without photo:', upErr);
+        }
       }
 
       // 1. Insert Inspection
@@ -133,18 +154,17 @@ export default function NewInspection() {
       
       if (inspError) throw inspError;
 
-      // 2. Insert Violation
+      // 2. Insert Violation with real GPS + real photo_url from Storage
       const { data: violData, error: violError } = await supabase.from('violations').insert({
         mine_id: parseInt(mineId || '1'),
         inspection_id: inspData.id,
         category,
-        severity: severity === 'advisory' ? 'Low' : severity === 'moderate' ? 'Medium' : 'Critical',
+        severity: severity === 'advisory' ? 'low' : severity === 'moderate' ? 'medium' : 'critical',
         status: 'open',
         description: `${headline}\n\n${description}`,
         latitude: lat,
         longitude: lng,
-        timestamp: ts, // Saving the auto-captured timestamp explicitly
-        photo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAj5Lu08mPuM9R4pk9acwZBN91oscTi1MgM8RD5AbWBX0qup-qfuNqJy6Ab6DJCKp8l6yOcp_4A0HGUziRmKZQyq-VbX2jbkTpOTaqdL6qgNXU5N3IQn6XHCix2RU4pPBnKbd2eer03Xlo19bm15n5XrwdVASRVN_ZQgWLXMiNLz0zzGTjveW9ByeCKbb4RH-icr1nIRJwMaRTmer5Mn-wMHGl7NTdTtTmnxFHit_ibEuykFYhOpdFx',
+        photo_url: photoUrl, // Real Supabase Storage URL or null
         regulation_ref: 'DGMS-SEC-115', 
       }).select().single();
       

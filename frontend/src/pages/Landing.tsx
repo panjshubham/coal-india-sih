@@ -5,9 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1578319439584-104c94d37305?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
-  'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
-  'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80'
+  '/coal_machinery.jpg',
+  '/coal_inspection.jpg',
 ];
 
 export default function Landing() {
@@ -166,15 +165,15 @@ export default function Landing() {
                 <motion.div
                   key={currentImgIndex}
                   initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 0.3, scale: 1 }}
+                  animate={{ opacity: 0.7, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 1.5, ease: "easeInOut" }}
-                  className="absolute inset-0 w-full h-full bg-cover bg-center mix-blend-luminosity"
+                  className="absolute inset-0 w-full h-full bg-cover bg-center"
                   style={{ backgroundImage: `url('${HERO_IMAGES[currentImgIndex]}')` }}
                 />
               </AnimatePresence>
-              <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/90 to-surface-container-lowest/80"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/80 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-surface-container-lowest/20"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-surface/90 via-surface/40 to-transparent"></div>
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#38bdf80a_1px,transparent_1px),linear-gradient(to_bottom,#38bdf80a_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none"></div>
               
               <div className="relative w-full max-w-7xl mx-auto px-space-xl flex flex-col gap-space-2xl z-10 pt-16">
