@@ -15,6 +15,7 @@ import Contractors from './pages/Contractors';
 import ContractorDetail from './pages/ContractorDetail';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
+import ManageUsers from './pages/ManageUsers';
 import Compliance from './pages/Compliance';
 import Violations from './pages/Violations';
 import ViolationDetail from './pages/ViolationDetail';
@@ -67,6 +68,11 @@ function App() {
             <Route path="data-import" element={
               <ProtectedRoute allowedRoles={['corporate', 'regulator']}>
                 <DataImport />
+              </ProtectedRoute>
+            } />
+            <Route path="admin/users" element={
+              <ProtectedRoute allowedRoles={['corporate']}>
+                <ManageUsers />
               </ProtectedRoute>
             } />
             <Route path="contractors" element={<Contractors />} />

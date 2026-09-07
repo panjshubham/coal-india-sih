@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, Languages, Database } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, Languages, Database, ShieldAlert } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getProfile, type InspectorProfile } from '../services/profileService';
+import { useAuth } from '../context/AuthContext';
 import AlertBell from '../components/AlertBell';
 import ThemeToggle from '../components/ThemeToggle';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +20,7 @@ const navigation = [
   { id: 'violations', href: '/violations', icon: AlertTriangle },
   { id: 'map', href: '/map', icon: MapIcon },
   { id: 'contractors', href: '/contractors', icon: Users },
+  { id: 'manageUsers', href: '/admin/users', icon: ShieldAlert, roles: ['corporate'] },
   { id: 'audit', href: '/audit-log', icon: ShieldCheck },
   { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate', 'regulator'] },
   { id: 'profile', href: '/profile', icon: UserCheck },
@@ -28,7 +30,13 @@ export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<InspectorProfile>(getProfile());
   const location = useLocation();
+  const navigate = useNavigate();
+  const { role, signOut } = useAuth();
   const { t, i18n } = useTranslation();
+
+  const dashboardHref = 
+    role === 'mine_official' ? '/dashboard/mine' :
+    role === 'regulator' ? '/dashboard/regulator' : '/dashboard/corporate';
 
   const [time, setTime] = useState('');
 
@@ -87,12 +95,15 @@ export default function DashboardLayout() {
 
         <nav className="p-4 flex-1 space-y-1.5 overflow-y-auto">
           <div className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 px-3" style={{ color: 'var(--cg-text-faint)' }}>Mission Command</div>
-          {navigation.filter(item => !item.roles || (profile.role && item.roles.includes(profile.role))).map((item) => {
-            const isActive = location.pathname.startsWith(item.href);
+          {navigation.filter(item => !item.roles || (role && item.roles.includes(role))).map((item) => {
+            const itemTarget = item.id === 'dashboard' ? dashboardHref : item.href;
+            const isActive = item.id === 'dashboard' 
+              ? location.pathname.startsWith('/dashboard') 
+              : location.pathname.startsWith(item.href);
             return (
               <Link
                 key={item.id}
-                to={item.href}
+                to={itemTarget}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 group relative",
                   isActive 
@@ -119,7 +130,13 @@ export default function DashboardLayout() {
              <div className="text-emerald-500/70 text-[10px] font-mono">DGMS Handshake Valid</div>
           </div>
 
-          <button className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-bold text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+          <button 
+            onClick={async () => {
+              await signOut();
+              navigate('/login');
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-bold text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all cursor-pointer"
+          >
             <LogOut className="w-4 h-4" />
             Sign out
           </button>

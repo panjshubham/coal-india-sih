@@ -26,6 +26,8 @@ const resources = {
       "nav_violations": "Violations",
       "nav_map": "Mines Map",
       "nav_contractors": "Contractors",
+      "nav_manageUsers": "Manage Users",
+      "nav_dataImport": "Data Import",
       "nav_audit": "Audit Log",
       "nav_profile": "Officer Profile",
 
@@ -85,6 +87,8 @@ const resources = {
       "nav_violations": "उल्लंघन",
       "nav_map": "खदान मानचित्र",
       "nav_contractors": "ठेकेदार",
+      "nav_manageUsers": "उपयोगकर्ता प्रबंधन",
+      "nav_dataImport": "डेटा आयात",
       "nav_audit": "ऑडिट लॉग",
       "nav_profile": "अधिकारी प्रोफ़ाइल",
 
