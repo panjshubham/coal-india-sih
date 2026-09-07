@@ -161,7 +161,7 @@ export default function RegulatorDashboard() {
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8 w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-white tracking-tight">Regulator Dashboard</h1>
+          <h1 className="text-2xl font-serif font-bold text-[var(--cg-text-primary)] tracking-tight">Regulator Dashboard</h1>
           <p className="text-sm text-slate-400 mt-1">Read-only oversight of all subsidiary operations and statutory escalations.</p>
         </div>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-slate-800/50 border border-slate-700">
@@ -203,7 +203,7 @@ export default function RegulatorDashboard() {
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Mines</span>
             <Activity className="w-5 h-5 text-blue-400" />
           </div>
-          <span className="text-3xl font-serif font-bold text-white">{stats.totalMines}</span>
+          <span className="text-3xl font-serif font-bold text-[var(--cg-text-primary)]">{stats.totalMines}</span>
         </div>
 
         <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-amber-500/50 transition-colors">
@@ -211,7 +211,7 @@ export default function RegulatorDashboard() {
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Violations</span>
             <AlertTriangle className="w-5 h-5 text-amber-400" />
           </div>
-          <span className="text-3xl font-serif font-bold text-white">{stats.activeViolations}</span>
+          <span className="text-3xl font-serif font-bold text-[var(--cg-text-primary)]">{stats.activeViolations}</span>
         </div>
 
         <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-red-500/50 transition-colors">
@@ -219,7 +219,7 @@ export default function RegulatorDashboard() {
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overdue Compliance</span>
             <AlertCircle className="w-5 h-5 text-red-400" />
           </div>
-          <span className="text-3xl font-serif font-bold text-white">{stats.overdueCompliance}</span>
+          <span className="text-3xl font-serif font-bold text-[var(--cg-text-primary)]">{stats.overdueCompliance}</span>
         </div>
 
         <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-indigo-500/50 transition-colors">
@@ -228,7 +228,7 @@ export default function RegulatorDashboard() {
             <BarChart2 className="w-5 h-5 text-indigo-400" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-serif font-bold text-white">{stats.avgRiskScore}</span>
+            <span className="text-3xl font-serif font-bold text-[var(--cg-text-primary)]">{stats.avgRiskScore}</span>
             <span className="text-sm font-medium text-slate-500">/ 100</span>
           </div>
         </div>

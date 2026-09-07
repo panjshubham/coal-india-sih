@@ -2,87 +2,258 @@
 @import "./theme.css";
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   THEME TOKENS — Dark (default) and Light overrides
+   Applied via data-theme attribute on <html>
+   ============================================================ */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.6; /* Generous line height */
-  font-weight: 400;
-  font-size: 14px; /* Body text 14px */
+  /* Backgrounds — Elevated brightness for clean, modern visibility */
+  --cg-bg:               #0E172A;
+  --cg-surface:          #18243C;
+  --cg-surface-elevated: #223150;
+  --cg-surface-high:     #2A3B5E;
+  --cg-surface-highest:  #364A75;
+  --cg-surface-low:      #121C30;
 
-  color-scheme: dark;
-  background-color: #0B1120;
+  /* Sidebar & Topbar */
+  --cg-sidebar-bg:       #15223A;
+  --cg-sidebar-border:   rgba(255, 255, 255, 0.08);
+  --cg-topbar-bg:        rgba(14, 23, 42, 0.88);
+  --cg-topbar-border:    rgba(255, 255, 255, 0.08);
+  --cg-ribbon-bg:        #0C1424;
+
+  /* Text — Bright, crisp readability */
+  --cg-text-primary:     #FFFFFF;
+  --cg-text-secondary:   #E2E8F0;
+  --cg-text-muted:       #9FB2C8;
+  --cg-text-faint:       #76879D;
+
+  /* Borders — Clear structural delineation */
+  --cg-border:           rgba(255, 255, 255, 0.11);
+  --cg-border-strong:    rgba(255, 255, 255, 0.20);
+
+  /* Accent / Brand */
+  --cg-accent:           #F59E0B;
+  --cg-accent-hover:     #FBBF24;
+  --cg-accent-text:      #0E172A;
+
+  /* Status - Clean, vibrant SaaS feel */
+  --cg-success:          #10B981;
+  --cg-success-bg:       rgba(16, 185, 129, 0.14);
+  --cg-warning:          #F59E0B;
+  --cg-warning-bg:       rgba(245, 158, 11, 0.14);
+  --cg-danger:           #F43F5E;
+  --cg-danger-bg:        rgba(244, 63, 94, 0.14);
+
+  /* Card shadows */
+  --cg-shadow:           0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.18);
+  --cg-shadow-lg:        0 6px 24px rgba(0, 0, 0, 0.35);
+
+  /* Scrollbar */
+  --cg-scrollbar-track:  #121C30;
+  --cg-scrollbar-thumb:  #334155;
+
+  /* Toggle icon */
+  --cg-toggle-icon:      #9FB2C8;
+}
+
+/* Light mode overrides */
+[data-theme="light"] {
+  /* Backgrounds */
+  --cg-bg:               #F8FAFC;
+  --cg-surface:          #FFFFFF;
+  --cg-surface-elevated: #F1F5F9;
+  --cg-surface-high:     #E9EEF5;
+  --cg-surface-highest:  #DDE4EE;
+  --cg-surface-low:      #F4F7FB;
+
+  /* Sidebar & Topbar */
+  --cg-sidebar-bg:       #1E293B;  /* Sidebar stays dark — better contrast for nav */
+  --cg-sidebar-border:   rgba(255, 255, 255, 0.06);
+  --cg-topbar-bg:        rgba(248, 250, 252, 0.95);
+  --cg-topbar-border:    rgba(0, 0, 0, 0.06);
+  --cg-ribbon-bg:        #1E293B;  /* Gov ribbon stays dark for authority feel */
+
+  /* Text */
+  --cg-text-primary:     #1E293B;
+  --cg-text-secondary:   #334155;
+  --cg-text-muted:       #64748B;
+  --cg-text-faint:       #94A3B8;
+
+  /* Borders */
+  --cg-border:           rgba(0, 0, 0, 0.08);
+  --cg-border-strong:    rgba(0, 0, 0, 0.14);
+
+  /* Accent — slightly darkened for contrast against white */
+  --cg-accent:           #D97706;
+  --cg-accent-hover:     #B45309;
+  --cg-accent-text:      #FFFFFF;
+
+  /* Status — Muted/adjusted for light backgrounds */
+  --cg-success:          #059669;
+  --cg-success-bg:       rgba(5, 150, 105, 0.08);
+  --cg-warning:          #B45309;
+  --cg-warning-bg:       rgba(180, 83, 9, 0.08);
+  --cg-danger:           #BE123C;
+  --cg-danger-bg:        rgba(190, 18, 60, 0.08);
+
+  /* Card shadows */
+  --cg-shadow:           0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --cg-shadow-lg:        0 4px 20px rgba(0, 0, 0, 0.12);
+
+  /* Scrollbar */
+  --cg-scrollbar-track:  #F1F5F9;
+  --cg-scrollbar-thumb:  #CBD5E1;
+
+  /* Toggle icon */
+  --cg-toggle-icon:      #64748B;
+}
+
+/* ============================================================
+   BASE STYLES & TYPOGRAPHY
+   ============================================================ */
+:root {
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  font-size: 14px;
 }
 
 @layer base {
+  html {
+    background-color: var(--cg-bg);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
   body {
-    background-color: #0B1120;
-    color: #F1F5F9; /* Text primary */
+    background-color: var(--cg-bg);
+    color: var(--cg-text-primary);
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
     line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Strict Typography Scale */
+  h1 {
+    font-family: 'Fraunces', 'Merriweather', serif;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 12px;
   }
   
-  h1, h2, h3, h4, h5, h6 {
+  h2 {
     font-family: 'Fraunces', 'Merriweather', serif;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  
+  h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  
+  h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
     font-weight: 600;
   }
 }
 
 @layer components {
-  /* Inputs */
-  .form-input, input[type="text"], input[type="email"], input[type="password"], textarea, select {
-    background-color: #131B2E;
-    border: 1px solid #2D3748;
+  /* Inputs — theme-aware & focus states */
+  .form-input,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    background-color: var(--cg-surface);
+    border: 1px solid var(--cg-border-strong);
     border-radius: 8px;
     padding: 10px 14px;
-    color: #F1F5F9;
-    transition: all 250ms ease;
+    color: var(--cg-text-primary);
+    transition: border-color 200ms ease, box-shadow 200ms ease;
     outline: none;
   }
-  .form-input:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
-    border-color: #F59E0B;
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, 1); /* Solid amber ring */
+  .form-input:focus,
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--cg-accent);
+    box-shadow: 0 0 0 2px var(--cg-accent); /* Solid 2px amber ring per requirements */
+  }
+  .form-input:disabled,
+  input[type="text"]:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--cg-surface-high);
   }
 
   /* Buttons */
   .btn-primary {
-    background-color: #F59E0B;
-    color: #0B1120; /* Dark navy text */
+    background-color: var(--cg-accent);
+    color: var(--cg-accent-text);
     padding: 10px 20px;
     border-radius: 8px;
     font-weight: 500;
-    transition: all 250ms ease;
+    transition: filter 200ms ease, opacity 200ms ease;
     border: none;
     cursor: pointer;
-    opacity: 0.9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
-  .btn-primary:hover {
-    opacity: 1.0;
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .btn-secondary {
-    background-color: transparent;
-    color: #F59E0B;
-    border: 1px solid #F59E0B;
+    background-color: var(--cg-surface-high);
+    color: var(--cg-text-primary);
+    border: 1px solid var(--cg-border-strong);
     padding: 10px 20px;
     border-radius: 8px;
     font-weight: 500;
-    transition: all 250ms ease;
+    transition: background-color 200ms ease, opacity 200ms ease;
     cursor: pointer;
-    opacity: 0.9;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
-  .btn-secondary:hover {
-    opacity: 1.0;
-    background-color: rgba(245, 158, 11, 0.05);
+  .btn-secondary:hover:not(:disabled) {
+    background-color: var(--cg-surface-highest);
+  }
+  .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   /* Cards */
   .card-surface {
-    background-color: #131B2E;
+    background-color: var(--cg-surface);
     border-radius: 10px;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); /* 1px hairline border */
-    transition: all 250ms ease;
+    border: 1px solid var(--cg-border);
+    box-shadow: var(--cg-shadow);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
-  
+
   /* Small Labels */
   .label-sm {
     font-size: 11px;
@@ -90,8 +261,8 @@
     letter-spacing: 0.05em;
     font-weight: 500;
   }
-  
-  /* Hover effects: Avoid transforms globally by overriding any active:scale / hover:translate */
+
+  /* Suppress Tailwind transforms globally */
   * {
     --tw-translate-y: 0 !important;
     --tw-scale-x: 1 !important;
@@ -99,11 +270,17 @@
   }
 }
 
+/* ============================================================
+   SCROLLBARS
+   ============================================================ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #131B2E; }
-::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #4A5568; }
+::-webkit-scrollbar-track { background: var(--cg-scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--cg-scrollbar-thumb); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--cg-text-faint); }
 
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
   50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
@@ -111,6 +288,7 @@
 .animate-pulse-glow {
   animation: pulseGlow 2.5s infinite;
 }
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -120,9 +298,32 @@
   background-size: 200% 100%;
   animation: shimmer 3s infinite;
 }
+
 .slide-img {
   transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.7s ease-in-out;
 }
 .active-slide .slide-img {
   transform: scale(1.05);
+}
+
+/* ============================================================
+   THEME TOGGLE — sun/moon icon swap animation
+   ============================================================ */
+.theme-toggle-icon-enter {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+.theme-toggle-icon-enter-active {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+  transition: opacity 250ms ease, transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.theme-toggle-icon-exit {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+.theme-toggle-icon-exit-active {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+  transition: opacity 200ms ease, transform 200ms ease;
 }

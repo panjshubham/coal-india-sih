@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, Languages } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, Languages, Database } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getProfile, type InspectorProfile } from '../services/profileService';
 import AlertBell from '../components/AlertBell';
+import ThemeToggle from '../components/ThemeToggle';
 import { useTranslation } from 'react-i18next';
 
 function cn(...inputs: ClassValue[]) {
@@ -19,6 +20,7 @@ const navigation = [
   { id: 'map', href: '/map', icon: MapIcon },
   { id: 'contractors', href: '/contractors', icon: Users },
   { id: 'audit', href: '/audit-log', icon: ShieldCheck },
+  { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate', 'regulator'] },
   { id: 'profile', href: '/profile', icon: UserCheck },
 ];
 
@@ -53,7 +55,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-transparent text-slate-200 font-sans antialiased overflow-hidden selection:bg-amber-500/30">
+    <div className="flex h-screen font-sans antialiased overflow-hidden selection:bg-amber-500/30" style={{ backgroundColor: 'var(--cg-bg)', color: 'var(--cg-text-primary)' }}>
       
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -64,11 +66,14 @@ export default function DashboardLayout() {
       )}
 
       {/* Sidebar - Stitch Design */}
-      <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-[#121A2F]/95 backdrop-blur-md border-r border-white/10 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:block flex flex-col",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
-        <div className="flex items-center justify-between h-16 px-5 border-b border-white/5">
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 backdrop-blur-md transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:block flex flex-col",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+        style={{ backgroundColor: 'var(--cg-sidebar-bg)', borderRight: '1px solid var(--cg-sidebar-border)' }}
+      >
+        <div className="flex items-center justify-between h-16 px-5" style={{ borderBottom: '1px solid var(--cg-sidebar-border)' }}>
           <Link to="/" className="flex items-center gap-2 font-black text-xl text-white tracking-tight">
             <div className="w-8 h-8 rounded bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)]">
               <Pickaxe className="w-5 h-5 text-amber-950" />
@@ -81,8 +86,8 @@ export default function DashboardLayout() {
         </div>
 
         <nav className="p-4 flex-1 space-y-1.5 overflow-y-auto">
-          <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-2 px-3">Mission Command</div>
-          {navigation.map((item) => {
+          <div className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 px-3" style={{ color: 'var(--cg-text-faint)' }}>Mission Command</div>
+          {navigation.filter(item => !item.roles || (profile.role && item.roles.includes(profile.role))).map((item) => {
             const isActive = location.pathname.startsWith(item.href);
             return (
               <Link
@@ -124,8 +129,8 @@ export default function DashboardLayout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         
-        {/* Micro Gov Info Ribbon */}
-        <div className="bg-[#060B14] text-slate-400 text-[10px] font-mono py-1 px-4 lg:px-8 border-b border-white/5 flex justify-between items-center tracking-widest w-full">
+        {/* Micro Gov Info Ribbon — stays dark regardless of theme for authority branding */}
+        <div className="text-[10px] font-mono py-1 px-4 lg:px-8 flex justify-between items-center tracking-widest w-full" style={{ backgroundColor: 'var(--cg-ribbon-bg)', borderBottom: '1px solid rgba(255,255,255,0.05)', color: 'rgba(148,163,184,0.8)' }}>
           <div className="flex items-center gap-3">
             <span className="text-amber-500 font-bold">सत्यमेव जयते | GOVT. OF INDIA</span>
           </div>
@@ -133,13 +138,13 @@ export default function DashboardLayout() {
             <span className="text-emerald-500 font-bold flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> DGMS NETWORK
             </span>
-            <span className="text-slate-600">|</span>
+            <span style={{ color: 'rgba(100,116,139,0.6)' }}>|</span>
             <span className="text-amber-400 font-bold">{time || 'SYNCING...'}</span>
           </div>
         </div>
 
         {/* Top App Bar */}
-        <header className="flex items-center justify-between h-14 px-4 bg-[#0B1120]/80 backdrop-blur-xl border-b border-white/5 lg:px-8 z-30 shrink-0">
+        <header className="flex items-center justify-between h-14 px-4 backdrop-blur-xl lg:px-8 z-30 shrink-0" style={{ backgroundColor: 'var(--cg-topbar-bg)', borderBottom: '1px solid var(--cg-topbar-border)' }}>
           <div className="flex items-center">
             <button
               className="lg:hidden text-slate-400 hover:text-white mr-4"
@@ -147,7 +152,7 @@ export default function DashboardLayout() {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-sm font-bold text-white tracking-wider uppercase hidden sm:block">
+            <h1 className="text-sm font-bold tracking-wider uppercase hidden sm:block" style={{ color: 'var(--cg-text-primary)' }}>
               Coal India Limited
             </h1>
           </div>
@@ -155,22 +160,25 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-2 sm:gap-4">
             <button 
               onClick={toggleLanguage}
-              className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold text-[10px] tracking-widest uppercase transition-colors"
+              className="px-2 py-1 rounded font-bold text-[10px] tracking-widest uppercase transition-colors"
+              style={{ background: 'var(--cg-border)', border: '1px solid var(--cg-border-strong)', color: 'var(--cg-text-muted)' }}
             >
               <Languages className="w-3.5 h-3.5 inline-block mr-1" />
               {i18n.language.startsWith('hi') ? 'HI' : 'EN'}
             </button>
+
+            <ThemeToggle variant="topbar" />
             
-            <div className="h-4 w-px bg-white/10"></div>
+            <div className="h-4 w-px" style={{ background: 'var(--cg-border)' }}></div>
             <AlertBell />
-            <div className="h-4 w-px bg-white/10"></div>
+            <div className="h-4 w-px" style={{ background: 'var(--cg-border)' }}></div>
             
-            <Link to="/profile" className="flex items-center gap-2.5 p-1 rounded hover:bg-white/5 transition-colors group cursor-pointer">
+            <Link to="/profile" className="flex items-center gap-2.5 p-1 rounded transition-colors group cursor-pointer hover:bg-[var(--cg-surface-elevated)]">
               <div className="text-right hidden sm:block leading-tight">
-                <p className="text-[11px] font-bold text-slate-200 group-hover:text-amber-400 transition-colors uppercase tracking-wider">{profile.fullName}</p>
-                <p className="text-[9px] text-slate-500 font-mono">ID: {profile.badgeId}</p>
+                <p className="text-[11px] font-bold group-hover:text-amber-400 transition-colors uppercase tracking-wider" style={{ color: 'var(--cg-text-secondary)' }}>{profile.fullName}</p>
+                <p className="text-[9px] font-mono" style={{ color: 'var(--cg-text-faint)' }}>ID: {profile.badgeId}</p>
               </div>
-              <div className="w-8 h-8 rounded-full bg-[#121A2F] border border-amber-500/30 flex items-center justify-center text-amber-500 font-bold text-xs shadow-[0_0_10px_rgba(245,158,11,0.1)] group-hover:border-amber-400 transition-colors">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-amber-500 font-bold text-xs transition-colors" style={{ background: 'var(--cg-surface-elevated)', border: '1px solid rgba(245,158,11,0.3)' }}>
                 {profile.fullName.split(' ').map(n => n[0]).slice(0, 2).join('')}
               </div>
             </Link>
@@ -178,7 +186,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-transparent relative">
+        <main className="flex-1 overflow-auto relative" style={{ backgroundColor: 'var(--cg-bg)' }}>
            <Outlet />
         </main>
       </div>

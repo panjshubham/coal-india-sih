@@ -59,13 +59,13 @@ export default function Violations() {
   return (
     <>
       <style>{`
-        .bg-surface { background-color: #0b1326; }
-        .bg-surface-container-low { background-color: #131b2e; }
-        .bg-surface-container-lowest { background-color: #060e20; }
-        .bg-surface-container { background-color: #171f33; }
-        .bg-surface-container-high { background-color: #222a3d; }
-        .bg-surface-container-highest { background-color: #2d3449; }
-        .bg-surface-bright { background-color: #31394d; }
+        .bg-surface { background-color: var(--cg-bg); }
+        .bg-surface-container-low { background-color: var(--cg-surface-low); }
+        .bg-surface-container-lowest { background-color: var(--cg-surface-elevated); }
+        .bg-surface-container { background-color: var(--cg-surface); }
+        .bg-surface-container-high { background-color: var(--cg-surface-high); }
+        .bg-surface-container-highest { background-color: var(--cg-surface-highest); }
+        .bg-surface-bright { background-color: var(--cg-surface-highest); }
         .bg-primary { background-color: #8ed5ff; }
         .bg-primary-container { background-color: #38bdf8; }
         .bg-secondary { background-color: #ffb95f; }
@@ -76,8 +76,8 @@ export default function Violations() {
         .bg-outline { background-color: #87929a; }
         .bg-outline-variant { background-color: #3e484f; }
         
-        .text-on-surface { color: #dae2fd; }
-        .text-on-surface-variant { color: #bdc8d1; }
+        .text-on-surface { color: var(--cg-text-primary); }
+        .text-on-surface-variant { color: var(--cg-text-muted); }
         .text-primary { color: #8ed5ff; }
         .text-primary-container { color: #38bdf8; }
         .text-on-primary-container { color: #004965; }

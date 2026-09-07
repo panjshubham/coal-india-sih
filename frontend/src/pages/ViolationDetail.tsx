@@ -268,7 +268,7 @@ export default function ViolationDetail() {
               </div>
             )}
             {violation.latitude && violation.longitude && (
-              <div className="bg-[#0B1120] text-slate-300 p-3 flex items-center justify-between gap-3 text-sm font-mono border-t border-slate-800">
+              <div className="bg-[#0E172A] text-slate-300 p-3 flex items-center justify-between gap-3 text-sm font-mono border-t border-slate-800">
                 <div className="flex items-center gap-3">
                   <MapPin className="w-4 h-4 text-emerald-500" />
                   <span>GPS: {violation.latitude.toFixed(6)}, {violation.longitude.toFixed(6)}</span>

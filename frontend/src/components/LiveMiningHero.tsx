@@ -15,14 +15,14 @@ export default function LiveMiningHero() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-slate-950 font-sans border-b border-slate-800">
       {/* Background Video Stream - using a placeholder image gradient if video is missing */}
-      <div className="absolute inset-0 bg-slate-900 w-full h-full object-cover scale-105 filter brightness-75 contrast-110">
+      <div className="absolute inset-0 bg-slate-900 w-full h-full object-cover scale-105 filter brightness-95 contrast-105">
         {/* You can replace this with an actual video tag if you have the asset */}
-        <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-40"></div>
+        <div className="w-full h-full bg-[url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-55"></div>
       </div>
 
       {/* Industrial Gradients for Legibility */}
       <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/75 to-transparent z-10" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#070D18] via-transparent to-transparent z-10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0E172A] via-transparent to-transparent z-10" />
 
       {/* Floating HUD Telemetry (Augmented Reality style over machines) */}
       <div className="absolute right-8 top-1/4 z-20 hidden lg:flex flex-col gap-3 font-mono text-xs">

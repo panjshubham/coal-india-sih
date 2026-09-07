@@ -13,6 +13,7 @@ export interface InspectorProfile {
   medicalAlert: string;
   notifyFamilyOnAlert: boolean;
   familyAlertChannel: string;
+  role?: string;
   lastUpdated?: string;
 }
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { useTheme } from '../context/ThemeContext';
 
 export default function GeospatialMap() {
   const [time, setTime] = useState('');
@@ -8,6 +9,8 @@ export default function GeospatialMap() {
   const [showViolations, setShowViolations] = useState(true);
   const [hotspots, setHotspots] = useState<any[]>([]);
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -51,8 +54,8 @@ export default function GeospatialMap() {
         
         .map-container {
           font-family: 'Geist', sans-serif;
-          background-color: #080D1A;
-          color: #e2e8f0;
+          background-color: ${isLight ? '#E8EDF5' : '#080D1A'};
+          color: ${isLight ? '#1E293B' : '#e2e8f0'};
           overflow: hidden;
         }
         .font-serif {
@@ -83,14 +86,14 @@ export default function GeospatialMap() {
           0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
           100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; }
         }
-        .bg-canvas { background-color: #0B1120; }
-        .bg-canvas-deep { background-color: #080D1A; }
-        .text-status-sage { color: #4ADE80; }
-        .bg-status-sage { background-color: #4ADE80; }
-        .text-status-amber { color: #F59E0B; }
-        .bg-status-amber { background-color: #F59E0B; }
-        .text-status-rose { color: #F87171; }
-        .bg-status-rose { background-color: #F87171; }
+        .bg-canvas { background-color: ${isLight ? '#E8EDF5' : '#0E172A'}; }
+        .bg-canvas-deep { background-color: ${isLight ? '#D4DCE8' : '#0A1120'}; }
+        .text-status-sage { color: ${isLight ? '#16A34A' : '#4ADE80'}; }
+        .bg-status-sage { background-color: ${isLight ? '#16A34A' : '#4ADE80'}; }
+        .text-status-amber { color: ${isLight ? '#D97706' : '#F59E0B'}; }
+        .bg-status-amber { background-color: ${isLight ? '#D97706' : '#F59E0B'}; }
+        .text-status-rose { color: ${isLight ? '#DC2626' : '#F87171'}; }
+        .bg-status-rose { background-color: ${isLight ? '#DC2626' : '#F87171'}; }
       `}</style>
       
       <div className="map-container w-screen h-screen relative overflow-hidden select-none">
@@ -297,7 +300,7 @@ export default function GeospatialMap() {
         </div>
 
         {/* 3. MINIMALIST TOP TELEMETRY STRIP */}
-        <header className="fixed top-0 left-0 right-0 h-10 z-30 px-6 flex items-center justify-between backdrop-blur-md bg-[#0B1120]/60 border-b border-white/[0.06] text-xs">
+        <header className="fixed top-0 left-0 right-0 h-10 z-30 px-6 flex items-center justify-between backdrop-blur-md bg-[#0E172A]/75 border-b border-white/[0.08] text-xs">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-status-sage animate-pulse" />
@@ -334,7 +337,7 @@ export default function GeospatialMap() {
         </header>
 
         {/* 5. FLOATING LEFT FILTER PANEL */}
-        <aside className="fixed top-14 left-6 z-30 w-72 backdrop-blur-md bg-[#0B1120]/80 border border-white/[0.08] rounded-xl shadow-2xl p-4 flex flex-col gap-3.5 transition-all">
+        <aside className="fixed top-14 left-6 z-30 w-72 backdrop-blur-md bg-[#0E172A]/85 border border-white/[0.08] rounded-xl shadow-2xl p-4 flex flex-col gap-3.5 transition-all">
           <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.06]">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-amber-400 text-[16px]">tune</span>
@@ -410,7 +413,7 @@ export default function GeospatialMap() {
         </aside>
 
         {/* 6. TOP-RIGHT MINIMAL LEGEND */}
-        <div className="fixed top-14 right-6 z-30 backdrop-blur-md bg-[#0B1120]/80 border border-white/[0.08] px-4 py-2 rounded-full flex items-center gap-4 text-xs text-slate-300 shadow-2xl">
+        <div className="fixed top-14 right-6 z-30 backdrop-blur-md bg-[#0E172A]/85 border border-white/[0.08] px-4 py-2 rounded-full flex items-center gap-4 text-xs text-slate-300 shadow-2xl">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-status-sage shadow-[0_0_8px_#4ADE80]" />
             <span className="font-sans text-[11px] text-slate-300 font-normal">Compliant <span className="font-mono text-[10px] text-slate-400">(&lt;45)</span></span>
@@ -429,12 +432,12 @@ export default function GeospatialMap() {
 
         {/* 7. FLOATING MAP CONTROLS (Bottom Right) */}
         <div className="fixed bottom-6 right-6 z-30 flex flex-col items-end gap-2">
-          <div className="backdrop-blur-md bg-[#0B1120]/80 border border-white/[0.08] p-1 rounded-lg flex items-center gap-1 text-[11px] font-mono shadow-xl">
+          <div className="backdrop-blur-md bg-[#0E172A]/85 border border-white/[0.08] p-1 rounded-lg flex items-center gap-1 text-[11px] font-mono shadow-xl">
             <button className="px-2.5 py-1 rounded bg-white/[0.08] text-white font-medium">Terrain</button>
             <button className="px-2.5 py-1 rounded text-slate-400 hover:text-white transition-colors">Vector</button>
             <button className="px-2.5 py-1 rounded text-slate-400 hover:text-white transition-colors">SAR 3D</button>
           </div>
-          <div className="backdrop-blur-md bg-[#0B1120]/80 border border-white/[0.08] p-1 rounded-lg flex flex-col gap-1 shadow-xl">
+          <div className="backdrop-blur-md bg-[#0E172A]/85 border border-white/[0.08] p-1 rounded-lg flex flex-col gap-1 shadow-xl">
             <button className="w-7 h-7 rounded hover:bg-white/[0.06] text-slate-300 hover:text-white flex items-center justify-center transition-colors" title="Zoom In">
               <span className="material-symbols-outlined text-[18px]">add</span>
             </button>

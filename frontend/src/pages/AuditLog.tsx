@@ -203,11 +203,11 @@ export default function AuditLog() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-[#0B1120] border border-slate-700/50 rounded overflow-hidden shadow-2xl">
+      <div className="bg-[#0E172A] border border-slate-700/50 rounded overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#121A2F] border-b border-slate-700/50">
+              <tr className="bg-[#15223A] border-b border-slate-700/50">
                 <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Timestamp (IST/UTC)</th>
                 <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Actor / Authority</th>
                 <th className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Statutory Action</th>

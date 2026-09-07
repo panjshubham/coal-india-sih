@@ -147,44 +147,44 @@ export default function CorporateDashboard() {
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8 w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-white tracking-tight">Corporate Dashboard</h1>
+          <h1 className="text-2xl font-serif font-bold text-[var(--cg-text-primary)] tracking-tight">Corporate Dashboard</h1>
           <p className="text-sm text-slate-400 mt-1">Enterprise-wide telemetric and statutory oversight.</p>
         </div>
       </div>
 
       {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-blue-500/50 transition-colors">
+        <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md rounded border border-[var(--cg-border)] p-5 shadow-sm flex flex-col hover:border-blue-500/50 transition-colors">
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Mines</span>
             <Activity className="w-5 h-5 text-blue-400" />
           </div>
-          <span className="text-3xl font-serif font-bold text-white">{stats.totalMines}</span>
+          <span className="text-3xl font-serif font-bold text-[var(--cg-text-primary)]">{stats.totalMines}</span>
         </div>
 
-        <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-amber-500/50 transition-colors">
+        <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md rounded border border-[var(--cg-border)] p-5 shadow-sm flex flex-col hover:border-[var(--cg-accent)] transition-colors">
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Violations</span>
             <AlertTriangle className="w-5 h-5 text-amber-400" />
           </div>
-          <span className="text-3xl font-serif font-bold text-white">{stats.activeViolations}</span>
+          <span className="text-3xl font-serif font-bold text-[var(--cg-text-primary)]">{stats.activeViolations}</span>
         </div>
 
-        <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-red-500/50 transition-colors">
+        <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md rounded border border-[var(--cg-border)] p-5 shadow-sm flex flex-col hover:border-red-500/50 transition-colors">
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overdue Compliance</span>
             <AlertCircle className="w-5 h-5 text-red-400" />
           </div>
-          <span className="text-3xl font-serif font-bold text-white">{stats.overdueCompliance}</span>
+          <span className="text-3xl font-serif font-bold text-[var(--cg-text-primary)]">{stats.overdueCompliance}</span>
         </div>
 
-        <div className="bg-[#121A2F]/80 backdrop-blur-md rounded border border-white/10 p-5 shadow-sm flex flex-col hover:border-indigo-500/50 transition-colors">
+        <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md rounded border border-[var(--cg-border)] p-5 shadow-sm flex flex-col hover:border-[var(--cg-accent)] transition-colors">
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Risk Score</span>
             <BarChart2 className="w-5 h-5 text-indigo-400" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-serif font-bold text-white">{stats.avgRiskScore}</span>
+            <span className="text-3xl font-serif font-bold text-[var(--cg-text-primary)]">{stats.avgRiskScore}</span>
             <span className="text-sm font-medium text-slate-500">/ 100</span>
           </div>
         </div>
@@ -194,13 +194,13 @@ export default function CorporateDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left: Risk Ranked Mines */}
-        <div className="lg:col-span-2 bg-[#121A2F]/80 backdrop-blur-md border border-white/10 rounded shadow-sm flex flex-col">
-          <div className="p-5 border-b border-white/5">
+        <div className="lg:col-span-2 bg-[var(--cg-surface-elevated)] backdrop-blur-md border border-[var(--cg-border)] rounded shadow-sm flex flex-col">
+          <div className="p-5 border-b border-[var(--cg-border)]">
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">Risk-Ranked Subsidiaries</h3>
           </div>
           <div className="p-0 overflow-y-auto max-h-[400px]">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-black/20 text-xs text-slate-400 sticky top-0 backdrop-blur-md">
+              <thead className="bg-[var(--cg-surface-high)] text-xs text-slate-400 sticky top-0 backdrop-blur-md">
                 <tr>
                   <th className="px-5 py-3 font-medium">Mine</th>
                   <th className="px-5 py-3 font-medium">Risk Score</th>
@@ -215,7 +215,7 @@ export default function CorporateDashboard() {
                       <span className="font-mono font-medium text-slate-300">{risk.score}</span>
                     </td>
                     <td className="px-5 py-3 w-1/2">
-                      <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                      <div className="w-full h-2 bg-[var(--cg-surface-highest)] rounded-full overflow-hidden border border-[var(--cg-border)]">
                         <div 
                           className={`h-full ${getRiskColor(risk.score)}`} 
                           style={{ width: `${risk.score}%` }}
@@ -235,20 +235,20 @@ export default function CorporateDashboard() {
         </div>
 
         {/* Right: AI Insights */}
-        <div className="bg-amber-500/5 backdrop-blur-md border border-amber-500/20 rounded shadow-sm flex flex-col relative overflow-hidden group hover:border-amber-500/40 transition-colors">
+        <div className="bg-[var(--cg-surface)] backdrop-blur-md border border-[var(--cg-border)] rounded shadow-sm flex flex-col relative overflow-hidden group transition-colors">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
             <ShieldAlert className="w-24 h-24 text-amber-500" />
           </div>
-          <div className="p-5 border-b border-amber-500/10 relative z-10 flex justify-between items-center">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-amber-500">AI Risk Insights</h3>
+          <div className="p-5 border-b border-[var(--cg-border)] relative z-10 flex justify-between items-center">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--cg-text-primary)]">AI Risk Insights</h3>
           </div>
           <div className="p-5 space-y-4 flex-1 relative z-10">
             {riskScores.slice(0, 3).map(risk => (
-              <div key={risk.mine_id} className="p-3 bg-black/40 rounded border border-amber-500/20 text-sm">
-                <div className="font-bold text-amber-400 mb-1 flex items-center justify-between">
+              <div key={risk.mine_id} className="p-3 bg-[var(--cg-surface-highest)] rounded border border-[var(--cg-border)] text-sm">
+                <div className="font-bold text-[var(--cg-text-primary)] mb-1 flex items-center justify-between">
                   <span>{risk.mines?.name} (Score: {risk.score})</span>
                 </div>
-                <div className="text-amber-200/70 leading-relaxed text-xs mb-2">{risk.explanation || 'No AI explanation generated yet.'}</div>
+                <div className="text-[var(--cg-text-muted)] leading-relaxed text-xs mb-2">{risk.explanation || 'No AI explanation generated yet.'}</div>
                 {(risk as any).contributing_factors?.ml_probability !== undefined && (
                   <div className="mt-2 mb-2 p-2 bg-[#060913]/60 rounded border border-indigo-500/30">
                     <p className="text-xs text-indigo-300">
@@ -281,14 +281,14 @@ export default function CorporateDashboard() {
               </div>
             ))}
             {riskScores.length === 0 && (
-              <p className="text-sm text-amber-500/70">Insufficient data for AI insights.</p>
+              <p className="text-sm text-[var(--cg-text-faint)]">Insufficient data for AI insights.</p>
             )}
           </div>
-          <div className="p-4 border-t border-amber-500/10 bg-black/20 relative z-10">
+          <div className="p-4 border-t border-[var(--cg-border)] bg-[var(--cg-surface-high)] relative z-10">
             <button 
               onClick={handleRecalculate}
               disabled={calculatingRisk}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-sm font-bold rounded transition-colors disabled:opacity-50"
+              className="w-full btn-secondary"
             >
               {calculatingRisk ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               {calculatingRisk ? 'Recalculating...' : 'Recalculate Risk Scores'}
@@ -299,8 +299,8 @@ export default function CorporateDashboard() {
       </div>
 
       {/* Bottom: Recent Violations Feed */}
-      <div className="bg-[#121A2F]/80 backdrop-blur-md border border-white/10 rounded shadow-sm flex flex-col">
-        <div className="p-5 border-b border-white/5 flex justify-between items-center">
+      <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md border border-[var(--cg-border)] rounded shadow-sm flex flex-col">
+        <div className="p-5 border-b border-[var(--cg-border)] flex justify-between items-center">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">Live Violations Feed</h3>
           <span className="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -309,7 +309,7 @@ export default function CorporateDashboard() {
         </div>
         <div className="p-0 overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-black/20 text-xs text-slate-400">
+            <thead className="bg-[var(--cg-surface-high)] text-xs text-slate-400">
               <tr>
                 <th className="px-5 py-3 font-medium">Mine</th>
                 <th className="px-5 py-3 font-medium">Category</th>

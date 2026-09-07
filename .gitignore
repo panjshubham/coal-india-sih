@@ -1,2 +1,9 @@
 .vercel
 .agents/
+node_modules/
+dist/
+.env
+.env.local
+__pycache__/
+*.pyc
+.DS_Store

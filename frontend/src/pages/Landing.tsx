@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import ThemeToggle from '../components/ThemeToggle';
 
 const HERO_IMAGES = [
   '/coal_machinery.jpg',
@@ -34,13 +35,13 @@ export default function Landing() {
   return (
     <>
       <style>{`
-        .bg-surface { background-color: #0b1326; }
-        .bg-surface-container-low { background-color: #131b2e; }
-        .bg-surface-container-lowest { background-color: #060e20; }
-        .bg-surface-container { background-color: #171f33; }
-        .bg-surface-container-high { background-color: #222a3d; }
-        .bg-surface-container-highest { background-color: #2d3449; }
-        .bg-surface-bright { background-color: #31394d; }
+        .bg-surface { background-color: var(--cg-bg); }
+        .bg-surface-container-low { background-color: var(--cg-surface-low); }
+        .bg-surface-container-lowest { background-color: var(--cg-surface-elevated); }
+        .bg-surface-container { background-color: var(--cg-surface); }
+        .bg-surface-container-high { background-color: var(--cg-surface-high); }
+        .bg-surface-container-highest { background-color: var(--cg-surface-highest); }
+        .bg-surface-bright { background-color: var(--cg-surface-highest); }
         .bg-primary { background-color: #8ed5ff; }
         .bg-primary-container { background-color: #38bdf8; }
         .bg-secondary { background-color: #ffb95f; }
@@ -51,8 +52,8 @@ export default function Landing() {
         .bg-outline { background-color: #87929a; }
         .bg-outline-variant { background-color: #3e484f; }
         
-        .text-on-surface { color: #dae2fd; }
-        .text-on-surface-variant { color: #bdc8d1; }
+        .text-on-surface { color: var(--cg-text-primary); }
+        .text-on-surface-variant { color: var(--cg-text-muted); }
         .text-primary { color: #8ed5ff; }
         .text-primary-container { color: #38bdf8; }
         .text-on-primary-container { color: #004965; }
@@ -113,7 +114,7 @@ export default function Landing() {
         html { scroll-behavior: smooth; }
       `}</style>
 
-      <div className="bg-surface font-body-md text-on-surface antialiased selection:bg-primary selection:text-on-primary min-h-screen">
+      <div className="bg-surface font-body-md text-on-surface antialiased selection:bg-primary selection:text-on-primary min-h-screen" style={{ backgroundColor: 'var(--cg-bg)', color: 'var(--cg-text-primary)', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
         
         {/* HEADER */}
         <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/90 backdrop-blur-md border-b border-outline-variant/30">
@@ -142,6 +143,7 @@ export default function Landing() {
               </nav>
             </div>
             <div className="flex items-center gap-space-md">
+              <ThemeToggle variant="landing" />
               <a href="#" className="hidden sm:inline-flex items-center justify-center h-8 px-space-md rounded bg-surface-container border border-outline-variant/40 text-on-surface text-body-md hover:bg-surface-container-high hover:text-on-surface transition-all">
                 Documentation
               </a>

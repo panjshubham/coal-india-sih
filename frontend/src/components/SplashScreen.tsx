@@ -97,7 +97,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
 
       {/* Header */}
       <header className="absolute top-7 inset-x-0 z-50 flex flex-col items-center justify-center pointer-events-none">
-        <div className="flex items-center gap-5 px-6 py-2 rounded-full border border-white/15 bg-[#0b1120]/80 backdrop-blur-md shadow-2xl pointer-events-auto">
+        <div className="flex items-center gap-5 px-6 py-2 rounded-full border border-white/15 bg-[#0e172a]/80 backdrop-blur-md shadow-2xl pointer-events-auto">
           <div className="flex items-center gap-2.5">
             <svg className="w-6 h-6 text-amber-400" fill="currentColor" viewBox="0 0 64 64">
               <circle cx="32" cy="18" fill="none" r="7" stroke="currentColor" strokeWidth="2.5"></circle>
@@ -131,7 +131,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       <div className="absolute top-7 right-7 z-50 flex items-center gap-3">
         <button 
           onClick={toggleSlide}
-          className="group flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-white/20 bg-[#0b1120]/80 backdrop-blur-md hover:border-amber-400/60 hover:bg-[#0f172a]/90 transition text-xs font-mono-tech text-slate-200 shadow-xl cursor-pointer"
+          className="group flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-white/20 bg-[#0e172a]/80 backdrop-blur-md hover:border-amber-400/60 hover:bg-[#152238]/90 transition text-xs font-mono-tech text-slate-200 shadow-xl cursor-pointer"
         >
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span className="tracking-wider">SLIDE {currentSlide}/3 (Click to switch)</span>
@@ -195,7 +195,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               Empowering Coal Concessions with AI-Driven Risk Detection and Tamper-Evident Audit Trails
             </p>
             <div className="fade-stagger-3">
-              <button onClick={toggleSlide} className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full border border-amber-400/60 bg-[#0b1120]/85 backdrop-blur-md hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 transition text-xs font-mono-tech tracking-[0.18em] uppercase shadow-2xl cursor-pointer">
+              <button onClick={toggleSlide} className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full border border-amber-400/60 bg-[#0e172a]/85 backdrop-blur-md hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 transition text-xs font-mono-tech tracking-[0.18em] uppercase shadow-2xl cursor-pointer">
                 <span>View Command Telemetry</span>
                 <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path></svg>
               </button>
@@ -220,7 +220,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             <h2 className="fade-stagger-2 font-serif-display hero-text-shadow text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal tracking-[-0.02em] text-white leading-tight mb-6">Built for <span className="italic font-light text-amber-100/95">Every Mine.</span></h2>
             <p className="fade-stagger-3 hero-subtext-shadow max-w-xl text-xs sm:text-sm font-medium tracking-[0.18em] uppercase text-slate-100 leading-relaxed mb-8">From Pit-Floor Telemetry to Apex Ministry Governance</p>
             <div className="fade-stagger-3 flex flex-wrap items-center justify-center gap-3.5 text-[11px] sm:text-xs tracking-[0.18em] uppercase text-slate-200 font-mono-tech">
-              <button onClick={handleComplete} className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full border border-amber-400/60 bg-[#0b1120]/85 backdrop-blur-md hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 transition text-xs font-mono-tech tracking-[0.18em] uppercase shadow-2xl cursor-pointer">
+              <button onClick={handleComplete} className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full border border-amber-400/60 bg-[#0e172a]/85 backdrop-blur-md hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 transition text-xs font-mono-tech tracking-[0.18em] uppercase shadow-2xl cursor-pointer">
                 <span>Launch Apex Dashboard</span>
                 <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path></svg>
               </button>

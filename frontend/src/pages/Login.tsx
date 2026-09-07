@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { ShieldAlert, Loader2 } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function Login() {
   const [email, setEmail] = useState('demo@coalindia.in');
@@ -33,8 +34,6 @@ export default function Login() {
       if (signInError) throw signInError;
       if (!data.user) throw new Error("No user returned from login");
 
-      // The AuthContext will catch the session change and fetch the role automatically,
-      // but to ensure immediate redirect without a flash, we fetch the role here too.
       const { data: userData, error: roleError } = await supabase
         .from('users')
         .select('role')
@@ -56,11 +55,11 @@ export default function Login() {
   };
 
   return (
-    <div className="flex w-full h-screen bg-white">
+    <div className="flex w-full h-screen" style={{ backgroundColor: 'var(--cg-bg)', transition: 'background-color 0.3s ease' }}>
       
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex flex-col w-1/2 bg-[#0B1120] relative overflow-hidden justify-center items-center">
-        {/* Subtle grid/texture overlay could go here */}
+      <div className="hidden lg:flex flex-col w-1/2 bg-[#0E172A] relative overflow-hidden justify-center items-center">
+        {/* Subtle grid/texture overlay */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
         
         <div className="relative z-10 flex flex-col items-center">
@@ -68,47 +67,52 @@ export default function Login() {
             <ShieldAlert className="w-12 h-12 text-amber-500" />
           </div>
           <h1 className="text-4xl font-serif font-bold text-white tracking-wide mb-4 text-center">COALGUARD</h1>
-          <p className="text-slate-400 max-w-sm text-center leading-relaxed">
+          <p className="text-slate-300 max-w-sm text-center leading-relaxed">
             Statutory Compliance & Operational Telemetry Gateway
           </p>
         </div>
         
         <div className="absolute bottom-8 left-8">
-          <p className="text-xs text-slate-500 font-medium">MINISTRY OF COAL • SECURE ACCESS</p>
+          <p className="text-xs text-slate-400 font-medium">MINISTRY OF COAL • SECURE ACCESS</p>
         </div>
       </div>
 
       {/* Right Panel - Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center p-8 bg-white">
+      <div className="flex w-full lg:w-1/2 items-center justify-center p-8 relative" style={{ backgroundColor: 'var(--cg-surface)' }}>
+        
+        {/* Theme Toggle — top right */}
+        <div className="absolute top-6 right-6">
+          <ThemeToggle variant="landing" />
+        </div>
         
         {/* Mobile Logo Fallback */}
         <div className="absolute top-8 left-8 flex lg:hidden items-center gap-3">
           <div className="w-8 h-8 flex items-center justify-center rounded-sm bg-amber-500/10 border border-amber-500/20">
             <ShieldAlert className="w-5 h-5 text-amber-500" />
           </div>
-          <span className="font-serif font-bold text-lg tracking-wide text-[#0B1120]">COALGUARD</span>
+          <span className="font-serif font-bold text-lg tracking-wide text-[var(--cg-text-primary)]">COALGUARD</span>
         </div>
 
         <div className="w-full max-w-sm">
           <div className="mb-10 text-center lg:text-left">
-            <h2 className="text-3xl font-bold text-[#0B1120] mb-2 tracking-tight">Sign In</h2>
-            <p className="text-slate-500 text-sm">Enter your credentials to access the portal.</p>
+            <h2 className="text-3xl font-bold text-[var(--cg-text-primary)] mb-2 tracking-tight">Sign In</h2>
+            <p className="text-slate-400 text-sm">Enter your credentials to access the portal.</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             {error && (
-              <div className="p-3 rounded-sm bg-red-50 border border-red-200 text-red-600 text-sm font-medium">
+              <div className="p-3 rounded-sm bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium">
                 {error}
               </div>
             )}
             
             <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Official Email</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Official Email</label>
               <input 
                 type="email" 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full h-11 px-3 border border-slate-300 rounded-sm bg-white text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                className="w-full h-11 px-3 border border-[var(--cg-border)] rounded bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
                 placeholder="name@coalindia.in"
                 required
               />
@@ -116,14 +120,14 @@ export default function Login() {
             
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Password</label>
-                <a href="#" className="text-xs text-amber-600 font-medium hover:text-amber-700">Forgot Password?</a>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Password</label>
+                <a href="#" className="text-xs text-amber-400 font-medium hover:text-amber-300">Forgot Password?</a>
               </div>
               <input 
                 type="password" 
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full h-11 px-3 border border-slate-300 rounded-sm bg-white text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                className="w-full h-11 px-3 border border-[var(--cg-border)] rounded bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
                 placeholder="••••••••"
                 required
               />
@@ -132,14 +136,14 @@ export default function Login() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full h-11 flex items-center justify-center bg-amber-500 hover:bg-amber-400 text-[#0B1120] font-bold tracking-wide rounded-sm transition-colors mt-8 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-11 flex items-center justify-center bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold tracking-wide rounded transition-colors mt-8 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Authenticate'}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-xs text-slate-500">
-            By authenticating, you agree to the <a href="#" className="text-[#0B1120] font-semibold hover:underline">Terms of Service</a> & <a href="#" className="text-[#0B1120] font-semibold hover:underline">Privacy Policy</a>.
+          <p className="mt-8 text-center text-xs text-slate-400">
+            By authenticating, you agree to the <a href="#" className="text-amber-400 font-semibold hover:underline">Terms of Service</a> & <a href="#" className="text-amber-400 font-semibold hover:underline">Privacy Policy</a>.
           </p>
         </div>
       </div>

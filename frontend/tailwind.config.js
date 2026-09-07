@@ -29,9 +29,9 @@ export default {
     extend: {
       colors: {
         navy: {
-          800: '#152e5a',
-          900: '#0B1120', 
-          950: '#131B2E', 
+          800: '#1C2C4A',
+          900: '#0E172A', 
+          950: '#18243C', 
         },
         cil: {
           amber: '#F59E0B',

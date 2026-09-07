@@ -10,6 +10,7 @@ import Landing from './pages/Landing';
 import NewInspection from './pages/NewInspection';
 import MySubmissions from './pages/MySubmissions';
 import AuditLog from './pages/AuditLog';
+import DataImport from './pages/DataImport';
 import Contractors from './pages/Contractors';
 import ContractorDetail from './pages/ContractorDetail';
 import Profile from './pages/Profile';
@@ -63,6 +64,11 @@ function App() {
             <Route path="inspections/new" element={<NewInspection />} />
             <Route path="submissions" element={<MySubmissions />} />
             <Route path="audit-log" element={<AuditLog />} />
+            <Route path="data-import" element={
+              <ProtectedRoute allowedRoles={['corporate', 'regulator']}>
+                <DataImport />
+              </ProtectedRoute>
+            } />
             <Route path="contractors" element={<Contractors />} />
             <Route path="contractors/:id" element={<ContractorDetail />} />
             <Route path="profile" element={<Profile />} />
