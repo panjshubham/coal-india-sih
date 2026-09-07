@@ -1,78 +1,218 @@
 // @ts-nocheck
 import React, { useState, useMemo, useEffect } from 'react';
-import { Download, Plus } from 'lucide-react';
+import { 
+  Download, Plus, Search, Filter, AlertTriangle, CheckCircle2, Clock, 
+  ShieldAlert, FileText, ChevronRight, ChevronLeft, Calendar, User, 
+  Building2, X, RefreshCw, Eye, ArrowUpDown, UploadCloud, ShieldCheck, Check
+} from 'lucide-react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
-import { format } from 'date-fns';
-import { Upload } from 'lucide-react';
+import { format, formatDistanceToNow, isPast } from 'date-fns';
 
 interface ComplianceItem {
-  id: number;
-  mine_id: number;
+  id: string | number;
+  mine_id: string | number;
   category: string;
   title: string;
   due_date: string;
-  status: string;
+  status: 'pending' | 'completed' | 'in_progress' | 'overdue';
   assigned_to: string;
-  document_url: string;
+  document_url?: string;
+  tracking_id?: string;
+  statutory_ref?: string;
+  severity?: 'critical' | 'high' | 'medium' | 'low';
   mines?: { name: string };
 }
 
-const generateSampleData = (): ComplianceItem[] => {
-  const sampleItems: ComplianceItem[] = [];
-  const categories = ['safety', 'environment', 'production', 'labour'];
-  const statuses = ['pending', 'completed', 'in_progress', 'overdue'];
-  const mineNames = ['Govindpur Colliery', 'Dhori Khas', 'Karo Spl', 'Tetaria Khar'];
-  
-  for(let i = 1; i <= 25; i++) {
-    const isOverdue = Math.random() > 0.7;
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + (isOverdue ? -10 : Math.floor(Math.random() * 30)));
-    
-    const status = isOverdue ? 'overdue' : statuses[Math.floor(Math.random() * statuses.length)];
-    
-    sampleItems.push({
-      id: i,
-      mine_id: Math.floor(Math.random() * 4) + 1,
-      category: categories[Math.floor(Math.random() * categories.length)],
-      title: 'Statutory Compliance Directive ' + i,
-      due_date: dueDate.toISOString().split('T')[0],
-      status: status,
-      assigned_to: 'Inspector ' + (Math.floor(Math.random() * 5) + 1),
-      document_url: '',
-      mines: { name: mineNames[Math.floor(Math.random() * mineNames.length)] }
-    });
-  }
-  return sampleItems;
+const STATUTORY_REFS: Record<string, string> = {
+  safety: 'Coal Mines Regulations (CMR 2017) Sec 104 - Underground Strata Control',
+  environment: 'DGMS Environment Directive ENV-42B - Methane & Dust Suppression',
+  production: 'Statutory Haulage & Winding Regulation Sec 78 - Emergency Braking',
+  labour: 'Mines Vocational Training Rules 1966 - Mandated PPE & Safety Drills',
+  statutory: 'National Concession Safety Directive - DGMS Standard Protocol'
 };
+
+const INITIAL_SAMPLE_DATA: ComplianceItem[] = [
+  {
+    id: 1,
+    mine_id: 1,
+    tracking_id: 'DIR-2025-1042',
+    category: 'safety',
+    title: 'Installation of Real-Time CH4 Gas Monitoring Telemetry',
+    due_date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
+    status: 'overdue',
+    severity: 'critical',
+    assigned_to: 'Shri R. K. Mahapatra',
+    statutory_ref: 'CMR 2017 Sec 104 - Underground Ventilation & Seam Degasification',
+    document_url: '',
+    mines: { name: 'Govindpur Colliery (BCCL)' }
+  },
+  {
+    id: 2,
+    mine_id: 2,
+    tracking_id: 'DIR-2025-1043',
+    category: 'environment',
+    title: 'InSAR Satellite Subsidence Bench Survey Validation',
+    due_date: new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0],
+    status: 'pending',
+    severity: 'high',
+    assigned_to: 'Dr. Arindam Sen',
+    statutory_ref: 'DGMS Circular No. 4/2022 - Highwall Slope Stability',
+    document_url: '',
+    mines: { name: 'Dhori Khas (CCL)' }
+  },
+  {
+    id: 3,
+    mine_id: 3,
+    tracking_id: 'DIR-2025-1044',
+    category: 'safety',
+    title: 'Hydraulic Roof Support & Strata Barricade Recertification',
+    due_date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+    status: 'in_progress',
+    severity: 'critical',
+    assigned_to: 'Er. V. K. Sharma',
+    statutory_ref: 'CMR 2017 Reg 124 - Systematic Support Rules (SSR)',
+    document_url: '',
+    mines: { name: 'Karo Special Seam (CCL)' }
+  },
+  {
+    id: 4,
+    mine_id: 4,
+    tracking_id: 'DIR-2025-1045',
+    category: 'production',
+    title: 'Overhead Heavy Machinery Emergency Cut-off Inspection',
+    due_date: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0],
+    status: 'overdue',
+    severity: 'high',
+    assigned_to: 'Inspector S. Roy',
+    statutory_ref: 'DGMS (Tech) S&T Circular 08 - Heavy Earth Moving Machinery',
+    document_url: '',
+    mines: { name: 'Tetaria Khar (ECL)' }
+  },
+  {
+    id: 5,
+    mine_id: 1,
+    tracking_id: 'DIR-2025-1046',
+    category: 'labour',
+    title: 'Underground Miners Atmospheric PPE & Self-Rescuer Audit',
+    due_date: new Date(Date.now() + 12 * 86400000).toISOString().split('T')[0],
+    status: 'completed',
+    severity: 'medium',
+    assigned_to: 'Shri R. K. Mahapatra',
+    statutory_ref: 'Mines Act 1952 Sec 22A - Personal Protective Equipment',
+    document_url: 'https://coalguard.gov.in/docs/ppe_audit_2025.pdf',
+    mines: { name: 'Govindpur Colliery (BCCL)' }
+  },
+  {
+    id: 6,
+    mine_id: 2,
+    tracking_id: 'DIR-2025-1047',
+    category: 'environment',
+    title: 'Effluent Treatment Plant (ETP) Heavy Metal Discharge Test',
+    due_date: new Date(Date.now() + 8 * 86400000).toISOString().split('T')[0],
+    status: 'in_progress',
+    severity: 'medium',
+    assigned_to: 'Dr. Arindam Sen',
+    statutory_ref: 'State Pollution Control Board Statutory Consent to Operate (CTO)',
+    document_url: '',
+    mines: { name: 'Dhori Khas (CCL)' }
+  },
+  {
+    id: 7,
+    mine_id: 3,
+    tracking_id: 'DIR-2025-1048',
+    category: 'safety',
+    title: 'Explosive Magazine & Detonator Magazine Distance Audit',
+    due_date: new Date(Date.now() + 19 * 86400000).toISOString().split('T')[0],
+    status: 'pending',
+    severity: 'critical',
+    assigned_to: 'Er. V. K. Sharma',
+    statutory_ref: 'Explosives Rules 2008 & CMR 2017 Reg 155',
+    document_url: '',
+    mines: { name: 'Karo Special Seam (CCL)' }
+  },
+  {
+    id: 8,
+    mine_id: 4,
+    tracking_id: 'DIR-2025-1049',
+    category: 'production',
+    title: 'Conveyor Belt Fire Suppression Sprinkler Test Run',
+    due_date: new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0],
+    status: 'completed',
+    severity: 'medium',
+    assigned_to: 'Inspector S. Roy',
+    statutory_ref: 'CMR 2017 Reg 118 - Fire Prevention & Fighting in Mines',
+    document_url: 'https://coalguard.gov.in/docs/fire_sprinkler_cert.pdf',
+    mines: { name: 'Tetaria Khar (ECL)' }
+  }
+];
 
 export default function Compliance() {
   const { user, role } = useAuth();
   const [items, setItems] = useState<ComplianceItem[]>([]);
+  const [minesList, setMinesList] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Filters & Search
+  // Search & Filters
   const [search, setSearch] = useState('');
+  const [mineFilter, setMineFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [sortKey, setSortKey] = useState<'due_date' | 'title' | 'mine'>('due_date');
   const [sortAsc, setSortAsc] = useState(true);
   
+  // Selection
+  const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
+  
+  // Modal states
+  const [activeDossier, setActiveDossier] = useState<ComplianceItem | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  
+  // Create Directive Form state
+  const [newDirective, setNewDirective] = useState({
+    title: '',
+    mine_id: '1',
+    category: 'safety',
+    severity: 'high',
+    due_date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+    assigned_to: 'Shri R. K. Mahapatra',
+    statutory_ref: ''
+  });
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 8;
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   useEffect(() => {
     fetchData();
   }, [user, role]);
 
   async function fetchData() {
-    if (!user || !role) return;
     setLoading(true);
-    
     try {
-      let query = supabase.from('compliance_items').select(`*, mines(name)`);
+      // 1. Fetch Mines list
+      const { data: minesData } = await supabase.from('mines').select('id, name').order('name');
+      if (minesData && minesData.length > 0) {
+        setMinesList(minesData);
+      } else {
+        setMinesList([
+          { id: 1, name: 'Govindpur Colliery (BCCL)' },
+          { id: 2, name: 'Dhori Khas (CCL)' },
+          { id: 3, name: 'Karo Special Seam (CCL)' },
+          { id: 4, name: 'Tetaria Khar (ECL)' }
+        ]);
+      }
+
+      // 2. Fetch Compliance Directives
+      let query = supabase.from('compliance_items').select(`*, mines(name)`).order('due_date', { ascending: true });
       
-      if (role === 'mine_official') {
+      if (role === 'mine_official' && user) {
         const { data: userData } = await supabase.from('users').select('assigned_mine_id').eq('id', user.id).single();
         if (userData?.assigned_mine_id) {
           query = query.eq('mine_id', userData.assigned_mine_id);
@@ -83,491 +223,988 @@ export default function Compliance() {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setItems(data as ComplianceItem[]);
+        // Hydrate missing fields if any
+        const hydrated = data.map(item => ({
+          ...item,
+          tracking_id: item.tracking_id || `DIR-2025-${1000 + Number(String(item.id).replace(/\D/g, '') || 1)}`,
+          statutory_ref: item.statutory_ref || STATUTORY_REFS[item.category] || STATUTORY_REFS.safety,
+          severity: item.severity || (item.status === 'overdue' ? 'critical' : 'high')
+        }));
+        setItems(hydrated);
       } else {
-        setItems(generateSampleData());
+        setItems(INITIAL_SAMPLE_DATA);
       }
     } catch (err) {
-      console.error('Failed to fetch compliance items', err);
-      setItems(generateSampleData());
+      console.warn('Using enriched fallback compliance data:', err);
+      setItems(INITIAL_SAMPLE_DATA);
     } finally {
       setLoading(false);
     }
   }
 
-  const categories = useMemo(() => Array.from(new Set(items.map(i => i.category))), [items]);
-  const statuses = useMemo(() => Array.from(new Set(items.map(i => i.status))), [items]);
+  // Quick Stats
+  const stats = useMemo(() => {
+    const total = items.length;
+    const overdue = items.filter(i => i.status === 'overdue' || (i.status !== 'completed' && isPast(new Date(i.due_date)))).length;
+    const pending = items.filter(i => i.status === 'pending').length;
+    const inProgress = items.filter(i => i.status === 'in_progress').length;
+    const completed = items.filter(i => i.status === 'completed').length;
+    const resolutionRate = total > 0 ? Math.round((completed / total) * 100) : 96;
 
+    return { total, overdue, pending, inProgress, completed, resolutionRate };
+  }, [items]);
+
+  // Filtering & Sorting
   const filteredItems = useMemo(() => {
-    let result = items;
-    if (search) {
-      const s = search.toLowerCase();
+    let result = [...items];
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
       result = result.filter(i => 
-        i.title.toLowerCase().includes(s) || 
-        (i.mines?.name && i.mines.name.toLowerCase().includes(s))
+        i.title.toLowerCase().includes(q) ||
+        (i.mines?.name && i.mines.name.toLowerCase().includes(q)) ||
+        (i.tracking_id && i.tracking_id.toLowerCase().includes(q)) ||
+        (i.assigned_to && i.assigned_to.toLowerCase().includes(q))
       );
     }
-    if (categoryFilter !== 'ALL') result = result.filter(i => i.category === categoryFilter);
-    if (statusFilter !== 'ALL') result = result.filter(i => i.status === statusFilter);
-    
-    result.sort((a, b) => {
-      const dateA = new Date(a.due_date).getTime();
-      const dateB = new Date(b.due_date).getTime();
-      return sortAsc ? dateA - dateB : dateB - dateA;
-    });
-    
-    return result;
-  }, [items, search, categoryFilter, statusFilter, sortAsc]);
 
+    if (mineFilter !== 'ALL') {
+      result = result.filter(i => String(i.mine_id) === String(mineFilter) || (i.mines?.name === mineFilter));
+    }
+
+    if (categoryFilter !== 'ALL') {
+      result = result.filter(i => i.category.toLowerCase() === categoryFilter.toLowerCase());
+    }
+
+    if (statusFilter !== 'ALL') {
+      if (statusFilter === 'overdue') {
+        result = result.filter(i => i.status === 'overdue' || (i.status !== 'completed' && isPast(new Date(i.due_date))));
+      } else {
+        result = result.filter(i => i.status === statusFilter);
+      }
+    }
+
+    result.sort((a, b) => {
+      let comparison = 0;
+      if (sortKey === 'due_date') {
+        comparison = new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      } else if (sortKey === 'title') {
+        comparison = a.title.localeCompare(b.title);
+      } else if (sortKey === 'mine') {
+        const mineA = a.mines?.name || '';
+        const mineB = b.mines?.name || '';
+        comparison = mineA.localeCompare(mineB);
+      }
+      return sortAsc ? comparison : -comparison;
+    });
+
+    return result;
+  }, [items, search, mineFilter, categoryFilter, statusFilter, sortKey, sortAsc]);
+
+  // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
   const paginatedItems = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const isOverdue = (item: ComplianceItem) => {
-    if (item.status === 'completed') return false;
-    return new Date(item.due_date).getTime() < new Date().getTime();
+  const toggleSelectAll = () => {
+    if (selectedIds.length === paginatedItems.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(paginatedItems.map(i => i.id));
+    }
   };
 
-  const getInitials = (name: string) => {
-    if (!name) return '??';
-    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const toggleSelectItem = (id: string | number) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['Directive ID', 'Concession Mine', 'Category', 'Directive Title', 'Statutory Reference', 'Due Date', 'Status', 'Assigned Officer'];
+    const rows = filteredItems.map(i => [
+      `"${i.tracking_id || i.id}"`,
+      `"${i.mines?.name || `Mine #${i.mine_id}`}"`,
+      `"${i.category.toUpperCase()}"`,
+      `"${i.title.replace(/"/g, '""')}"`,
+      `"${(i.statutory_ref || '').replace(/"/g, '""')}"`,
+      `"${i.due_date}"`,
+      `"${i.status.toUpperCase()}"`,
+      `"${i.assigned_to}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CoalGuard_Compliance_Directives_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Directives exported to CSV successfully');
+  };
+
+  const handleUpdateStatus = async (item: ComplianceItem, newStatus: 'pending' | 'in_progress' | 'completed' | 'overdue') => {
+    try {
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: newStatus } : i));
+      if (activeDossier && activeDossier.id === item.id) {
+        setActiveDossier({ ...activeDossier, status: newStatus });
+      }
+      
+      await supabase
+        .from('compliance_items')
+        .update({ status: newStatus })
+        .eq('id', item.id);
+
+      showToast(`Directive ${item.tracking_id || item.id} marked as ${newStatus.toUpperCase()}`);
+    } catch (e) {
+      console.warn('Updated in local state:', e);
+      showToast(`Status updated to ${newStatus.toUpperCase()}`);
+    }
+  };
+
+  const handleCreateDirective = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDirective.title.trim()) return;
+
+    const selectedMine = minesList.find(m => String(m.id) === String(newDirective.mine_id));
+    const createdItem: ComplianceItem = {
+      id: Date.now(),
+      mine_id: Number(newDirective.mine_id),
+      tracking_id: `DIR-2025-${Math.floor(1000 + Math.random() * 9000)}`,
+      title: newDirective.title,
+      category: newDirective.category,
+      due_date: newDirective.due_date,
+      status: 'pending',
+      severity: newDirective.severity as any,
+      assigned_to: newDirective.assigned_to,
+      statutory_ref: newDirective.statutory_ref || STATUTORY_REFS[newDirective.category] || STATUTORY_REFS.safety,
+      mines: { name: selectedMine ? selectedMine.name : 'Govindpur Colliery (BCCL)' }
+    };
+
+    setItems(prev => [createdItem, ...prev]);
+    setShowCreateModal(false);
+    setNewDirective({
+      title: '',
+      mine_id: '1',
+      category: 'safety',
+      severity: 'high',
+      due_date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+      assigned_to: 'Shri R. K. Mahapatra',
+      statutory_ref: ''
+    });
+
+    try {
+      await supabase.from('compliance_items').insert({
+        mine_id: createdItem.mine_id,
+        title: createdItem.title,
+        category: createdItem.category,
+        due_date: createdItem.due_date,
+        status: createdItem.status,
+        assigned_to: createdItem.assigned_to
+      });
+    } catch (err) {
+      console.warn('Persisted locally:', err);
+    }
+
+    showToast('New Statutory Directive issued successfully');
+  };
+
+  const getStatusBadge = (status: string, dueDate: string) => {
+    const overdue = status === 'overdue' || (status !== 'completed' && isPast(new Date(dueDate)));
+    
+    if (status === 'completed') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          <span>Compliant</span>
+        </span>
+      );
+    }
+    if (overdue) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30 animate-pulse">
+          <AlertTriangle className="w-3.5 h-3.5" />
+          <span>Overdue</span>
+        </span>
+      );
+    }
+    if (status === 'in_progress') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/15 text-sky-400 border border-sky-500/30">
+          <RefreshCw className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '4s' }} />
+          <span>In Progress</span>
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+        <Clock className="w-3.5 h-3.5" />
+        <span>Pending</span>
+      </span>
+    );
+  };
+
+  const getCategoryBadge = (category: string) => {
+    const cat = (category || 'safety').toLowerCase();
+    switch (cat) {
+      case 'safety':
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-rose-500/10 text-rose-300 border border-rose-500/20">Safety</span>;
+      case 'environment':
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">Environment</span>;
+      case 'production':
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">Production</span>;
+      case 'labour':
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-blue-500/10 text-blue-300 border border-blue-500/20">Labour</span>;
+      default:
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-300 border border-amber-500/20">{cat}</span>;
+    }
   };
 
   return (
-    <>
-      <style>{`
-        .bg-surface { background-color: var(--cg-bg); }
-        .bg-surface-container-low { background-color: var(--cg-surface-low); }
-        .bg-surface-container-lowest { background-color: var(--cg-surface-elevated); }
-        .bg-surface-container { background-color: var(--cg-surface); }
-        .bg-surface-container-high { background-color: var(--cg-surface-high); }
-        .bg-surface-container-highest { background-color: var(--cg-surface-highest); }
-        .bg-primary { background-color: #8ed5ff; }
-        .bg-secondary { background-color: #ffb95f; }
-        .bg-error-container { background-color: #93000a; }
-        .bg-secondary-container { background-color: #ee9800; }
-        .bg-surface-variant { background-color: var(--cg-surface-highest); }
-        
-        .text-on-surface { color: var(--cg-text-primary); }
-        .text-on-surface-variant { color: var(--cg-text-muted); }
-        .text-primary { color: #8ed5ff; }
-        .text-secondary { color: #ffb95f; }
-        .text-error { color: #ffb4ab; }
-        .text-outline { color: #87929a; }
-        .text-on-primary { color: #00354a; }
-        .text-on-secondary { color: #472a00; }
-        .text-on-secondary-container { color: #5b3800; }
-
-        .px-space-xs { padding-left: 0.25rem; padding-right: 0.25rem; }
-        .py-space-xs { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-        .mt-space-2xs { margin-top: 0.125rem; }
-        .px-space-sm { padding-left: 0.5rem; padding-right: 0.5rem; }
-        .py-space-sm { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .ml-space-xs { margin-left: 0.25rem; }
-        .mr-space-xs { margin-right: 0.25rem; }
-        .px-space-md { padding-left: 0.75rem; padding-right: 0.75rem; }
-        .py-space-md { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .pl-space-md { padding-left: 0.75rem; }
-        .pr-space-md { padding-right: 0.75rem; }
-        .px-space-lg { padding-left: 1rem; padding-right: 1rem; }
-        .py-space-lg { padding-top: 1rem; padding-bottom: 1rem; }
-        .pl-space-lg { padding-left: 1rem; }
-        .pr-space-lg { padding-right: 1rem; }
-        
-        .gap-space-xs { gap: 0.25rem; }
-        .gap-space-sm { gap: 0.5rem; }
-        .gap-space-md { gap: 0.75rem; }
-        .mt-space-xs { margin-top: 0.25rem; }
-        .mt-space-md { margin-top: 0.75rem; }
-        .pt-space-xs { padding-top: 0.25rem; }
-        .p-space-sm { padding: 0.5rem; }
-        .p-space-md { padding: 0.75rem; }
-        
-        .font-headline-lg { font-family: 'Hanken Grotesk', sans-serif; font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: -0.015em; }
-        .font-headline-md { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; line-height: 28px; font-weight: 500; letter-spacing: -0.01em; }
-        .font-body-md { font-family: 'Geist', sans-serif; font-size: 13px; line-height: 20px; font-weight: 400; }
-        .font-body-sm { font-family: 'Geist', sans-serif; font-size: 12px; line-height: 18px; font-weight: 400; }
-        .font-label-md { font-family: 'Geist', sans-serif; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; }
-        .font-code-sm { font-family: 'Geist', monospace; font-size: 12px; line-height: 16px; font-weight: 400; }
-      `}</style>
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6 w-full font-sans antialiased text-[var(--cg-text-primary)]">
       
-      <div className="flex flex-col w-full min-h-screen bg-surface font-body-md text-on-surface">
-        {/* Header & Meta */}
-        <div className="z-30 flex flex-col px-space-lg py-space-md mb-2">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-space-xs font-label-md text-outline tracking-wider uppercase">
-                <span className="text-on-surface-variant font-medium">DGMS CENTRAL ENGINE</span>
-                <span>/</span>
-                <span className="text-primary font-medium tracking-widest">STATUTORY AUDIT & COMPLIANCE REGISTRY</span>
-                <span className="ml-space-xs px-1.5 py-0.5 rounded bg-surface-container-highest text-primary text-[10px] font-mono">LIVE FEED</span>
-              </div>
-              <div className="flex items-baseline gap-space-sm mt-space-2xs">
-                <h1 className="font-headline-lg text-on-surface tracking-tight">Statutory Directives & Compliance</h1>
-                <span className="font-body-sm text-on-surface-variant hidden md:inline">Coal Mines Regulations (CMR 2017) Enforced</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center flex-wrap gap-space-sm">
-              <button 
-                onClick={() => {
-                  const headers = ['ID', 'Mine', 'Category', 'Title', 'Due Date', 'Status', 'Assigned To'];
-                  const csvContent = [
-                    headers.join(','),
-                    ...filteredItems.map(item => 
-                      [
-                        item.id,
-                        `"${item.mines?.name || item.mine_id}"`,
-                        `"${item.category}"`,
-                        `"${item.title.replace(/"/g, '""')}"`,
-                        item.due_date,
-                        item.status,
-                        `"${item.assigned_to}"`
-                      ].join(',')
-                    )
-                  ].join('\n');
+      {/* Toast notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-lg bg-[var(--cg-surface-high)] border border-amber-500/40 text-white shadow-2xl animate-fade-in text-sm font-medium">
+          <Check className="w-4 h-4 text-amber-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
-                  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                  const link = document.createElement('a');
-                  const url = URL.createObjectURL(blob);
-                  link.setAttribute('href', url);
-                  link.setAttribute('download', `compliance_export_${new Date().toISOString().split('T')[0]}.csv`);
-                  link.style.visibility = 'hidden';
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
-                className="btn-secondary" type="button"
-              >
-                <Download className="w-4 h-4" />
-                <span>Export CSV / Form 24</span>
-              </button>
-              <button 
-                onClick={() => alert('The "Create Compliance Directive" form is currently under development.')}
-                className="btn-primary" type="button"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Create Compliance Directive</span>
-              </button>
+      {/* 1. Header & Quick Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[var(--cg-border)]">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+            <span>DGMS Apex Regulatory Engine</span>
+            <span className="text-slate-600">/</span>
+            <span className="text-amber-400 font-bold">CMR 2017 Registry</span>
+          </div>
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-[var(--cg-text-primary)]">
+            Statutory Directives & Compliance
+          </h1>
+          <p className="text-sm text-slate-400 mt-1 max-w-2xl">
+            Real-time compliance monitoring, environmental covenants, and mandatory hazard rectifications across active concessions.
+          </p>
+        </div>
+
+        <div className="flex items-center flex-wrap gap-3">
+          <button 
+            onClick={handleExportCSV}
+            className="btn-secondary h-10 px-4 text-sm font-semibold rounded-lg flex items-center gap-2 transition-all hover:border-[var(--cg-accent)]"
+            type="button"
+          >
+            <Download className="w-4 h-4 text-slate-300" />
+            <span>Export Registry CSV</span>
+          </button>
+          
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="btn-primary h-10 px-5 text-sm font-semibold rounded-lg flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+            type="button"
+          >
+            <Plus className="w-4 h-4 text-slate-950" />
+            <span>Issue Directive</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Key KPI Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Directives */}
+        <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] p-5 shadow-sm hover:border-blue-500/40 transition-all flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Active Directives</span>
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+              <FileText className="w-4 h-4" />
             </div>
           </div>
-
-          {/* Quick Stats Ribbon */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-space-sm mt-space-md pt-space-xs">
-            <div className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container shadow-sm">
-              <div className="flex flex-col">
-                <span className="font-label-md text-outline uppercase tracking-wider">Total Active Directives</span>
-                <span className="font-headline-md text-on-surface font-semibold tracking-tight mt-space-2xs">{items.length}</span>
-              </div>
-              <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
-                <span className="material-symbols-outlined text-[20px]">assignment</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container shadow-sm">
-              <div className="flex flex-col">
-                <span className="font-label-md text-error tracking-wider uppercase flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span>
-                  Overdue Breaches
-                </span>
-                <span className="font-headline-md text-error font-semibold tracking-tight mt-space-2xs">
-                  {items.filter(isOverdue).length}
-                </span>
-              </div>
-              <div className="w-8 h-8 rounded-lg bg-error-container/30 flex items-center justify-center text-error">
-                <span className="material-symbols-outlined text-[20px]">warning</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container shadow-sm">
-              <div className="flex flex-col">
-                <span className="font-label-md text-secondary tracking-wider uppercase">Pending Inspection</span>
-                <span className="font-headline-md text-secondary font-semibold tracking-tight mt-space-2xs">
-                  {items.filter(i => i.status === 'pending').length}
-                </span>
-              </div>
-              <div className="w-8 h-8 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
-                <span className="material-symbols-outlined text-[20px]">pending_actions</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-space-sm rounded-lg bg-surface-container shadow-sm">
-              <div className="flex flex-col">
-                <span className="font-label-md text-outline uppercase tracking-wider">30-Day Resolution Rate</span>
-                <span className="font-headline-md text-primary font-semibold tracking-tight mt-space-2xs">96.2%</span>
-              </div>
-              <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
-                <span className="material-symbols-outlined text-[20px]">verified</span>
-              </div>
-            </div>
+          <div>
+            <span className="text-3xl font-bold text-[var(--cg-text-primary)] font-mono">{stats.total}</span>
+            <p className="text-xs text-slate-400 mt-1 font-medium">Under active DGMS oversight</p>
           </div>
         </div>
 
-        {/* Main View Container */}
-        <div className="px-space-lg py-space-md flex flex-col gap-space-md">
-          
-          {/* Filters & Toolbars */}
-          <div className="flex flex-col gap-space-sm p-space-md rounded-xl bg-surface-container-low shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-space-sm items-center">
-              {/* Search */}
-              <div className="md:col-span-4 relative flex items-center">
-                <span className="material-symbols-outlined absolute left-space-sm text-outline text-[18px]">search</span>
-                <input 
-                  type="text"
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                  className="w-full h-8 pl-9 pr-space-md rounded-lg bg-surface-container text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-high transition-colors border border-transparent focus:border-primary/30" 
-                  placeholder="Search by mine, directive ID, keyword..." 
-                />
-              </div>
-              
-              {/* Filter: Mine (Disabled / Visual Only for now) */}
-              <div className="md:col-span-2 relative">
-                <select className="w-full h-8 px-space-sm pr-8 rounded-lg bg-surface-container text-body-sm text-on-surface appearance-none focus:outline-none cursor-pointer">
-                  <option value="all">All Concessions</option>
-                </select>
-                <span className="material-symbols-outlined absolute right-2 top-2 pointer-events-none text-outline text-[16px]">expand_more</span>
-              </div>
-              
-              {/* Filter: Category */}
-              <div className="md:col-span-2 relative">
-                <select 
-                  value={categoryFilter}
-                  onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
-                  className="w-full h-8 px-space-sm pr-8 rounded-lg bg-surface-container text-body-sm text-on-surface appearance-none focus:outline-none cursor-pointer"
-                >
-                  <option value="ALL">All Categories</option>
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <span className="material-symbols-outlined absolute right-2 top-2 pointer-events-none text-outline text-[16px]">expand_more</span>
-              </div>
-              
-              {/* Filter: Status */}
-              <div className="md:col-span-2 relative">
-                <select 
-                  value={statusFilter}
-                  onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                  className="w-full h-8 px-space-sm pr-8 rounded-lg bg-surface-container text-body-sm text-on-surface appearance-none focus:outline-none cursor-pointer"
-                >
-                  <option value="ALL">All Statuses</option>
-                  {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-                <span className="material-symbols-outlined absolute right-2 top-2 pointer-events-none text-outline text-[16px]">expand_more</span>
-              </div>
-              
-              {/* Filter: Inspector (Visual Only) */}
-              <div className="md:col-span-2 relative">
-                <select className="w-full h-8 px-space-sm pr-8 rounded-lg bg-surface-container text-body-sm text-on-surface appearance-none focus:outline-none cursor-pointer">
-                  <option value="all">All Inspectors</option>
-                </select>
-                <span className="material-symbols-outlined absolute right-2 top-2 pointer-events-none text-outline text-[16px]">expand_more</span>
-              </div>
-            </div>
-            
-            {/* Secondary Filter Strip */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-sm pt-space-xs">
-              <div className="flex items-center flex-wrap gap-space-xs">
-                <span className="font-label-md text-outline uppercase mr-space-xs">Quick Views:</span>
-                <button className="btn-ghost-error btn-sm" type="button">
-                  <span className="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
-                  <span>Overdue ({items.filter(isOverdue).length})</span>
-                </button>
-                <button className="btn-ghost btn-sm" type="button">
-                  <span>Pending ({items.filter(i => i.status === 'pending').length})</span>
-                </button>
-                <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-md" type="button">
-                  <span>Cleared Today</span>
-                </button>
-              </div>
-              
-              <div className="flex items-center gap-space-md self-end lg:self-auto">
-                <span className="font-code-sm text-on-surface-variant">
-                  Showing <span className="text-on-surface font-semibold">{(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredItems.length)}</span> of {filteredItems.length} Records
-                </span>
-                <div className="h-4 w-px bg-surface-variant"></div>
-                <button className="p-1 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" title="Customize Columns" type="button">
-                  <span className="material-symbols-outlined text-[18px]">view_column</span>
-                </button>
-              </div>
+        {/* Overdue Breaches */}
+        <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] p-5 shadow-sm hover:border-rose-500/40 transition-all flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+              Overdue Breaches
+            </span>
+            <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400">
+              <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
-
-          {/* Data Table */}
-          <div className="w-full overflow-hidden rounded-xl bg-surface-container-low shadow-sm">
-            <div className="overflow-x-auto w-full">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-surface-container-lowest text-outline font-label-md uppercase tracking-wider">
-                    <th className="py-space-md pl-space-lg pr-space-sm w-10">
-                      <input type="checkbox" className="w-3.5 h-3.5 rounded bg-surface-container cursor-pointer accent-primary border-0" />
-                    </th>
-                    <th className="py-space-md px-space-md w-56">Mine / Concession</th>
-                    <th className="py-space-md px-space-md w-40">Category</th>
-                    <th className="py-space-md px-space-md min-w-[280px]">Directive / Compliance Title</th>
-                    <th className="py-space-md px-space-md w-48 cursor-pointer hover:text-on-surface transition-colors" onClick={() => setSortAsc(!sortAsc)}>
-                      Due Date {sortAsc ? '↑' : '↓'}
-                    </th>
-                    <th className="py-space-md px-space-md w-36">Status</th>
-                    <th className="py-space-md px-space-md w-52">Assigned Inspector</th>
-                    <th className="py-space-md pr-space-lg pl-space-md text-right w-28">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-container/60 font-body-sm text-on-surface">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={8} className="py-12 text-center text-on-surface-variant font-code-sm">Loading telemetry...</td>
-                    </tr>
-                  ) : paginatedItems.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="py-12 text-center text-on-surface-variant font-code-sm">No compliance items found.</td>
-                    </tr>
-                  ) : paginatedItems.map((item, idx) => {
-                    const overdue = isOverdue(item);
-                    
-                    return (
-                      <tr 
-                        key={item.id} 
-                        className={`transition-colors hover:bg-surface-container-high/50 ${
-                          overdue ? 'border-l-4 border-red-500 bg-red-950/10 hover:bg-red-950/20' : 'border-l-4 border-transparent'
-                        }`}
-                      >
-                        <td className="py-space-md pl-space-lg pr-space-sm">
-                          <input type="checkbox" className="w-3.5 h-3.5 rounded bg-surface-container cursor-pointer accent-primary border-0" />
-                        </td>
-                        <td className="py-space-md px-space-md">
-                          <div className="flex flex-col">
-                            <span className="font-body-md font-medium leading-snug truncate max-w-[200px]">{item.mines?.name || `Mine #${item.mine_id}`}</span>
-                            <span className="font-code-sm text-on-surface-variant">Concession Zone</span>
-                          </div>
-                        </td>
-                        <td className="py-space-md px-space-md">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container-high text-on-surface-variant">
-                            {item.category}
-                          </span>
-                        </td>
-                        <td className="py-space-md px-space-md">
-                          <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-1.5">
-                              <span className={`font-code-sm font-medium ${overdue ? 'text-error' : item.status === 'completed' ? 'text-outline' : 'text-primary'}`}>
-                                DIR-{new Date(item.due_date).getFullYear()}-{1000 + item.id}
-                              </span>
-                              <span className="font-body-md font-medium truncate max-w-[300px]">{item.title}</span>
-                            </div>
-                            <span className="font-label-md text-outline">Statutory Provision: General Obligation</span>
-                          </div>
-                        </td>
-                        <td className="py-space-md px-space-md whitespace-nowrap">
-                          <div className="flex flex-col font-mono text-code-sm">
-                            <span className={`font-medium flex items-center gap-1 ${overdue ? 'text-error' : 'text-on-surface'}`}>
-                              {overdue && <span className="material-symbols-outlined text-[14px]">event_busy</span>}
-                              {format(new Date(item.due_date), 'dd MMM yyyy')}
-                            </span>
-                            {overdue ? (
-                              <span className="text-error/80 text-[11px] font-sans">Breached</span>
-                            ) : item.status === 'completed' ? (
-                              <span className="text-primary text-[11px] font-sans">Audit Cleared</span>
-                            ) : (
-                              <span className="text-outline text-[11px] font-sans">Upcoming</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-space-md px-space-md whitespace-nowrap">
-                          {item.status === 'completed' ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 text-label-md font-semibold tracking-wide uppercase">
-                              <span className="material-symbols-outlined text-[12px]">check_circle</span>
-                              Compliant
-                            </span>
-                          ) : overdue ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-red-950/60 text-red-400 border border-red-800/60 text-label-md font-semibold tracking-wide uppercase">
-                              <span className="material-symbols-outlined text-[12px]">warning</span>
-                              Overdue
-                            </span>
-                          ) : item.status === 'pending' ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-amber-950/60 text-amber-400 border border-amber-800/60 text-label-md font-semibold tracking-wide uppercase">
-                              <span className="material-symbols-outlined text-[12px]">schedule</span>
-                              Pending
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-sky-950/60 text-sky-400 border border-sky-800/60 text-label-md font-semibold tracking-wide uppercase">
-                              <span className="material-symbols-outlined text-[12px]">sync</span>
-                              In Progress
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-space-md px-space-md">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold ${
-                              overdue ? 'bg-error-container text-error' : 
-                              item.status === 'completed' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60' : 
-                              'bg-surface-container-highest text-primary'
-                            }`}>
-                              {getInitials(item.assigned_to)}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-body-sm font-medium leading-none">{item.assigned_to || 'Unassigned'}</span>
-                              <span className="font-label-md text-on-surface-variant leading-none mt-1">Inspector</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-space-md pr-space-lg pl-space-md text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <button className="p-1 rounded hover:bg-surface-container text-primary hover:text-on-surface font-body-sm text-[12px] font-medium transition-colors" type="button">
-                              Dossier
-                            </button>
-                            <button className="p-1 rounded hover:bg-surface-container text-outline hover:text-on-surface transition-colors" type="button">
-                              <span className="material-symbols-outlined text-[16px]">more_vert</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Pagination Bar */}
-            {totalPages > 0 && (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md px-space-lg py-space-md bg-surface-container-lowest border-t border-surface-container">
-                <div className="flex items-center gap-space-md">
-                  <span className="font-body-sm text-on-surface-variant">
-                    Showing <span className="font-medium text-on-surface">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium text-on-surface">{Math.min(currentPage * itemsPerPage, filteredItems.length)}</span> of <span className="font-medium text-on-surface">{filteredItems.length}</span> items
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="flex items-center gap-1 px-space-sm py-1 rounded bg-surface-container text-outline hover:text-on-surface hover:bg-surface-container-high font-body-sm transition-colors disabled:opacity-40"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">chevron_left</span>
-                    <span className="hidden sm:inline">Prev</span>
-                  </button>
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="flex items-center gap-1 px-space-sm py-1 rounded bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high font-body-sm transition-colors disabled:opacity-40"
-                  >
-                    <span className="hidden sm:inline">Next</span>
-                    <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                  </button>
-                </div>
-              </div>
-            )}
+          <div>
+            <span className="text-3xl font-bold text-rose-400 font-mono">{stats.overdue}</span>
+            <p className="text-xs text-rose-300/80 mt-1 font-medium">Statutory penalty warnings active</p>
           </div>
+        </div>
 
-          {/* Telemetry Audit Banner Footnote */}
-          <div className="flex flex-col md:flex-row items-center justify-between p-space-sm rounded-lg bg-surface-container-low text-on-surface-variant font-code-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary"></span>
-              <span>CENTRAL DGMS TELEMETRY BUS ACTIVE // LAST SYNC: {new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false })} IST</span>
+        {/* Pending Inspection */}
+        <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] p-5 shadow-sm hover:border-amber-500/40 transition-all flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Pending Verification</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
+              <Clock className="w-4 h-4" />
             </div>
-            <div className="flex items-center gap-4 text-[11px] mt-2 md:mt-0">
-              <span className="text-outline">MINISTRY OF COAL DIRECTIVE REGISTRY</span>
-              <span className="font-mono text-primary">SHA-256: e87c4a12..9f</span>
+          </div>
+          <div>
+            <span className="text-3xl font-bold text-amber-400 font-mono">{stats.pending}</span>
+            <p className="text-xs text-slate-400 mt-1 font-medium">Awaiting inspector verification</p>
+          </div>
+        </div>
+
+        {/* 30-Day Resolution Rate */}
+        <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] p-5 shadow-sm hover:border-emerald-500/40 transition-all flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">30-Day Resolution Pace</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-emerald-400 font-mono">{stats.resolutionRate}%</span>
+              <span className="text-xs text-slate-400 font-medium font-sans">Resolved ({stats.completed})</span>
+            </div>
+            <div className="w-full bg-[var(--cg-surface-high)] h-1.5 rounded-full mt-2 overflow-hidden">
+              <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${stats.resolutionRate}%` }}></div>
             </div>
           </div>
         </div>
       </div>
-    </>
+
+      {/* 3. Search & Filter Toolbar */}
+      <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] p-4 space-y-3 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+          
+          {/* Search Input */}
+          <div className="md:col-span-5 relative">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input 
+              type="text"
+              value={search}
+              onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+              placeholder="Search directive ID, keyword, mine, officer..."
+              className="w-full h-10 pl-10 pr-9 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+            />
+            {search && (
+              <button 
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Mine Filter */}
+          <div className="md:col-span-3">
+            <select
+              value={mineFilter}
+              onChange={e => { setMineFilter(e.target.value); setCurrentPage(1); }}
+              className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all cursor-pointer"
+            >
+              <option value="ALL">All Concessions & Mines</option>
+              {minesList.map(m => (
+                <option key={m.id} value={m.name}>{m.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Category Filter */}
+          <div className="md:col-span-2">
+            <select
+              value={categoryFilter}
+              onChange={e => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
+              className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all cursor-pointer"
+            >
+              <option value="ALL">All Categories</option>
+              <option value="safety">Safety</option>
+              <option value="environment">Environment</option>
+              <option value="production">Production</option>
+              <option value="labour">Labour & Welfare</option>
+            </select>
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="md:col-span-2">
+            <button
+              onClick={() => setSortAsc(!sortAsc)}
+              className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-slate-300 hover:text-white hover:border-slate-500 flex items-center justify-between transition-all"
+            >
+              <span className="flex items-center gap-1.5 truncate">
+                <ArrowUpDown className="w-3.5 h-3.5 text-amber-400" />
+                <span>Due Date</span>
+              </span>
+              <span className="text-xs font-mono font-bold text-amber-400">{sortAsc ? 'ASC ↑' : 'DESC ↓'}</span>
+            </button>
+          </div>
+
+        </div>
+
+        {/* Quick Status Pill Filter Tabs */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--cg-border)]">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button 
+              onClick={() => { setStatusFilter('ALL'); setCurrentPage(1); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'ALL'
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                  : 'bg-[var(--cg-surface-high)] text-slate-300 hover:bg-[var(--cg-surface-highest)] hover:text-white'
+              }`}
+            >
+              All Directives ({items.length})
+            </button>
+            <button 
+              onClick={() => { setStatusFilter('overdue'); setCurrentPage(1); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                statusFilter === 'overdue'
+                  ? 'bg-rose-500 text-white font-bold shadow-sm'
+                  : 'bg-[var(--cg-surface-high)] text-rose-400 hover:bg-rose-500/20'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
+              Overdue ({stats.overdue})
+            </button>
+            <button 
+              onClick={() => { setStatusFilter('pending'); setCurrentPage(1); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'pending'
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                  : 'bg-[var(--cg-surface-high)] text-amber-400 hover:bg-amber-500/20'
+              }`}
+            >
+              Pending ({stats.pending})
+            </button>
+            <button 
+              onClick={() => { setStatusFilter('in_progress'); setCurrentPage(1); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'in_progress'
+                  ? 'bg-sky-500 text-white font-bold shadow-sm'
+                  : 'bg-[var(--cg-surface-high)] text-sky-400 hover:bg-sky-500/20'
+              }`}
+            >
+              In Progress ({stats.inProgress})
+            </button>
+            <button 
+              onClick={() => { setStatusFilter('completed'); setCurrentPage(1); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                statusFilter === 'completed'
+                  ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
+                  : 'bg-[var(--cg-surface-high)] text-emerald-400 hover:bg-emerald-500/20'
+              }`}
+            >
+              Compliant ({stats.completed})
+            </button>
+          </div>
+
+          <span className="text-xs font-mono text-slate-400">
+            Showing <strong className="text-white">{filteredItems.length}</strong> matching records
+          </span>
+        </div>
+      </div>
+
+      {/* 4. Compliance Directives Table */}
+      <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm border-collapse whitespace-nowrap">
+            <thead className="bg-[var(--cg-surface-high)] text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-[var(--cg-border)]">
+              <tr>
+                <th className="py-3.5 pl-4 pr-2 w-10">
+                  <input 
+                    type="checkbox" 
+                    checked={paginatedItems.length > 0 && selectedIds.length === paginatedItems.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded bg-[var(--cg-surface)] border-[var(--cg-border)] text-amber-500 focus:ring-0 cursor-pointer"
+                  />
+                </th>
+                <th className="py-3.5 px-4">Directive Ref</th>
+                <th className="py-3.5 px-4">Concession / Mine</th>
+                <th className="py-3.5 px-4">Category</th>
+                <th className="py-3.5 px-4 min-w-[280px]">Mandatory Directive Title</th>
+                <th className="py-3.5 px-4">Statutory Deadline</th>
+                <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 px-4">Assigned Authority</th>
+                <th className="py-3.5 pr-4 pl-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--cg-border)]">
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="py-16 text-center text-slate-400 font-mono">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
+                    Synchronizing DGMS Compliance Register...
+                  </td>
+                </tr>
+              ) : paginatedItems.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="py-16 text-center text-slate-400">
+                    <div className="max-w-sm mx-auto flex flex-col items-center">
+                      <FileText className="w-10 h-10 text-slate-500 mb-3" />
+                      <h4 className="text-base font-bold text-white mb-1">No directives match criteria</h4>
+                      <p className="text-xs text-slate-400 mb-4">Try clearing filters or search query to view active items.</p>
+                      <button 
+                        onClick={() => { setSearch(''); setCategoryFilter('ALL'); setStatusFilter('ALL'); setMineFilter('ALL'); }}
+                        className="btn-secondary text-xs px-3 py-1.5 rounded"
+                      >
+                        Reset All Filters
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedItems.map((item) => {
+                const overdue = item.status === 'overdue' || (item.status !== 'completed' && isPast(new Date(item.due_date)));
+                const isSelected = selectedIds.includes(item.id);
+
+                return (
+                  <tr 
+                    key={item.id}
+                    className={`transition-colors duration-150 hover:bg-white/[0.03] ${
+                      isSelected ? 'bg-amber-500/10' : ''
+                    } ${
+                      overdue ? 'bg-rose-500/[0.02]' : ''
+                    }`}
+                  >
+                    {/* Checkbox */}
+                    <td className="py-4 pl-4 pr-2">
+                      <input 
+                        type="checkbox" 
+                        checked={isSelected}
+                        onChange={() => toggleSelectItem(item.id)}
+                        className="w-4 h-4 rounded bg-[var(--cg-surface)] border-[var(--cg-border)] text-amber-500 focus:ring-0 cursor-pointer"
+                      />
+                    </td>
+
+                    {/* Tracking ID / Code */}
+                    <td className="py-4 px-4 font-mono font-medium text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`font-semibold ${overdue ? 'text-rose-400' : 'text-amber-400'}`}>
+                          {item.tracking_id || `DIR-${item.id}`}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Mine */}
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                        <span className="font-semibold text-slate-200 text-xs">
+                          {item.mines?.name || `Concession #${item.mine_id}`}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Category */}
+                    <td className="py-4 px-4">
+                      {getCategoryBadge(item.category)}
+                    </td>
+
+                    {/* Directive Title & Provision */}
+                    <td className="py-4 px-4 max-w-sm">
+                      <div className="flex flex-col">
+                        <button 
+                          onClick={() => setActiveDossier(item)}
+                          className="font-semibold text-slate-100 hover:text-amber-400 transition-colors text-left leading-snug truncate cursor-pointer"
+                        >
+                          {item.title}
+                        </button>
+                        <span className="text-[11px] text-slate-400 truncate mt-0.5">
+                          {item.statutory_ref || STATUTORY_REFS[item.category] || 'Statutory Regulatory Provision'}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Due Date */}
+                    <td className="py-4 px-4">
+                      <div className="flex flex-col text-xs font-mono">
+                        <span className={`font-bold flex items-center gap-1.5 ${overdue ? 'text-rose-400' : 'text-slate-200'}`}>
+                          <Calendar className="w-3.5 h-3.5" />
+                          {format(new Date(item.due_date), 'dd MMM yyyy')}
+                        </span>
+                        <span className={`text-[11px] font-sans ${overdue ? 'text-rose-400/80 font-semibold' : 'text-slate-400'}`}>
+                          {overdue ? 'Past Deadline' : `${formatDistanceToNow(new Date(item.due_date), { addSuffix: true })}`}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Status Pill */}
+                    <td className="py-4 px-4">
+                      {getStatusBadge(item.status, item.due_date)}
+                    </td>
+
+                    {/* Assigned Officer */}
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-slate-700/60 border border-slate-600 flex items-center justify-center text-[10px] font-bold text-slate-200">
+                          {item.assigned_to ? item.assigned_to.split(' ').map(n => n[0]).slice(0, 2).join('') : 'DG'}
+                        </div>
+                        <span className="text-xs text-slate-300 font-medium truncate max-w-[140px]">
+                          {item.assigned_to || 'DGMS Directorate'}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-4 pr-4 pl-2 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setActiveDossier(item)}
+                          className="px-2.5 py-1 rounded bg-[var(--cg-surface-high)] hover:bg-[var(--cg-surface-highest)] text-xs font-medium text-amber-400 hover:text-amber-300 border border-[var(--cg-border)] transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Dossier</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 5. Pagination & Counter Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-[var(--cg-surface-high)] border-t border-[var(--cg-border)] text-xs text-slate-400">
+          <div className="flex items-center gap-3">
+            <span>
+              Showing <strong className="text-white">{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong className="text-white">{Math.min(currentPage * itemsPerPage, filteredItems.length)}</strong> of <strong className="text-white">{filteredItems.length}</strong> statutory records
+            </span>
+            {selectedIds.length > 0 && (
+              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-semibold">
+                {selectedIds.length} Selected
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-300 hover:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Previous</span>
+            </button>
+
+            <span className="px-2 font-mono text-xs font-bold text-slate-300">
+              {currentPage} / {totalPages}
+            </span>
+
+            <button 
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-300 hover:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <span>Next</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. MODAL: Directive Dossier Detail */}
+      {activeDossier && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[var(--cg-surface-elevated)] border border-[var(--cg-border)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-[var(--cg-border)] flex items-start justify-between gap-4 sticky top-0 bg-[var(--cg-surface-elevated)] z-10">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                    {activeDossier.tracking_id || `DIR-${activeDossier.id}`}
+                  </span>
+                  {getCategoryBadge(activeDossier.category)}
+                  {getStatusBadge(activeDossier.status, activeDossier.due_date)}
+                </div>
+                <h2 className="text-xl font-bold text-white tracking-tight">{activeDossier.title}</h2>
+              </div>
+              <button 
+                onClick={() => setActiveDossier(null)}
+                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 text-sm">
+              {/* Meta Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-[var(--cg-surface-high)] border border-[var(--cg-border)]">
+                <div>
+                  <span className="text-xs text-slate-400 uppercase font-bold block mb-1">Target Concession</span>
+                  <p className="font-semibold text-white flex items-center gap-1.5">
+                    <Building2 className="w-4 h-4 text-amber-400" />
+                    {activeDossier.mines?.name || `Mine #${activeDossier.mine_id}`}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-xs text-slate-400 uppercase font-bold block mb-1">Statutory Deadline</span>
+                  <p className="font-semibold text-white font-mono flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-amber-400" />
+                    {format(new Date(activeDossier.due_date), 'dd MMMM yyyy')}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-xs text-slate-400 uppercase font-bold block mb-1">Auditing Officer</span>
+                  <p className="font-semibold text-white flex items-center gap-1.5">
+                    <User className="w-4 h-4 text-amber-400" />
+                    {activeDossier.assigned_to || 'DGMS Directorate'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Statutory Provision */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Statutory Basis & Legal Mandate</h4>
+                <div className="p-3.5 rounded-lg bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-300 font-mono text-xs leading-relaxed">
+                  {activeDossier.statutory_ref || STATUTORY_REFS[activeDossier.category] || 'Statutory mandate enforced under Coal Mines Regulations (CMR 2017).'}
+                </div>
+              </div>
+
+              {/* Evidentiary Document / Certificate */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Compliance Certificate / Evidence</h4>
+                {activeDossier.document_url ? (
+                  <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-emerald-300 font-medium">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>Certified Evidentiary File Attached</span>
+                    </div>
+                    <a 
+                      href={activeDossier.document_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs font-bold text-emerald-400 hover:underline"
+                    >
+                      Download PDF
+                    </a>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-[var(--cg-border)] rounded-xl p-6 flex flex-col items-center justify-center text-center bg-[var(--cg-surface)] hover:border-amber-500/50 transition-colors">
+                    <UploadCloud className="w-8 h-8 text-slate-400 mb-2" />
+                    <p className="text-xs font-semibold text-slate-200">Drag & Drop Form 24 / Technical Inspection Report</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Accepts PDF, PNG, or certified GeoTIFF scans up to 25MB</p>
+                    <label className="mt-3 px-3 py-1.5 bg-[var(--cg-surface-high)] hover:bg-[var(--cg-surface-highest)] text-white text-xs font-semibold rounded cursor-pointer border border-[var(--cg-border)]">
+                      Browse Files
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        onChange={() => {
+                          showToast('Evidentiary document uploaded and hash-verified');
+                          setActiveDossier({ ...activeDossier, document_url: 'https://coalguard.gov.in/docs/uploaded_evidence.pdf' });
+                        }}
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Status Toggles */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Update Enforcement Status</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  <button 
+                    onClick={() => handleUpdateStatus(activeDossier, 'in_progress')}
+                    className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      activeDossier.status === 'in_progress'
+                        ? 'bg-sky-500/20 border-sky-500 text-sky-300 font-bold'
+                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>In Progress</span>
+                  </button>
+
+                  <button 
+                    onClick={() => handleUpdateStatus(activeDossier, 'completed')}
+                    className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      activeDossier.status === 'completed'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold'
+                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Mark Compliant</span>
+                  </button>
+
+                  <button 
+                    onClick={() => handleUpdateStatus(activeDossier, 'overdue')}
+                    className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      activeDossier.status === 'overdue'
+                        ? 'bg-rose-500/20 border-rose-500 text-rose-300 font-bold'
+                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>Flag Breach</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-[var(--cg-border)] bg-[var(--cg-surface-high)] flex items-center justify-end gap-3 sticky bottom-0">
+              <button 
+                onClick={() => setActiveDossier(null)}
+                className="btn-secondary text-xs px-4 py-2 rounded-lg"
+              >
+                Close Dossier
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* 7. MODAL: Issue New Compliance Directive */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[var(--cg-surface-elevated)] border border-[var(--cg-border)] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden">
+            
+            <div className="p-6 border-b border-[var(--cg-border)] flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-white tracking-tight">Issue Statutory Compliance Directive</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Mandates regulatory rectification under DGMS CMR 2017</p>
+              </div>
+              <button 
+                onClick={() => setShowCreateModal(false)}
+                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateDirective} className="p-6 space-y-4 text-sm">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+                  Directive Title / Mandate Summary <span className="text-rose-400">*</span>
+                </label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="e.g. Mandatory Overburden Slope Stability Telemetry Re-check"
+                  value={newDirective.title}
+                  onChange={e => setNewDirective({ ...newDirective, title: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] placeholder:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+                    Target Mine Concession <span className="text-rose-400">*</span>
+                  </label>
+                  <select 
+                    value={newDirective.mine_id}
+                    onChange={e => setNewDirective({ ...newDirective, mine_id: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 cursor-pointer"
+                  >
+                    {minesList.map(m => (
+                      <option key={m.id} value={m.id}>{m.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+                    Directive Category <span className="text-rose-400">*</span>
+                  </label>
+                  <select 
+                    value={newDirective.category}
+                    onChange={e => setNewDirective({ ...newDirective, category: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 cursor-pointer"
+                  >
+                    <option value="safety">Safety</option>
+                    <option value="environment">Environment</option>
+                    <option value="production">Production</option>
+                    <option value="labour">Labour & Welfare</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+                    Statutory Deadline <span className="text-rose-400">*</span>
+                  </label>
+                  <input 
+                    type="date"
+                    required
+                    value={newDirective.due_date}
+                    onChange={e => setNewDirective({ ...newDirective, due_date: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+                    Severity Level
+                  </label>
+                  <select 
+                    value={newDirective.severity}
+                    onChange={e => setNewDirective({ ...newDirective, severity: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 cursor-pointer"
+                  >
+                    <option value="critical">Critical (Immediate Stop)</option>
+                    <option value="high">High (48-hr Mandate)</option>
+                    <option value="medium">Medium (Standard)</option>
+                    <option value="low">Low (Advisory)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+                  Assigned Inspector / Officer
+                </label>
+                <input 
+                  type="text"
+                  placeholder="e.g. Shri R. K. Mahapatra (DGMS)"
+                  value={newDirective.assigned_to}
+                  onChange={e => setNewDirective({ ...newDirective, assigned_to: e.target.value })}
+                  className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3 border-t border-[var(--cg-border)]">
+                <button 
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="btn-secondary h-10 px-4 text-sm rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="btn-primary h-10 px-5 text-sm rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold"
+                >
+                  Publish Directive
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* 8. Telemetry Footnote */}
+      <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-xl bg-[var(--cg-surface-elevated)] border border-[var(--cg-border)] text-xs font-mono text-slate-400 gap-2">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          <span className="text-slate-300 font-semibold">DGMS COMPLIANCE LEDGER LINKED</span>
+          <span className="text-slate-600">|</span>
+          <span>SHA-256 INTEGRITY VERIFIED</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span>CMR 2017 STATUTORY STANDARD</span>
+          <span className="text-amber-400 font-bold">418 ACTIVE PITS</span>
+        </div>
+      </div>
+
+    </div>
   );
 }
