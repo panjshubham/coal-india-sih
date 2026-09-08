@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { ShieldAlert, AlertTriangle, Activity, AlertCircle, RefreshCw, BarChart2, BellRing, ShieldCheck, Download, FileCheck2 } from 'lucide-react';
-import { formatDistanceToNow, subDays, format } from 'date-fns';
+import { ShieldAlert, AlertTriangle, Activity, AlertCircle, RefreshCw, BarChart2, ShieldCheck, Download, FileCheck2 } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -27,14 +27,7 @@ interface Violation {
   };
 }
 
-interface Alert {
-  id: number;
-  message: string;
-  severity: string;
-  is_read: boolean;
-  created_at: string;
-  type: string;
-}
+
 
 export default function RegulatorDashboard() {
   const [stats, setStats] = useState({
@@ -46,7 +39,7 @@ export default function RegulatorDashboard() {
 
   const [riskScores, setRiskScores] = useState<MineRisk[]>([]);
   const [violations, setViolations] = useState<Violation[]>([]);
-  const [escalations, setEscalations] = useState<Alert[]>([]);
+
   const [calculatingRisk, setCalculatingRisk] = useState(false);
   const [inspections, setInspections] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
@@ -61,37 +54,12 @@ export default function RegulatorDashboard() {
         fetchSingleViolation(payload.new.id);
         setStats(s => ({ ...s, activeViolations: s.activeViolations + 1 }));
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'alerts' }, () => {
-        // Simple re-fetch of escalations on any new alert
-        fetchEscalations();
-      })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, []);
-
-  async function fetchEscalations() {
-    try {
-      const threeDaysAgo = subDays(new Date(), 3).toISOString();
-      
-      // We want: severity = 'high' OR (is_read = false AND created_at < 3 days ago)
-      // Supabase's OR syntax:
-      const { data, error } = await supabase
-        .from('alerts')
-        .select('*')
-        .or(`severity.eq.high,and(is_read.eq.false,created_at.lt.${threeDaysAgo})`)
-        .order('created_at', { ascending: false })
-        .limit(10);
-        
-      if (!error && data) {
-        setEscalations(data as Alert[]);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
 
   async function fetchInitialData() {
     try {
@@ -148,8 +116,7 @@ export default function RegulatorDashboard() {
         .limit(8);
       setAuditLogs((auditData || []) as any[]);
       
-      // 6. Escalations
-      await fetchEscalations();
+
 
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
