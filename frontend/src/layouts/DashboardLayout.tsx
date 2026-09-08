@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, Languages, Database, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, Languages, Database, ShieldAlert, Cpu } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getProfile, type InspectorProfile } from '../services/profileService';
@@ -23,6 +23,7 @@ const navigation = [
   { id: 'manageUsers', href: '/admin/users', icon: ShieldAlert, roles: ['corporate'] },
   { id: 'audit', href: '/audit-log', icon: ShieldCheck },
   { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate', 'regulator'] },
+  { id: 'aiWorkbench', href: '/ai-workbench', icon: Cpu },
   { id: 'profile', href: '/profile', icon: UserCheck },
 ];
 

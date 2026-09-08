@@ -20,6 +20,7 @@ import ManageUsers from './pages/ManageUsers';
 import Compliance from './pages/Compliance';
 import Violations from './pages/Violations';
 import ViolationDetail from './pages/ViolationDetail';
+import AIWorkbench from './pages/AIWorkbench';
 import ProtectedRoute from './components/ProtectedRoute';
 import { processSyncQueue } from './services/syncService';
 
@@ -85,6 +86,7 @@ function App() {
             <Route path="contractors/:id" element={<ContractorDetail />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Profile />} />
+            <Route path="ai-workbench" element={<AIWorkbench />} />
           </Route>
         </Route>
 
