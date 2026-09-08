@@ -1,10 +1,39 @@
 // @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix Leaflet default icon paths in Vite/React
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// Helper to build a colored circle divIcon
+function makeIcon(score: number) {
+  let color = '#4ADE80'; // compliant
+  if (score > 75) color = '#F87171';       // critical
+  else if (score >= 45) color = '#F59E0B'; // watch
+  const pulse = score > 75
+    ? `<span style="position:absolute;inset:-6px;border-radius:50%;background:${color}33;animation:ping 1s cubic-bezier(0,0,.2,1) infinite;"></span>`
+    : '';
+  return L.divIcon({
+    html: `<div style="position:relative;width:18px;height:18px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.85);box-shadow:0 0 12px ${color}99;">${pulse}<span style="position:absolute;inset:4px;border-radius:50%;background:#0f172a;"></span></div>`,
+    className: '',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -12],
+  });
+}
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalMines: 1482,
     activeViolations: 7,
@@ -12,6 +41,7 @@ export default function Dashboard() {
   });
 
   const [mines, setMines] = useState<any[]>([]);
+  const [allMines, setAllMines] = useState<any[]>([]); // for the map
   const [violations, setViolations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,12 +54,18 @@ export default function Dashboard() {
         setStats({
           totalMines: minesCount || 1482,
           activeViolations: violationsCount || 7,
-          complianceRate: 98.4, // Static placeholder
+          complianceRate: 98.4,
         });
 
-        // Fetch top mines (mocked risk score based on id)
+        // Fetch top 5 mines for the table
         const { data: minesData } = await supabase.from('mines').select('*').limit(5);
         if (minesData) setMines(minesData);
+
+        // Fetch ALL mines with risk scores for the map widget
+        const { data: allMinesData } = await supabase
+          .from('mines')
+          .select('id, name, subsidiary, region, latitude, longitude, risk_scores(score, explanation)');
+        if (allMinesData) setAllMines(allMinesData);
 
         // Fetch recent violations
         const { data: violData } = await supabase.from('violations').select('*').order('created_at', { ascending: false }).limit(4);
@@ -87,6 +123,7 @@ export default function Dashboard() {
   return (
     <>
       <style>{`
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
         .bg-surface { background-color: var(--cg-bg); }
         .bg-surface-container-low { background-color: var(--cg-surface-low); }
         .bg-surface-container-lowest { background-color: var(--cg-surface-elevated); }
@@ -157,6 +194,19 @@ export default function Dashboard() {
         .font-body-sm { font-family: 'Geist', sans-serif; font-size: 12px; line-height: 18px; font-weight: 400; }
         .font-label-md { font-family: 'Geist', sans-serif; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; }
         .font-code-sm { font-family: 'Geist', monospace; font-size: 12px; line-height: 16px; font-weight: 400; }
+
+        /* Override Leaflet popup for dark dashboard */
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+          background: #1e293b !important;
+          color: #e2e8f0 !important;
+          border: 1px solid rgba(255,255,255,0.08) !important;
+          border-radius: 0.5rem !important;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+        }
+        .leaflet-container a.leaflet-popup-close-button { color: #94a3b8 !important; }
+        .leaflet-popup-content { margin: 0 !important; }
+        .leaflet-control-zoom { display: none; }
+        .leaflet-control-attribution { font-size: 9px; opacity: 0.4; }
       `}</style>
 
       <div className="bg-surface font-body-md text-on-surface antialiased min-h-screen">
@@ -271,14 +321,10 @@ export default function Dashboard() {
                     <span className="material-symbols-outlined text-[16px] text-primary">download</span>
                     <span>Export Daily Gazette (PDF)</span>
                   </button>
-                  <button className="flex items-center gap-space-2xs px-space-sm py-space-2xs rounded bg-primary-container hover:bg-primary-container/80 transition-colors font-body-sm text-on-primary-container font-medium">
-                    <span className="material-symbols-outlined text-[16px]">sync</span>
-                    <span>Run National InSAR Scan</span>
-                  </button>
                 </div>
               </div>
 
-              {/* SECTION 1: Top Row - 4 High-Fidelity Metric Cards */}
+              {/* SECTION 1: Top Row - 4 Metric Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
                 
                 {/* Metric 1 */}
@@ -367,21 +413,18 @@ export default function Dashboard() {
                 <div className="flex flex-col bg-surface-container-low p-space-md rounded-xl shadow-md justify-between gap-space-sm hover:bg-surface-container transition-all">
                   <div className="flex items-start justify-between">
                     <div className="flex flex-col">
-                      <span className="font-label-md uppercase tracking-wider text-outline">Copernicus / Sentinel-1</span>
-                      <span className="font-body-lg text-on-surface font-medium">InSAR Subsidence Alerts</span>
+                      <span className="font-label-md uppercase tracking-wider text-outline">Risk Distribution</span>
+                      <span className="font-body-lg text-on-surface font-medium">Mines by Risk Tier</span>
                     </div>
-                    <span className="material-symbols-outlined text-[20px] text-tertiary">radar</span>
+                    <span className="material-symbols-outlined text-[20px] text-primary">pie_chart</span>
                   </div>
                   <div className="flex items-baseline gap-space-sm">
-                    <span className="font-display-lg font-bold tracking-tight text-on-surface">12</span>
-                    <span className="font-label-md text-tertiary uppercase tracking-wider">Bench Anomalies</span>
+                    <span className="font-display-lg font-bold tracking-tight text-on-surface">{allMines.filter(m => (m.risk_scores?.score || 0) > 75).length}</span>
+                    <span className="font-label-md text-error uppercase tracking-wider">Critical Sites</span>
                   </div>
                   <div className="flex items-center justify-between pt-space-2xs text-on-surface-variant font-code-sm">
-                    <span className="flex items-center gap-space-2xs">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                      <span>Max Shift: +6.4mm (Korba)</span>
-                    </span>
-                    <span className="text-outline">Radar Pass #1408</span>
+                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] inline-block"></span>{allMines.filter(m => (m.risk_scores?.score || 0) < 45).length} Compliant</span>
+                    <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] inline-block"></span>{allMines.filter(m => { const s = m.risk_scores?.score || 0; return s >= 45 && s <= 75; }).length} Watch</span>
                   </div>
                 </div>
 
@@ -398,7 +441,7 @@ export default function Dashboard() {
                         <span className="font-headline-sm text-on-surface font-semibold">Ranked Mine Risk Index</span>
                         <span className="px-space-xs py-space-2xs rounded bg-surface-container text-outline font-code-sm">Top 5 of {stats.totalMines}</span>
                       </div>
-                      <span className="font-body-sm text-on-surface-variant">Multi-spectral telemetry, slope deformation inclinometers, and statutory log tracking</span>
+                      <span className="font-body-sm text-on-surface-variant">Statutory violation tracking and compliance scoring</span>
                     </div>
                     <div className="flex items-center gap-space-2xs bg-surface-container p-1 rounded-lg">
                       <button className="px-space-sm py-1 rounded bg-surface-container-high text-primary font-body-sm font-medium transition-all">All Concessions</button>
@@ -420,13 +463,12 @@ export default function Dashboard() {
                       </thead>
                       <tbody className="divide-y-0 font-body-sm">
                         {mines.map((mine, idx) => {
-                          // Mocking risk scores based on index to match the design's intent
                           const isError = idx < 2;
                           const isWarn = idx >= 2 && idx < 4;
                           const riskColorClass = isError ? 'text-error' : isWarn ? 'text-secondary' : 'text-primary';
                           const bgBarClass = isError ? 'bg-error' : isWarn ? 'bg-secondary' : 'bg-primary';
                           const riskScore = isError ? 94 - idx * 6 : isWarn ? 69 - (idx-2)*11 : 18;
-                          const statusText = isError ? 'Critical Overburden' : isWarn ? 'Seismic Spike' : 'Nominal Operations';
+                          const statusText = isError ? 'Critical Overburden' : isWarn ? 'Watch Priority' : 'Nominal Operations';
 
                           return (
                             <tr key={mine.id} className={`hover:bg-surface-container transition-colors group ${idx % 2 !== 0 ? 'bg-surface-container-lowest/40' : ''}`}>
@@ -435,14 +477,12 @@ export default function Dashboard() {
                               </td>
                               <td className="py-space-sm px-space-md">
                                 <div className="flex flex-col">
-                                  <Link to={`/mines/${mine.id}`} className="font-body-md text-on-surface font-medium group-hover:text-primary transition-colors">
-                                    {mine.name}
-                                  </Link>
-                                  <span className="font-code-sm text-on-surface-variant">LOC-{mine.id} • Lat: {mine.latitude}</span>
+                                  <span className="font-body-md text-on-surface font-medium">{mine.name}</span>
+                                  <span className="font-code-sm text-on-surface-variant">{mine.subsidiary} • {mine.region}</span>
                                 </div>
                               </td>
                               <td className="py-space-sm px-space-md">
-                                <span className="px-space-xs py-space-2xs rounded bg-surface-container-high font-label-md text-on-surface">CIL (PSU)</span>
+                                <span className="px-space-xs py-space-2xs rounded bg-surface-container-high font-label-md text-on-surface">{mine.subsidiary}</span>
                               </td>
                               <td className="py-space-sm px-space-md">
                                 <div className="flex items-center gap-space-2xs">
@@ -454,7 +494,7 @@ export default function Dashboard() {
                                 <div className="flex flex-col gap-1">
                                   <div className="flex justify-between items-center font-code-sm">
                                     <span className={`${riskColorClass} font-semibold`}>{riskScore}/100</span>
-                                    <span className="text-outline">Sensor Array</span>
+                                    <span className="text-outline">Statutory</span>
                                   </div>
                                   <div className="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden flex">
                                     <div className={`${bgBarClass} h-full`} style={{ width: `${riskScore}%` }}></div>
@@ -481,8 +521,8 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="px-space-md py-space-xs bg-surface-container-lowest flex items-center justify-between font-label-md text-outline">
-                    <span>Showing top 5 high-shear ranked facilities</span>
-                    <span className="font-code-sm text-on-surface-variant">Automated DGMS Composite Formula v3.4</span>
+                    <span>Showing top 5 ranked facilities</span>
+                    <span className="font-code-sm text-on-surface-variant">DGMS Composite Formula v3.4</span>
                   </div>
                 </div>
 
@@ -502,11 +542,10 @@ export default function Dashboard() {
                   </div>
                   
                   <p className="font-body-sm text-on-surface-variant">
-                    Synthetic cross-validation of satellite interferometry, subsurface microseismic sensors, and electronic blasting manifests.
+                    Cross-validation of statutory inspection records, open violation counts, and compliance scoring.
                   </p>
                   
                   <div className="flex flex-col gap-space-sm">
-                    {/* Insight 1 */}
                     <div className="flex flex-col p-space-sm rounded-lg bg-surface-container gap-space-2xs hover:bg-surface-container-high transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-space-xs">
@@ -524,7 +563,6 @@ export default function Dashboard() {
                       </div>
                     </div>
                     
-                    {/* Insight 2 */}
                     <div className="flex flex-col p-space-sm rounded-lg bg-surface-container gap-space-2xs hover:bg-surface-container-high transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-space-xs">
@@ -550,7 +588,107 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* SECTION 3: Live-Updating Violations Feed */}
+              {/* SECTION 3: Geospatial Risk Map Widget */}
+              <div className="flex flex-col bg-surface-container-low rounded-xl shadow-md overflow-hidden">
+                <div className="flex items-center justify-between p-space-md bg-surface-container-lowest">
+                  <div className="flex items-center gap-space-md">
+                    <div className="flex items-center gap-space-xs">
+                      <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                      <span className="font-headline-sm text-on-surface font-semibold">Live Geospatial Risk Map</span>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-space-2xs px-space-xs py-space-2xs rounded bg-surface-container font-code-sm text-on-surface-variant">
+                      <span className="material-symbols-outlined text-[14px]">location_on</span>
+                      <span>{allMines.length} Mines Plotted • Live Supabase Data</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-space-sm">
+                    {/* Legend */}
+                    <div className="hidden md:flex items-center gap-space-md font-code-sm text-on-surface-variant">
+                      <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{background:'#4ADE80', boxShadow:'0 0 6px #4ADE8099'}}></span>Compliant</span>
+                      <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{background:'#F59E0B', boxShadow:'0 0 6px #F59E0B99'}}></span>Watch</span>
+                      <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{background:'#F87171', boxShadow:'0 0 6px #F8717199'}}></span>Critical</span>
+                    </div>
+                    <Link
+                      to="/map"
+                      className="flex items-center gap-space-2xs px-space-sm py-space-2xs rounded bg-primary text-on-primary font-body-sm font-medium hover:bg-primary-container transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">open_in_full</span>
+                      <span>Full Map View</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Map Container */}
+                <div className="relative w-full" style={{ height: '380px' }}>
+                  {allMines.length > 0 ? (
+                    <MapContainer
+                      center={[23.5, 84.0]}
+                      zoom={5}
+                      className="w-full h-full"
+                      zoomControl={false}
+                      scrollWheelZoom={false}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                      />
+                      {allMines.map((mine) => {
+                        const score = mine.risk_scores?.score || 0;
+                        const explanation = mine.risk_scores?.explanation;
+                        const riskLabel = score > 75 ? 'Critical' : score >= 45 ? 'Watch' : 'Compliant';
+                        const scoreColor = score > 75 ? '#F87171' : score >= 45 ? '#F59E0B' : '#4ADE80';
+                        return (
+                          <Marker
+                            key={mine.id}
+                            position={[mine.latitude, mine.longitude]}
+                            icon={makeIcon(score)}
+                          >
+                            <Popup>
+                              <div style={{ padding: '12px', minWidth: '200px', fontFamily: 'Geist, sans-serif' }}>
+                                <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+                                  {mine.subsidiary} · {mine.region}
+                                </div>
+                                <div style={{ fontSize: '14px', fontWeight: 600, color: '#f1f5f9', marginBottom: '8px' }}>
+                                  {mine.name}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                  <span style={{ fontSize: '24px', fontWeight: 700, color: scoreColor }}>{score}</span>
+                                  <span style={{ fontSize: '11px', color: '#64748b' }}>/100</span>
+                                  <span style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: 600, color: scoreColor, textTransform: 'uppercase', background: `${scoreColor}22`, padding: '2px 6px', borderRadius: '4px' }}>
+                                    {riskLabel}
+                                  </span>
+                                </div>
+                                {explanation && (
+                                  <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.5, marginBottom: '8px' }}>
+                                    {explanation}
+                                  </div>
+                                )}
+                                <Link
+                                  to="/map"
+                                  style={{ fontSize: '11px', color: '#38bdf8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                >
+                                  View on Full Map →
+                                </Link>
+                              </div>
+                            </Popup>
+                          </Marker>
+                        );
+                      })}
+                    </MapContainer>
+                  ) : (
+                    <div className="w-full h-full bg-[#0f172a] flex items-center justify-center font-code-sm text-outline">
+                      Loading mines data...
+                    </div>
+                  )}
+                </div>
+
+                <div className="px-space-md py-space-xs bg-surface-container-lowest flex items-center justify-between font-label-md text-outline">
+                  <span>CartoDB Dark Matter · Real mine coordinates from Supabase</span>
+                  <Link to="/map" className="text-primary hover:underline font-body-sm">Open Full Interactive Map →</Link>
+                </div>
+              </div>
+
+              {/* SECTION 4: Live-Updating Violations Feed */}
               <div className="flex flex-col bg-surface-container-low rounded-xl shadow-md overflow-hidden">
                 <div className="flex flex-col md:flex-row md:items-center justify-between p-space-md bg-surface-container-lowest gap-space-sm">
                   <div className="flex items-center gap-space-md">
