@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import DashboardLayout from './layouts/DashboardLayout';
 import CorporateDashboard from './pages/CorporateDashboard';
 import MineDashboard from './pages/MineDashboard';
+import CollieryManagerDashboard from './pages/CollieryManagerDashboard';
 import RegulatorDashboard from './pages/RegulatorDashboard';
 import GeospatialMap from './pages/GeospatialMap';
 import Inspections from './pages/Inspections';
@@ -45,6 +46,11 @@ function App() {
             <Route path="dashboard/mine" element={
               <ProtectedRoute allowedRoles={['mine_official']}>
                 <MineDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="dashboard/colliery" element={
+              <ProtectedRoute allowedRoles={['mine_official', 'corporate']}>
+                <CollieryManagerDashboard />
               </ProtectedRoute>
             } />
             <Route path="dashboard/corporate" element={
