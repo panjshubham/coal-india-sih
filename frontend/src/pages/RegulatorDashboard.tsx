@@ -272,31 +272,6 @@ export default function RegulatorDashboard() {
         </div>
       </div>
 
-      {/* Escalations Panel */}
-      {escalations.length > 0 && (
-        <div className="bg-red-500/5 border border-red-500/30 rounded shadow-[0_0_15px_rgba(239,68,68,0.15)] flex flex-col mb-8 relative overflow-hidden backdrop-blur-sm">
-          <div className="p-4 border-b border-red-500/20 bg-red-500/10 flex items-center gap-3">
-            <BellRing className="w-5 h-5 text-red-400 animate-pulse" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-red-400">Critical Escalations</h3>
-          </div>
-          <div className="divide-y divide-red-500/10">
-            {escalations.map(esc => (
-              <div key={esc.id} className="p-4 flex items-center justify-between hover:bg-red-500/5 transition-colors">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold uppercase tracking-wider text-red-400">{esc.type}</span>
-                    {!esc.is_read && <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />}
-                  </div>
-                  <p className="text-sm font-medium text-slate-200">{esc.message}</p>
-                </div>
-                <span className="text-xs font-medium text-red-400/80">
-                  {formatDistanceToNow(new Date(esc.created_at), { addSuffix: true })}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -628,10 +628,24 @@ export default function Dashboard() {
                       zoomControl={false}
                       scrollWheelZoom={false}
                     >
-                      <TileLayer
-                        attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                      />
+                      {import.meta.env.VITE_CARTO_API_KEY ? (
+                        <TileLayer
+                          attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+                          url={`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_CARTO_API_KEY}`}
+                        />
+                      ) : (
+                        <>
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                            url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+                            maxZoom={16}
+                          />
+                          <TileLayer
+                            url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
+                            maxZoom={16}
+                          />
+                        </>
+                      )}
                       {allMines.map((mine) => {
                         const score = mine.risk_scores?.score || 0;
                         const explanation = mine.risk_scores?.explanation;

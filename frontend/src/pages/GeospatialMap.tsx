@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useTheme } from '../context/ThemeContext';
@@ -34,6 +34,8 @@ export default function GeospatialMap() {
   
   const [activeMineId, setActiveMineId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
+  const [mapMode, setMapMode] = useState<'dark' | 'satellite'>('dark');
+  const cartoKey = import.meta.env.VITE_CARTO_API_KEY;
   
   const markerRefs = useRef<{[key: string]: L.Marker | null}>({});
 
@@ -101,27 +103,24 @@ export default function GeospatialMap() {
   // Icon Generator based on risk
   const getCustomIcon = (score: number, isActive: boolean) => {
     let colorClass = 'bg-status-sage';
-    let ringClass = 'ring-status-sage';
     let shadowClass = 'shadow-[0_0_12px_#4ADE80]';
     
     if (score > 75) {
       colorClass = 'bg-status-rose';
-      ringClass = 'ring-status-rose';
       shadowClass = 'shadow-[0_0_16px_#F87171]';
     } else if (score >= 45) {
       colorClass = 'bg-status-amber';
-      ringClass = 'ring-status-amber';
       shadowClass = 'shadow-[0_0_14px_#F59E0B]';
     }
 
     const scaleClass = isActive ? 'scale-125' : 'hover:scale-110';
     
-    const htmlString = \`
-      <div class="relative w-6 h-6 rounded-full \${colorClass} flex items-center justify-center \${shadowClass} ring-2 ring-white/90 \${scaleClass} transition-transform">
+    const htmlString = `
+      <div class="relative w-6 h-6 rounded-full ${colorClass} flex items-center justify-center ${shadowClass} ring-2 ring-white/90 ${scaleClass} transition-transform">
         <span class="w-2 h-2 rounded-full bg-slate-950"></span>
-        \${score > 75 ? \`<span class="absolute -inset-2 rounded-full \${colorClass}/30 animate-ping"></span>\` : ''}
+        ${score > 75 ? `<span class="absolute -inset-2 rounded-full ${colorClass}/30 animate-ping"></span>` : ''}
       </div>
-    \`;
+    `;
 
     return L.divIcon({
       html: htmlString,
@@ -134,24 +133,24 @@ export default function GeospatialMap() {
 
   return (
     <>
-      <style>{\`
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Geist+Mono:wght@400;500;600&family=Geist:wght@300;400;500;600&display=swap');
         
         .map-wrapper {
           font-family: 'Geist', sans-serif;
-          background-color: \${isLight ? '#E8EDF5' : '#080D1A'};
-          color: \${isLight ? '#1E293B' : '#e2e8f0'};
+          background-color: ${isLight ? '#E8EDF5' : '#080D1A'};
+          color: ${isLight ? '#1E293B' : '#e2e8f0'};
           overflow: hidden;
         }
         .font-serif { font-family: 'Fraunces', serif; }
         .font-mono { font-family: 'Geist Mono', monospace; }
         
-        .text-status-sage { color: \${isLight ? '#16A34A' : '#4ADE80'}; }
-        .bg-status-sage { background-color: \${isLight ? '#16A34A' : '#4ADE80'}; }
-        .text-status-amber { color: \${isLight ? '#D97706' : '#F59E0B'}; }
-        .bg-status-amber { background-color: \${isLight ? '#D97706' : '#F59E0B'}; }
-        .text-status-rose { color: \${isLight ? '#DC2626' : '#F87171'}; }
-        .bg-status-rose { background-color: \${isLight ? '#DC2626' : '#F87171'}; }
+        .text-status-sage { color: ${isLight ? '#16A34A' : '#4ADE80'}; }
+        .bg-status-sage { background-color: ${isLight ? '#16A34A' : '#4ADE80'}; }
+        .text-status-amber { color: ${isLight ? '#D97706' : '#F59E0B'}; }
+        .bg-status-amber { background-color: ${isLight ? '#D97706' : '#F59E0B'}; }
+        .text-status-rose { color: ${isLight ? '#DC2626' : '#F87171'}; }
+        .bg-status-rose { background-color: ${isLight ? '#DC2626' : '#F87171'}; }
         
         /* Overriding Leaflet default Popup styles for dark theme */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
@@ -177,7 +176,7 @@ export default function GeospatialMap() {
         .leaflet-control-zoom {
           display: none;
         }
-      \`}</style>
+      `}</style>
       
       <div className="map-wrapper w-screen h-screen relative overflow-hidden select-none">
         
@@ -220,10 +219,30 @@ export default function GeospatialMap() {
             className="w-full h-full"
             zoomControl={false}
           >
-            <TileLayer
-              attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            />
+            {mapMode === 'satellite' ? (
+              <TileLayer
+                attribution='&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={18}
+              />
+            ) : cartoKey ? (
+              <TileLayer
+                attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+                url={`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`}
+              />
+            ) : (
+              <>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+                  maxZoom={16}
+                />
+                <TileLayer
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
+                  maxZoom={16}
+                />
+              </>
+            )}
             
             <MapController center={mapCenter} zoom={12} />
             
@@ -233,16 +252,13 @@ export default function GeospatialMap() {
               const isActive = activeMineId === mine.id;
               
               let statusColor = 'text-status-sage';
-              let ringColor = 'stroke-[#4ADE80]';
               let riskLabel = 'Compliant';
               
               if (score > 75) {
                 statusColor = 'text-status-rose';
-                ringColor = 'stroke-[#F87171]';
                 riskLabel = 'Critical Risk Priority';
               } else if (score >= 45) {
                 statusColor = 'text-status-amber';
-                ringColor = 'stroke-[#F59E0B]';
                 riskLabel = 'Watch Priority';
               }
 
@@ -259,7 +275,9 @@ export default function GeospatialMap() {
                   <Popup 
                     closeButton={true}
                     className="custom-popup"
-                    onClose={() => setActiveMineId(null)}
+                    eventHandlers={{
+                      remove: () => setActiveMineId(null)
+                    }}
                   >
                     <div className="p-5 relative overflow-hidden">
                       <div className="absolute -left-2 top-[34px] w-4 h-4 bg-[#0F172A] border-l border-b border-white/[0.1] -rotate-45 pointer-events-none" />
@@ -278,7 +296,7 @@ export default function GeospatialMap() {
                             <span className="font-serif text-3xl font-medium text-white tracking-tight leading-none">{score}</span>
                             <span className="font-mono text-xs text-slate-400">/ 100</span>
                           </div>
-                          <span className={\`font-mono text-[9px] uppercase tracking-wider \${statusColor} font-semibold mt-1\`}>
+                          <span className={`font-mono text-[9px] uppercase tracking-wider ${statusColor} font-semibold mt-1`}>
                             {riskLabel}
                           </span>
                         </div>
@@ -294,15 +312,15 @@ export default function GeospatialMap() {
                               strokeLinecap="round" strokeWidth="2.5" 
                             />
                           </svg>
-                          <span className={\`material-symbols-outlined absolute \${statusColor} text-[18px]\`}>
+                          <span className={`material-symbols-outlined absolute ${statusColor} text-[18px]`}>
                             {score > 75 ? 'warning' : score >= 45 ? 'info' : 'check_circle'}
                           </span>
                         </div>
                       </div>
                       
                       {explanation && (
-                        <div className={\`mt-3.5 p-2.5 rounded-lg bg-white/[0.03] border border-white/10 flex items-start gap-2\`}>
-                          <span className={\`material-symbols-outlined \${statusColor} text-[15px] shrink-0 mt-0.5\`}>auto_awesome</span>
+                        <div className={`mt-3.5 p-2.5 rounded-lg bg-white/[0.03] border border-white/10 flex items-start gap-2`}>
+                          <span className={`material-symbols-outlined ${statusColor} text-[15px] shrink-0 mt-0.5`}>auto_awesome</span>
                           <p className="font-sans text-[11px] leading-relaxed text-slate-300 font-normal">
                             {explanation}
                           </p>
@@ -373,25 +391,25 @@ export default function GeospatialMap() {
             <label className="font-mono text-[9px] uppercase tracking-[0.1em] text-slate-400 font-medium">Risk Tier Filter</label>
             <div className="grid grid-cols-4 gap-1 p-1 bg-[#080D1A]/90 border border-white/[0.06] rounded-lg text-center font-mono text-[10px]">
               <button 
-                className={\`py-1 rounded transition-colors \${riskFilter === 'All' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}\`} 
+                className={`py-1 rounded transition-colors ${riskFilter === 'All' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}`} 
                 onClick={() => setRiskFilter('All')}
               >
                 All
               </button>
               <button 
-                className={\`py-1 rounded border font-medium transition-colors \${riskFilter === 'Critical' ? 'bg-status-rose/20 text-status-rose border-status-rose/30' : 'border-transparent text-slate-400 hover:text-status-rose'}\`} 
+                className={`py-1 rounded border font-medium transition-colors ${riskFilter === 'Critical' ? 'bg-status-rose/20 text-status-rose border-status-rose/30' : 'border-transparent text-slate-400 hover:text-status-rose'}`} 
                 onClick={() => setRiskFilter('Critical')}
               >
                 Critical
               </button>
               <button 
-                className={\`py-1 rounded border font-medium transition-colors \${riskFilter === 'Watch' ? 'bg-status-amber/20 text-status-amber border-status-amber/30' : 'border-transparent text-slate-400 hover:text-status-amber'}\`} 
+                className={`py-1 rounded border font-medium transition-colors ${riskFilter === 'Watch' ? 'bg-status-amber/20 text-status-amber border-status-amber/30' : 'border-transparent text-slate-400 hover:text-status-amber'}`} 
                 onClick={() => setRiskFilter('Watch')}
               >
                 Watch
               </button>
               <button 
-                className={\`py-1 rounded border font-medium transition-colors \${riskFilter === 'Compliant' ? 'bg-status-sage/20 text-status-sage border-status-sage/30' : 'border-transparent text-slate-400 hover:text-status-sage'}\`} 
+                className={`py-1 rounded border font-medium transition-colors ${riskFilter === 'Compliant' ? 'bg-status-sage/20 text-status-sage border-status-sage/30' : 'border-transparent text-slate-400 hover:text-status-sage'}`} 
                 onClick={() => setRiskFilter('Compliant')}
               >
                 Safe
@@ -408,13 +426,13 @@ export default function GeospatialMap() {
                    <button
                      key={mine.id}
                      onClick={() => handleSelectMine(mine)}
-                     className={\`flex items-center justify-between p-2 rounded-lg border text-left transition-colors \${activeMineId === mine.id ? 'bg-white/[0.06] border-white/10' : 'bg-[#080D1A]/50 border-white/[0.03] hover:bg-white/[0.04]'}\`}
+                     className={`flex items-center justify-between p-2 rounded-lg border text-left transition-colors ${activeMineId === mine.id ? 'bg-white/[0.06] border-white/10' : 'bg-[#080D1A]/50 border-white/[0.03] hover:bg-white/[0.04]'}`}
                    >
                      <div className="flex flex-col gap-0.5 truncate pr-2">
                        <span className="font-sans text-xs text-slate-200 truncate">{mine.name}</span>
                        <span className="font-mono text-[9px] text-slate-500">{mine.subsidiary}</span>
                      </div>
-                     <span className={\`font-mono text-[10px] font-semibold flex-shrink-0 \${score > 75 ? 'text-status-rose' : score >= 45 ? 'text-status-amber' : 'text-status-sage'}\`}>
+                     <span className={`font-mono text-[10px] font-semibold flex-shrink-0 ${score > 75 ? 'text-status-rose' : score >= 45 ? 'text-status-amber' : 'text-status-sage'}`}>
                        {score}
                      </span>
                    </button>
@@ -429,8 +447,36 @@ export default function GeospatialMap() {
           </div>
         </aside>
 
-        {/* 4. LEGEND */}
+        {/* 4. LEGEND & LAYER SWITCHER */}
         <div className="fixed top-14 right-6 z-[1000] backdrop-blur-md bg-[#0E172A]/85 border border-white/[0.08] px-4 py-2 rounded-full flex items-center gap-4 text-xs text-slate-300 shadow-2xl">
+          {/* Layer Selector */}
+          <div className="flex items-center gap-1 bg-slate-900/90 p-0.5 rounded-full border border-white/10 mr-1">
+            <button
+              type="button"
+              onClick={() => setMapMode('dark')}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-mono transition-all ${
+                mapMode === 'dark' 
+                  ? 'bg-white/15 text-white font-medium shadow-sm' 
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Dark Canvas
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapMode('satellite')}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-mono transition-all ${
+                mapMode === 'satellite' 
+                  ? 'bg-amber-500/25 text-amber-300 font-semibold border border-amber-500/40' 
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Satellite
+            </button>
+          </div>
+
+          <span className="w-px h-3 bg-white/[0.1]" />
+
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-status-sage shadow-[0_0_8px_#4ADE80]" />
             <span className="font-sans text-[11px] text-slate-300 font-normal">Compliant <span className="font-mono text-[10px] text-slate-400">(&lt;45)</span></span>
