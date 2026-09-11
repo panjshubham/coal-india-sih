@@ -57,10 +57,8 @@ export const processSyncQueue = async () => {
       // 1. Insert Inspection
       const { data: inspData, error: inspError } = await supabase.from('inspections').insert({
         mine_id: Number(mine_id),
-        scheduled_date: new Date().toISOString(),
-        status: 'completed',
-        inspector_id: inspector_id,
-        findings: description
+        date: new Date().toISOString(),
+        inspector_name: inspector_id || 'Unknown'
       }).select('id').single();
       
       if (inspError) throw inspError;

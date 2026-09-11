@@ -208,10 +208,8 @@ export default function Inspections() {
         const { data: inspData, error: inspErr } = await supabase.from('inspections').insert([{
           mine_id: Number(payload.mine_id),
           contractor_id: payload.contractor_id ? Number(payload.contractor_id) : null,
-          inspector_id: inspector_id,
-          type: 'routine',
-          scheduled_date: new Date().toISOString().split('T')[0],
-          status: 'completed'
+          date: new Date().toISOString(),
+          inspector_name: inspector_id || 'Unknown'
         }]).select('id').single();
 
         if (inspErr) throw inspErr;
