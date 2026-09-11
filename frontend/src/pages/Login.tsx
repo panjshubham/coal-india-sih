@@ -74,6 +74,9 @@ export default function Login() {
       setError(err.message || 'Failed to authenticate');
     } finally {
       setLoading(false);
+    }
+  };
+
   const setDemoCredentials = (roleType: 'corporate' | 'mine_official' | 'regulator') => {
     setError(null);
     if (roleType === 'corporate') {
