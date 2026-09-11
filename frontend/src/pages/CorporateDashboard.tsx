@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { ShieldAlert, AlertTriangle, Activity, AlertCircle, RefreshCw, BarChart2 } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, Activity, AlertCircle, RefreshCw, BarChart2, Globe2, Radio, Server, Fingerprint } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface MineRisk {
@@ -43,14 +43,11 @@ export default function CorporateDashboard() {
     // Realtime subscription for violations
     const channel = supabase.channel('public:violations')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'violations' }, payload => {
-        // Fetch the full violation with mine name to append to the list
         fetchSingleViolation(payload.new.id);
-        
-        // Update stats
         setStats(s => ({ ...s, activeViolations: s.activeViolations + 1 }));
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'violations' }, () => {
-        fetchInitialData(); // Re-fetch to keep it simple and accurate
+        fetchInitialData();
       })
       .subscribe();
 
@@ -153,8 +150,6 @@ export default function CorporateDashboard() {
         method: 'POST'
       });
       if (!res.ok) throw new Error('AI Service request failed');
-      
-      // Refresh the local data to reflect new scores and AI insights
       await fetchInitialData();
     } catch (err) {
       console.error(err);
@@ -180,78 +175,103 @@ export default function CorporateDashboard() {
   };
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8 w-full">
-      <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[#070D18] text-slate-100 font-sans p-6">
+      {/* 1. Header with Command Center Badge */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-[var(--cg-text-primary)] tracking-tight">Corporate Dashboard</h1>
-          <p className="text-sm text-slate-400 mt-1">Enterprise-wide telemetric and statutory oversight.</p>
-        </div>
-      </div>
-
-      {/* 4 Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md rounded-xl border border-[var(--cg-border)] p-5 shadow-sm flex flex-col hover:border-blue-500/50 transition-colors">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Mines</span>
-            <Activity className="w-5 h-5 text-blue-400" />
-          </div>
-          <span className="text-3xl font-mono font-bold text-[var(--cg-text-primary)]">{stats.totalMines}</span>
+          <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
+            HQ Command Center
+            <span className="text-[11px] font-mono font-medium px-2.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 flex items-center gap-1.5">
+              <Globe2 className="w-3 h-3" />
+              GLOBAL OPERATIONS
+            </span>
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Enterprise-wide telemetric aggregation and autonomous statutory compliance tracking.
+          </p>
         </div>
 
-        <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md rounded-xl border border-[var(--cg-border)] p-5 shadow-sm flex flex-col hover:border-[var(--cg-accent)] transition-colors">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Violations</span>
-            <AlertTriangle className="w-5 h-5 text-amber-400" />
-          </div>
-          <span className="text-3xl font-mono font-bold text-[var(--cg-text-primary)]">{stats.activeViolations}</span>
-        </div>
-
-        <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md rounded-xl border border-[var(--cg-border)] p-5 shadow-sm flex flex-col hover:border-red-500/50 transition-colors">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overdue Compliance</span>
-            <AlertCircle className="w-5 h-5 text-red-400" />
-          </div>
-          <span className="text-3xl font-mono font-bold text-red-400">{stats.overdueCompliance}</span>
-        </div>
-
-        <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md rounded-xl border border-[var(--cg-border)] p-5 shadow-sm flex flex-col hover:border-[var(--cg-accent)] transition-colors">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Avg Risk Score</span>
-            <BarChart2 className="w-5 h-5 text-indigo-400" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-mono font-bold text-[var(--cg-text-primary)]">{stats.avgRiskScore}</span>
-            <span className="text-sm font-medium text-slate-500">/ 100</span>
+        <div className="flex items-center gap-3">
+          {/* Live Telemetry Stream Badge */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono">
+            <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+            <span>LIVE TELEMETRY STREAM: CONNECTED</span>
           </div>
         </div>
       </div>
 
-      {/* Two Column Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 2. Top-Level Operational Metrics Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
+          <p className="text-xs font-mono text-slate-400 uppercase">Total Supervised Sites</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-3xl font-black text-white">{stats.totalMines}</h3>
+            <span className="text-xs text-blue-400 font-mono"><Server className="w-3.5 h-3.5 inline mr-1" />Nodes Active</span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
+          <p className="text-xs font-mono text-slate-400 uppercase">Active Violations</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-3xl font-black text-amber-400">{stats.activeViolations}</h3>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800">
+              Requiring Intervention
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
+          <p className="text-xs font-mono text-slate-400 uppercase">Overdue Compliance</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-3xl font-black text-red-400">{stats.overdueCompliance}</h3>
+            <span className="text-xs text-slate-400 font-mono">Escalation Triggered</span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
+          <p className="text-xs font-mono text-slate-400 uppercase">Global Avg Risk Score</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-3xl font-black text-cyan-400">{stats.avgRiskScore} <span className="text-sm font-normal text-slate-500">/ 100</span></h3>
+            <span className="text-[10px] text-slate-400 font-mono">Weighted Mean</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Main Body: Ranked Table & Detailed Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         
         {/* Left: Risk Ranked Mines */}
-        <div className="lg:col-span-2 bg-[var(--cg-surface-elevated)] backdrop-blur-md border border-[var(--cg-border)] rounded shadow-sm flex flex-col">
-          <div className="p-5 border-b border-[var(--cg-border)]">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">Risk-Ranked Subsidiaries</h3>
+        <div className="lg:col-span-2 bg-[#0B1326] border border-slate-800 rounded-xl overflow-hidden shadow-xl flex flex-col">
+          <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-200 tracking-wide uppercase">
+              Consolidated Risk-Ranked Subsidiaries
+            </h2>
           </div>
-          <div className="p-0 overflow-y-auto max-h-[400px]">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-[var(--cg-surface-high)] text-xs text-slate-400 sticky top-0 backdrop-blur-md">
+          <div className="p-0 overflow-y-auto max-h-[450px]">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-900/80 font-mono text-slate-400 uppercase text-[10px] border-b border-slate-800 sticky top-0 backdrop-blur-md z-10">
                 <tr>
-                  <th className="px-5 py-3 font-medium">Mine</th>
-                  <th className="px-5 py-3 font-medium">Risk Score</th>
-                  <th className="px-5 py-3 font-medium">Telemetry Bar</th>
+                  <th className="px-5 py-3">Mine Location</th>
+                  <th className="px-5 py-3">Risk Index</th>
+                  <th className="px-5 py-3">Telemetry Bar</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-800/60 font-mono">
                 {riskScores.map(risk => (
-                  <tr key={risk.mine_id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-5 py-3 font-medium text-slate-200">{risk.mines?.name}</td>
-                    <td className="px-5 py-3">
-                      <span className="font-mono font-medium text-slate-300">{risk.score}</span>
+                  <tr key={risk.mine_id} className="hover:bg-slate-900/40 transition-colors">
+                    <td className="px-5 py-3.5 font-sans font-bold text-slate-100">
+                      {risk.mines?.name}
                     </td>
-                    <td className="px-5 py-3 w-1/2">
-                      <div className="w-full h-2 bg-[var(--cg-surface-highest)] rounded-full overflow-hidden border border-[var(--cg-border)]">
+                    <td className="px-5 py-3.5">
+                      <span className={`font-bold ${
+                        risk.score > 70 ? 'text-red-400' :
+                        risk.score > 45 ? 'text-amber-400' : 'text-emerald-400'
+                      }`}>
+                        {risk.score}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 w-1/2">
+                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                         <div 
                           className={`h-full ${getRiskColor(risk.score)}`} 
                           style={{ width: `${risk.score}%` }}
@@ -271,105 +291,108 @@ export default function CorporateDashboard() {
         </div>
 
         {/* Right: AI Insights */}
-        <div className="bg-[var(--cg-surface)] backdrop-blur-md border border-[var(--cg-border)] rounded shadow-sm flex flex-col relative overflow-hidden group transition-colors">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <ShieldAlert className="w-24 h-24 text-amber-500" />
+        <div className="bg-[#0B1326] border border-slate-800 rounded-xl p-4 shadow-xl flex flex-col relative overflow-hidden transition-colors">
+          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+            <Fingerprint className="w-32 h-32 text-indigo-500" />
           </div>
-          <div className="p-5 border-b border-[var(--cg-border)] relative z-10 flex justify-between items-center">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--cg-text-primary)]">AI Risk Insights</h3>
+          <div className="pb-3 border-b border-slate-800 relative z-10 flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-200 tracking-wide flex items-center gap-2">
+              <Activity className="w-4 h-4 text-indigo-400" />
+              HQ AI RISK INSIGHTS
+            </h2>
+            <span className="text-[10px] font-mono text-slate-400">XGBoost Diagnostics</span>
           </div>
-          <div className="p-5 space-y-4 flex-1 relative z-10">
-            {riskScores.slice(0, 3).map(risk => (
-              <div key={risk.mine_id} className="p-3 bg-[var(--cg-surface-highest)] rounded border border-[var(--cg-border)] text-sm">
-                <div className="font-bold text-[var(--cg-text-primary)] mb-1 flex items-center justify-between">
-                  <span>{risk.mines?.name} (Score: {risk.score})</span>
+          
+          <div className="mt-4 space-y-3 flex-1 relative z-10 font-sans">
+            {riskScores.slice(0, 3).map(risk => {
+              const cf = (risk as any).contributing_factors;
+              return (
+                <div key={risk.mine_id} className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 text-sm">
+                  <div className="font-bold text-slate-100 mb-1 flex items-center justify-between">
+                    <span>{risk.mines?.name} (Score: {risk.score})</span>
+                  </div>
+                  <div className="text-slate-400 leading-relaxed text-xs mb-2">
+                    {risk.explanation || 'No AI explanation generated yet.'}
+                  </div>
+                  {cf?.ml_probability !== undefined && (
+                    <div className="mt-2 mb-2 p-2 bg-indigo-950/20 rounded border border-indigo-500/20">
+                      <p className="text-xs text-indigo-300">
+                        <span className="font-bold text-indigo-400">ML Confidence:</span> {Math.round(cf.ml_probability)}% high-risk
+                        {(cf.ml_top_factors || []).length > 0 && (
+                          <span>, primarily driven by {(cf.ml_top_factors).join(' and ')}</span>
+                        )}.
+                      </p>
+                    </div>
+                  )}
+                  {cf && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {cf.location_anomaly && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/30 text-[9px] font-mono font-medium text-rose-400 uppercase">
+                          <AlertCircle className="w-2.5 h-2.5" /> Loc Anomaly
+                        </span>
+                      )}
+                      {cf.hotspot && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[9px] font-mono font-medium text-amber-400 uppercase">
+                          <Activity className="w-2.5 h-2.5" /> Spatial Hotspot
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="text-[var(--cg-text-muted)] leading-relaxed text-xs mb-2">{risk.explanation || 'No AI explanation generated yet.'}</div>
-                {(risk as any).contributing_factors?.ml_probability !== undefined && (
-                  <div className="mt-2 mb-2 p-2 bg-[#060913]/60 rounded border border-indigo-500/30">
-                    <p className="text-xs text-indigo-300">
-                      <span className="font-bold text-indigo-400">ML model confidence:</span> {Math.round((risk as any).contributing_factors.ml_probability)}% high-risk
-                      {((risk as any).contributing_factors.ml_top_factors || []).length > 0 && (
-                        <span>, driven primarily by {((risk as any).contributing_factors.ml_top_factors).join(' and ')}</span>
-                      )}.
-                    </p>
-                  </div>
-                )}
-                {(risk as any).contributing_factors && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {(risk as any).contributing_factors.location_anomaly && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-500/20 border border-rose-500/30 text-[9px] font-mono font-medium text-rose-400 uppercase tracking-wider">
-                        <AlertCircle className="w-2.5 h-2.5" /> Loc Anomaly
-                      </span>
-                    )}
-                    {(risk as any).contributing_factors.hotspot && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/30 text-[9px] font-mono font-medium text-amber-400 uppercase tracking-wider">
-                        <Activity className="w-2.5 h-2.5" /> Spatial Hotspot
-                      </span>
-                    )}
-                    {(risk as any).contributing_factors.time_pattern && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/20 border border-blue-500/30 text-[9px] font-mono font-medium text-blue-400 uppercase tracking-wider">
-                        <RefreshCw className="w-2.5 h-2.5" /> {(risk as any).contributing_factors.time_pattern}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-            {riskScores.length === 0 && (
-              <p className="text-sm text-[var(--cg-text-faint)]">Insufficient data for AI insights.</p>
-            )}
+              );
+            })}
           </div>
-          <div className="p-4 border-t border-[var(--cg-border)] bg-[var(--cg-surface-high)] relative z-10">
+          
+          <div className="mt-4 pt-3 border-t border-slate-800 relative z-10">
             <button 
               onClick={handleRecalculate}
               disabled={calculatingRisk}
-              className="w-full btn-secondary"
+              className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-400 text-sm font-bold rounded-lg transition-colors disabled:opacity-50"
             >
               {calculatingRisk ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              {calculatingRisk ? 'Recalculating...' : 'Recalculate Risk Scores'}
+              {calculatingRisk ? 'Recalculating Globally...' : 'Recalculate Global Risk Scores'}
             </button>
           </div>
         </div>
 
       </div>
 
-      {/* Bottom: Recent Violations Feed */}
-      <div className="bg-[var(--cg-surface-elevated)] backdrop-blur-md border border-[var(--cg-border)] rounded shadow-sm flex flex-col">
-        <div className="p-5 border-b border-[var(--cg-border)] flex justify-between items-center">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">Live Violations Feed</h3>
-          <span className="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+      {/* 4. Bottom: Recent Violations Feed */}
+      <div className="mt-6 bg-[#0B1326] border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">Enterprise Live Violations Feed</h3>
+          <span className="flex items-center gap-2 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            REALTIME ACTIVE
+            REALTIME INTERCONNECT ACTIVE
           </span>
         </div>
-        <div className="p-0 overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-[var(--cg-surface-high)] text-xs text-slate-400">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-900/80 font-mono text-slate-400 uppercase text-[10px] border-b border-slate-800">
               <tr>
-                <th className="px-5 py-3 font-medium">Mine</th>
-                <th className="px-5 py-3 font-medium">Category</th>
-                <th className="px-5 py-3 font-medium">Severity</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Timestamp</th>
+                <th className="px-5 py-3">Mine & Subsidiary</th>
+                <th className="px-5 py-3">Category</th>
+                <th className="px-5 py-3">Severity</th>
+                <th className="px-5 py-3">Escalation Status</th>
+                <th className="px-5 py-3">Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-800/60 font-mono">
               {violations.map(v => (
-                <tr key={v.id} className="hover:bg-white/5 transition-colors">
-                  <td className="px-5 py-3 font-medium text-slate-200">{v.mines?.name || `Mine #${v.mine_id}`}</td>
-                  <td className="px-5 py-3 text-slate-400">{v.category}</td>
-                  <td className="px-5 py-3">
+                <tr key={v.id} className="hover:bg-slate-900/40 transition-colors">
+                  <td className="px-5 py-3.5 font-sans font-bold text-slate-200">{v.mines?.name || `Mine #${v.mine_id}`}</td>
+                  <td className="px-5 py-3.5 text-slate-400">{v.category}</td>
+                  <td className="px-5 py-3.5">
                     <span className={`inline-flex px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide ${getSeverityBadge(v.severity)}`}>
                       {v.severity}
                     </span>
                   </td>
-                  <td className="px-5 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] border font-bold uppercase tracking-wider ${v.status === 'open' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'}`}>
+                  <td className="px-5 py-3.5">
+                    <span className={`inline-flex px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${v.status === 'open' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'}`}>
                       {v.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-slate-500 text-xs font-mono">
+                  <td className="px-5 py-3.5 text-slate-500 text-xs font-mono">
                     {formatDistanceToNow(new Date(v.created_at), { addSuffix: true })}
                   </td>
                 </tr>

@@ -220,9 +220,9 @@ export default function Landing() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-headline-sm text-on-surface tracking-tight font-semibold flex items-center gap-space-xs">
-                    COALGUARD GOV <span className="text-outline-variant text-[11px] font-mono">//</span> <span className="text-on-surface-variant text-[12px] font-mono font-normal tracking-normal">DGMS • COMPLIANCE MONITORING</span>
+                    COALGUARD GOV <span className="hidden sm:inline text-outline-variant text-[11px] font-mono">//</span> <span className="hidden sm:inline text-on-surface-variant text-[12px] font-mono font-normal tracking-normal">DGMS • COMPLIANCE MONITORING</span>
                   </span>
-                  <div className="flex items-center gap-space-xs">
+                  <div className="hidden sm:flex items-center gap-space-xs">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
                     <span className="font-label-md text-primary tracking-widest uppercase">LIVE COMPLIANCE FEED ACTIVE</span>
                   </div>
@@ -245,7 +245,7 @@ export default function Landing() {
                 Access Portal
               </button>
               <div className="h-5 w-px bg-outline-variant/30 hidden sm:block"></div>
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+              <div className="hidden sm:flex w-8 h-8 rounded-full bg-primary items-center justify-center">
                 <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>
               </div>
             </div>
@@ -317,7 +317,7 @@ export default function Landing() {
                     <span>Access Mission Control</span>
                     <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">rocket_launch</span>
                   </button>
-                  <button className="inline-flex items-center justify-center gap-space-sm h-12 px-6 rounded-lg bg-surface-container-high/60 backdrop-blur-md border border-white/10 text-on-surface font-headline-sm text-[15px] font-medium hover:bg-surface-bright hover:border-white/20 transition-all group">
+                  <button onClick={() => navigate('/compliance')} className="inline-flex items-center justify-center gap-space-sm h-12 px-6 rounded-lg bg-surface-container-high/60 backdrop-blur-md border border-white/10 text-on-surface font-headline-sm text-[15px] font-medium hover:bg-surface-bright hover:border-white/20 transition-all group">
                     <span className="material-symbols-outlined text-[20px] text-primary group-hover:rotate-12 transition-transform">gavel</span>
                     <span>Review Compliance Framework</span>
                   </button>

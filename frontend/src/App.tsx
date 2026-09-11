@@ -23,15 +23,23 @@ import ViolationDetail from './pages/ViolationDetail';
 import AIWorkbench from './pages/AIWorkbench';
 import ProtectedRoute from './components/ProtectedRoute';
 import { processSyncQueue } from './services/syncService';
+import { syncOfflineQueue } from './lib/offlineQueue';
+import PitInspector from './pages/PitInspector';
 
 function App() {
   useEffect(() => {
     // Attempt sync on app load
     processSyncQueue();
+    syncOfflineQueue();
 
     // Attempt sync when coming online
-    window.addEventListener('online', processSyncQueue);
-    return () => window.removeEventListener('online', processSyncQueue);
+    const handleOnline = () => {
+      processSyncQueue();
+      syncOfflineQueue();
+    };
+
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
   }, []);
 
   return (
@@ -70,6 +78,7 @@ function App() {
             <Route path="violations/:id" element={<ViolationDetail />} />
             <Route path="inspections" element={<Inspections />} />
             <Route path="inspections/new" element={<NewInspection />} />
+            <Route path="pit-inspector" element={<PitInspector />} />
             <Route path="submissions" element={<MySubmissions />} />
             <Route path="audit-log" element={<AuditLog />} />
             <Route path="data-import" element={

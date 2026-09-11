@@ -1,11 +1,22 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { 
+  Activity, 
+  MapPin, 
+  Globe2, 
+  Target, 
+  Radio, 
+  ShieldCheck, 
+  AlertTriangle, 
+  CheckCircle2, 
+  Clock, 
+  FileText,
+  Eye,
+  Crosshair
+} from 'lucide-react';
 
 interface ComplianceItem {
   id: number;
@@ -46,13 +57,11 @@ export default function MineDashboard() {
       
       try {
         setLoading(true);
-        // 1. Get assigned mine id (if role is mine_official) or just default to a specific mine for demo
         let mineId = null;
         if (role === 'mine_official') {
           const { data: userData } = await supabase.from('users').select('assigned_mine_id').eq('id', user.id).single();
           mineId = userData?.assigned_mine_id;
         } else {
-           // For admin demo, just pick mine 1
            mineId = 1; 
         }
         
@@ -62,21 +71,17 @@ export default function MineDashboard() {
           return;
         }
 
-        // 2. Get Mine Name
         const { data: mineData } = await supabase.from('mines').select('name').eq('id', mineId).single();
         if (mineData) setMineName(mineData.name);
 
-        // 3. Compliance Items (Top 6)
         const { data: compData } = await supabase
           .from('compliance_items')
           .select('*')
           .eq('mine_id', mineId)
           .order('due_date', { ascending: true })
           .limit(6);
-        
         if (compData) setCompliance(compData as ComplianceItem[]);
 
-        // 4. Upcoming Inspections
         const { data: inspData } = await supabase
           .from('inspections')
           .select('*')
@@ -84,10 +89,8 @@ export default function MineDashboard() {
           .in('status', ['scheduled', 'pending'])
           .order('scheduled_date', { ascending: true })
           .limit(3);
-          
         if (inspData) setInspections(inspData as Inspection[]);
 
-        // 5. Open Violations
         const { data: violData } = await supabase
           .from('violations')
           .select('*')
@@ -95,7 +98,6 @@ export default function MineDashboard() {
           .eq('status', 'open')
           .order('created_at', { ascending: false })
           .limit(4);
-          
         if (violData) setViolations(violData as Violation[]);
 
       } catch (err) {
@@ -114,523 +116,294 @@ export default function MineDashboard() {
   };
 
   const getSeverityStyle = (sev: string) => {
-    if (sev === 'Critical' || sev === 'High') return { border: 'border-error', bg: 'bg-error-container/40 text-error', label: 'CRITICAL BREACH' };
-    if (sev === 'Moderate') return { border: 'border-secondary', bg: 'bg-secondary-container/30 text-secondary', label: 'MODERATE' };
-    return { border: 'border-outline', bg: 'bg-surface-container-highest text-on-surface-variant', label: 'ADVISORY' };
+    if (sev === 'Critical' || sev === 'High') return 'text-red-400 bg-red-950/80 border-red-800';
+    if (sev === 'Moderate') return 'text-amber-400 bg-amber-950/80 border-amber-800';
+    return 'text-blue-400 bg-blue-950/80 border-blue-800';
   };
 
   if (loading) {
-    return <div className="flex-1 flex items-center justify-center font-code-sm text-on-surface-variant h-full min-h-screen">Loading Telemetry...</div>;
+    return <div className="min-h-screen bg-[#070D18] flex items-center justify-center font-mono text-cyan-400">CONNECTING TO PIT TELEMETRY...</div>;
   }
 
   return (
-    <>
-      <style>{`
-        .bg-surface { background-color: var(--cg-bg); }
-        .bg-surface-container-low { background-color: var(--cg-surface-low); }
-        .bg-surface-container-lowest { background-color: var(--cg-surface-elevated); }
-        .bg-surface-container { background-color: var(--cg-surface); }
-        .bg-surface-container-high { background-color: var(--cg-surface-high); }
-        .bg-surface-container-highest { background-color: var(--cg-surface-highest); }
-        .bg-surface-bright { background-color: var(--cg-surface-highest); }
-        .bg-primary { background-color: #8ed5ff; }
-        .bg-primary-container { background-color: #38bdf8; }
-        .bg-secondary { background-color: #ffb95f; }
-        .bg-secondary-container { background-color: #ee9800; }
-        .bg-error-container { background-color: #93000a; }
-        .bg-outline { background-color: #87929a; }
-        .bg-surface-variant { background-color: var(--cg-surface-highest); }
-        
-        .text-on-surface { color: var(--cg-text-primary); }
-        .text-on-surface-variant { color: var(--cg-text-muted); }
-        .text-primary { color: #8ed5ff; }
-        .text-primary-container { color: #38bdf8; }
-        .text-secondary { color: #ffb95f; }
-        .text-secondary-container { color: #ee9800; }
-        .text-on-secondary-container { color: #5b3800; }
-        .text-on-secondary { color: #472a00; }
-        .text-error { color: #ffb4ab; }
-        .text-outline { color: #87929a; }
-
-        .px-space-xs { padding-left: 0.25rem; padding-right: 0.25rem; }
-        .py-space-xs { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-        .py-space-2xs { padding-top: 0.125rem; padding-bottom: 0.125rem; }
-        .px-space-sm { padding-left: 0.5rem; padding-right: 0.5rem; }
-        .py-space-sm { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .ml-space-xs { margin-left: 0.25rem; }
-        .mr-space-xs { margin-right: 0.25rem; }
-        .px-space-md { padding-left: 0.75rem; padding-right: 0.75rem; }
-        .py-space-md { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .mb-space-md { margin-bottom: 0.75rem; }
-        .mb-space-sm { margin-bottom: 0.5rem; }
-        .pb-space-md { padding-bottom: 0.75rem; }
-        .pb-space-sm { padding-bottom: 0.5rem; }
-        .px-space-lg { padding-left: 1rem; padding-right: 1rem; }
-        .py-space-lg { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-space-xl { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-        
-        .gap-space-2xs { gap: 0.125rem; }
-        .gap-space-xs { gap: 0.25rem; }
-        .gap-space-sm { gap: 0.5rem; }
-        .gap-space-md { gap: 0.75rem; }
-        .gap-space-lg { gap: 1rem; }
-        .gap-space-xl { gap: 1.5rem; }
-        
-        .mt-space-2xs { margin-top: 0.125rem; }
-        .mt-space-xs { margin-top: 0.25rem; }
-        .mt-space-md { margin-top: 0.75rem; }
-        .pt-space-xs { padding-top: 0.25rem; }
-        .p-space-xs { padding: 0.25rem; }
-        .p-space-sm { padding: 0.5rem; }
-        .p-space-md { padding: 0.75rem; }
-        .p-space-lg { padding: 1rem; }
-        
-        .font-display-lg { font-family: 'Hanken Grotesk', sans-serif; font-size: 40px; line-height: 48px; font-weight: 600; letter-spacing: -0.02em; }
-        .font-headline-lg { font-family: 'Hanken Grotesk', sans-serif; font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: -0.015em; }
-        .font-headline-md { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; line-height: 28px; font-weight: 500; letter-spacing: -0.01em; }
-        .font-headline-sm { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; line-height: 24px; font-weight: 500; }
-        .font-body-md { font-family: 'Geist', sans-serif; font-size: 13px; line-height: 20px; font-weight: 400; }
-        .font-body-sm { font-family: 'Geist', sans-serif; font-size: 12px; line-height: 18px; font-weight: 400; }
-        .font-label-md { font-family: 'Geist', sans-serif; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; }
-        .font-code-sm { font-family: 'Geist', monospace; font-size: 12px; line-height: 16px; font-weight: 400; }
-      `}</style>
-
-      <div className="flex flex-col w-full min-h-screen bg-surface font-body-md text-on-surface pb-12">
-        {/* SITE HERO & CONTROL HEADER */}
-        <div className="relative w-full bg-surface-container-low px-space-lg py-space-xl border-b border-surface-container-highest/40 overflow-hidden shadow-sm">
-          <div className="absolute -top-32 right-12 w-96 h-96 bg-primary-container/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute -bottom-24 left-1/3 w-64 h-64 bg-secondary-container/10 rounded-full blur-2xl pointer-events-none"></div>
-          
-          <div className="flex flex-col gap-space-md relative z-10">
-            {/* Breadcrumb & Concession Identification */}
-            <div className="flex flex-wrap items-center justify-between gap-space-sm">
-              <div className="flex items-center gap-space-xs font-label-md text-on-surface-variant">
-                <span className="hover:text-primary cursor-pointer transition-colors">MINISTRY OF COAL</span>
-                <span className="text-outline">/</span>
-                <span className="hover:text-primary cursor-pointer transition-colors">OPERATIONS</span>
-                <span className="text-outline">/</span>
-                <span className="text-primary font-medium uppercase">{mineName}</span>
-                <span className="ml-space-xs px-space-xs py-space-2xs rounded bg-surface-container-highest text-on-surface text-[10px] font-mono uppercase tracking-wider">
-                  CONCESSION #ACT-2024
-                </span>
-              </div>
-              <div className="flex items-center gap-space-xs font-label-md">
-                <span className="text-outline">LAST TELEMETRY PACKET:</span>
-                <span className="font-code-sm text-primary font-medium tracking-tight">04 SEC AGO (UTC+05:30)</span>
-              </div>
-            </div>
-
-            {/* Main Title & Operational Actions Toolbar */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-space-lg">
-              <div className="flex flex-col gap-space-2xs min-w-0">
-                <div className="flex items-center gap-space-sm flex-wrap">
-                  <h1 className="font-headline-lg text-on-surface tracking-tight font-semibold">
-                    {mineName} — Concession Block
-                  </h1>
-                  <span className="px-space-sm py-space-2xs rounded bg-surface-container-high text-primary font-label-md tracking-wider uppercase font-semibold">
-                    ACTIVE MONITORING
-                  </span>
-                </div>
-                <p className="font-body-md text-on-surface-variant">
-                  Opencast / Underground Mixed Operations • DGMS Central Division
-                </p>
-              </div>
-
-              {/* Primary Action Cluster */}
-              <div className="flex items-center gap-space-sm flex-wrap">
-                <button className="px-space-md py-space-xs h-8 rounded bg-surface-container-high hover:bg-surface-bright text-on-surface text-body-sm font-medium flex items-center gap-space-xs transition-all shadow-sm">
-                  <span className="material-symbols-outlined text-[16px] text-outline">file_download</span>
-                  <span>Export Form IV Dossier</span>
-                </button>
-                <Link to="/inspections/new" className="px-space-lg py-space-xs h-8 rounded bg-secondary-container hover:bg-secondary text-on-secondary-container hover:text-on-secondary font-headline-sm text-[13px] font-semibold flex items-center gap-space-xs shadow-[0_0_12px_rgba(238,152,0,0.35)] transition-all">
-                  <span className="material-symbols-outlined text-[18px]">assignment_add</span>
-                  <span>+ Log New Inspection</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Telemetry Health & Administrative Chips Ribbon */}
-            <div className="flex flex-wrap items-center gap-space-xs pt-space-xs">
-              <div className="flex items-center gap-space-xs px-space-sm py-space-2xs rounded bg-surface-container text-body-sm">
-                <span className="material-symbols-outlined text-primary text-[15px]">corporate_fare</span>
-                <span className="text-outline">DGMS Zone:</span>
-                <span className="text-on-surface font-medium">Dhanbad East</span>
-              </div>
-              <div className="flex items-center gap-space-xs px-space-sm py-space-2xs rounded bg-surface-container text-body-sm">
-                <span className="material-symbols-outlined text-secondary text-[15px]">badge</span>
-                <span className="text-outline">Safety Manager:</span>
-                <span className="text-on-surface font-medium">Er. Assigned Lead</span>
-              </div>
-              <div className="flex items-center gap-space-xs px-space-sm py-space-2xs rounded bg-surface-container text-body-sm">
-                <span className="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
-                <span className="text-outline">Geo-Telemetry:</span>
-                <span className="text-primary-container font-semibold uppercase tracking-wider text-[11px]">ACTIVE LOCK</span>
-              </div>
-            </div>
+    <div className="min-h-screen bg-[#070D18] text-slate-100 font-sans p-6">
+      
+      {/* 1. Header & Live Telemetry Strip */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">MINISTRY OF COAL / OPERATIONS / CONCESSION #ACT-2024</span>
           </div>
+          <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
+            {mineName} — Concession Block
+            <span className="text-[11px] font-mono font-medium px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
+              ACTIVE MONITORING
+            </span>
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Opencast / Underground Mixed Operations • DGMS Central Division
+          </p>
         </div>
 
-        {/* CONCESSION COMPLIANCE & TELEMETRY SUMMARY CARDS */}
-        <div className="p-space-lg grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
-          {/* Card 1 */}
-          <div className="bg-surface-container-low p-space-md rounded flex flex-col justify-between shadow-sm relative overflow-hidden group">
-            <div className="flex items-start justify-between">
-              <div className="flex flex-col">
-                <span className="font-label-md text-outline uppercase tracking-wider">Concession Compliance Rating</span>
-                <div className="flex items-baseline gap-space-sm mt-space-2xs">
-                  <span className="font-display-lg font-semibold text-on-surface tracking-tight">94.6%</span>
-                  <span className="font-body-sm text-secondary flex items-center font-medium">
-                    <span className="material-symbols-outlined text-[14px]">arrow_downward</span> -1.2% MoM
-                  </span>
-                </div>
-              </div>
-              <span className="px-space-xs py-space-2xs rounded bg-secondary-container/20 text-secondary font-label-md uppercase font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span> Watch Status
-              </span>
-            </div>
-            <div className="mt-space-md pt-space-xs flex items-end justify-between gap-1 h-8">
-              <div className="w-full bg-surface-container rounded-t h-full flex items-end gap-1 px-1">
-                <span className="w-full bg-primary/40 h-[70%] rounded-t-sm"></span>
-                <span className="w-full bg-primary/40 h-[75%] rounded-t-sm"></span>
-                <span className="w-full bg-primary/40 h-[80%] rounded-t-sm"></span>
-                <span className="w-full bg-primary/40 h-[85%] rounded-t-sm"></span>
-                <span className="w-full bg-primary/40 h-[92%] rounded-t-sm"></span>
-                <span className="w-full bg-primary/60 h-[88%] rounded-t-sm"></span>
-                <span className="w-full bg-secondary h-[72%] rounded-t-sm shadow-[0_0_8px_rgba(255,185,95,0.4)]"></span>
-              </div>
-            </div>
-            <div className="flex justify-between items-center text-outline font-code-sm text-[10px] mt-1">
-              <span>T-30 Days</span>
-              <span>Current Rolling SLA</span>
-            </div>
+        <div className="flex flex-col items-end gap-2 text-xs font-mono">
+          <div className="flex items-center gap-2 text-slate-400">
+            <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            LAST PACKET: <span className="text-cyan-400 font-bold">04 SEC AGO (UTC+05:30)</span>
           </div>
-
-          {/* Card 2 */}
-          <div className="bg-surface-container-low p-space-md rounded flex flex-col justify-between shadow-sm relative overflow-hidden group">
-            <div className="flex items-start justify-between">
-              <div className="flex flex-col">
-                <span className="font-label-md text-outline uppercase tracking-wider">Active Statutory Violations</span>
-                <div className="flex items-baseline gap-space-sm mt-space-2xs">
-                  <span className="font-display-lg font-semibold text-error tracking-tight">{violations.length.toString().padStart(2, '0')}</span>
-                  <span className="font-label-md text-on-surface-variant uppercase">Open Breaches</span>
-                </div>
-              </div>
-              <div className="p-space-xs rounded bg-error-container/30 text-error">
-                <span className="material-symbols-outlined text-[20px]">warning</span>
-              </div>
-            </div>
-            <div className="mt-space-md flex flex-col gap-space-2xs font-body-sm">
-              {violations.slice(0, 3).map((v, i) => (
-                <div key={v.id} className="flex items-center justify-between text-[11px] font-mono">
-                  <span className={`${v.severity === 'Critical' ? 'text-error' : v.severity === 'High' ? 'text-secondary' : 'text-on-surface-variant'} flex items-center gap-1`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${v.severity === 'Critical' ? 'bg-error' : v.severity === 'High' ? 'bg-secondary' : 'bg-outline'}`}></span> 
-                    {v.category}
-                  </span>
-                  <span className="text-outline">ID: {v.id}</span>
-                </div>
-              ))}
-              {violations.length === 0 && <span className="text-[11px] text-emerald-400 font-mono mt-2">No active violations</span>}
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-surface-container-low p-space-md rounded flex flex-col justify-between shadow-sm relative overflow-hidden group">
-            <div className="flex items-start justify-between">
-              <div className="flex flex-col">
-                <span className="font-label-md text-outline uppercase tracking-wider">Next DGMS Inspection</span>
-                {inspections.length > 0 ? (
-                  <>
-                    <div className="flex items-baseline gap-space-xs mt-space-2xs">
-                      <span className="font-headline-lg font-semibold text-primary tracking-tight">Scheduled</span>
-                    </div>
-                    <span className="font-body-sm text-on-surface font-medium mt-1">
-                      {format(new Date(inspections[0].scheduled_date), 'dd MMM yyyy')}
-                    </span>
-                  </>
-                ) : (
-                  <div className="flex items-baseline gap-space-xs mt-space-2xs">
-                    <span className="font-headline-lg font-semibold text-outline tracking-tight">None Queued</span>
-                  </div>
-                )}
-              </div>
-              <div className="p-space-xs rounded bg-surface-container-high text-primary">
-                <span className="material-symbols-outlined text-[20px]">event_available</span>
-              </div>
-            </div>
-            <div className="mt-space-md pt-space-xs bg-surface-container p-space-sm rounded">
-              <div className="flex items-center justify-between font-label-md text-on-surface-variant mb-1">
-                <span>Target Readiness</span>
-                <span className="text-secondary font-semibold">92% Prep Ready</span>
-              </div>
-              <div className="w-full bg-surface-container-highest h-1 rounded overflow-hidden">
-                <div className="bg-primary-container h-full w-[92%]"></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4 */}
-          <div className="bg-surface-container-low p-space-md rounded flex flex-col justify-between shadow-sm relative overflow-hidden group">
-            <div className="flex items-start justify-between">
-              <div className="flex flex-col">
-                <span className="font-label-md text-outline uppercase tracking-wider">Sensor Grid & Telemetry</span>
-                <div className="flex items-baseline gap-space-sm mt-space-2xs">
-                  <span className="font-display-lg font-semibold text-primary tracking-tight">99.2%</span>
-                  <span className="font-label-md text-primary uppercase font-mono">64/64 UP</span>
-                </div>
-              </div>
-              <div className="p-space-xs rounded bg-surface-container-high text-primary">
-                <span className="material-symbols-outlined text-[20px]">sensors</span>
-              </div>
-            </div>
-            <div className="mt-space-md grid grid-cols-3 gap-1 text-center font-code-sm text-[11px]">
-              <div className="bg-surface-container p-1 rounded">
-                <span className="text-outline block text-[9px] uppercase">Piezometer</span>
-                <span className="text-on-surface font-medium">18 OK</span>
-              </div>
-              <div className="bg-surface-container p-1 rounded">
-                <span className="text-outline block text-[9px] uppercase">Inclinometer</span>
-                <span className="text-on-surface font-medium">24 OK</span>
-              </div>
-              <div className="bg-surface-container p-1 rounded">
-                <span className="text-outline block text-[9px] uppercase">Gas Sniffers</span>
-                <span className="text-primary font-medium">22 OK</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* LIVE PIT SENSOR QUICK TELEMETRY MINI-STRIP */}
-        <div className="px-space-lg pb-space-sm">
-          <div className="bg-surface-container-lowest p-space-sm rounded flex flex-wrap items-center justify-between gap-space-md">
-            <div className="flex items-center gap-space-sm">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              <span className="font-label-md text-on-surface uppercase tracking-widest font-semibold">
-                REAL-TIME CONCESSION SENSOR STRIP:
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-space-xl text-body-sm hidden md:flex">
-              <div className="flex items-center gap-space-xs">
-                <span className="text-outline">Slope Deformation:</span>
-                <span className="font-mono text-on-surface font-semibold text-primary">+0.012 mm/hr</span>
-                <span className="text-[10px] px-1 py-0.5 rounded bg-primary-container/20 text-primary-container font-mono uppercase">Nominal</span>
-              </div>
-              <div className="flex items-center gap-space-xs">
-                <span className="text-outline">Ambient PM10 Dust:</span>
-                <span className="font-mono text-on-surface font-semibold">142 µg/m³</span>
-                <span className="text-[10px] px-1 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-mono">Normal</span>
-              </div>
-              <div className="flex items-center gap-space-xs">
-                <span className="text-outline">Blast Vibration PPV:</span>
-                <span className="font-mono text-secondary font-semibold">4.8 mm/s</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 font-label-md text-outline">
-              <span className="material-symbols-outlined text-[14px]">tune</span>
-              <span>SCADA Bridge 10.42.1</span>
-            </div>
-          </div>
-        </div>
-
-        {/* MAIN OPERATIONAL GRID (TWO-COLUMN BESPOKE LAYOUT) */}
-        <div className="p-space-lg grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-          
-          {/* LEFT COLUMN (7 COLS): COMPLIANCE CHECKLIST & UPCOMING INSPECTIONS */}
-          <div className="lg:col-span-7 flex flex-col gap-space-lg">
-            
-            {/* COMPLIANCE CHECKLIST PANEL */}
-            <div className="bg-surface-container-low rounded p-space-lg shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-md mb-space-md border-b border-surface-container-highest/50">
-                <div className="flex items-center gap-space-xs">
-                  <span className="material-symbols-outlined text-primary text-[20px]">fact_check</span>
-                  <h2 className="font-headline-md text-on-surface font-medium">Statutory Compliance Checklist</h2>
-                </div>
-                <div className="flex items-center gap-1 bg-surface-container p-0.5 rounded">
-                  <button className="px-space-sm py-1 rounded bg-surface-container-high text-primary font-label-md font-medium">All ({compliance.length})</button>
-                  <Link to="/compliance" className="px-space-sm py-1 rounded text-on-surface-variant hover:text-on-surface font-label-md font-medium transition-colors">View Tracker →</Link>
-                </div>
-              </div>
-              
-              <div className="flex flex-col gap-space-xs">
-                {compliance.length === 0 ? (
-                  <div className="p-4 text-center font-code-sm text-outline">No compliance items tracked.</div>
-                ) : (
-                  compliance.map(item => {
-                    const overdue = isOverdue(item);
-                    let statusPill = null;
-                    let statusIcon = null;
-
-                    if (item.status === 'completed') {
-                      statusPill = <span className="px-space-xs py-space-2xs rounded bg-primary-container/20 text-primary-container text-[11px] font-label-md font-semibold tracking-wide uppercase">Compliant</span>;
-                      statusIcon = <span className="material-symbols-outlined text-primary-container text-[18px]">check_circle</span>;
-                    } else if (overdue) {
-                      statusPill = <span className="px-space-xs py-space-2xs rounded bg-error-container/30 text-error text-[11px] font-label-md font-semibold tracking-wide uppercase">Overdue</span>;
-                      statusIcon = <span className="material-symbols-outlined text-error text-[18px]">error</span>;
-                    } else {
-                      statusPill = <span className="px-space-xs py-space-2xs rounded bg-secondary-container/20 text-secondary text-[11px] font-label-md font-semibold tracking-wide uppercase">Pending</span>;
-                      statusIcon = <span className="material-symbols-outlined text-secondary text-[18px]">schedule</span>;
-                    }
-
-                    return (
-                      <div key={item.id} className="p-space-sm rounded bg-surface-container hover:bg-surface-container-high transition-colors flex items-start gap-space-sm">
-                        <div className="pt-0.5">{statusIcon}</div>
-                        <div className="flex-1 flex flex-col gap-0.5">
-                          <div className="flex items-center justify-between gap-space-sm">
-                            <span className="font-body-md text-on-surface font-medium truncate pr-4">{item.title}</span>
-                            {statusPill}
-                          </div>
-                          <div className="flex items-center gap-space-md text-[11px] text-on-surface-variant font-code-sm">
-                            <span>Category: {item.category}</span>
-                            <span className="text-outline">•</span>
-                            <span className={overdue ? 'text-error' : 'text-primary'}>
-                              Due: {format(new Date(item.due_date), 'dd MMM yyyy')}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* UPCOMING INSPECTIONS SECTION */}
-            <div className="bg-surface-container-low rounded p-space-lg shadow-sm">
-              <div className="flex items-center justify-between pb-space-md mb-space-md border-b border-surface-container-highest/50">
-                <div className="flex items-center gap-space-xs">
-                  <span className="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
-                  <h2 className="font-headline-md text-on-surface font-medium">Scheduled Statutory Audits</h2>
-                </div>
-                <span className="font-code-sm text-outline uppercase tracking-wider">{inspections.length} ACTIVE IN QUEUE</span>
-              </div>
-              
-              <div className="flex flex-col gap-space-sm">
-                {inspections.length === 0 ? (
-                  <div className="p-4 text-center font-code-sm text-outline">No upcoming inspections.</div>
-                ) : (
-                  inspections.map((insp, idx) => (
-                    <div key={insp.id} className="p-space-md rounded bg-surface-container hover:bg-surface-container-high transition-all flex flex-col gap-space-xs relative overflow-hidden">
-                      <div className={`absolute top-0 left-0 w-1 h-full ${idx % 2 === 0 ? 'bg-primary-container' : 'bg-secondary-container'}`}></div>
-                      <div className="flex flex-wrap items-center justify-between gap-space-xs">
-                        <div className="flex items-center gap-space-xs">
-                          <span className={`px-space-xs py-space-2xs rounded font-label-md uppercase font-semibold ${idx % 2 === 0 ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}`}>
-                            Audit #{insp.id}
-                          </span>
-                          <span className="font-headline-sm text-on-surface font-medium">
-                            DGMS Statutory Inspection
-                          </span>
-                        </div>
-                        <span className={`font-mono text-body-sm font-semibold ${idx % 2 === 0 ? 'text-primary' : 'text-secondary'}`}>
-                          {insp.status === 'scheduled' ? 'Scheduled' : 'Pending'}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-space-xs mt-1 text-body-sm text-on-surface-variant">
-                        <div>
-                          <span className="text-outline">Scheduled Date:</span>
-                          <span className="text-on-surface font-medium ml-1">{format(new Date(insp.scheduled_date), 'dd MMM yyyy')}</span>
-                        </div>
-                        <div className="md:col-span-2">
-                          <span className="text-outline">Notes/Findings:</span>
-                          <span className="text-on-surface ml-1">{insp.findings || 'No preliminary notes provided.'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN (5 COLS): HIGH DENSITY OPEN VIOLATIONS TABLE & GEOTECHNICAL MONITORING */}
-          <div className="lg:col-span-5 flex flex-col gap-space-lg">
-            
-            {/* OPEN VIOLATIONS AUDIT TABLE CARD */}
-            <div className="bg-surface-container-low rounded p-space-lg shadow-sm">
-              <div className="flex items-center justify-between pb-space-md mb-space-md border-b border-surface-container-highest/50">
-                <div className="flex items-center gap-space-xs">
-                  <span className="material-symbols-outlined text-error text-[20px]">warning</span>
-                  <h2 className="font-headline-md text-on-surface font-medium">Open Violations Registry</h2>
-                </div>
-                <span className="px-space-xs py-space-2xs rounded bg-error-container/30 text-error font-label-md uppercase font-semibold">
-                  {violations.length} UNRESOLVED
-                </span>
-              </div>
-              <p className="font-body-sm text-on-surface-variant mb-space-md">
-                Action directives issued under DGMS Circulars. SLA countdown active.
-              </p>
-              
-              <div className="flex flex-col gap-space-sm">
-                {violations.length === 0 ? (
-                  <div className="p-4 text-center font-code-sm text-outline">No open violations reported.</div>
-                ) : (
-                  violations.map(v => {
-                    const style = getSeverityStyle(v.severity);
-                    return (
-                      <div key={v.id} className={`p-space-md rounded bg-surface-container flex flex-col gap-space-xs border-l-2 ${style.border}`}>
-                        <div className="flex items-start justify-between gap-space-xs">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-space-xs">
-                              <span className="font-mono text-primary font-medium text-body-sm">VIO-{v.id.toString().padStart(4, '0')}</span>
-                              <span className={`px-space-xs py-space-2xs rounded font-label-md text-[10px] uppercase font-semibold ${style.bg}`}>
-                                {style.label}
-                              </span>
-                            </div>
-                            <span className="font-body-sm text-on-surface font-medium mt-1 pr-2">
-                              {v.category} Violation
-                            </span>
-                          </div>
-                        </div>
-                        <div className="bg-surface-container-low p-space-xs rounded font-code-sm text-[11px] text-on-surface-variant mt-1 flex items-center justify-between">
-                          <span className="truncate pr-2">Action: {v.corrective_action || 'Pending investigation'}</span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-              <button className="w-full mt-space-md py-space-xs px-space-md rounded bg-surface-container-high hover:bg-surface-bright text-primary font-body-sm font-semibold flex items-center justify-center gap-space-xs transition-colors" type="button">
-                <span className="material-symbols-outlined text-[18px]">verified</span>
-                <span>Generate Rectification Report</span>
-              </button>
-            </div>
-
-            {/* PIT GEOTECHNICAL CONTEXT & SATELLITE RADAR PANEL */}
-            <div className="bg-surface-container-low rounded p-space-lg shadow-sm">
-              <div className="flex items-center justify-between pb-space-sm mb-space-sm border-b border-surface-container-highest/50">
-                <div className="flex items-center gap-space-xs">
-                  <span className="material-symbols-outlined text-primary text-[20px]">public</span>
-                  <h2 className="font-headline-md text-on-surface font-medium">Geotechnical Model</h2>
-                </div>
-                <span className="font-code-sm text-primary">InSAR PASS #418</span>
-              </div>
-              <div className="relative w-full h-48 rounded overflow-hidden mb-space-sm bg-surface-container-highest">
-                <img className="w-full h-full object-cover mix-blend-screen opacity-70" alt="Satellite Telemetry" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4lq95AqQmj-h9ym5RMwcg4F3XqYvJ9isVMVW_KLZ-DqYufEg61e8n1MK3Xr-juDbfmo_GgW3Q9d9DQRGTeWbg4sSnZm2UPJQNXoVNoYpTat0zRiLAidnaxX5s05KRFWZp0gNHOD26MI6GM-bQ_TGovdFrZCxz_KZvyCXC7RMZx-_Q4s_vgW76GtS_7MhzQ7RvHB6A2fYkoYTiGrUs1ndFSFvhV9ppR4GtgSVwQqonVs4t3tNJYHXg" />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
-                <div className="absolute top-2 left-2 px-space-xs py-1 rounded bg-surface-container-lowest/80 backdrop-blur text-[10px] font-mono text-primary flex items-center gap-1 border border-primary/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
-                  SECTOR D-4: BENCH #6 WATCH
-                </div>
-                <div className="absolute bottom-2 right-2 px-space-xs py-1 rounded bg-surface-container-lowest/80 backdrop-blur text-[10px] font-mono text-on-surface border border-white/10">
-                  LAT: 23°47'12"N • LON: 86°25'08"E
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-space-xs font-code-sm text-[11px]">
-                <div className="bg-surface-container p-space-xs rounded flex flex-col">
-                  <span className="text-outline uppercase text-[9px]">Factor of Safety (FoS)</span>
-                  <span className="font-semibold text-primary text-body-sm">1.44 (Min: 1.30)</span>
-                </div>
-                <div className="bg-surface-container p-space-xs rounded flex flex-col">
-                  <span className="text-outline uppercase text-[9px]">Groundwater Table</span>
-                  <span className="font-semibold text-on-surface text-body-sm">-48.2m BGL</span>
-                </div>
-              </div>
-            </div>
-
+          <div className="flex items-center gap-3">
+            <button className="px-3 py-1.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 transition rounded flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5" /> Export Form IV
+            </button>
+            <Link to="/inspections/new" className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition rounded shadow-lg shadow-indigo-600/20">
+              + Log Inspection
+            </Link>
           </div>
         </div>
       </div>
-    </>
+
+      {/* 2. Top Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+        
+        {/* Compliance Rating */}
+        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
+          <p className="text-xs font-mono text-slate-400 uppercase tracking-wider">Compliance Rating</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-3xl font-black text-white">94.6%</h3>
+            <span className="text-xs text-amber-400 font-mono">-1.2% MoM</span>
+          </div>
+          <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+            <div className="bg-emerald-500 h-full w-[94.6%]" />
+          </div>
+        </div>
+
+        {/* Active Violations */}
+        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
+          <p className="text-xs font-mono text-slate-400 uppercase tracking-wider">Active Violations</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-3xl font-black text-red-400">{violations.length.toString().padStart(2, '0')}</h3>
+            <span className="text-xs text-slate-400 font-mono">Open Breaches</span>
+          </div>
+          <div className="mt-3 text-[10px] text-red-400 font-mono flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" /> SLA COUNTDOWN ACTIVE
+          </div>
+        </div>
+
+        {/* Next Inspection */}
+        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
+          <p className="text-xs font-mono text-slate-400 uppercase tracking-wider">Next DGMS Audit</p>
+          <div className="flex flex-col mt-1">
+            <h3 className="text-xl font-bold text-cyan-400">
+              {inspections.length > 0 ? format(new Date(inspections[0].scheduled_date), 'dd MMM yyyy') : 'None Queued'}
+            </h3>
+            <span className="text-xs text-slate-400 font-mono mt-0.5">Target Readiness: 92%</span>
+          </div>
+        </div>
+
+        {/* Sensor Grid */}
+        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
+          <p className="text-xs font-mono text-slate-400 uppercase tracking-wider">Sensor Telemetry</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-3xl font-black text-indigo-400">99.2%</h3>
+            <span className="text-[10px] text-indigo-400 font-mono bg-indigo-950/50 px-1 py-0.5 rounded border border-indigo-500/20">64/64 UP</span>
+          </div>
+          <div className="mt-3 flex justify-between text-[10px] font-mono text-slate-400">
+            <span>Piezometer: <strong className="text-slate-200">18 OK</strong></span>
+            <span>Gas: <strong className="text-slate-200">22 OK</strong></span>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Live HUD Strip */}
+      <div className="mt-6 p-3 bg-slate-900 border border-slate-800 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono text-xs">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+          <span className="text-slate-300 font-bold uppercase tracking-widest">LIVE HUD:</span>
+          <span className="text-slate-500 hidden sm:inline">SCADA Bridge 10.42.1</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-6">
+          <span className="text-slate-400">Slope: <strong className="text-cyan-400">+0.012 mm/hr</strong></span>
+          <span className="text-slate-400">PM10: <strong className="text-slate-200">142 µg/m³</strong></span>
+          <span className="text-slate-400">Blast PPV: <strong className="text-amber-400">4.8 mm/s</strong></span>
+        </div>
+      </div>
+
+      {/* 4. Main Two-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 items-start">
+        
+        {/* Left Col (7) */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          
+          {/* Geotechnical Radar (New Presentation Polish) */}
+          <div className="bg-[#0B1326] border border-slate-800 rounded-xl p-4 shadow-xl relative overflow-hidden group">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800 z-10 relative">
+              <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2 uppercase tracking-wide">
+                <Globe2 className="w-4 h-4 text-cyan-400" />
+                Geotechnical InSAR Model
+              </h2>
+              <span className="text-[10px] font-mono text-cyan-400 border border-cyan-800 bg-cyan-950/30 px-2 py-0.5 rounded">PASS #418</span>
+            </div>
+            
+            <div className="relative w-full h-56 bg-slate-950 rounded-lg overflow-hidden border border-slate-800 z-10">
+              {/* Fake Satellite Background */}
+              <img 
+                src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&q=80&w=1000" 
+                alt="Satellite" 
+                className="w-full h-full object-cover opacity-30 grayscale contrast-150 mix-blend-luminosity"
+              />
+              
+              {/* Radar Sweep Animation */}
+              <div className="absolute inset-0 border-[1px] border-cyan-500/20 rounded-full scale-150 opacity-20" />
+              <div className="absolute inset-0 border-[1px] border-cyan-500/20 rounded-full scale-[2] opacity-10" />
+              <div className="absolute top-1/2 left-1/2 w-[200%] h-[200%] -ml-[100%] -mt-[100%] bg-[conic-gradient(from_0deg,transparent_0_340deg,rgba(34,211,238,0.4)_360deg)] animate-[spin_4s_linear_infinite] rounded-full mix-blend-screen pointer-events-none" />
+              
+              {/* Hotspot Markers */}
+              <div className="absolute top-[40%] left-[60%] flex items-center justify-center">
+                <div className="w-3 h-3 bg-amber-500 rounded-full animate-ping absolute" />
+                <div className="w-2 h-2 bg-amber-400 rounded-full relative z-10" />
+                <span className="absolute left-4 w-max text-[9px] font-mono text-amber-400 bg-black/60 px-1 py-0.5 border border-amber-500/30">SECTOR D-4</span>
+              </div>
+
+              {/* Data Overlay */}
+              <div className="absolute bottom-3 right-3 text-right">
+                <div className="text-[10px] font-mono text-slate-400 bg-black/60 px-2 py-1 border border-slate-800 rounded">
+                  LAT: 23°47'12"N • LON: 86°25'08"E
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <div className="bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                <span className="text-[10px] text-slate-400 uppercase font-mono block">Factor of Safety (FoS)</span>
+                <span className="text-lg font-bold text-cyan-400">1.44 <span className="text-xs font-normal text-slate-500">Min: 1.30</span></span>
+              </div>
+              <div className="bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                <span className="text-[10px] text-slate-400 uppercase font-mono block">Groundwater Table</span>
+                <span className="text-lg font-bold text-slate-200">-48.2m BGL</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Compliance Checklist */}
+          <div className="bg-[#0B1326] border border-slate-800 rounded-xl p-4 shadow-xl">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+              <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2 uppercase tracking-wide">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                Statutory Compliance Checklist
+              </h2>
+            </div>
+            <div className="flex flex-col gap-2">
+              {compliance.length === 0 ? (
+                <div className="p-4 text-center font-mono text-slate-500 text-xs">No tracked items.</div>
+              ) : (
+                compliance.map(item => {
+                  const overdue = isOverdue(item);
+                  return (
+                    <div key={item.id} className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg flex items-center justify-between hover:bg-slate-900 transition">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-slate-200">{item.title}</span>
+                        <div className="flex items-center gap-2 mt-1 text-[10px] font-mono text-slate-400">
+                          <span>{item.category}</span>
+                          <span>•</span>
+                          <span className={overdue ? 'text-red-400' : 'text-slate-400'}>Due: {format(new Date(item.due_date), 'dd MMM yyyy')}</span>
+                        </div>
+                      </div>
+                      <div>
+                        {item.status === 'completed' ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-800">Compliant</span>
+                        ) : overdue ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-red-400 bg-red-950/60 border border-red-800">Overdue</span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-950/60 border border-amber-800">Pending</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Col (5) */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          
+          {/* Open Violations Registry */}
+          <div className="bg-[#0B1326] border border-slate-800 rounded-xl p-4 shadow-xl">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+              <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2 uppercase tracking-wide">
+                <AlertTriangle className="w-4 h-4 text-red-400" />
+                Open Violations Registry
+              </h2>
+              <span className="px-2 py-0.5 rounded bg-red-950/60 border border-red-800 text-[10px] font-mono text-red-400">{violations.length} UNRESOLVED</span>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              {violations.length === 0 ? (
+                <div className="p-4 text-center font-mono text-slate-500 text-xs flex flex-col items-center gap-2">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-500/50" />
+                  No open violations
+                </div>
+              ) : (
+                violations.map(v => (
+                  <div key={v.id} className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg flex flex-col gap-2 relative overflow-hidden">
+                    <div className={`absolute top-0 left-0 w-1 h-full ${
+                      v.severity === 'Critical' || v.severity === 'High' ? 'bg-red-500' : 'bg-amber-500'
+                    }`} />
+                    <div className="flex justify-between items-start ml-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-slate-400">VIO-{v.id.toString().padStart(4, '0')}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${getSeverityStyle(v.severity)}`}>
+                          {v.severity}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="ml-2 text-sm font-bold text-slate-200">{v.category} Breach</span>
+                    <div className="ml-2 bg-slate-950 p-2 rounded border border-slate-800 text-[10px] font-mono text-slate-400">
+                      Action: {v.corrective_action || 'Pending investigation'}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            
+            <button className="w-full mt-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold font-mono border border-slate-700 rounded transition flex items-center justify-center gap-2">
+              <FileText className="w-3.5 h-3.5" /> Generate Rectification Report
+            </button>
+          </div>
+
+          {/* Upcoming Audits */}
+          <div className="bg-[#0B1326] border border-slate-800 rounded-xl p-4 shadow-xl">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+              <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2 uppercase tracking-wide">
+                <Target className="w-4 h-4 text-indigo-400" />
+                Scheduled Audits
+              </h2>
+            </div>
+            <div className="flex flex-col gap-3">
+              {inspections.length === 0 ? (
+                <div className="p-4 text-center font-mono text-slate-500 text-xs">No queued audits.</div>
+              ) : (
+                inspections.map((insp, idx) => (
+                  <div key={insp.id} className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg flex flex-col">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold text-slate-200">DGMS Statutory Inspection</span>
+                      <span className="text-[10px] font-mono text-indigo-400 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-800 uppercase">
+                        {insp.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400">
+                      <Clock className="w-3 h-3" />
+                      {format(new Date(insp.scheduled_date), 'dd MMM yyyy')}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   );
 }
