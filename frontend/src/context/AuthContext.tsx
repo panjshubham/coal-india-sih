@@ -51,12 +51,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("role")
+        .select("role, name, email")
         .eq("id", userId)
         .single();
       
       if (!error && data) {
         setRole(data.role);
+        
+        // Dynamically update the UI profile based on logged-in user
+        const { getProfile, saveProfile } = await import("../services/profileService");
+        const currentProfile = getProfile();
+        saveProfile({
+          ...currentProfile,
+          fullName: data.name || "Unknown Officer",
+          email: data.email || currentProfile.email,
+          role: data.role
+        });
+
         // Fire and forget alert generation
         generateAutomatedAlerts();
       }
