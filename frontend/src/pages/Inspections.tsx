@@ -95,8 +95,8 @@ export default function Inspections() {
           photo_url: p.photo_base64,
           latitude: p.lat,
           longitude: p.lng,
-          timestamp: p.timestamp,
-          status: 'open'
+          status: 'open',
+          regulation_ref: 'TBD'
         }]);
 
         if (violErr) throw violErr;
@@ -223,7 +223,8 @@ export default function Inspections() {
           photo_url: payload.photo_base64,
           latitude: payload.lat,
           longitude: payload.lng,
-          status: 'open'
+          status: 'open',
+          regulation_ref: 'TBD'
         }]);
 
         if (violErr) throw violErr;
