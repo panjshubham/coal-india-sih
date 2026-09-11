@@ -27,6 +27,7 @@ export default function Inspections() {
   });
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success_online' | 'success_offline' | 'error'>('idle');
+  const [usingCachedGps, setUsingCachedGps] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -122,10 +123,11 @@ export default function Inspections() {
         lat: 23.7923,
         lng: 86.4253
       }));
+      setUsingCachedGps(true);
       setLoadingLocation(false);
     };
 
-    if ('geolocation' in navigator) {
+    if ('geolocation' in navigator && isOnline) {
       let isResolved = false;
       const failsafe = setTimeout(() => {
         if (!isResolved) {
@@ -138,6 +140,7 @@ export default function Inspections() {
         (position) => {
           isResolved = true;
           clearTimeout(failsafe);
+          setUsingCachedGps(false);
           setFormData(prev => ({
             ...prev,
             lat: position.coords.latitude,
@@ -231,6 +234,7 @@ export default function Inspections() {
 
         setStatus('success_online');
         resetForm();
+        setTimeout(() => setStatus('idle'), 4000);
       } catch (error) {
         console.error('Error submitting online, falling back to offline queue', error);
         await saveOffline(payload);
@@ -242,13 +246,15 @@ export default function Inspections() {
 
   const saveOffline = async (payload: any) => {
     try {
-      await savePendingSubmission(payload);
+      await savePendingSubmission({ ...payload, synced: false });
       window.dispatchEvent(new Event('coalguard:syncQueueUpdated'));
       setStatus('success_offline');
       resetForm();
+      setTimeout(() => setStatus('idle'), 4000);
     } catch (e) {
       console.error('Failed to save offline', e);
       setStatus('error');
+      setTimeout(() => setStatus('idle'), 4000);
     }
   };
 
@@ -528,38 +534,31 @@ export default function Inspections() {
               <div className="pt-space-md">
                 <button
                   type="submit"
-                  disabled={status === 'submitting'}
+                  disabled={status === 'submitting' || !formData.mine_id || !formData.category || !formData.description}
                   className="w-full flex items-center justify-center gap-space-xs px-space-md py-space-sm bg-primary text-on-primary rounded font-headline-sm text-[15px] hover:bg-primary-container transition-all shadow-[0_0_12px_rgba(142,213,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
                   <span className="material-symbols-outlined text-[20px]">send</span>
                   {status === 'submitting' ? 'Encrypting & Dispatching...' : 'File Statutory Dossier'}
                 </button>
                 
-                {!formData.lat && isOnline && (
-                  <p className="font-code-sm text-error mt-space-sm flex items-center justify-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">warning</span>
-                    GNSS uplink lock required before dispatch.
-                  </p>
-                )}
-                
-                {!isOnline && (
-                  <p className="font-code-sm text-amber-500 mt-space-sm flex items-center justify-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">warning</span>
-                    Network unavailable. Dossier will be stored offline.
+                {usingCachedGps && (
+                  <p className="font-code-sm text-emerald-400 mt-space-sm flex items-center justify-center gap-1 font-medium">
+                    <span className="material-symbols-outlined text-[16px]">public_off</span>
+                    🌐 Working Offline: Using Cached GPS Location.
                   </p>
                 )}
                 
                 {status === 'success_online' && (
                   <div className="mt-space-md p-space-sm bg-primary/10 text-primary rounded border border-primary/20 flex items-center gap-space-sm">
                     <span className="material-symbols-outlined text-[20px] shrink-0">verified</span>
-                    <p className="font-body-sm">Dossier successfully logged to DGMS Central Ledger.</p>
+                    <p className="font-body-sm font-bold">Dossier Filed Successfully!</p>
                   </div>
                 )}
                 
                 {status === 'success_offline' && (
-                  <div className="mt-space-md p-space-sm bg-secondary/10 text-secondary rounded border border-secondary/20 flex items-center gap-space-sm">
-                    <span className="material-symbols-outlined text-[20px] shrink-0">cloud_off</span>
-                    <p className="font-body-sm text-lg font-bold">Stored offline</p>
+                  <div className="mt-space-md p-space-sm bg-emerald-500/10 text-emerald-400 rounded border border-emerald-500/20 flex items-center gap-space-sm">
+                    <span className="material-symbols-outlined text-[20px] shrink-0">cloud_done</span>
+                    <p className="font-body-sm font-bold">Queued Offline</p>
                   </div>
                 )}
                 
