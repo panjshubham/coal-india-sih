@@ -273,7 +273,7 @@ export default function ViolationDetail() {
                   <MapPin className="w-4 h-4 text-emerald-500" />
                   <span>GPS: {violation.latitude.toFixed(6)}, {violation.longitude.toFixed(6)}</span>
                 </div>
-                <Link to="/map" className="flex items-center gap-1 text-amber-400 hover:text-amber-300 transition-colors text-xs uppercase font-sans font-bold tracking-wider bg-amber-400/10 px-2 py-1 rounded">
+                <Link to="/mines-map" className="flex items-center gap-1 text-amber-400 hover:text-amber-300 transition-colors text-xs uppercase font-sans font-bold tracking-wider bg-amber-400/10 px-2 py-1 rounded">
                   View on Map
                 </Link>
               </div>

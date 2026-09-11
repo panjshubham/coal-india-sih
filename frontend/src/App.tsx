@@ -16,6 +16,7 @@ import Contractors from './pages/Contractors';
 import ContractorDetail from './pages/ContractorDetail';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import ManageUsers from './pages/ManageUsers';
 import Compliance from './pages/Compliance';
 import Violations from './pages/Violations';
@@ -47,9 +48,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         
         <Route element={<ProtectedRoute />}>
-          <Route path="/map" element={<GeospatialMap />} />
+          <Route path="/mines-map" element={<GeospatialMap />} />
           
           <Route path="/" element={<DashboardLayout />}>
             <Route path="dashboard/mine" element={
@@ -86,7 +88,7 @@ function App() {
                 <DataImport />
               </ProtectedRoute>
             } />
-            <Route path="admin/users" element={
+            <Route path="manage-users" element={
               <ProtectedRoute allowedRoles={['corporate']}>
                 <ManageUsers />
               </ProtectedRoute>

@@ -240,7 +240,7 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-[18px]">warning</span>
                 <span className="font-body-md">Violations</span>
               </Link>
-              <Link to="/map" className="flex items-center gap-space-sm px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
+              <Link to="/mines-map" className="flex items-center gap-space-sm px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
                 <span className="material-symbols-outlined text-[18px]">map</span>
                 <span className="font-body-md">Mines Map</span>
               </Link>
@@ -609,7 +609,7 @@ export default function Dashboard() {
                       <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{background:'#F87171', boxShadow:'0 0 6px #F8717199'}}></span>Critical</span>
                     </div>
                     <Link
-                      to="/map"
+                      to="/mines-map"
                       className="flex items-center gap-space-2xs px-space-sm py-space-2xs rounded bg-primary text-on-primary font-body-sm font-medium hover:bg-primary-container transition-colors"
                     >
                       <span className="material-symbols-outlined text-[14px]">open_in_full</span>
@@ -678,7 +678,7 @@ export default function Dashboard() {
                                   </div>
                                 )}
                                 <Link
-                                  to="/map"
+                                  to="/mines-map"
                                   style={{ fontSize: '11px', color: '#38bdf8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
                                 >
                                   View on Full Map →
@@ -698,7 +698,7 @@ export default function Dashboard() {
 
                 <div className="px-space-md py-space-xs bg-surface-container-lowest flex items-center justify-between font-label-md text-outline">
                   <span>CartoDB Dark Matter · Real mine coordinates from Supabase</span>
-                  <Link to="/map" className="text-primary hover:underline font-body-sm">Open Full Interactive Map →</Link>
+                  <Link to="/mines-map" className="text-primary hover:underline font-body-sm">Open Full Interactive Map →</Link>
                 </div>
               </div>
 

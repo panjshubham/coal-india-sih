@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, CheckCircle2 } from 'lucide-react';
@@ -257,14 +257,13 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Security Assurance Footer (NO SIGN UP LINK) */}
-          <div className="mt-8 pt-6 border-t border-[var(--cg-border)] text-center text-xs text-slate-400 space-y-2">
-            <p className="flex items-center justify-center gap-1.5 text-slate-300 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              Enterprise Account Provisioning Only
-            </p>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              No public registration. For account creation, mine reassignment, or role updates, submit a formal request to your Corporate Administrator.
+          {/* Security Assurance Footer */}
+          <div className="mt-8 pt-6 border-t border-[var(--cg-border)] text-center text-sm text-slate-400 space-y-2">
+            <p className="text-slate-400">
+              Don't have an account?{' '}
+              <Link to="/signup" className="text-amber-500 hover:text-amber-400 font-semibold transition-colors">
+                Sign up here
+              </Link>
             </p>
           </div>
         </div>

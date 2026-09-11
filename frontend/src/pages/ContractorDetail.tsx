@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { ChevronLeft, ShieldAlert, Building2, Calendar, FileText } from 'lucide-react';
+import { ChevronLeft, ShieldAlert, Building2, Calendar, FileText, Upload, Loader2, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
+import Tesseract from 'tesseract.js';
 
 interface Contractor {
   id: number;
   name: string;
   license_no: string;
   license_expiry: string;
+  document_url?: string;
 }
 
 interface Incident {
@@ -31,6 +33,12 @@ export default function ContractorDetail() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Upload & OCR states
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const [ocrText, setOcrText] = useState<string | null>(null);
+
   useEffect(() => {
     if (id) fetchDetails();
   }, [id]);
@@ -39,7 +47,10 @@ export default function ContractorDetail() {
     setLoading(true);
     try {
       const { data: cData } = await supabase.from('contractors').select('*').eq('id', id).single();
-      if (cData) setContractor(cData);
+      if (cData) {
+        setContractor(cData);
+        checkExpiryAlert(cData);
+      }
 
       const { data: iData } = await supabase
         .from('contractor_incidents')
@@ -54,6 +65,109 @@ export default function ContractorDetail() {
       setLoading(false);
     }
   }
+
+  // Generate an alert if within 30 days
+  async function checkExpiryAlert(cData: Contractor) {
+    if (!cData.license_expiry) return;
+    
+    const expiry = new Date(cData.license_expiry);
+    const now = new Date();
+    const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 3600 * 24));
+    
+    if (daysUntilExpiry <= 30 && daysUntilExpiry >= -365) {
+      // Check if an alert already exists
+      const { data: existingAlerts } = await supabase
+        .from('alerts')
+        .select('id')
+        .eq('type', 'deadline')
+        .eq('related_entity_id', cData.id)
+        .eq('message', `Contractor license for ${cData.name} is expiring on ${cData.license_expiry}.`)
+        .limit(1);
+        
+      if (!existingAlerts || existingAlerts.length === 0) {
+        await supabase.from('alerts').insert([{
+          type: 'deadline',
+          related_entity_id: cData.id,
+          message: `Contractor license for ${cData.name} is expiring on ${cData.license_expiry}.`,
+          severity: daysUntilExpiry < 0 ? 'high' : 'medium'
+        }]);
+      }
+    }
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !contractor) return;
+
+    setUploading(true);
+    setUploadStatus('Analyzing document via OCR...');
+    setOcrText(null);
+
+    try {
+      // 1. Run OCR (only on images)
+      if (file.type.startsWith('image/')) {
+        const result = await Tesseract.recognize(file, 'eng');
+        const text = result.data.text;
+        setOcrText(text);
+
+        // Try to extract a date
+        const dateRegex = /\b(20\d{2}[-/]\d{2}[-/]\d{2}|\d{2}[-/]\d{2}[-/]20\d{2})\b/;
+        const match = text.match(dateRegex);
+        
+        let newExpiry = contractor.license_expiry;
+        if (match) {
+          // Simplistic parsing, assumes YYYY-MM-DD or DD-MM-YYYY
+          let parsedDate = match[0].replace(/\//g, '-');
+          if (parsedDate.match(/^\d{2}-\d{2}-\d{4}$/)) {
+            const parts = parsedDate.split('-');
+            parsedDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // Convert to YYYY-MM-DD
+          }
+          newExpiry = parsedDate;
+          setUploadStatus(`Found date: ${parsedDate}. Uploading...`);
+        } else {
+          setUploadStatus('No date found. Uploading...');
+        }
+
+        // 2. Upload to Supabase Storage
+        const fileExt = file.name.split('.').pop();
+        const filePath = `contractors/${contractor.id}_${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('contractor_documents')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // 3. Get Public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('contractor_documents')
+          .getPublicUrl(filePath);
+
+        // 4. Update Database
+        await supabase
+          .from('contractors')
+          .update({ document_url: publicUrl, license_expiry: newExpiry })
+          .eq('id', contractor.id);
+
+        setContractor({ ...contractor, document_url: publicUrl, license_expiry: newExpiry });
+        setUploadStatus('Upload successful');
+        
+        // Check alerts with new date
+        checkExpiryAlert({ ...contractor, document_url: publicUrl, license_expiry: newExpiry });
+        
+        setTimeout(() => setUploadStatus(null), 3000);
+      } else {
+        setUploadStatus('Please upload an image for OCR.');
+        setTimeout(() => setUploadStatus(null), 3000);
+      }
+    } catch (e: any) {
+      console.error(e);
+      setUploadStatus(`Failed: ${e.message}`);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const getSeverityBadge = (sev: string) => {
     switch(sev.toLowerCase()) {
@@ -92,14 +206,61 @@ export default function ContractorDetail() {
           <Building2 className="w-32 h-32" />
         </div>
         
-        <div className="relative z-10">
-          <h1 className="text-3xl font-serif font-bold text-slate-900 tracking-tight mb-2">{contractor.name}</h1>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-            <span className="flex items-center gap-1.5"><FileText className="w-4 h-4 text-slate-400" /> License: <strong className="font-mono">{contractor.license_no}</strong></span>
-            <span className="text-slate-300">|</span>
-            <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-slate-400" /> Expiry: <strong className={new Date(contractor.license_expiry) < new Date() ? 'text-red-600' : ''}>{contractor.license_expiry}</strong></span>
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-serif font-bold text-slate-900 tracking-tight mb-2">{contractor.name}</h1>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
+              <span className="flex items-center gap-1.5"><FileText className="w-4 h-4 text-slate-400" /> License: <strong className="font-mono">{contractor.license_no}</strong></span>
+              <span className="text-slate-300">|</span>
+              <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-slate-400" /> Expiry: <strong className={new Date(contractor.license_expiry) < new Date() ? 'text-red-600' : ''}>{contractor.license_expiry}</strong></span>
+            </div>
+            {contractor.document_url && (
+              <div className="mt-4 flex items-center gap-2">
+                <a 
+                  href={contractor.document_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 transition-colors"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Document Verified
+                </a>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex flex-col items-end gap-2">
+            <input 
+              type="file" 
+              accept="image/*,application/pdf" 
+              ref={fileInputRef} 
+              className="hidden" 
+              onChange={handleFileUpload} 
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-lg shadow-md transition-colors disabled:opacity-50"
+            >
+              {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              {uploading ? 'Processing...' : 'Upload Document'}
+            </button>
+            {uploadStatus && (
+              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                {uploadStatus}
+              </span>
+            )}
           </div>
         </div>
+
+        {ocrText && (
+          <div className="mt-6 pt-4 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">OCR Extraction Result</h4>
+            <div className="bg-slate-50 border border-slate-200 rounded p-3 max-h-32 overflow-y-auto text-xs font-mono text-slate-600 whitespace-pre-wrap">
+              {ocrText}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
