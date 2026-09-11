@@ -204,7 +204,6 @@ export default function Inspections() {
           photo_url: payload.photo_base64,
           latitude: payload.lat,
           longitude: payload.lng,
-          timestamp: payload.timestamp,
           status: 'open'
         }]);
 

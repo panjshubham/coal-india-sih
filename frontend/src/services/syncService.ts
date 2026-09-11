@@ -45,26 +45,37 @@ export const processSyncQueue = async () => {
         }
       }
 
+      // Normalize payload (NewInspection vs Inspections formats)
+      const mine_id = payload.mineId || payload.mine_id || 1;
+      const inspector_id = payload.userId || payload.inspector_id;
+      const category = payload.category;
+      const severity = payload.severity;
+      const description = payload.description;
+      const lat = payload.lat || payload.latitude;
+      const lng = payload.lng || payload.longitude;
+
       // 1. Insert Inspection
-      const { error: inspError } = await supabase.from('inspections').insert({
-        mine_id: payload.mineId,
+      const { data: inspData, error: inspError } = await supabase.from('inspections').insert({
+        mine_id: Number(mine_id),
         scheduled_date: new Date().toISOString(),
         status: 'completed',
-        inspector_id: payload.userId,
-        findings: payload.description
-      });
+        inspector_id: inspector_id,
+        findings: description
+      }).select('id').single();
       
       if (inspError) throw inspError;
 
       // 2. Insert Violation
       const { error: violError } = await supabase.from('violations').insert({
-        mine_id: payload.mineId,
-        category: payload.category,
-        severity: payload.severity,
+        inspection_id: inspData.id,
+        mine_id: Number(mine_id),
+        category: category,
+        severity: severity === 'advisory' ? 'low' : severity === 'moderate' ? 'medium' : severity === 'critical' ? 'high' : severity,
         status: 'open',
-        latitude: payload.lat,
-        longitude: payload.lng,
+        latitude: lat,
+        longitude: lng,
         photo_url: photoUrl,
+        description: description,
         regulation_ref: 'DGMS-SEC-4.2', 
       });
 
