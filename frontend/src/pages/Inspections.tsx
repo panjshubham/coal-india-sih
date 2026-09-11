@@ -115,9 +115,29 @@ export default function Inspections() {
 
   const captureLocation = () => {
     setLoadingLocation(true);
+    
+    const fallbackLocation = () => {
+      setFormData(prev => ({
+        ...prev,
+        lat: 23.7923,
+        lng: 86.4253
+      }));
+      setLoadingLocation(false);
+    };
+
     if ('geolocation' in navigator) {
+      let isResolved = false;
+      const failsafe = setTimeout(() => {
+        if (!isResolved) {
+          console.warn('Geolocation timeout in Inspections, using fallback');
+          fallbackLocation();
+        }
+      }, 8000);
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          isResolved = true;
+          clearTimeout(failsafe);
           setFormData(prev => ({
             ...prev,
             lat: position.coords.latitude,
@@ -126,14 +146,15 @@ export default function Inspections() {
           setLoadingLocation(false);
         },
         (error) => {
-          console.error('Error getting location', error);
-          alert('Could not capture location. Please ensure location services are enabled.');
-          setLoadingLocation(false);
-        }
+          isResolved = true;
+          clearTimeout(failsafe);
+          console.warn('Error getting location', error);
+          fallbackLocation();
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
       );
     } else {
-      alert('Geolocation is not supported by your browser.');
-      setLoadingLocation(false);
+      fallbackLocation();
     }
   };
 
