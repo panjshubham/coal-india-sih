@@ -527,17 +527,24 @@ export default function Inspections() {
               <div className="pt-space-md">
                 <button
                   type="submit"
-                  disabled={status === 'submitting' || !formData.lat}
+                  disabled={status === 'submitting'}
                   className="w-full flex items-center justify-center gap-space-xs px-space-md py-space-sm bg-primary text-on-primary rounded font-headline-sm text-[15px] hover:bg-primary-container transition-all shadow-[0_0_12px_rgba(142,213,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
                   <span className="material-symbols-outlined text-[20px]">send</span>
                   {status === 'submitting' ? 'Encrypting & Dispatching...' : 'File Statutory Dossier'}
                 </button>
                 
-                {!formData.lat && (
+                {!formData.lat && isOnline && (
                   <p className="font-code-sm text-error mt-space-sm flex items-center justify-center gap-1">
                     <span className="material-symbols-outlined text-[14px]">warning</span>
                     GNSS uplink lock required before dispatch.
+                  </p>
+                )}
+                
+                {!isOnline && (
+                  <p className="font-code-sm text-amber-500 mt-space-sm flex items-center justify-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">warning</span>
+                    Network unavailable. Dossier will be stored offline.
                   </p>
                 )}
                 
@@ -551,7 +558,7 @@ export default function Inspections() {
                 {status === 'success_offline' && (
                   <div className="mt-space-md p-space-sm bg-secondary/10 text-secondary rounded border border-secondary/20 flex items-center gap-space-sm">
                     <span className="material-symbols-outlined text-[20px] shrink-0">cloud_off</span>
-                    <p className="font-body-sm">Dossier encrypted locally. Will synchronize upon network restoration.</p>
+                    <p className="font-body-sm text-lg font-bold">Stored offline</p>
                   </div>
                 )}
                 
