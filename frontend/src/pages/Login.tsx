@@ -74,32 +74,6 @@ export default function Login() {
       setError(err.message || 'Failed to authenticate');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleMagicLink = async () => {
-    if (!email) {
-      setError('Please enter an email for the magic link');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim().toLowerCase(),
-        options: {
-          emailRedirectTo: window.location.origin,
-        }
-      });
-      if (error) throw error;
-      alert("SMTP Magic link sent! Please check your email (and spam folder).");
-    } catch (err: any) {
-      setError(err.message || 'Failed to send magic link');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const setDemoCredentials = (roleType: 'corporate' | 'mine_official' | 'regulator') => {
     setError(null);
     if (roleType === 'corporate') {
@@ -280,19 +254,6 @@ export default function Login() {
                     <Lock className="w-4 h-4 mr-2" />
                     Secure Login
                   </>
-                )}
-              </button>
-
-              <button 
-                type="button" 
-                onClick={handleMagicLink}
-                disabled={loading}
-                className="w-full h-11 flex items-center justify-center bg-[var(--cg-surface-high)] border border-[var(--cg-border)] hover:border-amber-500/50 text-[var(--cg-text-primary)] font-semibold tracking-wide rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer shadow text-sm"
-              >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  "Send SMTP Magic Link"
                 )}
               </button>
             </div>
