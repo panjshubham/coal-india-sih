@@ -732,8 +732,9 @@ export default function AIWorkbench() {
       setHfStatus({ checked: true, configured: true });
     } else {
       localStorage.removeItem('HF_API_TOKEN');
-      setCurrentToken(DEFAULT_HF_TOKEN);
-      setHfStatus({ checked: true, configured: true });
+      const fallbackToken = (import.meta.env.VITE_HF_API_TOKEN || '').trim();
+      setCurrentToken(fallbackToken);
+      setHfStatus({ checked: true, configured: Boolean(fallbackToken) });
     }
     setSaveSuccess(true);
     setTimeout(() => {
