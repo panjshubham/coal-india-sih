@@ -28,6 +28,7 @@ const resources = {
       "nav_contractors": "Contractors",
       "nav_manageUsers": "Manage Users",
       "nav_dataImport": "Data Import",
+      "nav_aiWorkbench": "AI Workbench",
       "nav_audit": "Audit Log",
       "nav_profile": "Officer Profile",
 
@@ -89,6 +90,7 @@ const resources = {
       "nav_contractors": "ठेकेदार",
       "nav_manageUsers": "उपयोगकर्ता प्रबंधन",
       "nav_dataImport": "डेटा आयात",
+      "nav_aiWorkbench": "एआई वर्कबेंच (AI Workbench)",
       "nav_audit": "ऑडिट लॉग",
       "nav_profile": "अधिकारी प्रोफ़ाइल",
 

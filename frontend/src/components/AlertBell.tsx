@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabase';
-import { Bell } from 'lucide-react';
+import { Bell, CheckCheck, AlertCircle } from 'lucide-react';
+import { formatISTShort } from '../lib/dateUtils';
 
 export default function AlertBell() {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchAlerts();
@@ -15,10 +17,9 @@ export default function AlertBell() {
         setAlerts(prev => [payload.new, ...prev]);
         setUnreadCount(prev => prev + 1);
         
-        // Play notification sound
         try {
           const audio = new Audio('/alert.mp3');
-          audio.play().catch(e => console.log('Audio blocked', e));
+          audio.play().catch(() => {});
         } catch(e) {}
       })
       .subscribe();
@@ -27,6 +28,19 @@ export default function AlertBell() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Handle outside click to close popover
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [isOpen]);
 
   async function fetchAlerts() {
     const { data } = await supabase
@@ -41,9 +55,10 @@ export default function AlertBell() {
     }
   }
 
-  async function markAsRead() {
-    setIsOpen(!isOpen);
-    if (!isOpen && unreadCount > 0) {
+  async function toggleMenu() {
+    const nextState = !isOpen;
+    setIsOpen(nextState);
+    if (nextState && unreadCount > 0) {
       const unreadIds = alerts.filter(a => !a.is_read).map(a => a.id);
       if (unreadIds.length > 0) {
         await supabase.from('alerts').update({ is_read: true }).in('id', unreadIds);
@@ -54,35 +69,91 @@ export default function AlertBell() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button 
-        onClick={markAsRead}
-        className="relative p-2 rounded-full hover:bg-slate-100 transition-colors"
+        id="cg-alert-bell"
+        onClick={toggleMenu}
+        aria-label="System Alerts"
+        title="System Alerts"
+        type="button"
+        className="relative w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer select-none"
+        style={{ 
+          background: 'var(--cg-surface-elevated)', 
+          border: '1px solid var(--cg-border)',
+          color: 'var(--cg-text-secondary)'
+        }}
       >
-        <Bell className="w-5 h-5 text-slate-600" />
+        <Bell className="w-4 h-4 hover:text-amber-400 transition-colors" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-4 h-4 bg-red-600 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white animate-pulse">
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 border-2 border-[var(--cg-bg)] rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm animate-pulse">
             {unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-50">
-          <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-            <h3 className="font-bold text-sm text-slate-800">System Alerts</h3>
-            {unreadCount > 0 && <span className="text-xs text-slate-500">{unreadCount} new</span>}
+        <div 
+          className="absolute right-0 mt-2 w-84 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150"
+          style={{ 
+            backgroundColor: 'var(--cg-surface)', 
+            border: '1px solid var(--cg-border-strong)',
+            color: 'var(--cg-text-primary)'
+          }}
+        >
+          <div 
+            className="px-4 py-3 flex justify-between items-center"
+            style={{ 
+              backgroundColor: 'var(--cg-surface-elevated)', 
+              borderBottom: '1px solid var(--cg-border)' 
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <h3 className="font-bold text-xs uppercase tracking-wider">DGMS System Alerts</h3>
+            </div>
+            {unreadCount > 0 ? (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                {unreadCount} new
+              </span>
+            ) : (
+              <span className="text-[10px] font-mono text-[var(--cg-text-faint)] flex items-center gap-1">
+                <CheckCheck className="w-3 h-3 text-emerald-400" /> Synced
+              </span>
+            )}
           </div>
-          <div className="max-h-96 overflow-y-auto">
+          
+          <div className="max-h-96 overflow-y-auto divide-y divide-[var(--cg-border)]">
             {alerts.length === 0 ? (
-              <div className="p-6 text-center text-slate-500 text-sm">No recent alerts.</div>
+              <div className="p-8 text-center text-xs" style={{ color: 'var(--cg-text-muted)' }}>
+                <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-40 text-amber-400" />
+                No active pit alerts recorded.
+              </div>
             ) : (
               alerts.map(alert => (
-                <div key={alert.id} className={`p-4 border-b border-slate-50 flex gap-3 ${!alert.is_read ? 'bg-blue-50/50' : 'bg-white'}`}>
-                  <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${alert.severity === 'critical' ? 'bg-red-500 animate-ping' : alert.severity === 'high' ? 'bg-amber-500' : 'bg-blue-500'}`} />
-                  <div>
-                    <p className="text-xs font-semibold text-slate-800 leading-tight mb-1">{alert.message}</p>
-                    <p className="text-[10px] text-slate-500 font-mono">{new Date(alert.created_at).toLocaleString()}</p>
+                <div 
+                  key={alert.id} 
+                  className={`p-3.5 flex gap-3 transition-colors ${
+                    !alert.is_read 
+                      ? 'bg-amber-500/5 hover:bg-amber-500/10' 
+                      : 'hover:bg-white/5'
+                  }`}
+                >
+                  <div 
+                    className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
+                      alert.severity === 'critical' 
+                        ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-ping' 
+                        : alert.severity === 'high' 
+                        ? 'bg-amber-400' 
+                        : 'bg-emerald-400'
+                    }`} 
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold leading-snug mb-1" style={{ color: 'var(--cg-text-primary)' }}>
+                      {alert.message}
+                    </p>
+                    <p className="text-[10px] font-mono" style={{ color: 'var(--cg-text-faint)' }}>
+                      {formatISTShort(alert.created_at)}
+                    </p>
                   </div>
                 </div>
               ))
