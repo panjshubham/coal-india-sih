@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabase';
 import { Link, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
-import { getPendingCount } from '../services/db';
+import { getPendingCount, getPendingSubmissions } from '../services/db';
 import { processSyncQueue } from '../services/syncService';
 
 export default function Violations() {
@@ -24,18 +24,65 @@ export default function Violations() {
 
   const fetchViolations = useCallback(async () => {
     setLoading(true);
-    let query = supabase
-      .from('violations')
-      .select('*, mines(name)')
-      .order('created_at', { ascending: false });
+    let serverViolations: any[] = [];
 
-    if (filter !== 'all') {
-      query = query.eq('status', filter);
+    try {
+      let query = supabase
+        .from('violations')
+        .select('*, mines(name)')
+        .order('created_at', { ascending: false });
+
+      if (filter !== 'all') {
+        query = query.eq('status', filter);
+      }
+
+      const { data, error } = await query;
+      if (!error && data) {
+        serverViolations = data;
+        try {
+          localStorage.setItem('coalguard_violations_cache', JSON.stringify(data));
+        } catch (e) {}
+      } else if (error) {
+        throw error;
+      }
+    } catch (e) {
+      console.warn('[Violations] Fetch error or offline, reading from cache:', e);
+      try {
+        const cached = localStorage.getItem('coalguard_violations_cache');
+        if (cached) {
+          serverViolations = JSON.parse(cached);
+          if (filter !== 'all') {
+            serverViolations = serverViolations.filter((v: any) => v.status === filter);
+          }
+        }
+      } catch (ce) {}
     }
 
-    const { data, error } = await query;
-    if (error) console.error('[Violations] Fetch error:', error.message, error.details);
-    if (data) setViolations(data);
+    // Include offline pending submissions from IndexedDB
+    try {
+      const pending = await getPendingSubmissions();
+      const offlineItems = pending.map((item: any) => ({
+        id: `offline-${item.id}`,
+        db_id: item.id,
+        is_offline_pending: true,
+        category: item.payload?.category || 'safety',
+        severity: item.payload?.severity || 'low',
+        description: item.payload?.description || '',
+        created_at: item.payload?.timestamp || item.timestamp,
+        status: 'pending_sync',
+        mines: { name: `Mine Target (Pending Sync)` },
+        regulation_ref: item.payload?.regulation_ref || 'DGMS-OFFLINE-SYNC'
+      }));
+
+      if (filter === 'all' || filter === 'open') {
+        setViolations([...offlineItems, ...serverViolations]);
+      } else {
+        setViolations(serverViolations);
+      }
+    } catch (pe) {
+      setViolations(serverViolations);
+    }
+
     setLoading(false);
   }, [filter]);
 
@@ -318,14 +365,59 @@ export default function Violations() {
                 <span className="material-symbols-outlined text-[48px] text-outline opacity-40">gpp_good</span>
                 <p className="font-code-sm text-outline text-center">No regulatory infractions match the current filters.</p>
                 <Link
-                  to="/inspections/new"
+                  to="/inspections"
                   className="mt-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 font-label-md uppercase tracking-wider hover:bg-amber-500/20 transition-colors"
                 >
                   + File New Violation
                 </Link>
               </div>
             ) : (
-              violations.map(v => (
+              violations.map(v => v.is_offline_pending ? (
+                <div key={v.id} className="flex flex-col md:flex-row md:items-center justify-between p-space-md bg-amber-500/5 border-l-4 border-amber-500 hover:bg-amber-500/10 transition-colors gap-space-md">
+                  <div className="flex items-start gap-space-md w-full md:w-auto">
+                    <div className="flex flex-col items-center justify-center p-2 rounded bg-amber-500/10 text-amber-400">
+                      <span className="material-symbols-outlined text-[20px] animate-pulse">cloud_off</span>
+                    </div>
+                    <div className="flex flex-col gap-1.5 w-full">
+                      <div className="flex flex-wrap items-center gap-space-xs">
+                        <span className="px-space-xs py-space-2xs rounded bg-amber-500/20 font-label-md text-amber-300 uppercase font-bold tracking-wide flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px]">schedule</span> OFFLINE QUEUED
+                        </span>
+                        <span className="font-body-lg text-on-surface font-semibold capitalize">{v.category} Breach</span>
+                        <span className="font-code-sm text-amber-400/80 ml-2">/ LOCAL QUEUE</span>
+                      </div>
+                      <div className="flex items-center gap-space-sm font-body-sm text-on-surface-variant">
+                        <span className="flex items-center gap-1 text-amber-300 font-medium bg-amber-500/10 px-2 py-0.5 rounded">
+                          <span className="material-symbols-outlined text-[14px] text-amber-400">terrain</span>
+                          {v.mines?.name || 'Mine Target'}
+                        </span>
+                        <span className="truncate max-w-lg text-on-surface/80">{v.description || 'Statutory review pending field inspector assessment.'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between md:justify-end gap-space-lg w-full md:w-auto pl-12 md:pl-0 border-t border-surface-container-high/30 md:border-t-0 pt-space-md md:pt-0">
+                    <div className="flex flex-col md:text-right">
+                      <span className="font-code-sm text-on-surface">{formatDate(v)}</span>
+                      <span className="font-label-md text-amber-400">Waiting for Network</span>
+                    </div>
+                    {isOnline ? (
+                      <button
+                        onClick={handleSync}
+                        disabled={isSyncing}
+                        className="px-3 py-1.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 font-label-md uppercase tracking-wider flex items-center gap-1"
+                      >
+                        <span className={`material-symbols-outlined text-[16px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
+                        {isSyncing ? 'Syncing...' : 'Sync Now'}
+                      </button>
+                    ) : (
+                      <span className="px-space-sm py-1 rounded font-label-md uppercase tracking-wider font-bold bg-amber-500/20 text-amber-300">
+                        PENDING SYNC
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : (
                 <Link to={`/violations/${v.id}`} key={v.id} className="flex flex-col md:flex-row md:items-center justify-between p-space-md bg-surface-container-lowest hover:bg-surface-container transition-colors gap-space-md group cursor-pointer">
                   <div className="flex items-start gap-space-md w-full md:w-auto">
                     <div className={`flex flex-col items-center justify-center p-2 rounded ${getSeverityColor(v.severity)}`}>

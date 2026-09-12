@@ -171,18 +171,19 @@ export default function NewInspection() {
         }
       }
 
+      const mineIdNum = parseInt(mineId, 10) || 42;
+
       // 1. Insert Inspection with correct schema columns
       const inspPayload: any = {
-        mine_id: mineId,
-        type: 'field_report',
-        scheduled_date: new Date().toISOString().split('T')[0],
+        mine_id: mineIdNum,
+        date: ts,
+        inspector_name: user?.email || 'Field Inspector',
+        synced_at: new Date().toISOString()
       };
-      // inspector_id is a FK to users — only set if user is authenticated
-      if (user?.id) inspPayload.inspector_id = user.id;
 
       const { data: inspData, error: inspError } = await supabase
         .from('inspections')
-        .insert(inspPayload)
+        .insert([inspPayload])
         .select()
         .single();
       
@@ -193,14 +194,13 @@ export default function NewInspection() {
 
       // 2. Insert Violation — this is the primary record
       const violPayload: any = {
-        mine_id: mineId,
+        mine_id: mineIdNum,
         category: dbCategory,
         severity: dbSeverity,
         status: 'open',
         description: `${headline}\n\n${description}`,
         latitude: lat,
         longitude: lng,
-        timestamp: ts,
         photo_url: photoUrl,
         regulation_ref: 'DGMS-SEC-115',
       };
@@ -208,7 +208,7 @@ export default function NewInspection() {
 
       const { data: violData, error: violError } = await supabase
         .from('violations')
-        .insert(violPayload)
+        .insert([violPayload])
         .select()
         .single();
       

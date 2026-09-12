@@ -48,17 +48,32 @@ export default function ViolationDetail() {
         .from('violations')
         .select(`
           *,
-          mines (name, region, state),
-          approver:users!violations_approved_by_fkey (email)
+          mines (name, region, state)
         `)
         .eq('id', id)
         .single();
       
       if (error) throw error;
-      setViolation(data as Violation);
+
+      let approverEmail: string | undefined = undefined;
+      if (data?.approved_by) {
+        try {
+          const { data: uData } = await supabase
+            .from('users')
+            .select('email')
+            .eq('id', data.approved_by)
+            .maybeSingle();
+          if (uData?.email) approverEmail = uData.email;
+        } catch (ue) {}
+      }
+
+      setViolation({
+        ...data,
+        approver: approverEmail ? { email: approverEmail } : undefined
+      } as Violation);
       setNewStatus(data.status);
     } catch (err) {
-      console.error(err);
+      console.error('[ViolationDetail] Fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -81,10 +96,10 @@ export default function ViolationDetail() {
       .from('audit_ledger')
       .select('data_hash')
       .eq('table_name', 'violations')
-      .eq('record_id', id)
-      .order('timestamp', { ascending: false })
+      .eq('record_id', parseInt(id!))
+      .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
       
     const prevHash = lastAudit?.data_hash || 'GENESIS';
     const newHash = await computeHash(updatedRecord);
@@ -94,7 +109,6 @@ export default function ViolationDetail() {
       record_id: parseInt(id!),
       action: actionDesc,
       user_id: user.id,
-      timestamp: new Date().toISOString(),
       data_hash: newHash,
       prev_hash: prevHash
     });
@@ -370,7 +384,7 @@ export default function ViolationDetail() {
                 <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block mb-0.5 flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" /> Approved By
                 </span>
-                <span className="text-sm font-medium text-slate-900">{violation.approver?.email}</span>
+                <span className="text-sm font-medium text-slate-900">{violation.approver?.email || violation.approved_by}</span>
                 <div className="text-xs text-slate-500 mt-0.5">{format(new Date(violation.approved_at), 'PPP p')}</div>
               </div>
             )}

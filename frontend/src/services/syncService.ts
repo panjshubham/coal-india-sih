@@ -71,31 +71,42 @@ export const processSyncQueue = async (): Promise<number> => {
       }
 
       // ── Normalise payload fields ─────────────────────────────────────────
-      const mine_id = payload.mineId || payload.mine_id;
-      const inspector_id = payload.userId || payload.inspector_id;
+      const mine_id = Number(payload.mine_id || payload.mineId);
+      const contractor_id = payload.contractor_id ? Number(payload.contractor_id) : null;
+      const inspector_name = payload.inspector_name || payload.inspectorName || 'Field Inspector';
       const category = normalizeCategory(payload.category);
       const severity = normalizeSeverity(payload.severity);
       const description = payload.description || '';
       const lat = payload.lat ?? payload.latitude ?? null;
       const lng = payload.lng ?? payload.longitude ?? null;
-      const timestamp = payload.timestamp || new Date().toISOString();
+      const regulation_ref = payload.regulation_ref || 'DGMS-OFFLINE-SYNC';
 
       // ── 1. Insert Inspection (non-fatal) ─────────────────────────────────
-      const inspPayload: any = {
-        mine_id,
-        type: 'field_report',
-        scheduled_date: new Date(timestamp).toISOString().split('T')[0],
-      };
-      if (inspector_id) inspPayload.inspector_id = inspector_id;
+      let inspectionId: number | null = null;
+      try {
+        const inspPayload: any = {
+          mine_id,
+          date: payload.timestamp || new Date().toISOString(),
+          inspector_name,
+          synced_at: new Date().toISOString()
+        };
+        if (contractor_id) {
+          inspPayload.contractor_id = contractor_id;
+        }
 
-      const { data: inspData, error: inspError } = await supabase
-        .from('inspections')
-        .insert(inspPayload)
-        .select('id')
-        .single();
+        const { data: inspData, error: inspErr } = await supabase
+          .from('inspections')
+          .insert([inspPayload])
+          .select('id')
+          .single();
 
-      if (inspError) {
-        console.warn('[SyncService] Inspection insert failed (non-fatal):', inspError.message);
+        if (!inspErr && inspData?.id) {
+          inspectionId = inspData.id;
+        } else if (inspErr) {
+          console.warn('[SyncService] Inspection insert failed (non-fatal):', inspErr.message);
+        }
+      } catch (ie) {
+        console.warn('[SyncService] Inspection insert exception (non-fatal):', ie);
       }
 
       // ── 2. Insert Violation (primary record) ─────────────────────────────
@@ -105,17 +116,19 @@ export const processSyncQueue = async (): Promise<number> => {
         severity,
         status: 'open',
         description,
-        latitude: lat,
-        longitude: lng,
-        timestamp,
+        latitude: lat !== null ? Number(lat) : null,
+        longitude: lng !== null ? Number(lng) : null,
         photo_url: photoUrl,
-        regulation_ref: 'DGMS-OFFLINE-SYNC',
+        regulation_ref,
       };
-      if (inspData?.id) violPayload.inspection_id = inspData.id;
+      if (inspectionId) {
+        violPayload.inspection_id = inspectionId;
+      }
 
+      // Note: do NOT pass `timestamp` column as violations table uses created_at with default now()
       const { error: violError } = await supabase
         .from('violations')
-        .insert(violPayload);
+        .insert([violPayload]);
 
       if (violError) {
         console.error('[SyncService] Violation insert failed:', violError.message, violError.details);

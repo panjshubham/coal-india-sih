@@ -2,13 +2,66 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { getProfile, type InspectorProfile } from '../services/profileService';
-import { savePendingSubmission, getPendingSubmissions, removePendingSubmission } from '../services/db';
+import { savePendingSubmission } from '../services/db';
+import { processSyncQueue } from '../services/syncService';
 import Tesseract from 'tesseract.js';
+
+// Pre-seeded fallback data so dropdowns are NEVER empty in offline mode
+const DEFAULT_MINES = [
+  { id: 42, name: 'Govindpur Colliery' },
+  { id: 43, name: 'Dhori Khas' },
+  { id: 44, name: 'Karo Spl' },
+  { id: 45, name: 'Tetaria Khar' },
+  { id: 46, name: 'Kathautia OCP' },
+  { id: 47, name: 'Rajhara' },
+  { id: 48, name: 'Choritand Tiliaya' },
+  { id: 49, name: 'Jogeshwar & Khas Jogeshwar' },
+  { id: 50, name: 'Rabodih OCP' },
+  { id: 51, name: 'Rohne' },
+  { id: 52, name: 'Urtan North' },
+  { id: 53, name: 'North of Arkhapal Srirampur' },
+  { id: 54, name: 'Moonidih Project' },
+  { id: 55, name: 'Rajmahal OCP' },
+  { id: 56, name: 'Gevra OCP' },
+  { id: 57, name: 'Bhubaneswari OCP' },
+  { id: 58, name: 'Jayant OCP' },
+  { id: 59, name: 'Umrer OCP' },
+];
+
+const DEFAULT_CONTRACTORS = [
+  { id: 9, name: 'L&T Mining Services' },
+  { id: 10, name: 'BGR Mining & Infra' },
+  { id: 11, name: 'Thriveni Earthmovers' },
+  { id: 12, name: 'Sainik Mining' },
+  { id: 13, name: 'Adani Mining Ent' },
+];
+
+const getCachedMines = () => {
+  try {
+    const cached = localStorage.getItem('coalguard_mines_cache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return DEFAULT_MINES;
+};
+
+const getCachedContractors = () => {
+  try {
+    const cached = localStorage.getItem('coalguard_contractors_cache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return DEFAULT_CONTRACTORS;
+};
 
 export default function Inspections() {
   const [profile, setProfile] = useState<InspectorProfile>(getProfile());
-  const [mines, setMines] = useState<any[]>([]);
-  const [contractors, setContractors] = useState<any[]>([]);
+  const [mines, setMines] = useState<any[]>(getCachedMines);
+  const [contractors, setContractors] = useState<any[]>(getCachedContractors);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [syncing, setSyncing] = useState(false);
@@ -33,12 +86,18 @@ export default function Inspections() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: mData } = await supabase.from('mines').select('id, name');
-        const { data: cData } = await supabase.from('contractors').select('id, name');
-        if (mData) setMines(mData);
-        if (cData) setContractors(cData);
-      } catch(e) {
-        console.error('Failed to fetch reference data. You might be offline.');
+        const { data: mData } = await supabase.from('mines').select('id, name').order('id');
+        const { data: cData } = await supabase.from('contractors').select('id, name').order('id');
+        if (mData && mData.length > 0) {
+          setMines(mData);
+          localStorage.setItem('coalguard_mines_cache', JSON.stringify(mData));
+        }
+        if (cData && cData.length > 0) {
+          setContractors(cData);
+          localStorage.setItem('coalguard_contractors_cache', JSON.stringify(cData));
+        }
+      } catch (e) {
+        console.warn('[Inspections] Offline mode: using cached/default mines and contractors');
       }
     }
     fetchData();
@@ -52,7 +111,7 @@ export default function Inspections() {
     
     const handleOnline = () => {
       setIsOnline(true);
-      autoSync();
+      triggerAutoSync();
     };
     const handleOffline = () => setIsOnline(false);
 
@@ -60,7 +119,7 @@ export default function Inspections() {
     window.addEventListener('offline', handleOffline);
 
     if (navigator.onLine) {
-      autoSync();
+      triggerAutoSync();
     }
 
     return () => {
@@ -70,48 +129,13 @@ export default function Inspections() {
     };
   }, []);
 
-  const autoSync = async () => {
+  const triggerAutoSync = async () => {
     if (syncing || !navigator.onLine) return;
     setSyncing(true);
     try {
-      const pending = await getPendingSubmissions();
-      for (const item of pending) {
-        const p = item.payload;
-        const { data: inspData, error: inspErr } = await supabase.from('inspections').insert([{
-          mine_id: p.mine_id,
-          type: 'field_report',
-          scheduled_date: new Date().toISOString().split('T')[0],
-          inspector_id: p.inspector_id || undefined,
-        }]).select('id').single();
-
-        // Non-fatal: if inspection insert fails, violation still needs to be created
-        if (inspErr) {
-          console.warn('Auto-sync inspection insert failed (non-fatal):', inspErr.message);
-        }
-
-        const violPayload: any = {
-          mine_id: p.mine_id,
-          category: p.category,
-          severity: p.severity,
-          description: p.description,
-          photo_url: p.photo_base64 ? p.photo_base64.substring(0, 2000) : null,
-          latitude: p.lat,
-          longitude: p.lng,
-          status: 'open',
-        };
-        if (inspData?.id) violPayload.inspection_id = inspData.id;
-
-        const { error: violErr } = await supabase.from('violations').insert([violPayload]);
-
-        if (violErr) throw violErr;
-
-        if (item.id) {
-          await removePendingSubmission(item.id);
-        }
-      }
-      window.dispatchEvent(new Event('coalguard:syncQueueUpdated'));
+      await processSyncQueue();
     } catch (e) {
-      console.error('Auto-sync failed:', e);
+      console.error('[Inspections] Auto-sync error:', e);
     } finally {
       setSyncing(false);
     }
@@ -196,28 +220,50 @@ export default function Inspections() {
     }
   };
 
+  const getRegulationRef = (cat: string) => {
+    switch (cat) {
+      case 'safety': return 'DGMS-SEC-115';
+      case 'environment': return 'DGMS-ENV-4.1';
+      case 'production': return 'DGMS-PROD-2.3';
+      case 'labour': return 'DGMS-LAB-12.1';
+      default: return 'DGMS-SEC-4.2';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
     
-    const { data: { session } } = await supabase.auth.getSession();
-    const inspector_id = session?.user?.id;
-    
+    const mineIdNum = parseInt(formData.mine_id, 10);
+    const contractorIdNum = formData.contractor_id ? parseInt(formData.contractor_id, 10) : null;
+    const regulationRef = getRegulationRef(formData.category);
+    const inspectorName = formData.inspector_name || profile.fullName || 'Field Inspector';
+    const timestamp = new Date().toISOString();
+
     const payload = {
-      ...formData,
-      inspector_id,
-      timestamp: new Date().toISOString()
+      mine_id: mineIdNum,
+      contractor_id: contractorIdNum,
+      inspector_name: inspectorName,
+      category: formData.category,
+      severity: formData.severity,
+      description: formData.description,
+      regulation_ref: regulationRef,
+      photo_base64: formData.photo_base64,
+      lat: formData.lat,
+      lng: formData.lng,
+      timestamp,
     };
 
     if (isOnline) {
       try {
-        // Insert inspection with correct schema columns
+        // 1. Insert inspection with correct schema columns
         const inspPayload: any = {
-          mine_id: payload.mine_id,
-          type: 'field_report',
-          scheduled_date: new Date().toISOString().split('T')[0],
+          mine_id: mineIdNum,
+          date: timestamp,
+          inspector_name: inspectorName,
+          synced_at: timestamp,
         };
-        if (inspector_id) inspPayload.inspector_id = inspector_id;
+        if (contractorIdNum) inspPayload.contractor_id = contractorIdNum;
 
         const { data: inspData, error: inspErr } = await supabase
           .from('inspections')
@@ -225,19 +271,20 @@ export default function Inspections() {
           .select('id')
           .single();
 
-        // Non-fatal: violation is the primary record
         if (inspErr) {
-          console.warn('Inspection insert failed (non-fatal):', inspErr.message);
+          console.warn('[Inspections] Inspection insert failed (non-fatal):', inspErr.message);
         }
 
+        // 2. Insert violation with all required columns
         const violPayload: any = {
-          mine_id: payload.mine_id,
-          category: payload.category,
-          severity: payload.severity,
-          description: payload.description,
-          photo_url: payload.photo_base64 ? payload.photo_base64.substring(0, 2000) : null,
-          latitude: payload.lat,
-          longitude: payload.lng,
+          mine_id: mineIdNum,
+          category: formData.category,
+          severity: formData.severity,
+          description: formData.description,
+          regulation_ref: regulationRef,
+          photo_url: formData.photo_base64 ? formData.photo_base64.substring(0, 2000) : null,
+          latitude: formData.lat,
+          longitude: formData.lng,
           status: 'open',
         };
         if (inspData?.id) violPayload.inspection_id = inspData.id;
@@ -248,9 +295,10 @@ export default function Inspections() {
 
         setStatus('success_online');
         resetForm();
-        setTimeout(() => setStatus('idle'), 4000);
+        window.dispatchEvent(new Event('coalguard:syncQueueUpdated'));
+        setTimeout(() => setStatus('idle'), 6000);
       } catch (error) {
-        console.error('Error submitting online, falling back to offline queue', error);
+        console.error('[Inspections] Error submitting online, falling back to offline queue', error);
         await saveOffline(payload);
       }
     } else {
@@ -264,11 +312,11 @@ export default function Inspections() {
       window.dispatchEvent(new Event('coalguard:syncQueueUpdated'));
       setStatus('success_offline');
       resetForm();
-      setTimeout(() => setStatus('idle'), 4000);
+      setTimeout(() => setStatus('idle'), 6000);
     } catch (e) {
-      console.error('Failed to save offline', e);
+      console.error('[Inspections] Failed to save offline', e);
       setStatus('error');
-      setTimeout(() => setStatus('idle'), 4000);
+      setTimeout(() => setStatus('idle'), 5000);
     }
   };
 
@@ -563,16 +611,35 @@ export default function Inspections() {
                 )}
                 
                 {status === 'success_online' && (
-                  <div className="mt-space-md p-space-sm bg-primary/10 text-primary rounded border border-primary/20 flex items-center gap-space-sm">
-                    <span className="material-symbols-outlined text-[20px] shrink-0">verified</span>
-                    <p className="font-body-sm font-bold">Dossier Filed Successfully!</p>
+                  <div className="mt-space-md p-space-md bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/30 flex items-center justify-between gap-space-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[20px] text-emerald-400 shrink-0">verified</span>
+                      <p className="font-body-sm font-bold">Violation Dossier Filed &amp; Confirmed on Server!</p>
+                    </div>
+                    <Link
+                      to="/violations"
+                      className="px-3 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-label-md uppercase tracking-wider transition-colors shrink-0"
+                    >
+                      View Violations Archive →
+                    </Link>
                   </div>
                 )}
                 
                 {status === 'success_offline' && (
-                  <div className="mt-space-md p-space-sm bg-emerald-500/10 text-emerald-400 rounded border border-emerald-500/20 flex items-center gap-space-sm">
-                    <span className="material-symbols-outlined text-[20px] shrink-0">cloud_done</span>
-                    <p className="font-body-sm font-bold">Queued Offline</p>
+                  <div className="mt-space-md p-space-md bg-amber-500/10 text-amber-400 rounded-lg border border-amber-500/30 flex items-center justify-between gap-space-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[20px] text-amber-400 shrink-0">cloud_done</span>
+                      <div>
+                        <p className="font-body-sm font-bold">Queued Offline Locally</p>
+                        <p className="text-xs text-amber-400/80">Stored on device. Will auto-sync to violations ledger once back online.</p>
+                      </div>
+                    </div>
+                    <Link
+                      to="/violations"
+                      className="px-3 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-label-md uppercase tracking-wider transition-colors shrink-0"
+                    >
+                      View Queue →
+                    </Link>
                   </div>
                 )}
                 
