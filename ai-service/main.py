@@ -30,7 +30,12 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import httpx
 
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+if not os.getenv("HF_API_TOKEN"):
+    load_dotenv(os.path.join(os.path.dirname(BASE_DIR), ".env"))
+if not os.getenv("HF_API_TOKEN"):
+    load_dotenv()
 
 app = FastAPI(
     title="Khanan-Net AI Engine",
