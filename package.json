@@ -4,6 +4,7 @@
   "description": "Root workspace for CoalGuard",
   "scripts": {
     "dev": "npm run dev --prefix frontend",
+    "ai": ".\\ai-service\\venv\\Scripts\\python.exe -m uvicorn main:app --app-dir ai-service --host 127.0.0.1 --port 8000 --reload",
     "install": "npm install --prefix frontend",
     "build": "npm run build --prefix frontend"
   }
