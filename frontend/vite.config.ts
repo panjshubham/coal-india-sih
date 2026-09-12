@@ -64,9 +64,48 @@ export default defineConfig({
                 statuses: [0, 200]
               }
             }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-api-cache',
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
           }
         ]
       }
     })
   ],
+  build: {
+    chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      output: {
+        // Manual chunk splitting to break the 2MB monolith
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'vendor-react';
+            if (id.includes('@supabase')) return 'vendor-supabase';
+            if (id.includes('recharts')) return 'vendor-charts';
+            if (id.includes('leaflet')) return 'vendor-maps';
+            if (id.includes('jspdf') || id.includes('xlsx')) return 'vendor-export';
+            if (id.includes('dexie') || id.includes('idb')) return 'vendor-offline';
+            if (id.includes('framer-motion')) return 'vendor-motion';
+            if (id.includes('tesseract')) return 'vendor-ai';
+            if (id.includes('i18next')) return 'vendor-i18n';
+          }
+        },
+      },
+    },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
+  },
 })

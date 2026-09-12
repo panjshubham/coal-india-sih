@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import {
   Brain, Upload, Mic, Shield, Languages, FileSearch,
@@ -451,7 +451,7 @@ export default function AIWorkbench() {
   };
 
   // Check on mount
-  useState(() => { checkHfStatus(); });
+  useEffect(() => { checkHfStatus(); }, []);
 
   const activeTabInfo = TABS.find(t => t.id === activeTab)!;
   const colors = COLOR_MAP[activeTabInfo.color];

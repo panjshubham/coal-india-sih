@@ -101,6 +101,18 @@ export default function NewInspection() {
     }
   };
 
+  // Map verbose UI category labels → DB enum values
+  const categoryToEnum = (cat: string): string => {
+    const c = cat.toLowerCase();
+    if (c.includes('ventilation') || c.includes('methane')) return 'safety';
+    if (c.includes('explosive') || c.includes('blast')) return 'safety';
+    if (c.includes('haul') || c.includes('slope') || c.includes('bench') || c.includes('overburden')) return 'safety';
+    if (c.includes('groundwater') || c.includes('drainage') || c.includes('environment')) return 'environment';
+    if (c.includes('labour') || c.includes('worker') || c.includes('wage')) return 'labour';
+    if (c.includes('production') || c.includes('logistics')) return 'production';
+    return 'safety'; // default
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!location || !capturedTimestamp) {
@@ -113,6 +125,8 @@ export default function NewInspection() {
       const ts = capturedTimestamp;
       const lat = location.lat;
       const lng = location.lng;
+      const dbCategory = categoryToEnum(category);
+      const dbSeverity = severity === 'advisory' ? 'low' : severity === 'moderate' ? 'medium' : 'high';
 
       if (!navigator.onLine) {
         // Encode photo to base64 so it's preserved in IDB for later sync
@@ -125,21 +139,23 @@ export default function NewInspection() {
           });
         }
         const payload = {
-          mineId: parseInt(mineId || '1'),
-          category,
-          severity,
+          mineId: mineId,
+          category: dbCategory,
+          severity: dbSeverity,
           description: `${headline}\n\n${description}`,
           lat, lng, timestamp: ts, photoBase64,
           userId: user?.id || ''
         };
         await savePendingSubmission(payload);
+        // Notify all listeners that offline queue has a new item
         window.dispatchEvent(new Event('coalguard:syncQueueUpdated'));
-        alert('Saved offline. Will auto-sync when reconnected.');
-        setTimeout(() => navigate('/submissions'), 500);
+        // Navigate to violations — the offline banner will show pending count
+        setLoading(false);
+        navigate('/violations', { state: { offlineSaved: true } });
         return;
       }
 
-      // Upload photo to Supabase Storage (real upload, not hardcoded)
+      // Upload photo to Supabase Storage
       let photoUrl: string | null = null;
       if (photo) {
         const ext = photo.name.split('.').pop() || 'jpg';
@@ -155,41 +171,62 @@ export default function NewInspection() {
         }
       }
 
-      // 1. Insert Inspection
-      const { data: inspData, error: inspError } = await supabase.from('inspections').insert({
-        mine_id: parseInt(mineId || '1'),
-        date: new Date().toISOString(),
-        inspector_name: user?.id || 'Unknown'
-      }).select().single();
-      
-      if (inspError) throw inspError;
+      // 1. Insert Inspection with correct schema columns
+      const inspPayload: any = {
+        mine_id: mineId,
+        type: 'field_report',
+        scheduled_date: new Date().toISOString().split('T')[0],
+      };
+      // inspector_id is a FK to users — only set if user is authenticated
+      if (user?.id) inspPayload.inspector_id = user.id;
 
-      // 2. Insert Violation with real GPS + real photo_url from Storage
-      const { data: violData, error: violError } = await supabase.from('violations').insert({
-        mine_id: parseInt(mineId || '1'),
-        inspection_id: inspData.id,
-        category,
-        severity: severity === 'advisory' ? 'low' : severity === 'moderate' ? 'medium' : 'critical',
+      const { data: inspData, error: inspError } = await supabase
+        .from('inspections')
+        .insert(inspPayload)
+        .select()
+        .single();
+      
+      // inspError is non-fatal — we can still insert violation without inspection_id
+      if (inspError) {
+        console.warn('Inspection insert failed (non-fatal):', inspError.message);
+      }
+
+      // 2. Insert Violation — this is the primary record
+      const violPayload: any = {
+        mine_id: mineId,
+        category: dbCategory,
+        severity: dbSeverity,
         status: 'open',
         description: `${headline}\n\n${description}`,
         latitude: lat,
         longitude: lng,
-        photo_url: photoUrl, // Real Supabase Storage URL or null
-        regulation_ref: 'DGMS-SEC-115', 
-      }).select().single();
+        timestamp: ts,
+        photo_url: photoUrl,
+        regulation_ref: 'DGMS-SEC-115',
+      };
+      if (inspData?.id) violPayload.inspection_id = inspData.id;
+
+      const { data: violData, error: violError } = await supabase
+        .from('violations')
+        .insert(violPayload)
+        .select()
+        .single();
       
       if (violError) throw violError;
 
+      // Navigate to the newly created violation
       setTimeout(() => {
         navigate(`/violations/${violData.id}`);
-      }, 1000);
+      }, 800);
 
     } catch (err: any) {
-      console.error(err);
-      alert(err.message || 'An error occurred during submission.');
+      console.error('Submission error:', err);
+      const msg = err?.message || 'An error occurred during submission.';
+      alert(`Submission failed: ${msg}`);
       setLoading(false);
     }
   };
+
 
   const severityStatus = 
     severity === 'advisory' ? 'Advisory Notice Logged' :

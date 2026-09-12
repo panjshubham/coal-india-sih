@@ -78,27 +78,30 @@ export default function Inspections() {
       for (const item of pending) {
         const p = item.payload;
         const { data: inspData, error: inspErr } = await supabase.from('inspections').insert([{
-          mine_id: Number(p.mine_id),
-          contractor_id: p.contractor_id ? Number(p.contractor_id) : null,
-          inspector_id: p.inspector_id,
-          type: 'routine',
+          mine_id: p.mine_id,
+          type: 'field_report',
           scheduled_date: new Date().toISOString().split('T')[0],
+          inspector_id: p.inspector_id || undefined,
         }]).select('id').single();
 
-        if (inspErr) throw inspErr;
+        // Non-fatal: if inspection insert fails, violation still needs to be created
+        if (inspErr) {
+          console.warn('Auto-sync inspection insert failed (non-fatal):', inspErr.message);
+        }
 
-        const { error: violErr } = await supabase.from('violations').insert([{
-          inspection_id: inspData.id,
-          mine_id: Number(p.mine_id),
+        const violPayload: any = {
+          mine_id: p.mine_id,
           category: p.category,
           severity: p.severity,
           description: p.description,
-          photo_url: p.photo_base64,
+          photo_url: p.photo_base64 ? p.photo_base64.substring(0, 2000) : null,
           latitude: p.lat,
           longitude: p.lng,
           status: 'open',
-          regulation_ref: 'TBD'
-        }]);
+        };
+        if (inspData?.id) violPayload.inspection_id = inspData.id;
+
+        const { error: violErr } = await supabase.from('violations').insert([violPayload]);
 
         if (violErr) throw violErr;
 
@@ -208,27 +211,38 @@ export default function Inspections() {
 
     if (isOnline) {
       try {
-        const { data: inspData, error: inspErr } = await supabase.from('inspections').insert([{
-          mine_id: Number(payload.mine_id),
-          contractor_id: payload.contractor_id ? Number(payload.contractor_id) : null,
-          date: new Date().toISOString(),
-          inspector_name: inspector_id || 'Unknown'
-        }]).select('id').single();
+        // Insert inspection with correct schema columns
+        const inspPayload: any = {
+          mine_id: payload.mine_id,
+          type: 'field_report',
+          scheduled_date: new Date().toISOString().split('T')[0],
+        };
+        if (inspector_id) inspPayload.inspector_id = inspector_id;
 
-        if (inspErr) throw inspErr;
+        const { data: inspData, error: inspErr } = await supabase
+          .from('inspections')
+          .insert([inspPayload])
+          .select('id')
+          .single();
 
-        const { error: violErr } = await supabase.from('violations').insert([{
-          inspection_id: inspData.id,
-          mine_id: Number(payload.mine_id),
+        // Non-fatal: violation is the primary record
+        if (inspErr) {
+          console.warn('Inspection insert failed (non-fatal):', inspErr.message);
+        }
+
+        const violPayload: any = {
+          mine_id: payload.mine_id,
           category: payload.category,
           severity: payload.severity,
           description: payload.description,
-          photo_url: payload.photo_base64,
+          photo_url: payload.photo_base64 ? payload.photo_base64.substring(0, 2000) : null,
           latitude: payload.lat,
           longitude: payload.lng,
           status: 'open',
-          regulation_ref: 'TBD'
-        }]);
+        };
+        if (inspData?.id) violPayload.inspection_id = inspData.id;
+
+        const { error: violErr } = await supabase.from('violations').insert([violPayload]);
 
         if (violErr) throw violErr;
 

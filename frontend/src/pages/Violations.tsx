@@ -1,33 +1,98 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabase';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
+import { getPendingCount } from '../services/db';
+import { processSyncQueue } from '../services/syncService';
 
 export default function Violations() {
+  const location = useLocation();
   const [violations, setViolations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [pendingCount, setPendingCount] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [offlineSavedBanner, setOfflineSavedBanner] = useState(location.state?.offlineSaved === true);
 
-  useEffect(() => {
-    async function fetchViolations() {
-      let query = supabase
-        .from('violations')
-        .select('*, mines(name)')
-        .order('timestamp', { ascending: false });
-      
-      if (filter !== 'all') {
-        query = query.eq('status', filter);
-      }
-      
-      const { data, error } = await query;
-      
-      if (data) setViolations(data);
-      if (error) console.error(error);
-      setLoading(false);
+  const refreshPendingCount = useCallback(async () => {
+    const count = await getPendingCount();
+    setPendingCount(count);
+  }, []);
+
+  const fetchViolations = useCallback(async () => {
+    setLoading(true);
+    let query = supabase
+      .from('violations')
+      .select('*, mines(name)')
+      .order('created_at', { ascending: false });
+
+    if (filter !== 'all') {
+      query = query.eq('status', filter);
     }
-    fetchViolations();
+
+    const { data, error } = await query;
+    if (error) console.error('[Violations] Fetch error:', error.message, error.details);
+    if (data) setViolations(data);
+    setLoading(false);
   }, [filter]);
+
+  // Initial load + filter change
+  useEffect(() => {
+    fetchViolations();
+    refreshPendingCount();
+  }, [filter]);
+
+  // Connectivity tracking + auto-sync on reconnect
+  useEffect(() => {
+    const handleOnline = async () => {
+      setIsOnline(true);
+      const count = await getPendingCount();
+      if (count > 0) {
+        setSyncMessage(`Back online — syncing ${count} offline report${count > 1 ? 's' : ''}...`);
+        await handleSync();
+      }
+    };
+    const handleOffline = () => setIsOnline(false);
+
+    // Refresh violations list when sync completes
+    const handleSyncUpdated = () => {
+      fetchViolations();
+      refreshPendingCount();
+      setSyncMessage(null);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
+    };
+  }, []);
+
+  const handleSync = async () => {
+    if (isSyncing || !navigator.onLine) return;
+    setIsSyncing(true);
+    try {
+      const synced = await processSyncQueue();
+      if (synced > 0) {
+        setSyncMessage(`✅ ${synced} violation${synced > 1 ? 's' : ''} synced successfully!`);
+        await fetchViolations();
+        await refreshPendingCount();
+        setTimeout(() => setSyncMessage(null), 4000);
+      } else {
+        setSyncMessage('All violations already synced.');
+        setTimeout(() => setSyncMessage(null), 2000);
+      }
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const getSeverityPill = (severity: string) => {
     const s = severity?.toLowerCase();
@@ -49,11 +114,21 @@ export default function Violations() {
     if (s === 'medium') return 'bg-secondary/10 text-secondary';
     return 'bg-surface-container-highest text-tertiary';
   };
-  
+
   const getStatusColor = (status: string) => {
     if (status === 'open') return 'bg-error text-on-error';
     if (status === 'in_progress') return 'bg-secondary text-on-secondary';
     return 'bg-primary/20 text-primary';
+  };
+
+  const formatDate = (v: any) => {
+    const dateStr = v.timestamp || v.created_at;
+    if (!dateStr) return 'Unknown Date';
+    try {
+      return format(new Date(dateStr), 'dd MMM yyyy, HH:mm');
+    } catch {
+      return 'Unknown Date';
+    }
   };
 
   return (
@@ -121,7 +196,63 @@ export default function Violations() {
       `}</style>
 
       <div className="w-full bg-surface min-h-screen text-on-surface font-body-md p-space-lg flex flex-col gap-space-lg">
-        
+
+        {/* OFFLINE SAVED SUCCESS BANNER */}
+        {offlineSavedBanner && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/40 animate-in slide-in-from-top">
+            <span className="material-symbols-outlined text-emerald-400 text-[20px]">task_alt</span>
+            <div className="flex-1">
+              <span className="font-label-md text-emerald-300 uppercase tracking-wider">Violation Saved Offline</span>
+              <p className="font-body-sm text-emerald-400/80 mt-0.5">
+                Your report is stored securely on this device. It will automatically sync to the server when your connection is restored.
+              </p>
+            </div>
+            <button onClick={() => setOfflineSavedBanner(false)} className="text-emerald-400/60 hover:text-emerald-300 transition-colors">
+              <span className="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        )}
+
+        {!isOnline && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+            <span className="material-symbols-outlined text-amber-400 text-[18px]">cloud_off</span>
+            <div className="flex-1">
+              <span className="font-label-md text-amber-300 uppercase tracking-wider">Offline Mode</span>
+              <p className="font-body-sm text-amber-400/80 mt-0.5">You are offline. New violations will be saved locally and synced when connection is restored.</p>
+            </div>
+            {pendingCount > 0 && (
+              <span className="px-2 py-1 rounded bg-amber-500/20 font-label-md text-amber-300 font-bold">{pendingCount} pending</span>
+            )}
+          </div>
+        )}
+
+        {isOnline && pendingCount > 0 && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/30">
+            <span className={`material-symbols-outlined text-blue-400 text-[18px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
+            <div className="flex-1">
+              <span className="font-label-md text-blue-300 uppercase tracking-wider">{isSyncing ? 'Syncing...' : 'Pending Offline Reports'}</span>
+              <p className="font-body-sm text-blue-400/80 mt-0.5">
+                {syncMessage || `${pendingCount} offline violation${pendingCount > 1 ? 's' : ''} waiting to be uploaded to the server.`}
+              </p>
+            </div>
+            {!isSyncing && (
+              <button
+                onClick={handleSync}
+                className="px-3 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 font-label-md uppercase tracking-wider transition-colors"
+              >
+                Sync Now
+              </button>
+            )}
+          </div>
+        )}
+
+        {syncMessage && isOnline && pendingCount === 0 && (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+            <span className="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
+            <span className="font-body-sm text-emerald-300">{syncMessage}</span>
+          </div>
+        )}
+
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
           <div className="space-y-space-xs">
@@ -130,7 +261,7 @@ export default function Violations() {
               STATUTORY ENFORCEMENT
             </div>
             <h1 className="font-headline-lg text-on-surface font-semibold tracking-tight">
-              Violations & Directives Archive
+              Violations &amp; Directives Archive
             </h1>
             <p className="font-body-md text-on-surface-variant max-w-2xl">
               Immutable ledger of statutory breaches, DGMS show-cause notices, and automated regulatory triaging.
@@ -181,9 +312,18 @@ export default function Violations() {
 
           <div className="flex flex-col divide-y divide-surface-container-high/40">
             {loading ? (
-              <div className="p-space-xl text-center font-code-sm text-outline animate-pulse">Synchronizing with DGMS Ledger...</div>
+              <div className="p-8 text-center font-code-sm text-outline animate-pulse">Synchronizing with DGMS Ledger...</div>
             ) : violations.length === 0 ? (
-              <div className="p-space-xl text-center font-code-sm text-outline">No regulatory infractions match the current filters.</div>
+              <div className="flex flex-col items-center justify-center p-12 gap-3">
+                <span className="material-symbols-outlined text-[48px] text-outline opacity-40">gpp_good</span>
+                <p className="font-code-sm text-outline text-center">No regulatory infractions match the current filters.</p>
+                <Link
+                  to="/inspections/new"
+                  className="mt-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 font-label-md uppercase tracking-wider hover:bg-amber-500/20 transition-colors"
+                >
+                  + File New Violation
+                </Link>
+              </div>
             ) : (
               violations.map(v => (
                 <Link to={`/violations/${v.id}`} key={v.id} className="flex flex-col md:flex-row md:items-center justify-between p-space-md bg-surface-container-lowest hover:bg-surface-container transition-colors gap-space-md group cursor-pointer">
@@ -195,7 +335,7 @@ export default function Violations() {
                       <div className="flex flex-wrap items-center gap-space-xs">
                         {getSeverityPill(v.severity)}
                         <span className="font-body-lg text-on-surface font-semibold capitalize group-hover:text-primary transition-colors">{v.category} Breach</span>
-                        <span className="font-code-sm text-outline ml-2">/ VIO-{v.id.substring(0,8).toUpperCase()}</span>
+                        <span className="font-code-sm text-outline ml-2">/ VIO-{String(v.id).substring(0, 8).toUpperCase()}</span>
                       </div>
                       <div className="flex items-center gap-space-sm font-body-sm text-on-surface-variant">
                         <span className="flex items-center gap-1 text-on-surface font-medium bg-surface-container-high px-2 py-0.5 rounded">
@@ -209,13 +349,13 @@ export default function Violations() {
                   
                   <div className="flex items-center justify-between md:justify-end gap-space-lg w-full md:w-auto pl-12 md:pl-0 border-t border-surface-container-high/30 md:border-t-0 pt-space-md md:pt-0">
                     <div className="flex flex-col md:text-right">
-                      <span className="font-code-sm text-on-surface">{v.timestamp ? format(new Date(v.timestamp), 'dd MMM yyyy, HH:mm') : 'Unknown Date'}</span>
+                      <span className="font-code-sm text-on-surface">{formatDate(v)}</span>
                       <span className="font-label-md text-outline">Incident Logged</span>
                     </div>
                     <div className="flex items-center gap-space-md">
                       <div className="flex flex-col text-right">
                         <span className={`px-space-sm py-1 rounded font-label-md uppercase tracking-wider font-bold ${getStatusColor(v.status)}`}>
-                          {v.status.replace('_', ' ')}
+                          {(v.status || '').replace('_', ' ')}
                         </span>
                       </div>
                       <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors translate-x-0 group-hover:translate-x-1 duration-200">

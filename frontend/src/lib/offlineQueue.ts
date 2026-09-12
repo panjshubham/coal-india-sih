@@ -69,14 +69,23 @@ export const syncOfflineQueue = async () => {
       formData.append('lng', item.gps.lng.toString());
       formData.append('timestamp', item.timestamp);
 
+      const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || '';
+
+      // Skip syncing offline items if no AI service is configured (production Vercel deploy)
+      if (!AI_SERVICE_URL) {
+        console.warn(`[OfflineQueue] VITE_AI_SERVICE_URL not set – skipping sync for item ${item.id}`);
+        await db.offline_inspections.update(item.id, { status: 'queued' });
+        continue;
+      }
+
       if (item.type === 'voice') {
-        endpoint = 'http://localhost:8000/api/pipeline/voice-report';
+        endpoint = `${AI_SERVICE_URL}/api/pipeline/voice-report`;
         formData.append('file', item.payload as Blob, `voice_${item.id}.webm`);
       } else if (item.type === 'photo') {
-        endpoint = 'http://localhost:8000/api/pipeline/photo-inspection';
+        endpoint = `${AI_SERVICE_URL}/api/pipeline/photo-inspection`;
         formData.append('file', item.payload as Blob, `photo_${item.id}.jpg`);
       } else {
-        endpoint = 'http://localhost:8000/api/pipeline/document-process';
+        endpoint = `${AI_SERVICE_URL}/api/pipeline/document-process`;
         // Assume document form data is stored appropriately in payload
         if (typeof item.payload === 'string') {
           formData.append('data', item.payload);
