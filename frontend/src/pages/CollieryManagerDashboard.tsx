@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { savePendingSubmission, getPendingCount } from '../services/db';
 import {
   HardHat, Users, AlertTriangle, CheckCircle2, WifiOff, Wifi,
   MapPin, Camera, Mic, MicOff, Clock, ShieldAlert, Truck, ClipboardCheck,
-  X, Send, ChevronDown, Activity, FileText, DatabaseBackup
+  X, Send, ChevronDown, Activity, FileText, DatabaseBackup, ShieldCheck,
+  Flame, Gauge, Zap
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -44,6 +46,51 @@ export default function CollieryManagerDashboard() {
   const [violations, setViolations] = useState<any[]>([]);
   const [complianceItems, setComplianceItems] = useState<any[]>([]);
   const [time, setTime] = useState('');
+
+  // Live SCADA Gas Telemetry State
+  const [telemetry, setTelemetry] = useState<any>({
+    ch4: 0.45,
+    co: 4.2,
+    o2: 20.4,
+    dust: 180.0,
+    status: 'NOMINAL',
+    power_interlock: 'ENERGIZED'
+  });
+  const [isSpikeActive, setIsSpikeActive] = useState(false);
+
+  useEffect(() => {
+    async function fetchTelemetry() {
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/cmr/telemetry-stream?mine_id=${mineId || 1}&simulate_spike=${isSpikeActive}`);
+        if (res.ok) {
+          const data = await res.json();
+          setTelemetry({
+            ch4: data.readings.methane_ch4_pct,
+            co: data.readings.carbon_monoxide_co_ppm,
+            o2: data.readings.oxygen_o2_pct,
+            dust: data.readings.dust_pm10_ug_m3,
+            status: data.statutory_status,
+            alerts: data.statutory_alerts,
+            power_interlock: data.power_interlock_status
+          });
+        }
+      } catch {
+        // Fallback simulation
+        setTelemetry({
+          ch4: isSpikeActive ? 0.88 : 0.46,
+          co: isSpikeActive ? 14.5 : 4.0,
+          o2: isSpikeActive ? 18.7 : 20.5,
+          dust: isSpikeActive ? 420.0 : 165.0,
+          status: isSpikeActive ? 'STATUTORY_ALERT' : 'NOMINAL',
+          alerts: isSpikeActive ? ['CMR Reg 155: CH4 concentration >= 0.75% threshold'] : [],
+          power_interlock: isSpikeActive ? 'TRIPPED_SAFE' : 'ENERGIZED'
+        });
+      }
+    }
+    fetchTelemetry();
+    const interval = setInterval(fetchTelemetry, 6000);
+    return () => clearInterval(interval);
+  }, [mineId, isSpikeActive]);
 
   // Live clock
   useEffect(() => {
@@ -190,6 +237,13 @@ export default function CollieryManagerDashboard() {
             </div>
           )}
 
+          <Link
+            to="/statutory-registers"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-xs rounded-lg transition shadow-lg shadow-amber-500/20"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" /> CMR STATUTORY REGISTERS
+          </Link>
+
           <button
             id="report-hazard-btn"
             onClick={() => setShowHazardForm(true)}
@@ -221,8 +275,116 @@ export default function CollieryManagerDashboard() {
         ))}
       </div>
 
+      {/* 2B. Live SCADA Gas & Ventilation Telemetry Watchdog (CMR 2017 Reg 153 & 155) */}
+      <div className={`mt-6 p-4 rounded-xl border transition-all duration-300 ${
+        telemetry.status === 'STATUTORY_ALERT' 
+          ? 'bg-red-950/40 border-red-500/60 shadow-lg shadow-red-950/50' 
+          : 'bg-[#0B1326] border-slate-800'
+      }`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-2.5 h-2.5 rounded-full ${telemetry.status === 'STATUTORY_ALERT' ? 'bg-red-500 animate-ping' : 'bg-emerald-500'}`} />
+            <div>
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-amber-400" />
+                SCADA Environmental Telemetry — Seam III East District
+              </span>
+              <span className="text-[10px] font-mono text-slate-400">
+                Continuous IoT Gas Monitoring • Interlocked with CMR 2017 Reg 155
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded border uppercase ${
+              telemetry.power_interlock === 'TRIPPED_SAFE'
+                ? 'bg-red-950 text-red-400 border-red-800 animate-pulse'
+                : 'bg-emerald-950 text-emerald-400 border-emerald-800'
+            }`}>
+              Power Interlock: {telemetry.power_interlock}
+            </span>
+
+            <button
+              onClick={() => setIsSpikeActive(prev => !prev)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition border ${
+                isSpikeActive
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50 hover:bg-emerald-900'
+                  : 'bg-red-950/80 text-red-300 border-red-500/50 hover:bg-red-900'
+              }`}
+            >
+              <Zap className="w-3 h-3" />
+              <span>{isSpikeActive ? 'Normalize Telemetry' : 'Simulate Gas Surge (>0.75%)'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Telemetry Metrics Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+          <div className={`p-3 rounded-lg border ${
+            telemetry.ch4 >= 0.75 ? 'bg-red-950/80 border-red-600 text-red-300' : 'bg-slate-900/60 border-slate-800'
+          }`}>
+            <span className="text-[10px] font-mono text-slate-400 block">CH4 (Methane)</span>
+            <div className="flex items-baseline justify-between mt-1">
+              <span className="text-xl font-mono font-bold text-white">{telemetry.ch4}%</span>
+              <span className="text-[10px] font-mono text-slate-400">CMR: &lt;0.75%</span>
+            </div>
+            {telemetry.ch4 >= 0.75 && (
+              <span className="text-[9px] font-bold text-red-400 block mt-1 uppercase animate-pulse">
+                CMR 155 Threshold Exceeded
+              </span>
+            )}
+          </div>
+
+          <div className={`p-3 rounded-lg border ${
+            telemetry.co > 10.0 ? 'bg-amber-950/80 border-amber-600 text-amber-300' : 'bg-slate-900/60 border-slate-800'
+          }`}>
+            <span className="text-[10px] font-mono text-slate-400 block">CO (Carbon Monoxide)</span>
+            <div className="flex items-baseline justify-between mt-1">
+              <span className="text-xl font-mono font-bold text-white">{telemetry.co} ppm</span>
+              <span className="text-[10px] font-mono text-slate-400">Limit: &le;10 ppm</span>
+            </div>
+            {telemetry.co > 10.0 && (
+              <span className="text-[9px] font-bold text-amber-400 block mt-1 uppercase">
+                Spontaneous Heating Risk
+              </span>
+            )}
+          </div>
+
+          <div className={`p-3 rounded-lg border ${
+            telemetry.o2 < 19.0 ? 'bg-red-950/80 border-red-600 text-red-300' : 'bg-slate-900/60 border-slate-800'
+          }`}>
+            <span className="text-[10px] font-mono text-slate-400 block">O2 (Oxygen)</span>
+            <div className="flex items-baseline justify-between mt-1">
+              <span className="text-xl font-mono font-bold text-white">{telemetry.o2}%</span>
+              <span className="text-[10px] font-mono text-slate-400">Min: &ge;19.0%</span>
+            </div>
+            {telemetry.o2 < 19.0 && (
+              <span className="text-[9px] font-bold text-red-400 block mt-1 uppercase">
+                Anoxia Hazard
+              </span>
+            )}
+          </div>
+
+          <div className={`p-3 rounded-lg border ${
+            telemetry.dust > 300.0 ? 'bg-amber-950/80 border-amber-600 text-amber-300' : 'bg-slate-900/60 border-slate-800'
+          }`}>
+            <span className="text-[10px] font-mono text-slate-400 block">Dust (PM10 Particulate)</span>
+            <div className="flex items-baseline justify-between mt-1">
+              <span className="text-xl font-mono font-bold text-white">{telemetry.dust} µg/m³</span>
+              <span className="text-[10px] font-mono text-slate-400">Cap: 300</span>
+            </div>
+            {telemetry.dust > 300.0 && (
+              <span className="text-[9px] font-bold text-amber-400 block mt-1 uppercase">
+                Bowsers Required
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* 3. Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+
 
         {/* Left: Shift Schedules */}
         <div className="lg:col-span-1 bg-[#0B1326] border border-slate-800 rounded-xl flex flex-col shadow-xl">

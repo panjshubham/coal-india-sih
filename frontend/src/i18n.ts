@@ -20,7 +20,11 @@ const resources = {
       "verified_ledger": "Verified Dispatch Ledger",
 
       // Sidebar Nav
+      "nav_dashboard_colliery": "Colliery Manager",
+      "nav_dashboard_corporate": "Corporate HQ",
+      "nav_dashboard_regulator": "Regulator Portal",
       "nav_dashboard": "Dashboard",
+      "nav_statutoryRegisters": "CMR Statutory Books",
       "nav_compliance": "Compliance",
       "nav_inspections": "Inspections",
       "nav_violations": "Violations",
@@ -82,7 +86,11 @@ const resources = {
       "verified_ledger": "सत्यापित डिस्पैच लेजर (Verified Dispatch Ledger)",
 
       // Sidebar Nav
+      "nav_dashboard_colliery": "कोलिरी प्रबंधक (Colliery)",
+      "nav_dashboard_corporate": "कॉर्पोरेट मुख्यालय (Corporate)",
+      "nav_dashboard_regulator": "नियामक पोर्टल (Regulator)",
       "nav_dashboard": "डैशबोर्ड",
+      "nav_statutoryRegisters": "वैधानिक रजिस्टर (CMR Books)",
       "nav_compliance": "अनुपालन",
       "nav_inspections": "निरीक्षण",
       "nav_violations": "उल्लंघन",

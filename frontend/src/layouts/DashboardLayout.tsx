@@ -18,16 +18,15 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const navigation = [
-  { id: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { id: 'compliance', href: '/compliance', icon: ClipboardList },
-  { id: 'inspections', href: '/inspections', icon: ClipboardList },
-  { id: 'violations', href: '/violations', icon: AlertTriangle },
-  { id: 'map', href: '/mines-map', icon: MapIcon },
-  { id: 'contractors', href: '/contractors', icon: Users },
-  { id: 'manageUsers', href: '/manage-users', icon: ShieldAlert, roles: ['corporate'] },
-  { id: 'audit', href: '/audit-log', icon: ShieldCheck },
-  { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate', 'regulator'] },
+  { id: 'dashboard_colliery', href: '/dashboard/colliery', icon: LayoutDashboard },
+  { id: 'dashboard_corporate', href: '/dashboard/corporate', icon: LayoutDashboard },
+  { id: 'dashboard_regulator', href: '/dashboard/regulator', icon: ShieldAlert },
+  { id: 'statutoryRegisters', href: '/statutory-registers', icon: ShieldCheck },
   { id: 'aiWorkbench', href: '/ai-workbench', icon: Cpu },
+  { id: 'contractors', href: '/contractors', icon: Users },
+  { id: 'compliance', href: '/compliance', icon: ClipboardList },
+  { id: 'map', href: '/mines-map', icon: MapIcon },
+  { id: 'audit', href: '/audit-log', icon: ShieldCheck },
   { id: 'profile', href: '/profile', icon: UserCheck },
 ];
 
@@ -155,10 +154,10 @@ export default function DashboardLayout() {
               Mission Command
             </div>
           )}
-          {navigation.filter(item => !item.roles || (role && item.roles.includes(role))).map((item) => {
-            const itemTarget = item.id === 'dashboard' ? dashboardHref : item.href;
-            const isActive = item.id === 'dashboard' 
-              ? location.pathname.startsWith('/dashboard') 
+          {navigation.map((item) => {
+            const itemTarget = item.id.startsWith('dashboard') ? item.href : item.href;
+            const isActive = item.id.startsWith('dashboard') 
+              ? location.pathname === item.href 
               : location.pathname.startsWith(item.href);
             return (
               <Link

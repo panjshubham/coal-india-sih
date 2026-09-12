@@ -28,6 +28,7 @@ import { processSyncQueue } from './services/syncService';
 import { syncOfflineQueue } from './lib/offlineQueue';
 import { getPendingCount } from './services/db';
 import PitInspector from './pages/PitInspector';
+import StatutoryRegisters from './pages/StatutoryRegisters';
 
 // ── Sync Toast ──────────────────────────────────────────────────────────────
 interface SyncToast {
@@ -147,6 +148,7 @@ function App() {
                 </ProtectedRoute>
               } />
               
+              <Route path="statutory-registers" element={<StatutoryRegisters />} />
               <Route path="compliance" element={<Compliance />} />
               <Route path="violations" element={<Violations />} />
               <Route path="violations/:id" element={<ViolationDetail />} />

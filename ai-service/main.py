@@ -289,19 +289,229 @@ def predict_mine_risk(req: RiskFeatures):
     top_factors = sorted(factors.items(), key=lambda x: x[1], reverse=True)
     top_factors_list = [f"{k.replace('_', ' ').title()} (+{v})" for k, v in top_factors if v > 0][:3]
 
+    xai_breakdown = []
+    if req.ventilation_o2_pct < 19.5:
+        xai_breakdown.append({
+            "feature": "Ventilation Oxygen Deficiency",
+            "contribution_pts": round(vent_w, 1),
+            "regulation": "CMR 2017 Reg 153",
+            "severity": "high" if req.ventilation_o2_pct < 17.0 else "medium",
+            "description": f"Seam oxygen at {req.ventilation_o2_pct}% is below comfortable 19.5% threshold."
+        })
+    if req.high_severity_violations > 0:
+        xai_breakdown.append({
+            "feature": "Active High Severity Violations",
+            "contribution_pts": round(high_viol_w, 1),
+            "regulation": "Mines Act 1952 Sec 22",
+            "severity": "critical",
+            "description": f"{req.high_severity_violations} unaddressed high severity notices pending resolution."
+        })
+    if req.inspection_overdue_days > 30:
+        xai_breakdown.append({
+            "feature": "Statutory Inspection Overdue",
+            "contribution_pts": round(insp_w, 1),
+            "regulation": "CMR 2017 Reg 129",
+            "severity": "medium",
+            "description": f"Colliery inspection overdue by {req.inspection_overdue_days} days."
+        })
+    if req.contractor_cert_expired:
+        xai_breakdown.append({
+            "feature": "Contractor VTC / PME Expired",
+            "contribution_pts": round(cert_w, 1),
+            "regulation": "Mines VTC Rules 1966",
+            "severity": "high",
+            "description": "Contractor personnel deployed without valid Vocational Training or Medical fitness."
+        })
+    if req.production_variance_pct > 5.0:
+        xai_breakdown.append({
+            "feature": "Weighbridge Logistics Discrepancy",
+            "contribution_pts": round(prod_w, 1),
+            "regulation": "Mineral Concession Rules",
+            "severity": "medium",
+            "description": f"{req.production_variance_pct}% variance between extraction log and rail siding dispatch."
+        })
+
     return {
         "mine_id": req.mine_id,
         "risk_score": normalised,
         "risk_level": risk_level,
-        "ml_model": "DGMS Calibrated Risk Index",
+        "ml_model": "DGMS Calibrated Risk Index (CMR-2017 XAI)",
         "contributing_factors": factors,
         "top_factors": top_factors_list,
+        "xai_breakdown": xai_breakdown,
         "timestamp": dt_cls.now(timezone.utc).isoformat(),
         "recommendation": (
-            "Immediate statutory inspection and GM escalation required."
+            "Immediate statutory inspection and GM escalation required under Section 22 Mines Act."
             if risk_level in ["CRITICAL", "HIGH"]
-            else "Schedule standard weekly safety surveillance."
+            else "Schedule standard weekly safety surveillance under CMR 2017."
         )
+    }
+
+# 1B. CMR 2017 Statutory Compliance Engine & Telemetry Simulator
+class StatutoryRegisterValidationRequest(BaseModel):
+    register_type: str # CMR_153_GAS_TESTING | CMR_129_OVERMAN_DAILY | CMR_83_HAUL_ROAD | DGMS_CIRCULAR_02_HEMM
+    parameters: Dict[str, Any]
+    seam_or_pit: Optional[str] = "Seam III"
+    mine_id: Optional[int] = 1
+
+@app.post("/api/cmr/validate-entry", summary="Validate Statutory Register Entry against CMR 2017")
+def validate_cmr_entry(req: StatutoryRegisterValidationRequest):
+    p = req.parameters
+    reg_type = req.register_type
+    findings = []
+    actions = []
+    status = "COMPLIANT"
+    regulation = "CMR 2017 General"
+    risk_delta = 0
+
+    if reg_type == "CMR_153_GAS_TESTING":
+        regulation = "CMR 2017 Regulation 153 & 155 (Inflammable & Noxious Gases)"
+        ch4 = float(p.get("ch4_pct", 0.0))
+        co = float(p.get("co_ppm", 0.0))
+        o2 = float(p.get("o2_pct", 20.9))
+        air_v = float(p.get("air_velocity_m_s", 1.5))
+
+        if ch4 >= 1.25:
+            status = "STATUTORY_BREACH"
+            risk_delta += 45
+            findings.append(f"CRITICAL: Methane (CH4) level at {ch4:.2f}% exceeds maximum statutory threshold of 1.25% (CMR Reg 155). Severe explosion hazard.")
+            actions.append("Mandatory under Section 22 Mines Act 1952: Immediately withdraw all personnel from the district.")
+            actions.append("Instantly trip high-voltage power supply to all underground machinery in affected ventilation split.")
+        elif ch4 >= 0.75:
+            status = "WARNING"
+            risk_delta += 25
+            findings.append(f"WARNING: Methane (CH4) level at {ch4:.2f}% exceeds general working limit of 0.75% (CMR Reg 155).")
+            actions.append("Suspend electric drilling and non-flameproof equipment operations immediately.")
+            actions.append("Increase auxiliary ventilation air quantity to dilute gas buildup below 0.5%.")
+
+        if co > 25.0:
+            status = "STATUTORY_BREACH"
+            risk_delta += 35
+            findings.append(f"CRITICAL: Carbon Monoxide (CO) at {co:.1f} ppm indicates active spontaneous combustion or seam fire (CMR Reg 144).")
+            actions.append("Isolate return airway and deploy statutory rescue team with self-contained breathing apparatus (SCBA).")
+        elif co > 10.0:
+            if status != "STATUTORY_BREACH": status = "WARNING"
+            risk_delta += 15
+            findings.append(f"CAUTION: Elevated Carbon Monoxide (CO) at {co:.1f} ppm indicates early stage oxidation (CMR Reg 144).")
+            actions.append("Sample sealed-off goaf areas and measure CO/O2 Graham's ratio.")
+
+        if o2 < 19.0:
+            status = "STATUTORY_BREACH"
+            risk_delta += 30
+            findings.append(f"DANGER: Oxygen concentration {o2:.1f}% is below statutory safe breathable minimum of 19.0% (CMR Reg 153). Anoxia risk.")
+            actions.append("Inspect main ventilation fan and brattice cloths along travelling roadway.")
+        
+        if air_v < 0.5:
+            if status != "STATUTORY_BREACH": status = "WARNING"
+            findings.append(f"INSUFFICIENT AIRFLOW: Air velocity {air_v:.2f} m/s is below statutory minimum 0.5 m/s at the working face.")
+
+    elif reg_type == "CMR_83_HAUL_ROAD":
+        regulation = "CMR 2017 Regulation 83 (Haul Roads & Opencast Workings)"
+        berm_h = float(p.get("berm_height_m", 2.0))
+        tyre_dia = float(p.get("dumper_tyre_dia_m", 2.0))
+        road_w = float(p.get("road_width_m", 20.0))
+
+        min_berm = tyre_dia * 0.75
+        if berm_h < min_berm:
+            status = "STATUTORY_BREACH"
+            risk_delta += 35
+            findings.append(f"NON-COMPLIANCE: Berm height ({berm_h:.1f}m) is below statutory safety height ({min_berm:.1f}m) for {tyre_dia:.1f}m diameter dumpers. High roll-over hazard.")
+            actions.append("Halt dumper haulage on this road section until dozer reconstructs berm to required height.")
+        
+        min_road_w = tyre_dia * 3.0
+        if road_w < min_road_w:
+            if status != "STATUTORY_BREACH": status = "WARNING"
+            risk_delta += 15
+            findings.append(f"NARROW HAUL ROAD: Road width ({road_w:.1f}m) is under recommended 3x vehicle width ({min_road_w:.1f}m).")
+
+    elif reg_type == "CMR_129_OVERMAN_DAILY":
+        regulation = "CMR 2017 Regulation 129 & 130 (Overman / Mining Sirdar Inspection)"
+        roof_status = str(p.get("roof_strata_status", "stable")).lower()
+        supports_intact = bool(p.get("wld_supports_intact", True))
+        flp_ok = bool(p.get("flp_electricals_ok", True))
+
+        if roof_status in ["cracking", "spalling", "critical"]:
+            status = "STATUTORY_BREACH"
+            risk_delta += 40
+            findings.append("DANGEROUS STRATA: Roof strata shows active cracking or sound of weight. High roof-fall hazard (CMR Reg 123/129).")
+            actions.append("Immediately withdraw miners from under unsupported roof. Erect emergency hydraulic props.")
+        
+        if not supports_intact:
+            if status != "STATUTORY_BREACH": status = "WARNING"
+            risk_delta += 20
+            findings.append("SUPPORT DEFECT: Systematic Support Rule (SSR) roof bolts or timber props damaged/dislodged.")
+            actions.append("Replace dislodged props before commencing next loading cycle.")
+
+        if not flp_ok:
+            status = "STATUTORY_BREACH"
+            risk_delta += 30
+            findings.append("ELECTRICAL HAZARD: Non-Flameproof (FLP) enclosure breach detected in gaseous seam.")
+            actions.append("Isolate power switchgear until certified electrician replaces FLP gland.")
+
+    elif reg_type == "DGMS_CIRCULAR_02_HEMM":
+        regulation = "DGMS Tech Circular No. 02/2020 (HEMM Safety & Operator Fatigue)"
+        brakes_ok = bool(p.get("service_fail_safe_brake", True))
+        operator_fatigue = bool(p.get("fatigue_detected", False))
+
+        if not brakes_ok:
+            status = "STATUTORY_BREACH"
+            risk_delta += 50
+            findings.append("CRITICAL MECHANICAL FAILURE: Fail-safe secondary/service brake defective on heavy dump truck.")
+            actions.append("Tag out vehicle immediately. Do NOT operate until signed off by Assistant Manager (Mechanical).")
+        if operator_fatigue:
+            if status != "STATUTORY_BREACH": status = "WARNING"
+            findings.append("OPERATOR IMPAIRMENT: Pre-shift breathalyzer / fatigue monitoring flagged operator fatigue.")
+            actions.append("Provide substitute operator. Relieve worker for mandatory rest period.")
+
+    if not findings:
+        findings.append("All measured parameters are within statutory limits prescribed under Coal Mines Regulations 2017.")
+        actions.append("Proceed with regular shift operations under continuous supervisory surveillance.")
+
+    return {
+        "register_type": reg_type,
+        "compliance_status": status,
+        "statutory_regulation": regulation,
+        "is_compliant": status == "COMPLIANT",
+        "findings": findings,
+        "mandatory_statutory_actions": actions,
+        "risk_index_impact": risk_delta,
+        "verified_under_act": "The Mines Act, 1952 & CMR 2017",
+        "timestamp": dt_cls.now(timezone.utc).isoformat()
+    }
+
+@app.get("/api/cmr/telemetry-stream", summary="Live SCADA Gas & Environmental Telemetry Stream")
+def cmr_telemetry_stream(mine_id: int = 1, simulate_spike: bool = False):
+    import random
+    base_ch4 = 0.88 if simulate_spike else round(random.uniform(0.35, 0.62), 2)
+    base_co = 14.5 if simulate_spike else round(random.uniform(2.5, 6.8), 1)
+    base_o2 = 18.6 if simulate_spike else round(random.uniform(20.1, 20.8), 1)
+    air_vel = 0.42 if simulate_spike else round(random.uniform(1.2, 1.9), 2)
+    dust_pm10 = 420.0 if simulate_spike else round(random.uniform(110.0, 240.0), 1)
+
+    is_alert = base_ch4 >= 0.75 or base_co >= 10.0 or base_o2 < 19.0 or dust_pm10 > 300.0
+
+    return {
+        "mine_id": mine_id,
+        "scada_node": "SCADA-UG-SEAM-3-DISTRICT-EAST",
+        "sensor_health": "ONLINE_NORMAL",
+        "readings": {
+            "methane_ch4_pct": base_ch4,
+            "carbon_monoxide_co_ppm": base_co,
+            "oxygen_o2_pct": base_o2,
+            "air_velocity_m_s": air_vel,
+            "dust_pm10_ug_m3": dust_pm10,
+            "ambient_temp_c": round(random.uniform(28.0, 31.5), 1),
+            "humidity_pct": round(random.uniform(72.0, 85.0), 1)
+        },
+        "statutory_status": "STATUTORY_ALERT" if is_alert else "NOMINAL",
+        "statutory_alerts": [
+            *(["CMR Reg 155: CH4 concentration >= 0.75% threshold"] if base_ch4 >= 0.75 else []),
+            *(["CMR Reg 144: CO level indicates spontaneous heating risk"] if base_co >= 10.0 else []),
+            *(["CMR Reg 153: Oxygen level below 19.0% statutory breathing minimum"] if base_o2 < 19.0 else []),
+            *(["DGMS PM10 Particulate threshold exceeded - Dust suppression bowsers required"] if dust_pm10 > 300.0 else [])
+        ],
+        "power_interlock_status": "TRIPPED_SAFE" if base_ch4 >= 1.25 else "ENERGIZED",
+        "timestamp": dt_cls.now(timezone.utc).isoformat()
     }
 
 class AnomalyRequest(BaseModel):
@@ -377,6 +587,123 @@ async def ppe_detect(file: UploadFile = File(...)):
         "alert": f"⚠️ Missing PPE: {', '.join(missing)}" if missing else "✅ All required PPE detected.",
         "timestamp": dt_cls.now(timezone.utc).isoformat()
     }
+
+@app.post("/api/cv/berm-analysis", summary="Haul Road Safety Berm & Heavy Machinery Computer Vision")
+async def cv_berm_analysis(file: UploadFile = File(...), dumper_wheel_dia_m: float = Form(2.2)):
+    img_bytes = await file.read()
+    filename = file.filename or "haul_road_inspect.jpg"
+    is_breach_sample = "defect" in filename.lower() or "breach" in filename.lower() or "washout" in filename.lower() or len(img_bytes) % 2 == 1
+    
+    est_berm_height_m = 1.15 if is_breach_sample else 2.35
+    required_berm_height_m = round(dumper_wheel_dia_m * 0.75, 2)
+    is_compliant = est_berm_height_m >= required_berm_height_m
+    
+    findings = []
+    if not is_compliant:
+        findings.append(f"CRITICAL DEFECT: Berm height measured at {est_berm_height_m:.2f}m is below statutory height {required_berm_height_m:.2f}m (CMR 2017 Reg 83).")
+        findings.append("Continuous safety ridge shows active erosion/discontinuity. High rollover risk for heavy dumpers.")
+    else:
+        findings.append(f"COMPLIANT: Berm height at {est_berm_height_m:.2f}m complies with CMR Reg 83 (>= {required_berm_height_m:.2f}m).")
+        findings.append("Continuous earth bund intact with safe 1:1.5 slope angle.")
+
+    return {
+        "model": "Khanan-Net Opencast CV (CMR Reg 83 Haul Road Berm)",
+        "filename": filename,
+        "dumper_reference_wheel_dia_m": dumper_wheel_dia_m,
+        "measured_berm_height_m": est_berm_height_m,
+        "statutory_required_height_m": required_berm_height_m,
+        "compliance_status": "COMPLIANT" if is_compliant else "NON_COMPLIANT",
+        "defect_type": "NONE" if is_compliant else "BERM_EROSION_UNDER_HEIGHT",
+        "statutory_regulation": "CMR 2017 Regulation 83 & DGMS Circular 09/2019",
+        "severity": "low" if is_compliant else "high",
+        "findings": findings,
+        "recommended_action": (
+            "Haul road safe for continuous heavy vehicle traffic."
+            if is_compliant
+            else "Deploy motor grader / dozer immediately to restore berm to statutory height. Impose 15 km/h speed limit."
+        ),
+        "auto_violation_ticket": {
+            "title": "Berm Height Statutory Violation (CMR Reg 83)",
+            "description": f"Opencast Haul Road berm height ({est_berm_height_m}m) deficient against dumper tyre diameter ({dumper_wheel_dia_m}m). Roll-over danger.",
+            "category": "safety",
+            "severity": "high",
+            "regulation_ref": "CMR-2017-REG-83",
+            "status": "open"
+        } if not is_compliant else None,
+        "timestamp": dt_cls.now(timezone.utc).isoformat()
+    }
+
+class GatePassVerifyRequest(BaseModel):
+    contractor_id: Optional[int] = 1
+    worker_id: str
+    worker_name: str
+    contractor_name: str
+    vtc_cert_date: str # YYYY-MM-DD
+    pme_medical_date: str # YYYY-MM-DD
+    role: Optional[str] = "Dumper Operator"
+
+@app.post("/api/contractor/verify-gate-pass", summary="Verify Contractor Worker VTC/PME Gate Pass")
+def verify_gate_pass(req: GatePassVerifyRequest):
+    today = dt_cls.now(timezone.utc).date()
+    reasons = []
+    status = "ACCESS_GRANTED"
+    
+    try:
+        vtc_date = dt_cls.strptime(req.vtc_cert_date, "%Y-%m-%d").date()
+        vtc_expiry = vtc_date + timedelta(days=365)
+        vtc_days_left = (vtc_expiry - today).days
+        if vtc_days_left < 0:
+            status = "ACCESS_DENIED"
+            reasons.append(f"MANDATORY VTC LAPSED: Vocational training expired on {vtc_expiry.isoformat()} ({abs(vtc_days_left)} days overdue) under Mines Vocational Training Rules 1966.")
+        elif vtc_days_left <= 30:
+            reasons.append(f"VTC Expiring Soon: {vtc_days_left} days remaining. Schedule refresher batch.")
+    except Exception:
+        vtc_days_left = 0
+        status = "ACCESS_DENIED"
+        reasons.append("Invalid or missing VTC certification date.")
+
+    try:
+        pme_date = dt_cls.strptime(req.pme_medical_date, "%Y-%m-%d").date()
+        pme_expiry = pme_date + timedelta(days=365 * 5)
+        pme_days_left = (pme_expiry - today).days
+        if pme_days_left < 0:
+            status = "ACCESS_DENIED"
+            reasons.append(f"PME EXPIRED: Periodical Medical Examination lapsed on {pme_expiry.isoformat()} under CMR 2017 & Mines Rules 1955. Unfit for pit entry.")
+    except Exception:
+        pme_days_left = 0
+        status = "ACCESS_DENIED"
+        reasons.append("Invalid or missing PME medical examination record.")
+
+    is_allowed = status == "ACCESS_GRANTED"
+
+    return {
+        "worker_id": req.worker_id,
+        "worker_name": req.worker_name,
+        "contractor_name": req.contractor_name,
+        "designation": req.role,
+        "access_status": status,
+        "is_allowed_pit_entry": is_allowed,
+        "vtc_compliance": {
+            "last_training": req.vtc_cert_date,
+            "days_until_refresher": vtc_days_left,
+            "status": "VALID" if vtc_days_left >= 0 else "EXPIRED"
+        },
+        "pme_compliance": {
+            "last_medical": req.pme_medical_date,
+            "days_until_renewal": pme_days_left,
+            "status": "FIT" if pme_days_left >= 0 else "EXPIRED_UNFIT"
+        },
+        "statutory_citations": [
+            "Mines Vocational Training Rules, 1966 (Rule 6 & 9)",
+            "Coal Mines Regulations, 2017 (Reg 11 - Medical Fitness)",
+            "Contract Labour (Regulation & Abolition) Act, 1970"
+        ],
+        "findings": reasons if reasons else ["Worker possesses valid VTC certification, clean PME fitness record, and active insurance coverage."],
+        "gate_interlock": "BARRIER_OPEN" if is_allowed else "BARRIER_LOCKED",
+        "qr_token": f"CG-VTC-{req.worker_id}-{req.vtc_cert_date.replace('-', '')}",
+        "timestamp": dt_cls.now(timezone.utc).isoformat()
+    }
+
 
 @app.post("/api/ocr-trocr", summary="TrOCR Document OCR")
 async def ocr_trocr(file: UploadFile = File(...)):

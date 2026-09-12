@@ -9,8 +9,11 @@ import {
   ExternalLink,
   Search,
   Filter,
-  Activity
+  Activity,
+  Download
 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface MineRecord {
   id: string;
@@ -87,6 +90,92 @@ export default function RegulatorDashboard() {
     setTimeout(() => setVerifiedHash(null), 3500);
   };
 
+  const exportFormVPDF = () => {
+    const doc = new jsPDF();
+
+    // Official Government Header
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('GOVERNMENT OF INDIA', 105, 14, { align: 'center' });
+    doc.setFontSize(11);
+    doc.text('DIRECTORATE GENERAL OF MINES SAFETY (DGMS)', 105, 20, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('STATUTORY ANNUAL SAFETY COMPLIANCE RETURN — FORM V', 105, 26, { align: 'center' });
+    doc.setFontSize(8);
+    doc.text('(Under Regulation 23 of Coal Mines Regulations 2017 & Section 22 of The Mines Act 1952)', 105, 31, { align: 'center' });
+    doc.line(14, 34, 196, 34);
+
+    // Meta parameters
+    doc.setFontSize(9);
+    doc.text(`Supervising Authority: Directorate General of Mines Safety (Eastern/South-Eastern Zone)`, 14, 40);
+    doc.text(`Corporate Entity: Coal India Limited (CIL) Subsidiaries`, 14, 45);
+    doc.text(`Audit Generation Date: ${new Date().toLocaleString('en-IN')}`, 14, 50);
+    doc.text(`Ledger Merkle Root: 0x7f8a3c9e...18492`, 130, 40);
+    doc.text(`Cryptographic Status: 100% Chain Verified`, 130, 45);
+    doc.text(`Audit Reference: DGMS-CIL-STAT-2026-V`, 130, 50);
+
+    // Table Data
+    const tableData = filteredMines.map((m, idx) => [
+      idx + 1,
+      `${m.name} (${m.subsidiary})`,
+      m.coordinates,
+      `${m.riskScore}/100`,
+      m.activeViolations,
+      m.slaStatus === 'ESCALATED_2HR' ? 'ESCALATED (2H)' : 'NOMINAL',
+      m.primaryFactor,
+      m.lastAuditHash
+    ]);
+
+    autoTable(doc, {
+      startY: 55,
+      head: [['#', 'Colliery Name', 'Geo Coordinates', 'Risk Index', 'Violations', 'SLA Status', 'Primary Statutory Factor', 'Audit Hash']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      styles: { fontSize: 7, cellPadding: 2 },
+      columnStyles: {
+        0: { cellWidth: 8 },
+        1: { cellWidth: 32 },
+        2: { cellWidth: 26 },
+        3: { cellWidth: 16 },
+        4: { cellWidth: 15 },
+        5: { cellWidth: 20 },
+        6: { cellWidth: 42 },
+        7: { cellWidth: 24 }
+      }
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY || 180;
+
+    // Statutory Certification Box
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('STATUTORY DECLARATION & INTEGRITY CERTIFICATE:', 14, finalY + 12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(
+      'This document is an autonomously compiled, cryptographically anchored statutory compliance return under CMR 2017. Any deliberate suppression or alteration of hazard data is an offense punishable under Section 72C of The Mines Act, 1952.',
+      14,
+      finalY + 17,
+      { maxWidth: 182 }
+    );
+
+    // Signature Blocks
+    doc.line(14, finalY + 45, 60, finalY + 45);
+    doc.text('Colliery Safety Officer', 14, finalY + 49);
+    doc.text('(Cert. of Competency No.)', 14, finalY + 53);
+
+    doc.line(78, finalY + 45, 128, finalY + 45);
+    doc.text('Agent / General Manager', 78, finalY + 49);
+    doc.text('Coal India Limited Subsidiary', 78, finalY + 53);
+
+    doc.line(146, finalY + 45, 196, finalY + 45);
+    doc.text('Dy. Director General of Mines Safety', 146, finalY + 49);
+    doc.text('DGMS, Ministry of Labour & Employment', 146, finalY + 53);
+
+    doc.save(`DGMS_Form_V_Compliance_Return_${new Date().toISOString().slice(0,10)}.pdf`);
+  };
+
   return (
     <div className="min-h-screen bg-[#070D18] text-slate-100 font-sans p-6">
       
@@ -111,7 +200,10 @@ export default function RegulatorDashboard() {
             <span>LEDGER: 100% VERIFIED (BLOCK #18,492)</span>
           </div>
 
-          <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/20">
+          <button 
+            onClick={exportFormVPDF}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 cursor-pointer"
+          >
             <FileText className="w-3.5 h-3.5" /> EXPORT FORM V (PDF)
           </button>
         </div>

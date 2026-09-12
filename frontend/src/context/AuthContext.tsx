@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
+import { getProfile, saveProfile } from "../services/profileService";
 
 interface AuthContextType {
   session: Session | null;
@@ -44,7 +45,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Start background simulation loop for hackathon demo
+    const ambientTimer = setInterval(() => {
+      // 40% chance every 15s to fire an ambient background alert
+      if (Math.random() > 0.6) {
+        generateHackathonAmbientAlert();
+      }
+    }, 15000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearInterval(ambientTimer);
+    };
   }, []);
 
   const fetchRole = async (userId: string) => {
@@ -59,7 +71,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setRole(data.role);
         
         // Dynamically update the UI profile based on logged-in user
-        const { getProfile, saveProfile } = await import("../services/profileService");
         const currentProfile = getProfile();
         saveProfile({
           ...currentProfile,
@@ -123,6 +134,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (e) {
       console.error('Failed to generate alerts', e);
+    }
+  };
+
+  const generateHackathonAmbientAlert = async () => {
+    try {
+      const alertTypes = [
+        { type: 'SCADA_TELEMETRY', msg: 'SCADA Alert: CH4 levels exceeding 1.25% in Seam 3. Ventilation fans auto-adjusted.', sev: 'critical' },
+        { type: 'VISION_AI', msg: 'AI Vision Alert: Missing safety berm detected near Pit B haul road.', sev: 'high' },
+        { type: 'ACCESS_CONTROL', msg: 'Gate Pass Alert: Entry attempt blocked (VTC Expired).', sev: 'high' },
+        { type: 'CORPORATE_WATCHDOG', msg: 'EC Compliance Alert: Production Cap reaching 95% threshold for ECL.', sev: 'high' },
+        { type: 'SCADA_TELEMETRY', msg: 'SCADA Alert: Vibration anomaly detected near Highwall C.', sev: 'critical' }
+      ];
+      const rand = alertTypes[Math.floor(Math.random() * alertTypes.length)];
+      
+      await supabase.from('alerts').insert({
+        type: rand.type,
+        message: rand.msg,
+        severity: rand.sev,
+        is_read: false
+      });
+    } catch (e) {
+      console.error('Ambient alert fail:', e);
     }
   };
 

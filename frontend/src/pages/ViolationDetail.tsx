@@ -201,46 +201,46 @@ export default function ViolationDetail() {
   if (violation.status === 'closed') currentIndex = 3;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 lg:p-8 space-y-8 bg-slate-50 min-h-screen">
+    <div className="max-w-5xl mx-auto p-6 lg:p-8 space-y-8 bg-[#070D18] min-h-screen">
       
       {/* Header */}
       <div>
-        <Link to="/dashboard/mine" className="inline-flex items-center gap-1 text-sm font-bold text-amber-600 hover:text-amber-700 mb-6 uppercase tracking-wider">
-          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+        <Link to="/violations" className="inline-flex items-center gap-1 text-sm font-bold text-amber-500 hover:text-amber-400 mb-6 uppercase tracking-wider transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Violations
         </Link>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${
-                violation.severity === 'Critical' ? 'bg-red-100 text-red-800' :
-                violation.severity === 'High' ? 'bg-orange-100 text-orange-800' :
-                violation.severity === 'Medium' ? 'bg-amber-100 text-amber-800' :
-                'bg-emerald-100 text-emerald-800'
+                violation.severity === 'Critical' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                violation.severity === 'High' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
+                violation.severity === 'Medium' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
               }`}>
                 {violation.severity} Severity
               </span>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{violation.category} Category</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest border border-slate-700 px-2 py-0.5 rounded">{violation.category} Category</span>
             </div>
-            <h1 className="text-3xl font-serif font-bold text-slate-900 tracking-tight">
+            <h1 className="text-3xl font-bold text-white tracking-tight">
               Violation #{violation.id}
             </h1>
-            <div className="flex items-center gap-2 text-sm text-slate-500 mt-2 font-medium">
-              <MapPin className="w-4 h-4 text-slate-400" />
+            <div className="flex items-center gap-2 text-sm text-slate-400 mt-2 font-mono">
+              <MapPin className="w-4 h-4 text-cyan-400" />
               <span>{violation.mines?.name} • {violation.mines?.region}, {violation.mines?.state}</span>
             </div>
           </div>
           
           <div className="text-right">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Field Capture Timestamp</span>
-            <span className="text-sm font-bold text-slate-700">{formatISTLong(violation.timestamp || violation.created_at)}</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Field Capture Timestamp</span>
+            <span className="text-sm font-mono text-slate-300">{formatISTLong(violation.timestamp || violation.created_at)}</span>
           </div>
         </div>
       </div>
 
       {/* Horizontal Status Timeline */}
-      <div className="bg-white p-6 border border-slate-200 rounded shadow-sm">
-        <div className="relative">
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-100 -translate-y-1/2 z-0" />
+      <div className="bg-[#0B1326] p-6 border border-slate-800 rounded-xl shadow-xl relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-800 -translate-y-1/2 z-0" />
           <div className="relative z-10 flex justify-between">
             {['Reported', 'Under Review', 'Corrective Action', 'Closed'].map((stage, i) => {
               const isActive = i === currentIndex;
@@ -248,14 +248,14 @@ export default function ViolationDetail() {
               return (
                 <div key={stage} className="flex flex-col items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors ${
-                    isActive ? 'bg-amber-500 border-amber-600 text-white shadow-lg shadow-amber-500/30' :
-                    isPast ? 'bg-emerald-500 border-emerald-600 text-white' :
-                    'bg-slate-50 border-slate-300 text-slate-400'
+                    isActive ? 'bg-amber-500 border-amber-600 text-[#070D18] shadow-[0_0_15px_rgba(245,158,11,0.5)]' :
+                    isPast ? 'bg-emerald-500 border-emerald-600 text-[#070D18]' :
+                    'bg-[#070D18] border-slate-700 text-slate-500'
                   }`}>
                     {isPast ? <CheckCircle2 className="w-5 h-5" /> : i + 1}
                   </div>
                   <span className={`text-xs font-bold uppercase tracking-wider mt-3 ${
-                    isActive ? 'text-amber-600' : isPast ? 'text-emerald-600' : 'text-slate-400'
+                    isActive ? 'text-amber-500' : isPast ? 'text-emerald-500' : 'text-slate-500'
                   }`}>
                     {stage}
                   </span>
@@ -272,11 +272,11 @@ export default function ViolationDetail() {
         <div className="lg:col-span-2 space-y-8">
           
           {/* Photo */}
-          <div className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden">
+          <div className="bg-[#0B1326] border border-slate-800 rounded-xl shadow-xl overflow-hidden">
             {violation.photo_url ? (
               <img src={violation.photo_url} alt="Violation Evidence" className="w-full h-80 object-cover" />
             ) : (
-              <div className="w-full h-80 bg-slate-100 flex flex-col items-center justify-center text-slate-400">
+              <div className="w-full h-80 bg-[#070D18] flex flex-col items-center justify-center text-slate-600">
                 <Camera className="w-12 h-12 mb-2 opacity-50" />
                 <span className="text-sm font-medium">No evidentiary photo attached</span>
               </div>
@@ -295,13 +295,13 @@ export default function ViolationDetail() {
           </div>
 
           {/* Corrective Action Log */}
-          <div className="bg-white border border-slate-200 rounded shadow-sm p-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800 mb-4 flex items-center gap-2">
+          <div className="bg-[#0B1326] border border-slate-800 rounded-xl shadow-xl p-6">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
               Corrective Action Directives
             </h3>
             {violation.corrective_action ? (
-              <div className="p-4 bg-slate-50 rounded border border-slate-100 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
+              <div className="p-4 bg-[#070D18] rounded-lg border border-slate-700 text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">
                 {violation.corrective_action}
               </div>
             ) : (
@@ -316,15 +316,15 @@ export default function ViolationDetail() {
           
           {/* Action Module */}
           {(role === 'mine_official' || role === 'corporate') && (
-            <div className="bg-white border border-slate-200 rounded shadow-sm p-6 space-y-5">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800">Status Management</h3>
+            <div className="bg-[#0B1326] border border-slate-800 rounded-xl shadow-xl p-6 space-y-5">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">Status Management</h3>
               
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Update Phase</label>
                 <select 
                   value={newStatus}
                   onChange={e => setNewStatus(e.target.value)}
-                  className="w-full h-10 px-3 border border-slate-300 rounded text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full h-10 px-3 bg-[#070D18] border border-slate-700 rounded text-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 >
                   <option value="open">Reported (Open)</option>
                   <option value="under_review">Under Review</option>
@@ -340,23 +340,23 @@ export default function ViolationDetail() {
                   onChange={e => setCorrectiveAction(e.target.value)}
                   rows={3}
                   placeholder="Document actions taken..."
-                  className="w-full p-3 border border-slate-300 rounded text-sm text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 resize-none"
+                  className="w-full p-3 bg-[#070D18] border border-slate-700 rounded text-sm text-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 resize-none"
                 />
               </div>
 
               <button 
                 onClick={handleUpdateStatus}
                 disabled={updating || (newStatus === violation.status && !correctiveAction)}
-                className="w-full h-10 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold rounded transition-colors shadow-sm disabled:opacity-50"
+                className="w-full h-10 bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold rounded transition-colors shadow-[0_0_15px_rgba(245,158,11,0.4)] disabled:opacity-50"
               >
                 {updating ? 'Updating Ledger...' : 'Commit Status Update'}
               </button>
 
               {/* Corporate Approval Block */}
               {role === 'corporate' && !violation.approved_by && (
-                <div className="pt-5 mt-5 border-t border-slate-200">
+                <div className="pt-5 mt-5 border-t border-slate-800">
                   <div className="mb-3">
-                    <span className="text-xs font-bold text-red-600 uppercase tracking-widest flex items-center gap-1">
+                    <span className="text-xs font-bold text-red-400 uppercase tracking-widest flex items-center gap-1">
                       <ShieldCheck className="w-4 h-4" /> Supervisor Approval Required
                     </span>
                     <p className="text-xs text-slate-500 mt-1">This violation cannot be closed until a corporate official grants structural approval.</p>
@@ -364,7 +364,7 @@ export default function ViolationDetail() {
                   <button 
                     onClick={handleApprove}
                     disabled={updating}
-                    className="w-full h-10 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded transition-colors shadow-sm disabled:opacity-50"
+                    className="w-full h-10 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded transition-colors shadow-sm disabled:opacity-50"
                   >
                     Grant Approval
                   </button>
@@ -374,24 +374,24 @@ export default function ViolationDetail() {
           )}
 
           {/* Meta Data */}
-          <div className="bg-slate-100 rounded p-5 space-y-4 border border-slate-200">
+          <div className="bg-[#070D18] rounded-xl p-5 space-y-4 border border-slate-800 shadow-xl">
             <div>
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-0.5">Statutory Reference</span>
-              <span className="text-sm font-medium text-slate-900">{violation.regulation_ref || 'N/A'}</span>
+              <span className="text-sm font-medium text-slate-300">{violation.regulation_ref || 'N/A'}</span>
             </div>
             {violation.approved_by && (
               <div>
-                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block mb-0.5 flex items-center gap-1">
+                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest block mb-0.5 flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" /> Approved By
                 </span>
-                <span className="text-sm font-medium text-slate-900">{violation.approver?.email || violation.approved_by}</span>
+                <span className="text-sm font-medium text-slate-300">{violation.approver?.email || violation.approved_by}</span>
                 <div className="text-xs text-slate-500 mt-0.5">{formatISTLong(violation.approved_at)}</div>
               </div>
             )}
             {violation.closed_at && (
               <div>
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-0.5">Closure Date</span>
-                <span className="text-sm font-medium text-slate-900">{formatISTLong(violation.closed_at)}</span>
+                <span className="text-sm font-medium text-slate-300">{formatISTLong(violation.closed_at)}</span>
               </div>
             )}
           </div>
