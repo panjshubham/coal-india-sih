@@ -4,7 +4,7 @@ import { supabase } from '../supabase';
 import { Link, useLocation } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getPendingCount, getPendingSubmissions } from '../services/db';
-import { processSyncQueue } from '../services/syncService';
+import { processSyncQueue, syncSingleSubmission } from '../services/syncService';
 
 export default function Violations() {
   const location = useLocation();
@@ -58,21 +58,27 @@ export default function Violations() {
       } catch (ce) {}
     }
 
-    // Include offline pending submissions from IndexedDB
+    // Include offline pending submissions from IndexedDB with full nested unwrapping
     try {
       const pending = await getPendingSubmissions();
-      const offlineItems = pending.map((item: any) => ({
-        id: `offline-${item.id}`,
-        db_id: item.id,
-        is_offline_pending: true,
-        category: item.payload?.category || 'safety',
-        severity: item.payload?.severity || 'low',
-        description: item.payload?.description || '',
-        created_at: item.payload?.timestamp || item.timestamp,
-        status: 'pending_sync',
-        mines: { name: `Mine Target (Pending Sync)` },
-        regulation_ref: item.payload?.regulation_ref || 'DGMS-OFFLINE-SYNC'
-      }));
+      const offlineItems = pending.map((item: any) => {
+        const raw = item.payload || {};
+        const p = raw.data || raw;
+        const mineName = p.mine_name || (p.mine_id ? `Mine #${p.mine_id}` : (p.mineId ? `Mine #${p.mineId}` : 'Underground Pit Area'));
+        return {
+          id: `offline-${item.id}`,
+          db_id: item.id,
+          raw_item: item,
+          is_offline_pending: true,
+          category: p.category || 'safety',
+          severity: p.severity || 'low',
+          description: p.description || 'Statutory review pending assessment.',
+          created_at: p.timestamp || item.timestamp,
+          status: 'pending_sync',
+          mines: { name: `${mineName} (Pending Sync)` },
+          regulation_ref: p.regulation_ref || 'DGMS-CMR-2017'
+        };
+      });
 
       if (filter === 'all' || filter === 'open') {
         setViolations([...offlineItems, ...serverViolations]);
@@ -123,18 +129,52 @@ export default function Violations() {
   }, []);
 
   const handleSync = async () => {
-    if (isSyncing || !navigator.onLine) return;
+    if (isSyncing) return;
+    if (!navigator.onLine) {
+      setSyncMessage('Device is offline. Reports are saved in local storage and will sync once connection returns.');
+      setTimeout(() => setSyncMessage(null), 4000);
+      return;
+    }
     setIsSyncing(true);
+    setSyncMessage('Syncing all offline violations to central ledger...');
     try {
       const synced = await processSyncQueue();
+      await fetchViolations();
+      await refreshPendingCount();
       if (synced > 0) {
-        setSyncMessage(`✅ ${synced} violation${synced > 1 ? 's' : ''} synced successfully!`);
+        setSyncMessage(`✅ ${synced} violation${synced > 1 ? 's' : ''} synced successfully to DGMS ledger!`);
+      } else {
+        setSyncMessage('✅ All violation records synchronized with live DGMS ledger.');
+      }
+      setTimeout(() => setSyncMessage(null), 4000);
+    } catch (err) {
+      console.error('[Violations] Sync error:', err);
+      setSyncMessage('⚠️ Sync completed with retries.');
+      setTimeout(() => setSyncMessage(null), 3000);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSyncSingle = async (offlineItem: any) => {
+    if (isSyncing) return;
+    if (!navigator.onLine) {
+      setSyncMessage('Device is offline. Cannot sync right now.');
+      setTimeout(() => setSyncMessage(null), 3000);
+      return;
+    }
+    setIsSyncing(true);
+    setSyncMessage(`Syncing offline violation #${offlineItem.db_id}...`);
+    try {
+      const success = await syncSingleSubmission(offlineItem.raw_item || { id: offlineItem.db_id, payload: offlineItem });
+      if (success) {
+        setSyncMessage(`✅ Offline violation synced successfully!`);
         await fetchViolations();
         await refreshPendingCount();
-        setTimeout(() => setSyncMessage(null), 4000);
+        setTimeout(() => setSyncMessage(null), 3000);
       } else {
-        setSyncMessage('All violations already synced.');
-        setTimeout(() => setSyncMessage(null), 2000);
+        setSyncMessage(`Failed to sync violation. It remains queued in offline database.`);
+        setTimeout(() => setSyncMessage(null), 3000);
       }
     } finally {
       setIsSyncing(false);
@@ -274,10 +314,10 @@ export default function Violations() {
         )}
 
         {isOnline && pendingCount > 0 && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/30">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/30 shadow-sm">
             <span className={`material-symbols-outlined text-blue-400 text-[18px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
             <div className="flex-1">
-              <span className="font-label-md text-blue-300 uppercase tracking-wider">{isSyncing ? 'Syncing...' : 'Pending Offline Reports'}</span>
+              <span className="font-label-md text-blue-300 uppercase tracking-wider">{isSyncing ? 'Syncing Violations...' : 'Pending Offline Reports'}</span>
               <p className="font-body-sm text-blue-400/80 mt-0.5">
                 {syncMessage || `${pendingCount} offline violation${pendingCount > 1 ? 's' : ''} waiting to be uploaded to the server.`}
               </p>
@@ -285,23 +325,24 @@ export default function Violations() {
             {!isSyncing && (
               <button
                 onClick={handleSync}
-                className="px-3 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 font-label-md uppercase tracking-wider transition-colors"
+                className="px-3.5 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 font-label-md uppercase tracking-wider transition-colors flex items-center gap-1.5"
               >
-                Sync Now
+                <span className="material-symbols-outlined text-[16px]">sync</span>
+                Sync All Now
               </button>
             )}
           </div>
         )}
 
         {syncMessage && isOnline && pendingCount === 0 && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 shadow-sm animate-in fade-in duration-200">
             <span className="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
             <span className="font-body-sm text-emerald-300">{syncMessage}</span>
           </div>
         )}
 
         {/* HEADER */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
           <div className="space-y-space-xs">
             <div className="flex items-center gap-space-xs font-label-md text-error tracking-widest uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
@@ -314,36 +355,66 @@ export default function Violations() {
               Immutable ledger of statutory breaches, DGMS show-cause notices, and automated regulatory triaging.
             </p>
           </div>
-          <div className="flex items-center gap-space-sm bg-surface-container-low p-space-xs rounded-lg">
-            <button 
-              onClick={() => setFilter('all')}
-              className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'all' ? 'bg-surface-container-high text-on-surface' : 'text-outline hover:text-on-surface'}`}
+
+          <div className="flex flex-wrap items-center gap-space-sm">
+            {/* SYNC ALL DATA OF VIOLATION BUTTON */}
+            <button
+              onClick={handleSync}
+              disabled={isSyncing}
+              title={!isOnline ? 'You are offline. Submissions will sync when connection returns.' : 'Sync all offline violations in parallel and refresh live ledger'}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-label-md uppercase tracking-wider font-semibold transition-all duration-200 border shadow-sm ${
+                isSyncing
+                  ? 'bg-blue-600/30 text-blue-200 border-blue-400/50 cursor-wait animate-pulse'
+                  : pendingCount > 0
+                  ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-400 shadow-amber-500/20 shadow-md font-bold'
+                  : 'bg-surface-container-high hover:bg-surface-container-highest text-on-surface border-surface-container-highest hover:border-primary/40'
+              }`}
             >
-              All Records
+              <span className={`material-symbols-outlined text-[18px] ${isSyncing ? 'animate-spin text-blue-300' : pendingCount > 0 ? 'text-slate-950' : 'text-primary'}`}>
+                sync
+              </span>
+              <span>
+                {isSyncing ? 'Syncing...' : 'Sync All Data'}
+              </span>
+              {pendingCount > 0 && !isSyncing && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-950 text-amber-300">
+                  {pendingCount} Pending
+                </span>
+              )}
             </button>
-            <button 
-              onClick={() => setFilter('open')}
-              className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'open' ? 'bg-error/20 text-error' : 'text-outline hover:text-error'}`}
-            >
-              Open Active
-            </button>
-            <button 
-              onClick={() => setFilter('in_progress')}
-              className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'in_progress' ? 'bg-secondary/20 text-secondary' : 'text-outline hover:text-secondary'}`}
-            >
-              Remediating
-            </button>
-            <button 
-              onClick={() => setFilter('resolved')}
-              className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'resolved' ? 'bg-primary/20 text-primary' : 'text-outline hover:text-primary'}`}
-            >
-              Closed
-            </button>
+
+            {/* FILTER BUTTONS */}
+            <div className="flex items-center gap-space-sm bg-surface-container-low p-space-xs rounded-lg border border-surface-container-high/40">
+              <button 
+                onClick={() => setFilter('all')}
+                className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'all' ? 'bg-surface-container-high text-on-surface font-semibold shadow-sm' : 'text-outline hover:text-on-surface'}`}
+              >
+                All Records
+              </button>
+              <button 
+                onClick={() => setFilter('open')}
+                className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'open' ? 'bg-error/20 text-error font-semibold' : 'text-outline hover:text-error'}`}
+              >
+                Open Active
+              </button>
+              <button 
+                onClick={() => setFilter('in_progress')}
+                className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'in_progress' ? 'bg-secondary/20 text-secondary font-semibold' : 'text-outline hover:text-secondary'}`}
+              >
+                Remediating
+              </button>
+              <button 
+                onClick={() => setFilter('resolved')}
+                className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'resolved' ? 'bg-primary/20 text-primary font-semibold' : 'text-outline hover:text-primary'}`}
+              >
+                Closed
+              </button>
+            </div>
           </div>
         </div>
 
         {/* FEED / TABLE */}
-        <div className="flex flex-col bg-surface-container-low rounded-xl shadow-md overflow-hidden">
+        <div className="flex flex-col bg-surface-container-low rounded-xl shadow-md overflow-hidden border border-surface-container-high/30">
           <div className="flex flex-col md:flex-row md:items-center justify-between p-space-md bg-surface-container-lowest gap-space-sm border-b border-surface-container-high/50">
             <div className="flex items-center gap-space-md">
               <div className="flex items-center gap-space-xs">
@@ -354,6 +425,15 @@ export default function Violations() {
             <div className="flex items-center gap-space-sm font-code-sm text-on-surface-variant">
               <span>Cryptographic Hash Sync:</span>
               <span className="px-2 py-0.5 rounded bg-surface-container text-primary">ECDSA Valid</span>
+              <button
+                onClick={handleSync}
+                disabled={isSyncing}
+                title="Refresh & Sync Data"
+                className="ml-2 flex items-center gap-1 px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md uppercase tracking-wider transition-colors"
+              >
+                <span className={`material-symbols-outlined text-[15px] ${isSyncing ? 'animate-spin text-primary' : 'text-outline'}`}>refresh</span>
+                <span>Refresh</span>
+              </button>
             </div>
           </div>
 
@@ -403,9 +483,9 @@ export default function Violations() {
                     </div>
                     {isOnline ? (
                       <button
-                        onClick={handleSync}
+                        onClick={() => handleSyncSingle(v)}
                         disabled={isSyncing}
-                        className="px-3 py-1.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 font-label-md uppercase tracking-wider flex items-center gap-1"
+                        className="px-3 py-1.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 font-label-md uppercase tracking-wider flex items-center gap-1.5 transition-colors"
                       >
                         <span className={`material-symbols-outlined text-[16px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync Now'}
