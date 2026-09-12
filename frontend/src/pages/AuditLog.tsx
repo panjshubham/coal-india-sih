@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { Search, Clock, ShieldCheck, Key, Download, FileText, Filter, CheckCircle2 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
+import { formatISTShort, parseTimestamp } from '../lib/dateUtils';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -86,7 +87,7 @@ export default function AuditLog() {
   const exportCSV = () => {
     const headers = ['Timestamp', 'Actor ID', 'Actor Name', 'Action', 'Target Entity', 'Record ID', 'Data Hash', 'Prev Hash'];
     const rows = logs.map(log => [
-      log.timestamp ? format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss') : 'N/A',
+      log.timestamp ? formatISTShort(log.timestamp) : 'N/A',
       log.user_id || 'System',
       log.users?.name || 'N/A',
       log.action,
@@ -120,7 +121,7 @@ export default function AuditLog() {
       startY: 30,
       head: [['Timestamp', 'Actor / Authority', 'Action', 'Target Entity', 'Data Hash']],
       body: logs.map(log => [
-        log.timestamp ? format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss') : 'N/A',
+        log.timestamp ? formatISTShort(log.timestamp) : 'N/A',
         `${log.users?.name || 'System'}\n(${log.user_id?.substring(0, 8)})`,
         log.action,
         `${log.table_name} (ID: ${log.record_id})`,
@@ -231,11 +232,11 @@ export default function AuditLog() {
                     {/* Timestamp */}
                     <td className="px-5 py-4 align-top whitespace-nowrap">
                       <div className="text-xs font-bold text-slate-200">
-                        {log.timestamp ? format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss.SSS') : 'N/A'}
+                        {log.timestamp ? formatISTShort(log.timestamp) : 'N/A'}
                       </div>
                       <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1.5">
                         <Clock className="w-3 h-3" />
-                        {log.timestamp ? formatDistanceToNow(new Date(log.timestamp), { addSuffix: true }) : ''}
+                        {log.timestamp ? formatDistanceToNow(parseTimestamp(log.timestamp) ?? new Date(), { addSuffix: true }) : ''}
                       </div>
                     </td>
                     

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabase';
 import { Link, useLocation } from 'react-router-dom';
-import { format } from 'date-fns';
+import { formatISTShort } from '../lib/dateUtils';
 import { getPendingCount, getPendingSubmissions } from '../services/db';
 import { processSyncQueue, syncSingleSubmission } from '../services/syncService';
 
@@ -211,11 +211,9 @@ export default function Violations() {
   const formatDate = (v: any) => {
     const dateStr = v.timestamp || v.created_at;
     if (!dateStr) return 'Unknown Date';
-    try {
-      return format(new Date(dateStr), 'dd MMM yyyy, HH:mm');
-    } catch {
-      return 'Unknown Date';
-    }
+    // formatISTShort always renders in Asia/Kolkata (IST, UTC+5:30)
+    // regardless of browser/server system timezone
+    return formatISTShort(dateStr);
   };
 
   return (

@@ -1,5 +1,6 @@
 import { openDB } from 'idb';
 import type { DBSchema, IDBPDatabase } from 'idb';
+import { nowIST } from '../lib/dateUtils';
 
 interface CoalGuardDB extends DBSchema {
   pending_submissions: {
@@ -40,7 +41,7 @@ export const savePendingSubmission = async (payload: any) => {
   const db = await getDB();
   return db.add('pending_submissions', {
     payload,
-    timestamp: new Date().toISOString(),
+    timestamp: nowIST(), // Store with +05:30 so display always shows IST correctly
     status: 'pending',
   });
 };

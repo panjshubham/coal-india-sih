@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, AlertTriangle, MapPin, Camera, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatISTLong, formatISTShort } from '../lib/dateUtils';
 
 interface Violation {
   id: number;
@@ -232,7 +232,7 @@ export default function ViolationDetail() {
           
           <div className="text-right">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Field Capture Timestamp</span>
-            <span className="text-sm font-bold text-slate-700">{format(new Date(violation.timestamp || violation.created_at), 'PPP p')}</span>
+            <span className="text-sm font-bold text-slate-700">{formatISTLong(violation.timestamp || violation.created_at)}</span>
           </div>
         </div>
       </div>
@@ -385,13 +385,13 @@ export default function ViolationDetail() {
                   <ShieldCheck className="w-3 h-3" /> Approved By
                 </span>
                 <span className="text-sm font-medium text-slate-900">{violation.approver?.email || violation.approved_by}</span>
-                <div className="text-xs text-slate-500 mt-0.5">{format(new Date(violation.approved_at), 'PPP p')}</div>
+                <div className="text-xs text-slate-500 mt-0.5">{formatISTLong(violation.approved_at)}</div>
               </div>
             )}
             {violation.closed_at && (
               <div>
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-0.5">Closure Date</span>
-                <span className="text-sm font-medium text-slate-900">{format(new Date(violation.closed_at), 'PPP p')}</span>
+                <span className="text-sm font-medium text-slate-900">{formatISTLong(violation.closed_at)}</span>
               </div>
             )}
           </div>
