@@ -232,26 +232,57 @@ function DocumentCameraScanner({
   const streamRef = useRef<MediaStream | null>(null);
   const mobileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const startCamera = async (facing: 'environment' | 'user' = 'environment') => {
+  const startCamera = async (facing: 'user' | 'environment' = facingMode) => {
     stopCamera();
     setCameraError('');
+
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      setCameraError('Camera API is not supported in this browser. Please use Snap with Device Camera or Upload File.');
+      return;
+    }
+
+    let stream: MediaStream | null = null;
     try {
-      const constraints: MediaStreamConstraints = {
+      // 1. Try with ideal facing mode and resolution
+      stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: facing,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          facingMode: { ideal: facing },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      });
+    } catch (e1) {
+      console.warn('Initial camera constraints failed, attempting fallback { video: true }...', e1);
+      try {
+        // 2. Generic video constraint (works on all desktop webcams, virtual cameras)
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      } catch (e2: any) {
+        console.error('Webcam access error:', e2);
+        const msg = e2.message || '';
+        const name = e2.name || '';
+        if (
+          name === 'NotAllowedError' ||
+          name === 'PermissionDeniedError' ||
+          msg.toLowerCase().includes('denied') ||
+          msg.toLowerCase().includes('permission')
+        ) {
+          setCameraError('PERMISSION_DENIED');
+        } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+          setCameraError('NO_CAMERA_FOUND');
+        } else {
+          setCameraError(msg || 'Unable to access camera.');
         }
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        return;
+      }
+    }
+
+    if (stream) {
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        await videoRef.current.play().catch(e => console.warn('Video play interrupted:', e));
       }
-    } catch (err: any) {
-      console.error('Document camera access error:', err);
-      setCameraError(err.message || 'Camera access denied or unavailable. Please grant camera permission in your browser.');
     }
   };
 
@@ -435,24 +466,62 @@ function DocumentCameraScanner({
       ) : (
         <div className={`relative border ${colorConfig.border} rounded-xl overflow-hidden bg-black flex flex-col items-center justify-between min-h-72 shadow-2xl`}>
           {cameraError ? (
-            <div className="p-8 text-center space-y-3 my-auto">
-              <CameraOff className="w-8 h-8 mx-auto text-red-400" />
-              <p className="text-xs text-red-300 max-w-xs leading-relaxed">{cameraError}</p>
-              <div className="flex justify-center gap-2 pt-1">
+            <div className="p-6 md:p-8 text-center space-y-4 my-auto max-w-md mx-auto">
+              <div className="w-12 h-12 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                <CameraOff className="w-6 h-6 text-red-400" />
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-white">
+                  {cameraError === 'PERMISSION_DENIED'
+                    ? 'Camera Permission Blocked in Browser'
+                    : cameraError === 'NO_CAMERA_FOUND'
+                    ? 'No Camera Device Detected'
+                    : 'Camera Access Denied or Unavailable'}
+                </h4>
+                <div className="text-xs text-slate-300 mt-2 leading-relaxed">
+                  {cameraError === 'PERMISSION_DENIED' ? (
+                    <div className="space-y-2">
+                      <p className="text-slate-300">Your browser is blocking camera access for this tab. To enable it:</p>
+                      <div className="font-mono text-[11px] text-amber-200 bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-lg text-left space-y-1">
+                        <div>1. Click the <strong>lock icon 🔒</strong> or <strong>camera icon 📷</strong> on the address bar.</div>
+                        <div>2. Set <strong>Camera</strong> permission to <strong>Allow</strong>.</div>
+                        <div>3. Click <strong>Retry Permission</strong> below.</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p>{cameraError}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-1">
+                {/* Instant fallback: Snap with device camera directly (bypasses browser WebRTC block) */}
                 <button
                   type="button"
-                  onClick={() => startCamera(facingMode)}
-                  className={`px-3 py-1.5 rounded-lg ${colorConfig.btn} text-xs font-medium transition cursor-pointer`}
+                  onClick={() => mobileInputRef.current?.click()}
+                  className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition cursor-pointer"
                 >
-                  Retry Permission
+                  <Camera className="w-4 h-4" />
+                  <span>Snap Photo with Device Camera (Bypass)</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setSourceMode('upload')}
-                  className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-medium transition cursor-pointer"
-                >
-                  Cancel
-                </button>
+
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startCamera(facingMode)}
+                    className={`flex-1 px-3 py-1.5 rounded-lg ${colorConfig.btn} text-xs font-medium transition cursor-pointer`}
+                  >
+                    Retry Permission
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSourceMode('upload')}
+                    className="flex-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-medium transition cursor-pointer"
+                  >
+                    Upload File Instead
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -1500,25 +1569,55 @@ function PPEPanel() {
   const startCamera = async (mode: 'user' | 'environment' = facingMode) => {
     stopCamera();
     setCameraError('');
+
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      setCameraError('Camera API is not supported in this browser. Please use Snap with Device Camera or Upload File.');
+      return;
+    }
+
+    let stream: MediaStream | null = null;
     try {
-      const constraints: MediaStreamConstraints = {
+      // 1. Try with ideal facing mode and resolution
+      stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: mode,
+          facingMode: { ideal: mode },
           width: { ideal: 1280 },
           height: { ideal: 720 }
         },
         audio: false
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      });
+    } catch (e1) {
+      console.warn('Initial PPE camera constraints failed, trying fallback { video: true }...', e1);
+      try {
+        // 2. Generic fallback
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      } catch (e2: any) {
+        console.error('PPE camera access error:', e2);
+        const msg = e2.message || '';
+        const name = e2.name || '';
+        if (
+          name === 'NotAllowedError' ||
+          name === 'PermissionDeniedError' ||
+          msg.toLowerCase().includes('denied') ||
+          msg.toLowerCase().includes('permission')
+        ) {
+          setCameraError('PERMISSION_DENIED');
+        } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+          setCameraError('NO_CAMERA_FOUND');
+        } else {
+          setCameraError(msg || 'Unable to access camera.');
+        }
+        return;
+      }
+    }
+
+    if (stream) {
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        await videoRef.current.play().catch(e => console.warn('Video play interrupted:', e));
       }
       setFacingMode(mode);
-    } catch (err: any) {
-      console.warn('Camera access failed:', err);
-      setCameraError(err.message || 'Unable to access camera. Please allow camera permissions in your browser.');
     }
   };
 
@@ -2091,27 +2190,64 @@ function PPEPanel() {
         ) : (
           <div className="relative border border-orange-500/30 rounded-xl overflow-hidden bg-black flex flex-col items-center justify-between min-h-64 shadow-2xl">
             {cameraError ? (
-              <div className="p-6 text-center space-y-3 my-auto">
-                <CameraOff className="w-8 h-8 mx-auto text-red-400" />
-                <p className="text-xs text-red-300 max-w-xs leading-relaxed">{cameraError}</p>
-                <div className="flex justify-center gap-2 pt-1">
+              <div className="p-6 md:p-8 text-center space-y-4 my-auto max-w-md mx-auto">
+                <div className="w-12 h-12 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                  <CameraOff className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white">
+                    {cameraError === 'PERMISSION_DENIED'
+                      ? 'Camera Permission Blocked in Browser'
+                      : cameraError === 'NO_CAMERA_FOUND'
+                      ? 'No Camera Device Detected'
+                      : 'Camera Access Denied or Unavailable'}
+                  </h4>
+                  <div className="text-xs text-slate-300 mt-2 leading-relaxed">
+                    {cameraError === 'PERMISSION_DENIED' ? (
+                      <div className="space-y-2">
+                        <p className="text-slate-300">Your browser is blocking camera access for this tab. To unblock:</p>
+                        <div className="font-mono text-[11px] text-amber-200 bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-lg text-left space-y-1">
+                          <div>1. Click the <strong>lock icon 🔒</strong> or <strong>camera icon 📷</strong> on your browser address bar.</div>
+                          <div>2. Change <strong>Camera</strong> permission to <strong>Allow</strong>.</div>
+                          <div>3. Click <strong>Retry Permission</strong> below.</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p>{cameraError}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 pt-1">
+                  {/* Direct Native Camera Bypass */}
                   <button
                     type="button"
-                    onClick={() => startCamera(facingMode)}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-white transition cursor-pointer"
+                    onClick={() => mobileCameraInputRef.current?.click()}
+                    className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition cursor-pointer"
                   >
-                    Try Again
+                    <Camera className="w-4 h-4" />
+                    <span>Snap Photo with Device Camera (Bypass)</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      stopCamera();
-                      setSourceMode('upload');
-                    }}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-300 transition cursor-pointer"
-                  >
-                    Use File Upload
-                  </button>
+
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startCamera(facingMode)}
+                      className="flex-1 px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-slate-950 font-bold rounded-lg text-xs transition cursor-pointer"
+                    >
+                      Retry Permission
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        stopCamera();
+                        setSourceMode('upload');
+                      }}
+                      className="flex-1 px-3 py-1.5 bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-medium rounded-lg transition cursor-pointer"
+                    >
+                      Upload File Instead
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
