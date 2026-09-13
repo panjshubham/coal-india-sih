@@ -1781,56 +1781,48 @@ function PPEPanel() {
     const personH = maxPersonY - minPersonY;
     const personW = maxPersonX - minPersonX;
 
-    // 3. Safety Color Classifiers
-    // ── Hard Hat: Red, Yellow, Orange, White, Blue, Green
+    // 3. Safety Color Classifiers (Standard Industrial / Mining High-Visibility Standards)
+    // ── Hard Hat: High-Vis Safety Yellow, Safety Orange, Electric Blue, Electric Green, Pure Hardhat White
     const isHelmetColor = (r: number, g: number, b: number) => {
-      // Red hard hat (deep red, safety red under indoor/outdoor lighting)
-      const isRed = (r >= 105 && r > g * 1.25 && r > b * 1.25 && (r - Math.max(g, b)) >= 20)
-                 || (r >= 120 && g < 100 && b < 100 && (r - Math.max(g, b)) >= 18);
-      // Yellow hard hat
-      const isYellow = (r > 135 && g > 125 && b < 135 && (r + g) / 2 - b > 35 && Math.abs(r - g) < 70);
-      // Orange hard hat
-      const isOrange = (r > 145 && g > 60 && g < 170 && b < 110 && (r - g) > 20 && (r - b) > 45);
-      // White hard hat
-      const isWhite = (r > 185 && g > 185 && b > 185 && Math.max(r, g, b) - Math.min(r, g, b) < 25 && !isBgPixel(r, g, b));
-      // Blue hard hat
-      const isBlue = (b > 115 && b > r * 1.22 && b > g * 1.08 && (b - r) > 25);
-      // Green hard hat
-      const isGreen = (g > 115 && g > r * 1.18 && g > b * 1.12 && (g - r) > 22);
+      // Saturated Safety Yellow (distinct from wood, skin, ambient room lights)
+      const isYellow = (r > 175 && g > 145 && b < 85 && (r + g) / 2 - b > 85 && Math.abs(r - g) < 50);
+      // High-Vis Safety Orange (distinct from skin tones and red brick walls)
+      const isOrange = (r > 195 && g > 80 && g < 155 && b < 65 && (r - g) > 50 && (r - b) > 130);
+      // Electric Safety Blue
+      const isBlue = (b > 145 && b > r * 1.45 && b > g * 1.25 && (b - r) > 45 && (b - g) > 25);
+      // High-Vis Safety Green
+      const isGreen = (g > 145 && g > r * 1.30 && g > b * 1.30 && (g - r) > 30 && (g - b) > 30);
+      // High-gloss Safety White dome (strictly high brightness, low tint variance)
+      const isWhite = (r > 230 && g > 230 && b > 230 && Math.max(r, g, b) - Math.min(r, g, b) < 12);
 
-      return isRed || isYellow || isOrange || isWhite || isBlue || isGreen;
+      return isYellow || isOrange || isBlue || isGreen || isWhite;
     };
 
-    // ── Safety Vest: Neon Orange, Neon Lime-Yellow, Reflective Silver Stripes
+    // ── Safety Vest: High-Visibility Fluorescent Lime-Yellow & Fluorescent Orange
     const isVestColor = (r: number, g: number, b: number) => {
-      const isNeonOrange = (r > 155 && g > 60 && g < 175 && b < 125 && (r - g) > 20 && (r - b) > 40);
-      const isNeonLime = (g > 140 && r > 115 && b < 115 && (g - b) > 35 && (r - b) > 22);
-      const isSilverStripe = (r > 145 && g > 145 && b > 145 && Math.max(r, g, b) - Math.min(r, g, b) < 22 && !isBgPixel(r, g, b));
+      // Fluorescent Lime-Yellow Vest (high green & red, very low blue)
+      const isNeonLime = (g > 160 && r > 135 && b < 85 && (g - b) > 80 && (r - b) > 60);
+      // Fluorescent Safety Orange Vest
+      const isNeonOrange = (r > 205 && g > 85 && g < 155 && b < 65 && (r - g) > 55 && (r - b) > 135);
 
-      return isNeonOrange || isNeonLime || isSilverStripe;
+      return isNeonLime || isNeonOrange;
     };
 
-    // 4. Scan Head & Helmet Region
-    const headTop = minPersonY;
-    const headBottom = minPersonY + Math.round(personH * 0.28);
-    const headLeft = minPersonX + Math.round(personW * 0.10);
-    const headRight = maxPersonX - Math.round(personW * 0.10);
+    // 4. Scan Head & Helmet Region (Strictly inside Head Window)
+    const headTop = Math.max(0, minPersonY + Math.round(personH * 0.02));
+    const headBottom = Math.min(height - 1, minPersonY + Math.round(personH * 0.22));
+    const headLeft = Math.max(0, minPersonX + Math.round(personW * 0.20));
+    const headRight = Math.min(width - 1, maxPersonX - Math.round(personW * 0.20));
 
     let helmetPixelCount = 0;
     let headFgCount = 0;
     let helmXMin = width, helmXMax = 0, helmYMin = height, helmYMax = 0;
 
-    const searchHeadBottom = Math.min(height, minPersonY + Math.round(personH * 0.36));
-
-    for (let y = headTop; y < searchHeadBottom; y++) {
-      for (let x = Math.max(0, minPersonX); x <= Math.min(width - 1, maxPersonX); x++) {
+    for (let y = headTop; y <= headBottom; y++) {
+      for (let x = headLeft; x <= headRight; x++) {
         const idx = (y * width + x) * 4;
         const r = imgData[idx], g = imgData[idx+1], b = imgData[idx+2];
-        if (isBgPixel(r, g, b)) continue;
-
-        if (y <= headBottom && x >= headLeft && x <= headRight) {
-          headFgCount++;
-        }
+        headFgCount++;
 
         if (isHelmetColor(r, g, b)) {
           helmetPixelCount++;
@@ -1842,21 +1834,20 @@ function PPEPanel() {
       }
     }
 
-    // 5. Scan Torso & Safety Vest Region
-    const torsoTop = minPersonY + Math.round(personH * 0.20);
-    const torsoBottom = minPersonY + Math.round(personH * 0.78);
-    const torsoLeft = minPersonX;
-    const torsoRight = maxPersonX;
+    // 5. Scan Torso & Safety Vest Region (Strictly inside Torso Window)
+    const torsoTop = Math.max(0, minPersonY + Math.round(personH * 0.24));
+    const torsoBottom = Math.min(height - 1, minPersonY + Math.round(personH * 0.65));
+    const torsoLeft = Math.max(0, minPersonX + Math.round(personW * 0.15));
+    const torsoRight = Math.min(width - 1, maxPersonX - Math.round(personW * 0.15));
 
     let vestPixelCount = 0;
     let torsoFgCount = 0;
     let vestXMin = width, vestXMax = 0, vestYMin = height, vestYMax = 0;
 
-    for (let y = torsoTop; y < Math.min(height, torsoBottom); y++) {
+    for (let y = torsoTop; y <= torsoBottom; y++) {
       for (let x = torsoLeft; x <= torsoRight; x++) {
         const idx = (y * width + x) * 4;
         const r = imgData[idx], g = imgData[idx+1], b = imgData[idx+2];
-        if (isBgPixel(r, g, b)) continue;
         torsoFgCount++;
 
         if (isVestColor(r, g, b)) {
@@ -1869,16 +1860,17 @@ function PPEPanel() {
       }
     }
 
-    const helmetPct = headFgCount > 20
-      ? (helmetPixelCount / headFgCount) * 100
-      : (helmetPixelCount > 40 ? 30.0 : 0);
+    const helmetPct = headFgCount > 0
+      ? Math.min(100, (helmetPixelCount / headFgCount) * 100)
+      : 0;
 
-    const vestPct = torsoFgCount > 35
-      ? (vestPixelCount / torsoFgCount) * 100
-      : (vestPixelCount > 60 ? 25.0 : 0);
+    const vestPct = torsoFgCount > 0
+      ? Math.min(100, (vestPixelCount / torsoFgCount) * 100)
+      : 0;
 
-    const hasHardHat = helmetPct >= 15.0 || helmetPixelCount >= 120;
-    const hasVest = vestPct >= 15.0 || vestPixelCount >= 150;
+    // Both minimum percentage and minimum pixel count required
+    const hasHardHat = helmetPct >= 20.0 && helmetPixelCount >= 50;
+    const hasVest = vestPct >= 20.0 && vestPixelCount >= 80;
 
     // Refine bounding boxes with normalized coordinates (0.0 to 1.0)
     let finalHeadBox;
