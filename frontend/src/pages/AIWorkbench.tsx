@@ -210,6 +210,356 @@ function ResultPane({ result, loading, error, loadingText }: { result: any; load
   );
 }
 
+// ── Reusable Document Camera Scanner Component ─────────────────────
+interface DocumentCameraScannerProps {
+  onCapture: (file: File) => void;
+  accentColor?: 'blue' | 'violet' | 'emerald' | 'amber';
+  label: string;
+  accept?: Record<string, string[]>;
+}
+
+function DocumentCameraScanner({
+  onCapture,
+  accentColor = 'blue',
+  label,
+  accept = { 'image/*': ['.png', '.jpg', '.jpeg', '.tiff', '.webp', '.bmp'] }
+}: DocumentCameraScannerProps) {
+  const [sourceMode, setSourceMode] = useState<'upload' | 'camera'>('upload');
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const [contrastBoost, setContrastBoost] = useState(false);
+  const [cameraError, setCameraError] = useState('');
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const mobileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const startCamera = async (facing: 'environment' | 'user' = 'environment') => {
+    stopCamera();
+    setCameraError('');
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: facing,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch (err: any) {
+      console.error('Document camera access error:', err);
+      setCameraError(err.message || 'Camera access denied or unavailable. Please grant camera permission in your browser.');
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const flipCamera = () => {
+    const nextFacing = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(nextFacing);
+    startCamera(nextFacing);
+  };
+
+  const captureDocument = () => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth || !video.videoHeight) {
+      alert('Camera stream is not ready yet. Please wait a moment.');
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    if (facingMode === 'user') {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    if (contrastBoost) {
+      try {
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imgData.data;
+        const contrast = 35;
+        const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+        for (let i = 0; i < d.length; i += 4) {
+          const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+          const adjusted = factor * (gray - 128) + 128;
+          const clamped = Math.max(0, Math.min(255, adjusted));
+          d[i] = clamped;
+          d[i + 1] = clamped;
+          d[i + 2] = clamped;
+        }
+        ctx.putImageData(imgData, 0, 0);
+      } catch (err) {
+        console.warn('Contrast enhancement skipped:', err);
+      }
+    }
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const file = new File([blob], `scanned_document_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      stopCamera();
+      setSourceMode('upload');
+      onCapture(file);
+    }, 'image/jpeg', 0.95);
+  };
+
+  const handleMobileCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      stopCamera();
+      setSourceMode('upload');
+      onCapture(file);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  const colorConfig = {
+    blue: {
+      activeTab: 'bg-blue-600 text-white shadow-md shadow-blue-600/20',
+      border: 'border-blue-500/40',
+      corner: 'border-blue-400',
+      btn: 'bg-blue-600 hover:bg-blue-500 text-white',
+      badge: 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+    },
+    violet: {
+      activeTab: 'bg-violet-600 text-white shadow-md shadow-violet-600/20',
+      border: 'border-violet-500/40',
+      corner: 'border-violet-400',
+      btn: 'bg-violet-600 hover:bg-violet-500 text-white',
+      badge: 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
+    },
+    emerald: {
+      activeTab: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20',
+      border: 'border-emerald-500/40',
+      corner: 'border-emerald-400',
+      btn: 'bg-emerald-600 hover:bg-emerald-500 text-white',
+      badge: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+    },
+    amber: {
+      activeTab: 'bg-amber-600 text-white shadow-md shadow-amber-600/20',
+      border: 'border-amber-500/40',
+      corner: 'border-amber-400',
+      btn: 'bg-amber-600 hover:bg-amber-500 text-white',
+      badge: 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+    }
+  }[accentColor] || {
+    activeTab: 'bg-blue-600 text-white',
+    border: 'border-blue-500/40',
+    corner: 'border-blue-400',
+    btn: 'bg-blue-600 hover:bg-blue-500 text-white',
+    badge: 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Mode Selection Tabs */}
+      <div className="flex items-center justify-between flex-wrap gap-2 pb-1">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-xl">
+          <button
+            type="button"
+            onClick={() => {
+              stopCamera();
+              setSourceMode('upload');
+            }}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              sourceMode === 'upload'
+                ? colorConfig.activeTab
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+            }`}
+          >
+            <Upload className="w-3.5 h-3.5" />
+            Upload Document
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSourceMode('camera');
+              startCamera(facingMode);
+            }}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              sourceMode === 'camera'
+                ? colorConfig.activeTab
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+            }`}
+          >
+            <Camera className="w-3.5 h-3.5" />
+            Scan with Camera (Webcam)
+          </button>
+        </div>
+
+        {/* Mobile Device Native Camera Snap Button */}
+        <div>
+          <input
+            ref={mobileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleMobileCapture}
+          />
+          <button
+            type="button"
+            onClick={() => mobileInputRef.current?.click()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+            title="Snap document directly using your phone or tablet camera"
+          >
+            <Camera className="w-3.5 h-3.5 text-amber-400" />
+            <span>Snap with Device Camera</span>
+          </button>
+        </div>
+      </div>
+
+      {sourceMode === 'upload' ? (
+        <FileDropZone onFile={onCapture} accept={accept} label={label} />
+      ) : (
+        <div className={`relative border ${colorConfig.border} rounded-xl overflow-hidden bg-black flex flex-col items-center justify-between min-h-72 shadow-2xl`}>
+          {cameraError ? (
+            <div className="p-8 text-center space-y-3 my-auto">
+              <CameraOff className="w-8 h-8 mx-auto text-red-400" />
+              <p className="text-xs text-red-300 max-w-xs leading-relaxed">{cameraError}</p>
+              <div className="flex justify-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => startCamera(facingMode)}
+                  className={`px-3 py-1.5 rounded-lg ${colorConfig.btn} text-xs font-medium transition cursor-pointer`}
+                >
+                  Retry Permission
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSourceMode('upload')}
+                  className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-medium transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Video Stream */}
+              <div className="relative w-full h-80 bg-slate-950 flex items-center justify-center overflow-hidden">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`w-full h-full object-contain ${facingMode === 'user' ? '-scale-x-100' : ''}`}
+                />
+
+                {/* Document Viewfinder Overlay */}
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-6">
+                  {/* Subtle paper frame */}
+                  <div className="relative w-full max-w-md h-64 border border-dashed border-white/30 rounded-lg bg-white/[0.02]">
+                    {/* Top-Left Corner */}
+                    <div className={`absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 ${colorConfig.corner} rounded-tl`} />
+                    {/* Top-Right Corner */}
+                    <div className={`absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 ${colorConfig.corner} rounded-tr`} />
+                    {/* Bottom-Left Corner */}
+                    <div className={`absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 ${colorConfig.corner} rounded-bl`} />
+                    {/* Bottom-Right Corner */}
+                    <div className={`absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 ${colorConfig.corner} rounded-br`} />
+
+                    {/* Animated Scanning Laser */}
+                    <div className="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse top-1/2 -translate-y-1/2 opacity-70" />
+
+                    {/* Frame Center Guide */}
+                    <div className="absolute bottom-3 inset-x-0 flex justify-center">
+                      <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-[10px] text-slate-200 border border-white/10 shadow font-mono">
+                        📄 Align statutory paper inside corner guides
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top Control Bar Overlay */}
+                <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-auto">
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[10px] text-slate-300 border border-white/10 font-mono">
+                      {facingMode === 'environment' ? '📷 Rear Lens' : '🤳 Front Lens'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setContrastBoost(!contrastBoost)}
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono border transition cursor-pointer ${
+                        contrastBoost
+                          ? 'bg-amber-500/30 border-amber-500/60 text-amber-300'
+                          : 'bg-black/60 border-white/10 text-slate-400 hover:text-slate-200'
+                      }`}
+                      title="Enhance document contrast and text sharpness for OCR recognition"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>{contrastBoost ? 'Contrast Enhanced' : 'Boost Text'}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={flipCamera}
+                      className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-300 hover:text-white border border-white/10 transition cursor-pointer"
+                      title="Flip Camera (Front/Rear)"
+                    >
+                      <FlipHorizontal className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        stopCamera();
+                        setSourceMode('upload');
+                      }}
+                      className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-400 hover:text-red-400 border border-white/10 transition cursor-pointer"
+                      title="Close Camera"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Shutter Action Bar */}
+              <div className="w-full p-3 bg-slate-950 border-t border-white/10 flex items-center justify-between gap-3">
+                <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>Scanner ready • Hold steady & ensure good lighting</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={captureDocument}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-xs ${colorConfig.btn} shadow-lg transition cursor-pointer active:scale-95`}
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Capture & Scan Document</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── 1. OCR Panel (Real Tesseract.js Text Extraction) ─────────────────
 function OcrPanel() {
   const [result, setResult] = useState<any>(null);
@@ -218,8 +568,10 @@ function OcrPanel() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleFile = async (file: File) => {
+    setPreviewUrl(URL.createObjectURL(file));
     setLoading(true);
     setError('');
     setResult(null);
@@ -303,7 +655,33 @@ function OcrPanel() {
 
   return (
     <div className="space-y-4">
-      <FileDropZone onFile={handleFile} accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.tiff', '.webp', '.bmp'] }} label="Upload statutory notice, circular, or certificate (PNG, JPEG, TIFF)" />
+      <DocumentCameraScanner
+        onCapture={handleFile}
+        accentColor="blue"
+        label="Upload or scan statutory notice, circular, or certificate (PNG, JPEG, TIFF)"
+      />
+
+      {previewUrl && result && (
+        <div className="flex items-center justify-between gap-3 p-3 bg-slate-900/80 border border-blue-500/20 rounded-xl">
+          <div className="flex items-center gap-3 min-w-0">
+            <img src={previewUrl} alt="Scanned Document" className="w-14 h-16 object-cover rounded-lg border border-white/20 shadow flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-slate-200 truncate">{result.filename || 'Scanned Document'}</p>
+              <p className="text-[11px] text-blue-300 mt-0.5">Optical Character Recognition ({result.confidence_pct || 90}% confidence)</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setPreviewUrl(null);
+              setResult(null);
+            }}
+            className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 border border-white/10 transition cursor-pointer"
+          >
+            Clear / Scan New
+          </button>
+        </div>
+      )}
       
       {loading && (
         <div className="space-y-2 p-4 bg-slate-900/60 border border-blue-500/30 rounded-xl">
@@ -387,8 +765,10 @@ function DonutPanel() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const handleFile = async (file: File) => {
+    setPreviewUrl(URL.createObjectURL(file));
     setLoading(true); setError(''); setResult(null);
 
     try {
@@ -436,7 +816,34 @@ function DonutPanel() {
 
   return (
     <div className="space-y-4">
-      <FileDropZone onFile={handleFile} accept={{ 'image/*': ['.png', '.jpg', '.jpeg'] }} label="Upload form or certificate image (PNG, JPEG)" />
+      <DocumentCameraScanner
+        onCapture={handleFile}
+        accentColor="violet"
+        label="Upload or scan statutory form, circular, or certificate (PNG, JPEG)"
+      />
+
+      {previewUrl && result && (
+        <div className="flex items-center justify-between gap-3 p-3 bg-slate-900/80 border border-violet-500/20 rounded-xl">
+          <div className="flex items-center gap-3 min-w-0">
+            <img src={previewUrl} alt="Scanned Document" className="w-14 h-16 object-cover rounded-lg border border-white/20 shadow flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-slate-200 truncate">{result.filename || 'Scanned Document'}</p>
+              <p className="text-[11px] text-violet-300 mt-0.5">Parsed to Structured JSON ({result.structured_output?.compliance_check || 'READY'})</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setPreviewUrl(null);
+              setResult(null);
+            }}
+            className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 border border-white/10 transition cursor-pointer"
+          >
+            Clear / Scan New
+          </button>
+        </div>
+      )}
+
       <ResultPane result={result} loading={loading} error={error} loadingText="Parsing visual document into structured JSON…" />
     </div>
   );
