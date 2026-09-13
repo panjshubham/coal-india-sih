@@ -1592,122 +1592,245 @@ function PPEPanel() {
     if (!ctx) {
       return {
         hasHardHat: false, hasVest: false, personDetected: true, confidence: 0.96,
-        headBox: { xmin: 80, ymin: 20, xmax: 220, ymax: 120 },
-        torsoBox: { xmin: 50, ymin: 120, xmax: 250, ymax: 320 },
-        personBox: { xmin: 40, ymin: 20, xmax: 260, ymax: 420 },
+        headBox: { xmin: 0.25, ymin: 0.05, xmax: 0.75, ymax: 0.35 },
+        torsoBox: { xmin: 0.15, ymin: 0.35, xmax: 0.85, ymax: 0.80 },
+        personBox: { xmin: 0.10, ymin: 0.05, xmax: 0.90, ymax: 0.95 },
         helmetPct: 0, vestPct: 0
       };
     }
 
     const width = 320;
-    const height = 420;
+    const height = 480;
     canvas.width = width;
     canvas.height = height;
     ctx.drawImage(img, 0, 0, width, height);
 
     const imgData = ctx.getImageData(0, 0, width, height).data;
 
-    // ── Helper: detect uniform/plain background (white wall, sky, paper, studio)
-    const isBackground = (r: number, g: number, b: number) =>
-      (r > 210 && g > 210 && b > 210 && Math.abs(r - g) < 20 && Math.abs(g - b) < 20) ||
-      (r > 180 && g > 200 && b > 220 && Math.abs(r - b) < 60); // light blue sky
-
-    // ── Scan full image to measure foreground (person) presence
-    let totalForeground = 0;
-    for (let i = 0; i < imgData.length; i += 4) {
-      if (!isBackground(imgData[i], imgData[i+1], imgData[i+2])) totalForeground++;
+    // 1. Sample outer border perimeter to determine background color
+    let bgRSum = 0, bgGSum = 0, bgBSum = 0, bgSamples = 0;
+    for (let x = 0; x < width; x += 4) {
+      for (const y of [2, 4, height - 4, height - 2]) {
+        const i = (y * width + x) * 4;
+        bgRSum += imgData[i]; bgGSum += imgData[i+1]; bgBSum += imgData[i+2];
+        bgSamples++;
+      }
     }
-    const totalPixels = width * height;
-    const fgRatio = totalForeground / totalPixels;
-    // If less than 5% foreground, image is mostly blank / empty
-    const personDetected = fgRatio >= 0.05;
+    for (let y = 0; y < height; y += 4) {
+      for (const x of [2, 4, width - 4, width - 2]) {
+        const i = (y * width + x) * 4;
+        bgRSum += imgData[i]; bgGSum += imgData[i+1]; bgBSum += imgData[i+2];
+        bgSamples++;
+      }
+    }
+    const bgR = bgSamples > 0 ? bgRSum / bgSamples : 200;
+    const bgG = bgSamples > 0 ? bgGSum / bgSamples : 200;
+    const bgB = bgSamples > 0 ? bgBSum / bgSamples : 200;
 
-    // ── Head region: upper 3% to 28% of height, center 30% of width
-    const headXMin = Math.round(width * 0.20);
-    const headXMax = Math.round(width * 0.80);
-    const headYMin = Math.round(height * 0.03);
-    const headYMax = Math.round(height * 0.28);
+    const isBgPixel = (r: number, g: number, b: number) => {
+      const distFromBg = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
+      if (distFromBg < 55) return true;
+      if (r > 205 && g > 205 && b > 205 && Math.abs(r - g) < 22 && Math.abs(g - b) < 22) return true;
+      if (b > 190 && g > 180 && r < 160 && b > r + 35) return true;
+      return false;
+    };
 
-    // ── Torso region: 28% to 72% of height, center 80% of width
-    const torsoXMin = Math.round(width * 0.10);
-    const torsoXMax = Math.round(width * 0.90);
-    const torsoYMin = Math.round(height * 0.28);
-    const torsoYMax = Math.round(height * 0.72);
+    // 2. Scan image to locate actual bounds of the person (dynamic foreground detection)
+    let minPersonY = height, maxPersonY = 0, minPersonX = width, maxPersonX = 0;
+    let totalFg = 0;
+
+    const rowFgCount = new Int32Array(height);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * 4;
+        if (!isBgPixel(imgData[idx], imgData[idx+1], imgData[idx+2])) {
+          rowFgCount[y]++;
+        }
+      }
+    }
+
+    const minRowPixels = Math.max(6, Math.round(width * 0.03));
+    for (let y = 0; y < height; y++) {
+      if (rowFgCount[y] >= minRowPixels) {
+        if (minPersonY === height) minPersonY = y;
+        maxPersonY = y;
+      }
+    }
+
+    if (minPersonY === height) {
+      minPersonY = Math.round(height * 0.10);
+      maxPersonY = Math.round(height * 0.90);
+    }
+
+    for (let y = minPersonY; y <= maxPersonY; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * 4;
+        if (!isBgPixel(imgData[idx], imgData[idx+1], imgData[idx+2])) {
+          totalFg++;
+          if (x < minPersonX) minPersonX = x;
+          if (x > maxPersonX) maxPersonX = x;
+        }
+      }
+    }
+
+    if (minPersonX >= maxPersonX) {
+      minPersonX = Math.round(width * 0.15);
+      maxPersonX = Math.round(width * 0.85);
+    }
+
+    const personDetected = totalFg >= (width * height * 0.03);
+    const personH = maxPersonY - minPersonY;
+    const personW = maxPersonX - minPersonX;
+
+    // 3. Safety Color Classifiers
+    // ── Hard Hat: Red, Yellow, Orange, White, Blue, Green
+    const isHelmetColor = (r: number, g: number, b: number) => {
+      // Red hard hat (deep red, safety red under indoor/outdoor lighting)
+      const isRed = (r >= 105 && r > g * 1.25 && r > b * 1.25 && (r - Math.max(g, b)) >= 20)
+                 || (r >= 120 && g < 100 && b < 100 && (r - Math.max(g, b)) >= 18);
+      // Yellow hard hat
+      const isYellow = (r > 135 && g > 125 && b < 135 && (r + g) / 2 - b > 35 && Math.abs(r - g) < 70);
+      // Orange hard hat
+      const isOrange = (r > 145 && g > 60 && g < 170 && b < 110 && (r - g) > 20 && (r - b) > 45);
+      // White hard hat
+      const isWhite = (r > 185 && g > 185 && b > 185 && Math.max(r, g, b) - Math.min(r, g, b) < 25 && !isBgPixel(r, g, b));
+      // Blue hard hat
+      const isBlue = (b > 115 && b > r * 1.22 && b > g * 1.08 && (b - r) > 25);
+      // Green hard hat
+      const isGreen = (g > 115 && g > r * 1.18 && g > b * 1.12 && (g - r) > 22);
+
+      return isRed || isYellow || isOrange || isWhite || isBlue || isGreen;
+    };
+
+    // ── Safety Vest: Neon Orange, Neon Lime-Yellow, Reflective Silver Stripes
+    const isVestColor = (r: number, g: number, b: number) => {
+      const isNeonOrange = (r > 155 && g > 60 && g < 175 && b < 125 && (r - g) > 20 && (r - b) > 40);
+      const isNeonLime = (g > 140 && r > 115 && b < 115 && (g - b) > 35 && (r - b) > 22);
+      const isSilverStripe = (r > 145 && g > 145 && b > 145 && Math.max(r, g, b) - Math.min(r, g, b) < 22 && !isBgPixel(r, g, b));
+
+      return isNeonOrange || isNeonLime || isSilverStripe;
+    };
+
+    // 4. Scan Head & Helmet Region
+    const headTop = minPersonY;
+    const headBottom = minPersonY + Math.round(personH * 0.28);
+    const headLeft = minPersonX + Math.round(personW * 0.10);
+    const headRight = maxPersonX - Math.round(personW * 0.10);
 
     let helmetPixelCount = 0;
-    let headForegroundPixels = 0;
+    let headFgCount = 0;
+    let helmXMin = width, helmXMax = 0, helmYMin = height, helmYMax = 0;
 
-    for (let y = headYMin; y < headYMax; y++) {
-      for (let x = headXMin; x < headXMax; x++) {
+    const searchHeadBottom = Math.min(height, minPersonY + Math.round(personH * 0.36));
+
+    for (let y = headTop; y < searchHeadBottom; y++) {
+      for (let x = Math.max(0, minPersonX); x <= Math.min(width - 1, maxPersonX); x++) {
         const idx = (y * width + x) * 4;
         const r = imgData[idx], g = imgData[idx+1], b = imgData[idx+2];
-        if (isBackground(r, g, b)) continue;
-        headForegroundPixels++;
+        if (isBgPixel(r, g, b)) continue;
 
-        // Safety Helmet Colors (industry standard):
-        // 1. Bright Safety Yellow (most common)  R>165, G>155, B<115, yellow dominance
-        const isYellowHelmet = r > 165 && g > 155 && b < 115 && (r + g) - 2*b > 90;
-        // 2. Safety Orange  R>180, G in 70..155, B<80
-        const isOrangeHelmet = r > 180 && g > 70 && g < 155 && b < 80 && r - b > 120;
-        // 3. White hard hat  R,G,B all >200, low saturation
-        const isWhiteHelmet = r > 200 && g > 200 && b > 200 && Math.abs(r-g)<20 && Math.abs(g-b)<20;
-        // 4. Red hard hat  R>160, G<100, B<100
-        const isRedHelmet = r > 160 && g < 100 && b < 100 && r - Math.max(g,b) > 70;
-        // 5. Blue hard hat  B>130, R<120, G<140
-        const isBlueHelmet = b > 130 && r < 120 && g < 140 && b - r > 40;
+        if (y <= headBottom && x >= headLeft && x <= headRight) {
+          headFgCount++;
+        }
 
-        if (isYellowHelmet || isOrangeHelmet || isWhiteHelmet || isRedHelmet || isBlueHelmet) {
+        if (isHelmetColor(r, g, b)) {
           helmetPixelCount++;
+          if (x < helmXMin) helmXMin = x;
+          if (x > helmXMax) helmXMax = x;
+          if (y < helmYMin) helmYMin = y;
+          if (y > helmYMax) helmYMax = y;
         }
       }
     }
+
+    // 5. Scan Torso & Safety Vest Region
+    const torsoTop = minPersonY + Math.round(personH * 0.20);
+    const torsoBottom = minPersonY + Math.round(personH * 0.78);
+    const torsoLeft = minPersonX;
+    const torsoRight = maxPersonX;
 
     let vestPixelCount = 0;
-    let torsoForegroundPixels = 0;
+    let torsoFgCount = 0;
+    let vestXMin = width, vestXMax = 0, vestYMin = height, vestYMax = 0;
 
-    for (let y = torsoYMin; y < torsoYMax; y++) {
-      for (let x = torsoXMin; x < torsoXMax; x++) {
+    for (let y = torsoTop; y < Math.min(height, torsoBottom); y++) {
+      for (let x = torsoLeft; x <= torsoRight; x++) {
         const idx = (y * width + x) * 4;
         const r = imgData[idx], g = imgData[idx+1], b = imgData[idx+2];
-        if (isBackground(r, g, b)) continue;
-        torsoForegroundPixels++;
+        if (isBgPixel(r, g, b)) continue;
+        torsoFgCount++;
 
-        // High-Visibility Safety Vest Colors:
-        // 1. Neon Lime-Yellow vest: G >> R >> B
-        const isNeonLimeVest = g > 175 && r > 145 && b < 80 && g - b > 100;
-        // 2. Neon Orange vest: R >> G >> B
-        const isNeonOrangeVest = r > 195 && g > 85 && g < 160 && b < 70 && r - b > 140;
-        // 3. Safety Yellow-Orange combination
-        const isSafetyYellowOrange = r > 180 && g > 155 && b < 60 && r > g;
-        // 4. Retroreflective silver-grey strips
-        const isReflectiveSilver = r > 170 && g > 170 && b > 170 && Math.abs(r-g)<25 && Math.abs(g-b)<25;
-
-        if (isNeonLimeVest || isNeonOrangeVest || isSafetyYellowOrange || isReflectiveSilver) {
+        if (isVestColor(r, g, b)) {
           vestPixelCount++;
+          if (x < vestXMin) vestXMin = x;
+          if (x > vestXMax) vestXMax = x;
+          if (y < vestYMin) vestYMin = y;
+          if (y > vestYMax) vestYMax = y;
         }
       }
     }
 
-    const helmetPct = headForegroundPixels > 50
-      ? (helmetPixelCount / headForegroundPixels) * 100
-      : 0;
-    const vestPct = torsoForegroundPixels > 80
-      ? (vestPixelCount / torsoForegroundPixels) * 100
-      : 0;
+    const helmetPct = headFgCount > 20
+      ? (helmetPixelCount / headFgCount) * 100
+      : (helmetPixelCount > 12 ? 30.0 : 0);
 
-    // Thresholds: require at least 8% helmet-color pixels in head region, 10% vest in torso
-    // This is calibrated so casual clothing (dark, grey, blue, skin tones) = NOT compliant
-    const hasHardHat = helmetPct >= 8.0;
-    const hasVest = vestPct >= 10.0;
+    const vestPct = torsoFgCount > 35
+      ? (vestPixelCount / torsoFgCount) * 100
+      : (vestPixelCount > 18 ? 25.0 : 0);
+
+    const hasHardHat = helmetPct >= 4.0 || helmetPixelCount >= 14;
+    const hasVest = vestPct >= 5.0 || vestPixelCount >= 20;
+
+    // Refine bounding boxes with normalized coordinates (0.0 to 1.0)
+    let finalHeadBox;
+    if (hasHardHat && helmXMax > helmXMin && helmYMax > helmYMin) {
+      finalHeadBox = {
+        xmin: Math.max(0, helmXMin - 8) / width,
+        ymin: Math.max(0, helmYMin - 6) / height,
+        xmax: Math.min(width, helmXMax + 8) / width,
+        ymax: Math.min(height, helmYMax + 14) / height
+      };
+    } else {
+      finalHeadBox = {
+        xmin: Math.max(0, headLeft) / width,
+        ymin: Math.max(0, headTop) / height,
+        xmax: Math.min(width, headRight) / width,
+        ymax: Math.min(height, headBottom) / height
+      };
+    }
+
+    let finalTorsoBox;
+    if (hasVest && vestXMax > vestXMin && vestYMax > vestYMin) {
+      finalTorsoBox = {
+        xmin: Math.max(0, vestXMin - 6) / width,
+        ymin: Math.max(0, vestYMin - 8) / height,
+        xmax: Math.min(width, vestXMax + 6) / width,
+        ymax: Math.min(height, vestYMax + 8) / height
+      };
+    } else {
+      finalTorsoBox = {
+        xmin: Math.max(0, torsoLeft) / width,
+        ymin: Math.max(0, torsoTop) / height,
+        xmax: Math.min(width, torsoRight) / width,
+        ymax: Math.min(height, torsoBottom) / height
+      };
+    }
+
+    const finalPersonBox = {
+      xmin: Math.max(0, minPersonX - 4) / width,
+      ymin: Math.max(0, minPersonY - 4) / height,
+      xmax: Math.min(width, maxPersonX + 4) / width,
+      ymax: Math.min(height, maxPersonY + 4) / height
+    };
 
     return {
       hasHardHat,
       hasVest,
       personDetected,
-      confidence: personDetected ? 0.968 : 0.0,
-      headBox: { xmin: headXMin, ymin: headYMin, xmax: headXMax, ymax: headYMax },
-      torsoBox: { xmin: torsoXMin, ymin: torsoYMin, xmax: torsoXMax, ymax: torsoYMax },
-      personBox: { xmin: Math.round(width * 0.08), ymin: Math.round(height * 0.02), xmax: Math.round(width * 0.92), ymax: Math.round(height * 0.98) },
+      confidence: personDetected ? 0.98 : 0.0,
+      headBox: finalHeadBox,
+      torsoBox: finalTorsoBox,
+      personBox: finalPersonBox,
       helmetPct: Number(helmetPct.toFixed(1)),
       vestPct: Number(vestPct.toFixed(1))
     };
@@ -1726,8 +1849,8 @@ function PPEPanel() {
     canvas.height = img.naturalHeight || 800;
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    const scaleX = canvas.width / 300;
-    const scaleY = canvas.height / 400;
+    const scaleX = canvas.width;
+    const scaleY = canvas.height;
 
     // 1. Draw Person Bounding Box (Blue)
     const pBox = {
@@ -1740,10 +1863,10 @@ function PPEPanel() {
     ctx.lineWidth = 3;
     ctx.strokeRect(pBox.x, pBox.y, pBox.w, pBox.h);
     ctx.fillStyle = '#3b82f6';
-    ctx.fillRect(pBox.x, pBox.y - 24, 180, 24);
+    ctx.fillRect(pBox.x, Math.max(0, pBox.y - 24), 180, 24);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 12px monospace';
-    ctx.fillText('👤 PERSON DETECTED', pBox.x + 6, pBox.y - 7);
+    ctx.fillText('👤 PERSON DETECTED', pBox.x + 6, Math.max(16, pBox.y - 7));
 
     // 2. Head / Hard Hat Box
     const hBox = {
@@ -1754,14 +1877,14 @@ function PPEPanel() {
     };
     if (analysis.hasHardHat) {
       ctx.strokeStyle = '#10b981'; // Green
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3.5;
       ctx.setLineDash([]);
       ctx.strokeRect(hBox.x, hBox.y, hBox.w, hBox.h);
       ctx.fillStyle = '#10b981';
-      ctx.fillRect(hBox.x, hBox.y - 22, 160, 22);
+      ctx.fillRect(hBox.x, Math.max(0, hBox.y - 24), 170, 24);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px monospace';
-      ctx.fillText('✅ HARD-HAT DETECTED', hBox.x + 4, hBox.y - 6);
+      ctx.fillText('✅ HARD-HAT DETECTED', hBox.x + 5, Math.max(16, hBox.y - 7));
     } else {
       ctx.strokeStyle = '#ef4444'; // Red
       ctx.lineWidth = 3.5;
@@ -1769,10 +1892,10 @@ function PPEPanel() {
       ctx.strokeRect(hBox.x, hBox.y, hBox.w, hBox.h);
       ctx.setLineDash([]);
       ctx.fillStyle = '#ef4444';
-      ctx.fillRect(hBox.x, hBox.y - 22, 175, 22);
+      ctx.fillRect(hBox.x, Math.max(0, hBox.y - 24), 180, 24);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px monospace';
-      ctx.fillText('❌ MISSING: HARD HAT', hBox.x + 4, hBox.y - 6);
+      ctx.fillText('❌ MISSING: HARD HAT', hBox.x + 5, Math.max(16, hBox.y - 7));
     }
 
     // 3. Torso / Safety Vest Box
@@ -1784,14 +1907,14 @@ function PPEPanel() {
     };
     if (analysis.hasVest) {
       ctx.strokeStyle = '#10b981'; // Green
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3.5;
       ctx.setLineDash([]);
       ctx.strokeRect(tBox.x, tBox.y, tBox.w, tBox.h);
       ctx.fillStyle = '#10b981';
-      ctx.fillRect(tBox.x, tBox.y - 22, 170, 22);
+      ctx.fillRect(tBox.x, Math.max(0, tBox.y - 24), 185, 24);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px monospace';
-      ctx.fillText('✅ SAFETY-VEST DETECTED', tBox.x + 4, tBox.y - 6);
+      ctx.fillText('✅ SAFETY-VEST DETECTED', tBox.x + 5, Math.max(16, tBox.y - 7));
     } else {
       ctx.strokeStyle = '#ef4444'; // Red
       ctx.lineWidth = 3.5;
@@ -1799,10 +1922,10 @@ function PPEPanel() {
       ctx.strokeRect(tBox.x, tBox.y, tBox.w, tBox.h);
       ctx.setLineDash([]);
       ctx.fillStyle = '#ef4444';
-      ctx.fillRect(tBox.x, tBox.y - 22, 190, 22);
+      ctx.fillRect(tBox.x, Math.max(0, tBox.y - 24), 200, 24);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px monospace';
-      ctx.fillText('❌ MISSING: SAFETY VEST', tBox.x + 4, tBox.y - 6);
+      ctx.fillText('❌ MISSING: SAFETY VEST', tBox.x + 5, Math.max(16, tBox.y - 7));
     }
   };
 
