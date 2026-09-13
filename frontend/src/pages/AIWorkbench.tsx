@@ -7,7 +7,7 @@ import {
   Tags, ScanText, Loader2, CheckCircle, AlertTriangle,
   ChevronRight, Cpu, ExternalLink, StopCircle, Key, Eye, EyeOff, Copy, Check,
   Volume2, VolumeX, Sparkles, RefreshCw, AlertCircle, Play, FileText, ArrowRight,
-  Gauge, Truck, ShieldAlert, Zap
+  Gauge, Truck, ShieldAlert, Zap, Camera, CameraOff, FlipHorizontal, X
 } from 'lucide-react';
 
 const AI_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:8000';
@@ -1082,6 +1082,93 @@ function PPEPanel() {
   const [ticketCreated, setTicketCreated] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // ── Camera State & References
+  const [sourceMode, setSourceMode] = useState<'upload' | 'camera'>('upload');
+  const [cameraError, setCameraError] = useState('');
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const mobileCameraInputRef = useRef<HTMLInputElement | null>(null);
+
+  const startCamera = async (mode: 'user' | 'environment' = facingMode) => {
+    stopCamera();
+    setCameraError('');
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: mode,
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setFacingMode(mode);
+    } catch (err: any) {
+      console.warn('Camera access failed:', err);
+      setCameraError(err.message || 'Unable to access camera. Please allow camera permissions in your browser.');
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const flipCamera = () => {
+    const nextMode = facingMode === 'user' ? 'environment' : 'user';
+    startCamera(nextMode);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    if (video.videoWidth === 0 || video.videoHeight === 0) return;
+
+    const captureCanvas = document.createElement('canvas');
+    captureCanvas.width = video.videoWidth;
+    captureCanvas.height = video.videoHeight;
+    const ctx = captureCanvas.getContext('2d');
+    if (!ctx) return;
+
+    if (facingMode === 'user') {
+      ctx.translate(captureCanvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+
+    captureCanvas.toBlob((blob) => {
+      if (!blob) return;
+      const file = new File([blob], `live-ppe-capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      stopCamera();
+      setSourceMode('upload');
+      handleFile(file);
+    }, 'image/jpeg', 0.95);
+  };
+
+  const handleMobileCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
   const analyzeImagePixels = (img: HTMLImageElement): {
     hasHardHat: boolean;
     hasVest: boolean;
@@ -1407,12 +1494,157 @@ function PPEPanel() {
 
   return (
     <div className="space-y-4">
+      {/* Input Mode Selector Bar */}
+      <div className="flex items-center justify-between flex-wrap gap-2 pb-1">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-xl">
+          <button
+            type="button"
+            onClick={() => {
+              stopCamera();
+              setSourceMode('upload');
+            }}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              sourceMode === 'upload'
+                ? 'bg-orange-500 text-slate-950 shadow-md shadow-orange-500/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+            }`}
+          >
+            <Upload className="w-3.5 h-3.5" />
+            Upload File
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSourceMode('camera');
+              startCamera(facingMode);
+            }}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+              sourceMode === 'camera'
+                ? 'bg-orange-500 text-slate-950 shadow-md shadow-orange-500/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+            }`}
+          >
+            <Camera className="w-3.5 h-3.5" />
+            Live Camera / Webcam
+          </button>
+        </div>
+
+        {/* Device Camera Button (Direct capture fallback for phones/tablets) */}
+        <div>
+          <input
+            ref={mobileCameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleMobileCameraCapture}
+          />
+          <button
+            type="button"
+            onClick={() => mobileCameraInputRef.current?.click()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+            title="Snap photo directly using your phone or laptop camera"
+          >
+            <Camera className="w-3.5 h-3.5 text-amber-400" />
+            <span>Snap with Device Camera</span>
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FileDropZone
-          onFile={handleFile}
-          accept={{ 'image/*': ['.jpg', '.jpeg', '.png', '.webp', '.bmp'] }}
-          label="Upload site photo of student / worker (JPEG, PNG, WEBP)"
-        />
+        {sourceMode === 'upload' ? (
+          <FileDropZone
+            onFile={handleFile}
+            accept={{ 'image/*': ['.jpg', '.jpeg', '.png', '.webp', '.bmp'] }}
+            label="Upload site photo of student / worker (JPEG, PNG, WEBP)"
+          />
+        ) : (
+          <div className="relative border border-orange-500/30 rounded-xl overflow-hidden bg-black flex flex-col items-center justify-between min-h-64 shadow-2xl">
+            {cameraError ? (
+              <div className="p-6 text-center space-y-3 my-auto">
+                <CameraOff className="w-8 h-8 mx-auto text-red-400" />
+                <p className="text-xs text-red-300 max-w-xs leading-relaxed">{cameraError}</p>
+                <div className="flex justify-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => startCamera(facingMode)}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-white transition cursor-pointer"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      stopCamera();
+                      setSourceMode('upload');
+                    }}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-300 transition cursor-pointer"
+                  >
+                    Use File Upload
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Live Video Viewport */}
+                <div className="relative w-full h-64 bg-black flex items-center justify-center overflow-hidden">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={`w-full h-full object-cover ${facingMode === 'user' ? '-scale-x-100' : ''}`}
+                  />
+                  {/* Framing Reticle */}
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <div className="w-44 h-56 border-2 border-dashed border-amber-400/60 rounded-2xl flex flex-col items-center justify-between p-2 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+                      <span className="text-[9px] font-mono font-bold uppercase bg-black/70 px-2 py-0.5 rounded text-amber-300 border border-amber-500/30">
+                        Align Hard Hat
+                      </span>
+                      <span className="text-[9px] font-mono font-bold uppercase bg-black/70 px-2 py-0.5 rounded text-amber-300 border border-amber-500/30">
+                        Align Safety Vest
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Camera Actions Bar */}
+                <div className="w-full p-3 bg-slate-900/95 border-t border-slate-800 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={flipCamera}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition cursor-pointer"
+                    title="Flip camera front/back"
+                  >
+                    <FlipHorizontal className="w-3.5 h-3.5" />
+                    Flip
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={capturePhoto}
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 text-xs font-black tracking-wider uppercase transition shadow-lg shadow-orange-500/30 active:scale-95 cursor-pointer"
+                  >
+                    <Camera className="w-4 h-4" />
+                    Capture Photo & Check PPE
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      stopCamera();
+                      setSourceMode('upload');
+                    }}
+                    className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition cursor-pointer"
+                    title="Close Camera"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Live Canvas with Annotated Bounding Boxes */}
         <div className="relative border border-white/10 rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center min-h-64">
