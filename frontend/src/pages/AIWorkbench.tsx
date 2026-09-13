@@ -1871,14 +1871,14 @@ function PPEPanel() {
 
     const helmetPct = headFgCount > 20
       ? (helmetPixelCount / headFgCount) * 100
-      : (helmetPixelCount > 12 ? 30.0 : 0);
+      : (helmetPixelCount > 40 ? 30.0 : 0);
 
     const vestPct = torsoFgCount > 35
       ? (vestPixelCount / torsoFgCount) * 100
-      : (vestPixelCount > 18 ? 25.0 : 0);
+      : (vestPixelCount > 60 ? 25.0 : 0);
 
-    const hasHardHat = helmetPct >= 4.0 || helmetPixelCount >= 14;
-    const hasVest = vestPct >= 5.0 || vestPixelCount >= 20;
+    const hasHardHat = helmetPct >= 15.0 || helmetPixelCount >= 120;
+    const hasVest = vestPct >= 15.0 || vestPixelCount >= 150;
 
     // Refine bounding boxes with normalized coordinates (0.0 to 1.0)
     let finalHeadBox;
