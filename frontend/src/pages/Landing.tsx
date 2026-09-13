@@ -120,7 +120,9 @@ export default function Landing() {
     if (!user) {
       navigate('/login');
     } else if (role === 'mine_official') {
-      navigate('/dashboard/mine');
+      navigate('/dashboard/colliery');
+    } else if (role === 'regulator') {
+      navigate('/dashboard/regulator');
     } else {
       navigate('/dashboard/corporate');
     }
@@ -238,10 +240,10 @@ export default function Landing() {
             </div>
             <div className="flex items-center gap-space-md">
               <ThemeToggle variant="landing" />
-              <a href="#" className="hidden sm:inline-flex items-center justify-center h-8 px-space-md rounded bg-surface-container border border-outline-variant/40 text-on-surface text-body-md hover:bg-surface-container-high hover:text-on-surface transition-all">
+              <a href="#overview" onClick={(e) => e.preventDefault()} className="hidden sm:inline-flex items-center justify-center h-8 px-space-md rounded bg-surface-container border border-outline-variant/40 text-on-surface text-body-md hover:bg-surface-container-high hover:text-on-surface transition-all">
                 Documentation
               </a>
-              <button onClick={handleDashboardClick} className="inline-flex items-center justify-center h-8 px-space-md rounded bg-secondary text-on-secondary font-headline-sm text-[13px] font-medium tracking-tight hover:bg-secondary-container shadow-[0_0_12px_rgba(255,185,95,0.2)] transition-all">
+              <button type="button" onClick={handleDashboardClick} className="inline-flex items-center justify-center h-8 px-space-md rounded bg-secondary text-on-secondary font-headline-sm text-[13px] font-medium tracking-tight hover:bg-secondary-container shadow-[0_0_12px_rgba(255,185,95,0.2)] transition-all">
                 Access Portal
               </button>
               <div className="h-5 w-px bg-outline-variant/30 hidden sm:block"></div>

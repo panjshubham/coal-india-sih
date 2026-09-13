@@ -11,22 +11,39 @@ import { getProfile, type InspectorProfile } from '../services/profileService';
 import { useAuth } from '../context/AuthContext';
 import AlertBell from '../components/AlertBell';
 import ThemeToggle from '../components/ThemeToggle';
+import ConnectivityBadge from '../components/ConnectivityBadge';
 import { useTranslation } from 'react-i18next';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const navigation = [
-  { id: 'dashboard_colliery', href: '/dashboard/colliery', icon: LayoutDashboard },
-  { id: 'dashboard_corporate', href: '/dashboard/corporate', icon: LayoutDashboard },
-  { id: 'dashboard_regulator', href: '/dashboard/regulator', icon: ShieldAlert },
-  { id: 'statutoryRegisters', href: '/statutory-registers', icon: ShieldCheck },
-  { id: 'aiWorkbench', href: '/ai-workbench', icon: Cpu },
-  { id: 'contractors', href: '/contractors', icon: Users },
-  { id: 'compliance', href: '/compliance', icon: ClipboardList },
-  { id: 'map', href: '/mines-map', icon: MapIcon },
-  { id: 'audit', href: '/audit-log', icon: ShieldCheck },
+interface NavItem {
+  id: string;
+  href: string;
+  icon: any;
+  roles?: ('mine_official' | 'corporate' | 'regulator')[];
+}
+
+const navigation: NavItem[] = [
+  // 1. Dashboards (Tailored to role clearance)
+  { id: 'dashboard_colliery', href: '/dashboard/colliery', icon: LayoutDashboard, roles: ['mine_official', 'corporate', 'regulator'] },
+  { id: 'dashboard_corporate', href: '/dashboard/corporate', icon: LayoutDashboard, roles: ['corporate'] },
+  { id: 'dashboard_regulator', href: '/dashboard/regulator', icon: ShieldAlert, roles: ['regulator', 'corporate'] },
+
+  // 2. Admin Oversight (Only Corporate Admin)
+  { id: 'manageUsers', href: '/manage-users', icon: ShieldAlert, roles: ['corporate'] },
+  { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate', 'regulator'] },
+
+  // 3. Operational & Field Compliance Modules
+  { id: 'inspections', href: '/inspections', icon: ClipboardList, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'violations', href: '/violations', icon: AlertTriangle, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'statutoryRegisters', href: '/statutory-registers', icon: ShieldCheck, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'contractors', href: '/contractors', icon: Users, roles: ['mine_official', 'corporate'] },
+  { id: 'compliance', href: '/compliance', icon: ClipboardList, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'map', href: '/mines-map', icon: MapIcon, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'aiWorkbench', href: '/ai-workbench', icon: Cpu, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'audit', href: '/audit-log', icon: ShieldCheck, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'profile', href: '/profile', icon: UserCheck },
 ];
 
@@ -48,7 +65,7 @@ export default function DashboardLayout() {
   const { t, i18n } = useTranslation();
 
   const dashboardHref = 
-    role === 'mine_official' ? '/dashboard/mine' :
+    role === 'mine_official' ? '/dashboard/colliery' :
     role === 'regulator' ? '/dashboard/regulator' : '/dashboard/corporate';
 
   const [time, setTime] = useState('');
@@ -150,11 +167,26 @@ export default function DashboardLayout() {
         {/* Navigation links */}
         <nav className="p-3 flex-1 space-y-1 overflow-y-auto overflow-x-hidden">
           {!isCollapsed && (
-            <div className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 px-3" style={{ color: 'var(--cg-text-faint)' }}>
-              Mission Command
+            <div className="flex items-center justify-between mb-2.5 px-3">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest" style={{ color: 'var(--cg-text-faint)' }}>
+                Mission Command
+              </span>
+              {role && (
+                <span className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-bold border ${
+                  role === 'corporate' 
+                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' 
+                    : role === 'regulator' 
+                    ? 'bg-purple-500/15 text-purple-400 border-purple-500/30' 
+                    : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                }`}>
+                  {role === 'corporate' ? 'HQ Admin' : role === 'regulator' ? 'Regulator' : 'Mine Official'}
+                </span>
+              )}
             </div>
           )}
-          {navigation.map((item) => {
+          {navigation
+            .filter(item => !item.roles || (role ? item.roles.includes(role) : true))
+            .map((item) => {
             const itemTarget = item.id.startsWith('dashboard') ? item.href : item.href;
             const isActive = item.id.startsWith('dashboard') 
               ? location.pathname === item.href 
@@ -279,6 +311,11 @@ export default function DashboardLayout() {
           </div>
           
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Connectivity / Offline Sync Status Badge */}
+            <ConnectivityBadge />
+
+            <div className="h-4 w-px hidden sm:block" style={{ background: 'var(--cg-border)' }}></div>
+
             {/* Language switch button */}
             <button 
               onClick={toggleLanguage}

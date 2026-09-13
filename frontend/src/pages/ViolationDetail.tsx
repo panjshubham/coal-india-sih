@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, AlertTriangle, MapPin, Camera, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, MapPin, Camera, CheckCircle2, ShieldCheck, Loader2, ShieldAlert } from 'lucide-react';
 import { formatISTLong, formatISTShort } from '../lib/dateUtils';
 
 interface Violation {
@@ -189,8 +189,27 @@ export default function ViolationDetail() {
     }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-amber-500" /></div>;
-  if (!violation) return <div className="p-8 text-center text-red-500">Violation not found.</div>;
+  if (!violation) {
+    return (
+      <div className="max-w-xl mx-auto my-16 p-8 bg-[#0B1326] border border-slate-800 rounded-2xl text-center space-y-4 shadow-2xl">
+        <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+          <ShieldAlert className="w-6 h-6" />
+        </div>
+        <h3 className="text-lg font-bold text-white">Statutory Record Notice</h3>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          The requested violation item (ID #{id}) was either archived, resolved, or is waiting for offline synchronization.
+        </p>
+        <div className="pt-2">
+          <Link 
+            to="/violations"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Return to Violations Registry
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // const timelineStages = ['open', 'in_progress', 'under_review', 'closed'];
   

@@ -2,11 +2,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useEffect, useState } from 'react';
 import DashboardLayout from './layouts/DashboardLayout';
 import CorporateDashboard from './pages/CorporateDashboard';
-import MineDashboard from './pages/MineDashboard';
 import CollieryManagerDashboard from './pages/CollieryManagerDashboard';
 import RegulatorDashboard from './pages/RegulatorDashboard';
 import GeospatialMap from './pages/GeospatialMap';
-import MinesMap from './pages/MinesMap';
 import Inspections from './pages/Inspections';
 import Landing from './pages/Landing';
 import NewInspection from './pages/NewInspection';
@@ -29,6 +27,8 @@ import { syncOfflineQueue } from './lib/offlineQueue';
 import { getPendingCount } from './services/db';
 import PitInspector from './pages/PitInspector';
 import StatutoryRegisters from './pages/StatutoryRegisters';
+
+import PublicTracking from './pages/PublicTracking';
 
 // ── Sync Toast ──────────────────────────────────────────────────────────────
 interface SyncToast {
@@ -120,6 +120,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/public" element={<PublicTracking />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           
@@ -127,23 +128,19 @@ function App() {
             <Route path="/mines-map" element={<GeospatialMap />} />
             
             <Route path="/" element={<DashboardLayout />}>
-              <Route path="dashboard/mine" element={
-                <ProtectedRoute allowedRoles={['mine_official']}>
-                  <MineDashboard />
-                </ProtectedRoute>
-              } />
+              <Route path="dashboard/mine" element={<Navigate to="/dashboard/colliery" replace />} />
               <Route path="dashboard/colliery" element={
-                <ProtectedRoute allowedRoles={['mine_official', 'corporate']}>
+                <ProtectedRoute allowedRoles={['mine_official', 'corporate', 'regulator']}>
                   <CollieryManagerDashboard />
                 </ProtectedRoute>
               } />
               <Route path="dashboard/corporate" element={
-                <ProtectedRoute allowedRoles={['corporate', 'regulator']}>
+                <ProtectedRoute allowedRoles={['corporate']}>
                   <CorporateDashboard />
                 </ProtectedRoute>
               } />
               <Route path="dashboard/regulator" element={
-                <ProtectedRoute allowedRoles={['regulator']}>
+                <ProtectedRoute allowedRoles={['regulator', 'corporate']}>
                   <RegulatorDashboard />
                 </ProtectedRoute>
               } />
@@ -172,7 +169,6 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Profile />} />
               <Route path="ai-workbench" element={<AIWorkbench />} />
-              <Route path="mines-list" element={<MinesMap />} />
             </Route>
           </Route>
 

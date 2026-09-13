@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { 
   ShieldAlert, AlertTriangle, Activity, AlertCircle, RefreshCw, BarChart2, 
   Globe2, Radio, Server, Fingerprint, Trees, ChevronRight, X, Gauge, 
-  Zap, TrendingUp, ShieldCheck, Sparkles, CheckCircle2 
+  Zap, TrendingUp, ShieldCheck, Sparkles, CheckCircle2, Users, Database 
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -254,7 +255,34 @@ export default function CorporateDashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Manage Mine Officials Button */}
+          <Link
+            to="/manage-users"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-bold hover:bg-indigo-500/30 transition-colors shadow-sm"
+          >
+            <Users className="w-3.5 h-3.5 text-indigo-400" />
+            Manage Mine Officials
+          </Link>
+
+          {/* Bulk Data Import Button */}
+          <Link
+            to="/data-import"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-cyan-500/30 transition-colors shadow-sm"
+          >
+            <Database className="w-3.5 h-3.5 text-cyan-400" />
+            Data Import
+          </Link>
+
+          {/* PDF Export Button */}
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+          >
+            <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+            Export Compliance Report
+          </button>
+
           {/* Live Telemetry Stream Badge */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono">
             <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />

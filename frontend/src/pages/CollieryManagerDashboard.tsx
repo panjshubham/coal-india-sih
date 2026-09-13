@@ -170,8 +170,21 @@ export default function CollieryManagerDashboard() {
     }
 
     try {
-      const { error } = await supabase.from('violations').insert(payload);
+      const { data: newViolation, error } = await supabase.from('violations').insert(payload).select().single();
       if (error) throw error;
+      
+      // Auto-generate an alert for the newly created violation
+      if (newViolation) {
+        await supabase.from('alerts').insert({
+          type: 'violation',
+          related_entity_id: newViolation.id,
+          related_entity_type: 'violation',
+          message: `New ${payload.severity} hazard reported in ${payload.category}.`,
+          severity: payload.severity,
+          is_read: false
+        });
+      }
+
       setSubmitStatus('done');
       fetchData();
       setTimeout(() => { setSubmitStatus('idle'); setShowHazardForm(false); resetForm(); }, 1500);
@@ -236,6 +249,13 @@ export default function CollieryManagerDashboard() {
               {pendingCount} Q'd
             </div>
           )}
+
+          <Link
+            to="/inspections"
+            className="flex items-center gap-2 px-3.5 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-lg transition border border-slate-700"
+          >
+            <ClipboardCheck className="w-3.5 h-3.5 text-cyan-400" /> INSPECTIONS
+          </Link>
 
           <Link
             to="/statutory-registers"
@@ -453,6 +473,9 @@ export default function CollieryManagerDashboard() {
               <AlertTriangle className="w-4 h-4 text-red-400" />
               <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">Open Hazards</h3>
             </div>
+            <Link to="/violations" className="text-[11px] font-mono font-bold text-amber-400 hover:text-amber-300 transition-colors">
+              Violations & Sync &rarr;
+            </Link>
           </div>
           <div className="divide-y divide-slate-800/60 flex-1 overflow-y-auto max-h-80">
             {violations.length === 0 && (

@@ -23,7 +23,7 @@ export default function Login() {
       if (from && from !== '/login') {
         navigate(from, { replace: true });
       } else if (role === 'mine_official') {
-        navigate('/dashboard/mine', { replace: true });
+        navigate('/dashboard/colliery', { replace: true });
       } else if (role === 'corporate') {
         navigate('/dashboard/corporate', { replace: true });
       } else if (role === 'regulator') {
@@ -61,7 +61,7 @@ export default function Login() {
       if (from && from !== '/login') {
         navigate(from, { replace: true });
       } else if (userRole === 'mine_official') {
-        navigate('/dashboard/mine', { replace: true });
+        navigate('/dashboard/colliery', { replace: true });
       } else if (userRole === 'corporate') {
         navigate('/dashboard/corporate', { replace: true });
       } else if (userRole === 'regulator') {

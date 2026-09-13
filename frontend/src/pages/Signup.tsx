@@ -21,7 +21,7 @@ export default function Signup() {
   useEffect(() => {
     if (!authLoading && session && currentRole) {
       if (currentRole === 'mine_official') {
-        navigate('/dashboard/mine', { replace: true });
+        navigate('/dashboard/colliery', { replace: true });
       } else if (currentRole === 'corporate') {
         navigate('/dashboard/corporate', { replace: true });
       } else if (currentRole === 'regulator') {
@@ -60,7 +60,7 @@ export default function Signup() {
 
       // 3. Redirect to appropriate dashboard
       if (role === 'mine_official') {
-        navigate('/dashboard/mine', { replace: true });
+        navigate('/dashboard/colliery', { replace: true });
       } else if (role === 'corporate') {
         navigate('/dashboard/corporate', { replace: true });
       } else if (role === 'regulator') {

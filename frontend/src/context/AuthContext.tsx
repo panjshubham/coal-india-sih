@@ -67,21 +67,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq("id", userId)
         .single();
       
-      if (!error && data) {
-        setRole(data.role);
-        
-        // Dynamically update the UI profile based on logged-in user
-        const currentProfile = getProfile();
-        saveProfile({
-          ...currentProfile,
-          fullName: data.name || "Unknown Officer",
-          email: data.email || currentProfile.email,
-          role: data.role
-        });
+      const userRole = (!error && data?.role) ? data.role : "corporate";
+      const userName = data?.name || "Unknown Officer";
+      const userEmail = data?.email || "";
 
-        // Fire and forget alert generation
-        generateAutomatedAlerts();
-      }
+      setRole(userRole);
+      
+      // Dynamically update the UI profile based on logged-in user
+      const currentProfile = getProfile();
+      saveProfile({
+        ...currentProfile,
+        fullName: userName,
+        email: userEmail || currentProfile.email,
+        role: userRole
+      });
+
+      // Fire and forget alert generation
+      generateAutomatedAlerts();
     } catch (e) {
       console.error(e);
     } finally {

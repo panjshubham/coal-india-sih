@@ -30,7 +30,7 @@ export default function ProtectedRoute({ allowedRoles, children }: ProtectedRout
   // Check role authorization if restricted
   if (allowedRoles && role && !allowedRoles.includes(role)) {
     const defaultDashboard = 
-      role === 'mine_official' ? '/dashboard/mine' :
+      role === 'mine_official' ? '/dashboard/colliery' :
       role === 'regulator' ? '/dashboard/regulator' : '/dashboard/corporate';
 
     return <Navigate to={defaultDashboard} replace />;

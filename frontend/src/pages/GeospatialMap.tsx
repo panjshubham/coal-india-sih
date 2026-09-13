@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useTheme } from '../context/ThemeContext';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -54,17 +54,74 @@ export default function GeospatialMap() {
     return () => clearInterval(timer);
   }, []);
 
+  const [hotspots, setHotspots] = useState<any[]>([]);
+
+  // Haversine formula for distance in meters
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371e3; // metres
+    const p1 = lat1 * Math.PI/180;
+    const p2 = lat2 * Math.PI/180;
+    const dp = (lat2-lat1) * Math.PI/180;
+    const dl = (lon2-lon1) * Math.PI/180;
+    const a = Math.sin(dp/2) * Math.sin(dp/2) +
+              Math.cos(p1) * Math.cos(p2) *
+              Math.sin(dl/2) * Math.sin(dl/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; 
+  };
+
   async function fetchMinesData() {
     // Fetch mines and risk scores
-    const { data, error } = await supabase
+    const { data: minesData, error } = await supabase
       .from('mines')
       .select(`
         id, name, subsidiary, region, latitude, longitude,
         risk_scores (score, explanation)
       `);
       
-    if (data && !error) {
-      setMines(data);
+    if (minesData && !error) {
+      setMines(minesData);
+    }
+
+    // Fetch spatial violations for hotspot detection
+    const { data: violations } = await supabase
+      .from('violations')
+      .select('id, latitude, longitude, category, severity, status')
+      .not('latitude', 'is', null)
+      .eq('status', 'open');
+
+    if (violations && violations.length > 0) {
+      const detectedHotspots: any[] = [];
+      const usedIds = new Set();
+      
+      for (let i = 0; i < violations.length; i++) {
+        if (usedIds.has(violations[i].id)) continue;
+        const cluster = [violations[i]];
+        for (let j = i + 1; j < violations.length; j++) {
+          if (usedIds.has(violations[j].id)) continue;
+          const dist = getDistance(
+            violations[i].latitude, violations[i].longitude,
+            violations[j].latitude, violations[j].longitude
+          );
+          if (dist <= 200) {
+            cluster.push(violations[j]);
+          }
+        }
+        // Cluster if 3 or more hazards occur within 200m
+        if (cluster.length >= 3) {
+          cluster.forEach(v => usedIds.add(v.id));
+          const centerLat = cluster.reduce((sum, v) => sum + v.latitude, 0) / cluster.length;
+          const centerLng = cluster.reduce((sum, v) => sum + v.longitude, 0) / cluster.length;
+          detectedHotspots.push({
+            id: `hotspot-${i}`,
+            lat: centerLat,
+            lng: centerLng,
+            count: cluster.length,
+            radius: 200
+          });
+        }
+      }
+      setHotspots(detectedHotspots);
     }
   }
 
@@ -344,6 +401,34 @@ export default function GeospatialMap() {
                 </Marker>
               );
             })}
+
+            {/* Render spatial hotspots */}
+            {hotspots.map((hotspot) => (
+              <Circle
+                key={hotspot.id}
+                center={[hotspot.lat, hotspot.lng]}
+                radius={hotspot.radius}
+                pathOptions={{
+                  color: '#EF4444',
+                  fillColor: '#EF4444',
+                  fillOpacity: 0.3,
+                  weight: 2,
+                  dashArray: '4 4'
+                }}
+              >
+                <Popup className="custom-popup dark-popup">
+                  <div className="p-2 font-sans">
+                    <div className="flex items-center gap-1.5 mb-1.5 text-rose-400 font-bold text-xs">
+                      <span className="material-symbols-outlined text-[14px]">warning</span>
+                      High-Risk Hotspot
+                    </div>
+                    <p className="text-slate-300 text-[11px] m-0 leading-tight">
+                      {hotspot.count} severe violations clustered within a {hotspot.radius}m radius.
+                    </p>
+                  </div>
+                </Popup>
+              </Circle>
+            ))}
           </MapContainer>
         </div>
 
