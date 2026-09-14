@@ -213,11 +213,11 @@ export default function ViolationDetail() {
 
   // const timelineStages = ['open', 'in_progress', 'under_review', 'closed'];
   
-  // Map current status to timeline stage index
   let currentIndex = 0;
-  if (violation.status === 'in_progress') currentIndex = 1;
-  if (violation.status === 'under_review' || violation.approved_by) currentIndex = 2; // if approved, it's at least under review/corrective action
+  if (violation.status === 'under_review') currentIndex = 1;
+  if (violation.status === 'in_progress') currentIndex = 2;
   if (violation.status === 'closed') currentIndex = 3;
+  if (violation.approved_by && currentIndex < 2) currentIndex = 2;
 
   return (
     <div className="max-w-5xl mx-auto p-6 lg:p-8 space-y-8 bg-[#070D18] min-h-screen">
@@ -259,21 +259,33 @@ export default function ViolationDetail() {
       {/* Horizontal Status Timeline */}
       <div className="bg-[#0B1326] p-6 border border-slate-800 rounded-xl shadow-xl relative overflow-hidden">
         <div className="relative z-10">
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-800 -translate-y-1/2 z-0" />
+          <div className="absolute top-5 left-0 right-0 h-1 bg-slate-800 z-0" />
+          <div 
+            className="absolute top-5 left-0 h-1 bg-amber-500 z-0 transition-all duration-500 ease-out" 
+            style={{ width: `${(currentIndex / 3) * 100}%` }} 
+          />
           <div className="relative z-10 flex justify-between">
             {['Reported', 'Under Review', 'Corrective Action', 'Closed'].map((stage, i) => {
               const isActive = i === currentIndex;
               const isPast = i < currentIndex;
+              const statusValues = ['open', 'under_review', 'in_progress', 'closed'];
+              const canEdit = role === 'mine_official' || role === 'corporate';
               return (
-                <div key={stage} className="flex flex-col items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors ${
-                    isActive ? 'bg-amber-500 border-amber-600 text-[#070D18] shadow-[0_0_15px_rgba(245,158,11,0.5)]' :
-                    isPast ? 'bg-emerald-500 border-emerald-600 text-[#070D18]' :
+                <div 
+                  key={stage} 
+                  className={`flex flex-col items-center ${canEdit ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}
+                  onClick={() => {
+                    if (canEdit) setNewStatus(statusValues[i]);
+                  }}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors z-10 ${
+                    isActive ? 'bg-amber-500 border-amber-500 text-[#070D18] shadow-[0_0_15px_rgba(245,158,11,0.5)]' :
+                    isPast ? 'bg-emerald-500 border-emerald-500 text-[#070D18]' :
                     'bg-[#070D18] border-slate-700 text-slate-500'
                   }`}>
                     {isPast ? <CheckCircle2 className="w-5 h-5" /> : i + 1}
                   </div>
-                  <span className={`text-xs font-bold uppercase tracking-wider mt-3 ${
+                  <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider mt-3 text-center ${
                     isActive ? 'text-amber-500' : isPast ? 'text-emerald-500' : 'text-slate-500'
                   }`}>
                     {stage}

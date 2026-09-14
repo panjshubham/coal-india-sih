@@ -11,6 +11,39 @@ export default function AlertBell() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  function playNotificationSound() {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) return;
+      const audioCtx = new AudioContext();
+      
+      // Quick, pleasant double-ding notification sound
+      const playTone = (freq: number, startTime: number, duration: number) => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(freq, startTime);
+        
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+      };
+
+      const now = audioCtx.currentTime;
+      playTone(880, now, 0.2); // First ding (A5)
+      playTone(1760, now + 0.15, 0.4); // Second higher ding (A6)
+    } catch(e) {
+      console.warn("Audio notification failed", e);
+    }
+  }
+
   useEffect(() => {
     fetchAlerts();
 
@@ -19,10 +52,7 @@ export default function AlertBell() {
         setAlerts(prev => [payload.new, ...prev]);
         setUnreadCount(prev => prev + 1);
         
-        try {
-          const audio = new Audio('/alert.mp3');
-          audio.play().catch(() => {});
-        } catch(e) {}
+        playNotificationSound();
       })
       .subscribe();
 
