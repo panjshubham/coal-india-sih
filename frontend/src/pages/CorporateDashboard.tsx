@@ -5,7 +5,8 @@ import { supabase } from '../supabase';
 import { 
   ShieldAlert, AlertTriangle, Activity, AlertCircle, RefreshCw, BarChart2, 
   Globe2, Radio, Server, Fingerprint, Trees, ChevronRight, X, Gauge, 
-  Zap, TrendingUp, ShieldCheck, Sparkles, CheckCircle2, Users, Database 
+  Zap, TrendingUp, ShieldCheck, Sparkles, CheckCircle2, Users, Database,
+  Pickaxe, Truck
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -294,7 +295,7 @@ export default function CorporateDashboard() {
       </div>
 
       {/* 2. Top-Level Operational Metrics Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mt-6">
         <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
           <p className="text-xs font-mono text-slate-400 uppercase">{t('corp_metric_total_mines', 'Total Supervised Sites')}</p>
           <div className="flex items-baseline justify-between mt-1">
@@ -326,6 +327,109 @@ export default function CorporateDashboard() {
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-cyan-400">{stats.avgRiskScore} <span className="text-sm font-normal text-slate-500">/ 100</span></h3>
             <span className="text-[10px] text-slate-400 font-mono">{t('corp_metric_weighted_mean', 'Weighted Mean')}</span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-emerald-950/20 border border-emerald-900/50 rounded-xl">
+          <p className="text-xs font-mono text-emerald-400 uppercase">Daily Extraction (Est)</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-3xl font-black text-emerald-400">1.84 <span className="text-sm font-normal text-emerald-500">MT</span></h3>
+            <span className="text-xs text-emerald-500/70 font-mono"><Pickaxe className="w-3.5 h-3.5 inline mr-1" />Pit Output</span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-blue-950/20 border border-blue-900/50 rounded-xl">
+          <p className="text-xs font-mono text-blue-400 uppercase">Daily Dispatch</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-3xl font-black text-blue-400">1.79 <span className="text-sm font-normal text-blue-500">MT</span></h3>
+            <span className="text-xs text-blue-500/70 font-mono"><Truck className="w-3.5 h-3.5 inline mr-1" />Rail / Road</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2.3 Production vs Safety Risk Matrix */}
+      <div className="mt-6 bg-[#0B1326] border border-slate-800 rounded-xl p-5 shadow-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-amber-950/80 border border-amber-600/40 text-amber-400">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2">
+                Production Output vs. Safety Risk Matrix
+              </h2>
+              <p className="text-xs text-slate-400">
+                Correlating high-output opencast mines with their AI-driven statutory compliance risk scores to prevent production-driven safety lapses.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+          <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h3 className="text-sm font-bold text-white">Gevra OCP (SECL)</h3>
+                <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Chhattisgarh</p>
+              </div>
+              <span className="px-2 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold font-mono">
+                RISK: 88 (CRITICAL)
+              </span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-400">Daily Coal Output</span>
+                  <span className="font-bold text-emerald-400">142,000 Tonnes</span>
+                </div>
+                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[95%]"></div></div>
+              </div>
+              <p className="text-[10px] text-red-400 leading-tight">⚠️ AI Alert: Massive output target causing haul road berm maintenance delays. High risk of heavy dumper accidents.</p>
+            </div>
+          </div>
+
+          <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h3 className="text-sm font-bold text-white">Kusmunda OCP (SECL)</h3>
+                <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Chhattisgarh</p>
+              </div>
+              <span className="px-2 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold font-mono">
+                RISK: 65 (HIGH)
+              </span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-400">Daily Coal Output</span>
+                  <span className="font-bold text-emerald-400">128,000 Tonnes</span>
+                </div>
+                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[85%]"></div></div>
+              </div>
+              <p className="text-[10px] text-amber-400 leading-tight">⚠️ AI Alert: Fast-paced extraction leading to contractor PPE violations and unregistered workers in pit.</p>
+            </div>
+          </div>
+
+          <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h3 className="text-sm font-bold text-white">Jayant OCP (NCL)</h3>
+                <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Madhya Pradesh</p>
+              </div>
+              <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold font-mono">
+                RISK: 24 (SAFE)
+              </span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-400">Daily Coal Output</span>
+                  <span className="font-bold text-emerald-400">95,000 Tonnes</span>
+                </div>
+                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[70%]"></div></div>
+              </div>
+              <p className="text-[10px] text-emerald-400 leading-tight">✅ Ideal Operation: High production maintained perfectly in tandem with all DGMS safety compliance clearances.</p>
+            </div>
           </div>
         </div>
       </div>
