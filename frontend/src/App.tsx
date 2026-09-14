@@ -18,6 +18,7 @@ import Login from './pages/Login';
 import ManageUsers from './pages/ManageUsers';
 import Compliance from './pages/Compliance';
 import Violations from './pages/Violations';
+import ViolationDetail from './pages/ViolationDetail';
 import AIWorkbench from './pages/AIWorkbench';
 import HelpSupport from './pages/HelpSupport';
 import FinancialDashboard from './pages/FinancialDashboard';
