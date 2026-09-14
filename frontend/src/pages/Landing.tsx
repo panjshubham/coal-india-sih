@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,9 +12,24 @@ const HERO_IMAGES = [
 ];
 
 export default function Landing() {
-  const { user, role } = useAuth();
+  const { user, role, signOut } = useAuth();
   const navigate = useNavigate();
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Click outside listener for profile menu
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [profileMenuOpen]);
 
   // Live feature card data pulled from Supabase
   const [featureStats, setFeatureStats] = useState({
@@ -240,15 +255,54 @@ export default function Landing() {
             </div>
             <div className="flex items-center gap-space-md">
               <ThemeToggle variant="landing" />
-              <a href="#overview" onClick={(e) => e.preventDefault()} className="hidden sm:inline-flex items-center justify-center h-8 px-space-md rounded bg-surface-container border border-outline-variant/40 text-on-surface text-body-md hover:bg-surface-container-high hover:text-on-surface transition-all">
-                Documentation
-              </a>
               <button type="button" onClick={handleDashboardClick} className="inline-flex items-center justify-center h-8 px-space-md rounded bg-secondary text-on-secondary font-headline-sm text-[13px] font-medium tracking-tight hover:bg-secondary-container shadow-[0_0_12px_rgba(255,185,95,0.2)] transition-all">
                 Access Portal
               </button>
               <div className="h-5 w-px bg-outline-variant/30 hidden sm:block"></div>
-              <div className="hidden sm:flex w-8 h-8 rounded-full bg-primary items-center justify-center">
-                <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>
+              <div className="relative" ref={profileMenuRef}>
+                <button 
+                  onClick={() => setProfileMenuOpen(prev => !prev)}
+                  className="hidden sm:flex w-8 h-8 rounded-full bg-primary items-center justify-center hover:bg-primary-container transition-colors cursor-pointer"
+                  title="Profile Menu"
+                >
+                  <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>
+                </button>
+                {profileMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-2xl bg-surface-container-highest border border-outline-variant/30 overflow-hidden z-50">
+                    <div className="p-1.5 flex flex-col">
+                      {user ? (
+                        <>
+                          <div className="px-3 py-2 text-xs text-on-surface-variant border-b border-outline-variant/20 mb-1">
+                            Signed in as<br/>
+                            <strong className="text-on-surface truncate block" title={user.email}>{user.email}</strong>
+                          </div>
+                          <Link to="/profile" className="flex items-center gap-2 px-3 py-2 text-sm text-on-surface hover:bg-surface-container rounded-md">
+                            <span className="material-symbols-outlined text-[18px]">account_circle</span>
+                            Profile
+                          </Link>
+                          <button 
+                            onClick={async () => {
+                              setProfileMenuOpen(false);
+                              if (signOut) {
+                                await signOut();
+                                navigate('/login');
+                              }
+                            }}
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-error hover:bg-error-container/20 rounded-md w-full text-left cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">logout</span>
+                            Sign Out
+                          </button>
+                        </>
+                      ) : (
+                        <Link to="/login" className="flex items-center gap-2 px-3 py-2 text-sm text-on-surface hover:bg-surface-container rounded-md">
+                          <span className="material-symbols-outlined text-[18px]">login</span>
+                          Sign In
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
