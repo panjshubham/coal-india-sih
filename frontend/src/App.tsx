@@ -18,9 +18,9 @@ import Login from './pages/Login';
 import ManageUsers from './pages/ManageUsers';
 import Compliance from './pages/Compliance';
 import Violations from './pages/Violations';
-import ViolationDetail from './pages/ViolationDetail';
 import AIWorkbench from './pages/AIWorkbench';
 import HelpSupport from './pages/HelpSupport';
+import FinancialDashboard from './pages/FinancialDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { processSyncQueue } from './services/syncService';
 import { syncOfflineQueue } from './lib/offlineQueue';
@@ -161,6 +161,11 @@ function App() {
               <Route path="manage-users" element={
                 <ProtectedRoute allowedRoles={['corporate']}>
                   <ManageUsers />
+                </ProtectedRoute>
+              } />
+              <Route path="financial-overview" element={
+                <ProtectedRoute allowedRoles={['corporate']}>
+                  <FinancialDashboard />
                 </ProtectedRoute>
               } />
               <Route path="contractors" element={<Contractors />} />

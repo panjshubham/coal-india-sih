@@ -6,9 +6,9 @@ import {
   ShieldCheck, Map as MapIcon, Users, Cpu,
   Gauge, Wifi, WifiOff, Shield, BookOpen,
   Bell, Mic, ScanText, Languages, FileSearch,
-  Tags, Brain, Eye, Mail, Phone,
+  Tags, Brain, Eye, Mail, Phone, FileText,
   Cloud, CloudRain, CloudSnow, CloudLightning, Wind, Thermometer,
-  Droplets, Sun, CloudSun, Loader2, MapPin, RefreshCw, AlertOctagon,
+  Droplets, Sun, CloudSun, Loader2, MapPin, RefreshCw, AlertOctagon, Scale
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -426,12 +426,91 @@ function WeatherPanel() {
   );
 }
 
+function LegalPanel() {
+  return (
+    <div className="space-y-6">
+      <div className="p-5 rounded-2xl border bg-slate-500/5 border-slate-500/20">
+        <h2 className="text-lg font-black tracking-tight flex items-center gap-2 mb-4">
+          <Scale className="w-5 h-5 text-amber-400" /> Transparency & Legal Hub
+        </h2>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--cg-text-secondary)' }}>
+          CoalGuard operates under the strict guidelines of the Directorate General of Mines Safety (DGMS) and the Ministry of Coal, Government of India. Below are the governing policies for platform usage, data privacy, and statutory compliance.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Terms and Conditions */}
+        <div className="p-5 rounded-xl border flex flex-col" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <FileText className="w-4 h-4" />
+            </div>
+            <h3 className="font-bold text-sm">Terms and Conditions</h3>
+          </div>
+          <ul className="text-xs space-y-2 flex-1" style={{ color: 'var(--cg-text-muted)' }}>
+            <li>• Users must ensure that all compliance data uploaded is truthful and accurate to the best of their knowledge under the Mines Act, 1952.</li>
+            <li>• Sharing account credentials (especially for Manager or Inspector roles) is strictly prohibited and constitutes a security breach.</li>
+            <li>• AI-generated risk scores are advisory. Final statutory responsibility remains with the designated Mine Manager.</li>
+          </ul>
+          <button className="mt-4 text-xs font-bold text-blue-400 hover:underline text-left">Read Full T&C →</button>
+        </div>
+
+        {/* Privacy Policy */}
+        <div className="p-5 rounded-xl border flex flex-col" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <h3 className="font-bold text-sm">Privacy Policy & Data Security</h3>
+          </div>
+          <ul className="text-xs space-y-2 flex-1" style={{ color: 'var(--cg-text-muted)' }}>
+            <li>• All telemetry and worker data is encrypted at rest (AES-256) and in transit (TLS 1.3).</li>
+            <li>• Worker PII (Personally Identifiable Information) is anonymized in AI training sets.</li>
+            <li>• Government regulators have audited access. Data is hosted strictly within India (MeitY empaneled data centers).</li>
+          </ul>
+          <button className="mt-4 text-xs font-bold text-emerald-400 hover:underline text-left">Read Privacy Policy →</button>
+        </div>
+
+        {/* Contractor Disclaimer */}
+        <div className="p-5 rounded-xl border flex flex-col" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+            <h3 className="font-bold text-sm">Contractor Disclaimer</h3>
+          </div>
+          <p className="text-xs leading-relaxed flex-1" style={{ color: 'var(--cg-text-muted)' }}>
+            Third-party contractors using CoalGuard for tender qualification acknowledge that compliance verification fees are non-refundable. The platform reserves the right to suspend contractor profiles if systemic safety violations are detected by the AI workbench.
+          </p>
+        </div>
+
+        {/* AI & Automation Disclaimer */}
+        <div className="p-5 rounded-xl border flex flex-col" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <Brain className="w-4 h-4" />
+            </div>
+            <h3 className="font-bold text-sm">AI Automation Disclaimer</h3>
+          </div>
+          <p className="text-xs leading-relaxed flex-1" style={{ color: 'var(--cg-text-muted)' }}>
+            The CoalGuard AI Workbench (Computer Vision for PPE, NLP for logs) operates with a 94.2% confidence threshold. Automated fines levied by the system undergo a 24-hour review period where they can be contested by the mine manager before final execution.
+          </p>
+        </div>
+      </div>
+      
+      <p className="text-[10px] text-center font-mono mt-4" style={{ color: 'var(--cg-text-faint)' }}>
+        Document Version: 2.4.1 (Last Updated: September 2024)
+      </p>
+    </div>
+  );
+}
+
 
 export default function HelpSupport() {
   const { role } = useAuth();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<'features' | 'weather' | 'faq' | 'contact'>('features');
+  const [activeTab, setActiveTab] = useState<'features' | 'weather' | 'faq' | 'legal' | 'contact'>('features');
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8" style={{ color: 'var(--cg-text-primary)' }}>
@@ -456,7 +535,7 @@ export default function HelpSupport() {
 
       {/* ── Tabs ── */}
       <div className="flex flex-wrap gap-1 p-1 rounded-xl w-full sm:w-fit" style={{ backgroundColor: 'var(--cg-surface-elevated)' }}>
-        {(['features', 'weather', 'faq', 'contact'] as const).map(tab => (
+        {(['features', 'weather', 'faq', 'legal', 'contact'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -468,13 +547,16 @@ export default function HelpSupport() {
             )}
             style={{ color: activeTab === tab ? undefined : 'var(--cg-text-secondary)' }}
           >
-            {tab === 'features' ? '📋 How It Works' : tab === 'weather' ? '🌤️ Site Weather' : tab === 'faq' ? '❓ FAQ' : '📞 Contact'}
+            {tab === 'features' ? '📋 How It Works' : tab === 'weather' ? '🌤️ Site Weather' : tab === 'faq' ? '❓ FAQ' : tab === 'legal' ? '⚖️ Legal' : '📞 Contact'}
           </button>
         ))}
       </div>
 
       {/* ── WEATHER tab ── */}
       {activeTab === 'weather' && <WeatherPanel />}
+
+      {/* ── LEGAL tab ── */}
+      {activeTab === 'legal' && <LegalPanel />}
 
       {/* ── HOW IT WORKS tab ── */}
       {activeTab === 'features' && (

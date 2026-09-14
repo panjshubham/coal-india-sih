@@ -33,6 +33,7 @@ const resources = {
       "nav_aiWorkbench": "AI Workbench",
       "nav_audit": "Audit Log",
       "nav_profile": "Officer Profile",
+      "nav_financialOverview": "Financial & ROI",
 
       "landing_title": "CoalGuard",
       "landing_subtitle": "AI-Based Smart Governance and Compliance Monitoring System",
@@ -62,6 +63,9 @@ const resources = {
       "status_medium": "Medium",
       "status_low": "Low",
       "status_compliant": "Compliant",
+
+      "fin_title": "Financial & ROI Overview",
+      "fin_desc": "Platform monetization, penalty collection, and estimated cost savings.",
 
       "nav_helpSupport": "Help & Support",
       "nav_adminTickets": "Support Tickets",
@@ -118,6 +122,7 @@ const resources = {
       "nav_aiWorkbench": "एआई वर्कबेंच (AI Workbench)",
       "nav_audit": "ऑडिट लॉग",
       "nav_profile": "अधिकारी प्रोफ़ाइल",
+      "nav_financialOverview": "वित्तीय और आरओआई",
 
       "landing_title": "CoalGuard",
       "landing_subtitle": "एआई-आधारित स्मार्ट गवर्नेंस और अनुपालन निगरानी प्रणाली",
@@ -147,6 +152,9 @@ const resources = {
       "status_medium": "मध्यम",
       "status_low": "निम्न",
       "status_compliant": "अनुपालन",
+
+      "fin_title": "वित्तीय और आरओआई अवलोकन",
+      "fin_desc": "मंच मुद्रीकरण, जुर्माना संग्रह, और अनुमानित लागत बचत।",
       
       // New Dashboard Keys
       "cm_header_ministry": "कोयला मंत्रालय / संचालन / कोलिरी प्रबंधन",

@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, 
   Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, 
-  Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, User, ExternalLink, HelpCircle
+  Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, User, ExternalLink, HelpCircle, IndianRupee
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -32,6 +32,7 @@ const navigation: NavItem[] = [
   { id: 'dashboard_regulator', href: '/dashboard/regulator', icon: ShieldAlert, roles: ['regulator', 'corporate'] },
 
   // 2. Admin Oversight (Only Corporate Admin)
+  { id: 'financialOverview', href: '/financial-overview', icon: IndianRupee, roles: ['corporate'] },
   { id: 'manageUsers', href: '/manage-users', icon: ShieldAlert, roles: ['corporate'] },
   { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate', 'regulator'] },
 
