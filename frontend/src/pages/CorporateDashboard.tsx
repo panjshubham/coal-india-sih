@@ -247,14 +247,14 @@ export default function CorporateDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
-            {t('corp_dashboard_title', 'HQ Command Center')}
+            Global Overview
             <span className="text-[11px] font-mono font-medium px-2.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 flex items-center gap-1.5">
               <Globe2 className="w-3 h-3" />
-              {t('corp_global_operations', 'GLOBAL OPERATIONS')}
+              HQ COMMAND
             </span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            {t('corp_dashboard_desc', 'Enterprise-wide telemetric aggregation and autonomous statutory compliance tracking.')}
+            Real-time monitoring of all mines, production targets, and AI safety alerts.
           </p>
         </div>
 
@@ -287,14 +287,146 @@ export default function CorporateDashboard() {
           </button>
 
           {/* Live Telemetry Stream Badge */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
             <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-            <span>{t('corp_live_telemetry', 'LIVE TELEMETRY STREAM: CONNECTED')}</span>
+            <span>SYSTEM ONLINE</span>
           </div>
         </div>
       </div>
 
-      {/* 2. Top-Level Operational Metrics Strip */}
+      {/* 2. Critical AI Alerts & Production Risk (MOVED TO TOP) */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mt-6">
+        
+        {/* Left: Production vs Risk Matrix (Spans 3 cols on extra large screens) */}
+        <div className="xl:col-span-3 bg-[#0B1326] border border-slate-800 rounded-xl p-5 shadow-xl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-lg bg-amber-950/80 border border-amber-600/40 text-amber-400">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2">
+                  Production Output vs. Safety Risk Matrix
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Identifying high-output mines with dangerous AI statutory compliance risk scores.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+            <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-white">Gevra OCP (SECL)</h3>
+                  <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Chhattisgarh</p>
+                </div>
+                <span className="px-2 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold font-mono">
+                  RISK: 88 (CRITICAL)
+                </span>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-400">Daily Coal Output</span>
+                    <span className="font-bold text-emerald-400">142,000 Tonnes</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[95%]"></div></div>
+                </div>
+                <p className="text-[10px] text-red-400 leading-tight">⚠️ AI Alert: Massive output target causing haul road berm maintenance delays. High risk of heavy dumper accidents.</p>
+              </div>
+            </div>
+
+            <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-white">Kusmunda OCP (SECL)</h3>
+                  <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Chhattisgarh</p>
+                </div>
+                <span className="px-2 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold font-mono">
+                  RISK: 65 (HIGH)
+                </span>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-400">Daily Coal Output</span>
+                    <span className="font-bold text-emerald-400">128,000 Tonnes</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[85%]"></div></div>
+                </div>
+                <p className="text-[10px] text-amber-400 leading-tight">⚠️ AI Alert: Fast-paced extraction leading to contractor PPE violations and unregistered workers in pit.</p>
+              </div>
+            </div>
+
+            <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-white">Jayant OCP (NCL)</h3>
+                  <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Madhya Pradesh</p>
+                </div>
+                <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold font-mono">
+                  RISK: 24 (SAFE)
+                </span>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-400">Daily Coal Output</span>
+                    <span className="font-bold text-emerald-400">95,000 Tonnes</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[70%]"></div></div>
+                </div>
+                <p className="text-[10px] text-emerald-400 leading-tight">✅ Ideal Operation: High production maintained perfectly in tandem with all DGMS safety compliance clearances.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: AI Insights (Spans 1 col) */}
+        <div className="bg-[#0B1326] border border-slate-800 rounded-xl p-4 shadow-xl flex flex-col relative overflow-hidden transition-colors">
+          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+            <Fingerprint className="w-32 h-32 text-indigo-500" />
+          </div>
+          <div className="pb-3 border-b border-slate-800 relative z-10 flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-200 tracking-wide flex items-center gap-2">
+              <Activity className="w-4 h-4 text-indigo-400" />
+              AI SAFETY WARNINGS
+            </h2>
+          </div>
+          
+          <div className="mt-4 space-y-3 flex-1 relative z-10 font-sans overflow-y-auto max-h-[300px]">
+            {riskScores.slice(0, 3).map(risk => {
+              const cf = (risk as any).contributing_factors;
+              return (
+                <div key={risk.mine_id} className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 text-sm">
+                  <div className="font-bold text-slate-100 mb-1 flex items-center justify-between">
+                    <span>{risk.mines?.name} <span className={`text-[10px] ml-1 px-1.5 py-0.5 rounded ${risk.score > 70 ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>Score: {risk.score}</span></span>
+                  </div>
+                  <div className="text-slate-400 leading-relaxed text-xs mb-2">
+                    {risk.explanation || 'No AI explanation generated yet.'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="mt-4 pt-3 border-t border-slate-800 relative z-10">
+            <button 
+              onClick={handleRecalculate}
+              disabled={calculatingRisk}
+              className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-400 text-sm font-bold rounded-lg transition-colors disabled:opacity-50"
+            >
+              {calculatingRisk ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              {calculatingRisk ? t('btn_recalculating', 'Recalculating Globally...') : t('btn_recalculate_global', 'Recalculate Global Risk Scores')}
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* 3. Operational KPIs Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mt-6">
         <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
           <p className="text-xs font-mono text-slate-400 uppercase">{t('corp_metric_total_mines', 'Total Supervised Sites')}</p>
@@ -347,94 +479,7 @@ export default function CorporateDashboard() {
         </div>
       </div>
 
-      {/* 2.3 Production vs Safety Risk Matrix */}
-      <div className="mt-6 bg-[#0B1326] border border-slate-800 rounded-xl p-5 shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-800 gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-amber-950/80 border border-amber-600/40 text-amber-400">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2">
-                Production Output vs. Safety Risk Matrix
-              </h2>
-              <p className="text-xs text-slate-400">
-                Correlating high-output opencast mines with their AI-driven statutory compliance risk scores to prevent production-driven safety lapses.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
-          <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="text-sm font-bold text-white">Gevra OCP (SECL)</h3>
-                <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Chhattisgarh</p>
-              </div>
-              <span className="px-2 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold font-mono">
-                RISK: 88 (CRITICAL)
-              </span>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-400">Daily Coal Output</span>
-                  <span className="font-bold text-emerald-400">142,000 Tonnes</span>
-                </div>
-                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[95%]"></div></div>
-              </div>
-              <p className="text-[10px] text-red-400 leading-tight">⚠️ AI Alert: Massive output target causing haul road berm maintenance delays. High risk of heavy dumper accidents.</p>
-            </div>
-          </div>
-
-          <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="text-sm font-bold text-white">Kusmunda OCP (SECL)</h3>
-                <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Chhattisgarh</p>
-              </div>
-              <span className="px-2 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold font-mono">
-                RISK: 65 (HIGH)
-              </span>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-400">Daily Coal Output</span>
-                  <span className="font-bold text-emerald-400">128,000 Tonnes</span>
-                </div>
-                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[85%]"></div></div>
-              </div>
-              <p className="text-[10px] text-amber-400 leading-tight">⚠️ AI Alert: Fast-paced extraction leading to contractor PPE violations and unregistered workers in pit.</p>
-            </div>
-          </div>
-
-          <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="text-sm font-bold text-white">Jayant OCP (NCL)</h3>
-                <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Madhya Pradesh</p>
-              </div>
-              <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold font-mono">
-                RISK: 24 (SAFE)
-              </span>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-400">Daily Coal Output</span>
-                  <span className="font-bold text-emerald-400">95,000 Tonnes</span>
-                </div>
-                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[70%]"></div></div>
-              </div>
-              <p className="text-[10px] text-emerald-400 leading-tight">✅ Ideal Operation: High production maintained perfectly in tandem with all DGMS safety compliance clearances.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 2.5 MoEFCC Environmental Clearance (EC) Cap Watchdog Strip */}
+      {/* 4. Environmental & Logistics Limits Watchdog */}
       <div className="mt-6 bg-[#0B1326] border border-slate-800 rounded-xl p-5 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-800 gap-2">
           <div className="flex items-center gap-2.5">
@@ -443,9 +488,9 @@ export default function CorporateDashboard() {
             </div>
             <div>
               <h2 className="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2">
-                MoEFCC Environmental Clearance (EC) Cap & Logistics Watchdog
+                Environmental & Logistics Limits
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                  STATUTORY CEILING: MoEFCC EIA 2006
+                  STATUTORY CEILING
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
@@ -557,136 +602,66 @@ export default function CorporateDashboard() {
         </div>
       </div>
 
-      {/* 3. Main Body: Ranked Table & Detailed Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        
-        {/* Left: Risk Ranked Mines */}
-        <div className="lg:col-span-2 bg-[#0B1326] border border-slate-800 rounded-xl overflow-hidden shadow-xl flex flex-col">
-          <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-200 tracking-wide uppercase flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-cyan-400" />
-              {t('corp_section_risk_ranked', 'Consolidated Risk-Ranked Subsidiaries')}
-            </h2>
-            <span className="text-[10px] font-mono text-slate-400">{t('corp_click_explain', 'Click \'Explain Risk\' for SHAP Model Breakdown')}</span>
-          </div>
-          <div className="p-0 overflow-y-auto max-h-[450px]">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/80 font-mono text-slate-400 uppercase text-[10px] border-b border-slate-800 sticky top-0 backdrop-blur-md z-10">
-                <tr>
-                  <th className="px-5 py-3">{t('table_col_mine_location', 'Mine Location')}</th>
-                  <th className="px-5 py-3">{t('table_col_risk_index', 'Risk Index')}</th>
-                  <th className="px-5 py-3">{t('table_col_telemetry', 'Telemetry Bar')}</th>
-                  <th className="px-5 py-3 text-right">{t('table_col_explainability', 'Explainability')}</th>
+      {/* 5. Main Body: Ranked Table */}
+      <div className="mt-6 bg-[#0B1326] border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-200 tracking-wide uppercase flex items-center gap-2">
+            <BarChart2 className="w-4 h-4 text-cyan-400" />
+            Consolidated Risk-Ranked Subsidiaries
+          </h2>
+          <span className="text-[10px] font-mono text-slate-400">Click 'Explain Risk' for SHAP AI Model Breakdown</span>
+        </div>
+        <div className="p-0 overflow-y-auto max-h-[450px]">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-900/80 font-mono text-slate-400 uppercase text-[10px] border-b border-slate-800 sticky top-0 backdrop-blur-md z-10">
+              <tr>
+                <th className="px-5 py-3">Mine Location</th>
+                <th className="px-5 py-3">Risk Index</th>
+                <th className="px-5 py-3">Telemetry Bar</th>
+                <th className="px-5 py-3 text-right">Explainability</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60 font-mono">
+              {riskScores.map(risk => (
+                <tr key={risk.mine_id} className="hover:bg-slate-900/40 transition-colors">
+                  <td className="px-5 py-3.5 font-sans font-bold text-slate-100">
+                    {risk.mines?.name}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span className={`font-bold ${
+                      risk.score > 70 ? 'text-red-400' :
+                      risk.score > 45 ? 'text-amber-400' : 'text-emerald-400'
+                    }`}>
+                      {risk.score}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5 w-1/3">
+                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${getRiskColor(risk.score)}`} 
+                        style={{ width: `${risk.score}%` }}
+                      />
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5 text-right">
+                    <button
+                      onClick={() => setSelectedXaiMine(risk)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 rounded font-sans text-xs font-semibold transition-colors"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                      Explain Risk (XAI)
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
-                {riskScores.map(risk => (
-                  <tr key={risk.mine_id} className="hover:bg-slate-900/40 transition-colors">
-                    <td className="px-5 py-3.5 font-sans font-bold text-slate-100">
-                      {risk.mines?.name}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`font-bold ${
-                        risk.score > 70 ? 'text-red-400' :
-                        risk.score > 45 ? 'text-amber-400' : 'text-emerald-400'
-                      }`}>
-                        {risk.score}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 w-1/3">
-                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full ${getRiskColor(risk.score)}`} 
-                          style={{ width: `${risk.score}%` }}
-                        />
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <button
-                        onClick={() => setSelectedXaiMine(risk)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 rounded font-sans text-xs font-semibold transition-colors"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                        {t('btn_explain_risk', 'Explain Risk (XAI)')}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {riskScores.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-5 py-8 text-center text-slate-500">{t('corp_no_risk_data', 'No risk data available.')}</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+              ))}
+              {riskScores.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-5 py-8 text-center text-slate-500">No risk data available.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-
-        {/* Right: AI Insights */}
-        <div className="bg-[#0B1326] border border-slate-800 rounded-xl p-4 shadow-xl flex flex-col relative overflow-hidden transition-colors">
-          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-            <Fingerprint className="w-32 h-32 text-indigo-500" />
-          </div>
-          <div className="pb-3 border-b border-slate-800 relative z-10 flex justify-between items-center">
-            <h2 className="text-sm font-bold text-slate-200 tracking-wide flex items-center gap-2">
-              <Activity className="w-4 h-4 text-indigo-400" />
-              {t('corp_section_ai_insights', 'HQ AI RISK INSIGHTS')}
-            </h2>
-            <span className="text-[10px] font-mono text-slate-400">{t('corp_xgboost_diagnostics', 'XGBoost Diagnostics')}</span>
-          </div>
-          
-          <div className="mt-4 space-y-3 flex-1 relative z-10 font-sans">
-            {riskScores.slice(0, 3).map(risk => {
-              const cf = (risk as any).contributing_factors;
-              return (
-                <div key={risk.mine_id} className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 text-sm">
-                  <div className="font-bold text-slate-100 mb-1 flex items-center justify-between">
-                    <span>{risk.mines?.name} (Score: {risk.score})</span>
-                  </div>
-                  <div className="text-slate-400 leading-relaxed text-xs mb-2">
-                    {risk.explanation || 'No AI explanation generated yet.'}
-                  </div>
-                  {cf?.ml_probability !== undefined && (
-                    <div className="mt-2 mb-2 p-2 bg-indigo-950/20 rounded border border-indigo-500/20">
-                      <p className="text-xs text-indigo-300">
-                        <span className="font-bold text-indigo-400">ML Confidence:</span> {Math.round(cf.ml_probability)}% high-risk
-                        {(cf.ml_top_factors || []).length > 0 && (
-                          <span>, primarily driven by {(cf.ml_top_factors).join(' and ')}</span>
-                        )}.
-                      </p>
-                    </div>
-                  )}
-                  {cf && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {cf.location_anomaly && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/30 text-[9px] font-mono font-medium text-rose-400 uppercase">
-                          <AlertCircle className="w-2.5 h-2.5" /> Loc Anomaly
-                        </span>
-                      )}
-                      {cf.hotspot && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[9px] font-mono font-medium text-amber-400 uppercase">
-                          <Activity className="w-2.5 h-2.5" /> Spatial Hotspot
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          
-          <div className="mt-4 pt-3 border-t border-slate-800 relative z-10">
-            <button 
-              onClick={handleRecalculate}
-              disabled={calculatingRisk}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-400 text-sm font-bold rounded-lg transition-colors disabled:opacity-50"
-            >
-              {calculatingRisk ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              {calculatingRisk ? t('btn_recalculating', 'Recalculating Globally...') : t('btn_recalculate_global', 'Recalculate Global Risk Scores')}
-            </button>
-          </div>
-        </div>
-
       </div>
 
       {/* 4. Bottom: Recent Violations Feed */}
