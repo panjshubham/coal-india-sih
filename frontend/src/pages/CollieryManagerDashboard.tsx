@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { savePendingSubmission, getPendingCount } from '../services/db';
 import {
   HardHat, Users, AlertTriangle, CheckCircle2, WifiOff, Wifi,
@@ -27,6 +28,7 @@ const CONTRACTOR_CHECKINS = [
 const CATEGORIES = ['Safety', 'Environmental', 'Structural', 'Electrical', 'Gas / Ventilation', 'Haulage', 'Other'];
 
 export default function CollieryManagerDashboard() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [mineName, setMineName] = useState('Loading...');
   const [mineId, setMineId] = useState<number | null>(null);
@@ -46,51 +48,6 @@ export default function CollieryManagerDashboard() {
   const [violations, setViolations] = useState<any[]>([]);
   const [complianceItems, setComplianceItems] = useState<any[]>([]);
   const [time, setTime] = useState('');
-
-  // Live SCADA Gas Telemetry State
-  const [telemetry, setTelemetry] = useState<any>({
-    ch4: 0.45,
-    co: 4.2,
-    o2: 20.4,
-    dust: 180.0,
-    status: 'NOMINAL',
-    power_interlock: 'ENERGIZED'
-  });
-  const [isSpikeActive, setIsSpikeActive] = useState(false);
-
-  useEffect(() => {
-    async function fetchTelemetry() {
-      try {
-        const res = await fetch(`http://127.0.0.1:8000/api/cmr/telemetry-stream?mine_id=${mineId || 1}&simulate_spike=${isSpikeActive}`);
-        if (res.ok) {
-          const data = await res.json();
-          setTelemetry({
-            ch4: data.readings.methane_ch4_pct,
-            co: data.readings.carbon_monoxide_co_ppm,
-            o2: data.readings.oxygen_o2_pct,
-            dust: data.readings.dust_pm10_ug_m3,
-            status: data.statutory_status,
-            alerts: data.statutory_alerts,
-            power_interlock: data.power_interlock_status
-          });
-        }
-      } catch {
-        // Fallback simulation
-        setTelemetry({
-          ch4: isSpikeActive ? 0.88 : 0.46,
-          co: isSpikeActive ? 14.5 : 4.0,
-          o2: isSpikeActive ? 18.7 : 20.5,
-          dust: isSpikeActive ? 420.0 : 165.0,
-          status: isSpikeActive ? 'STATUTORY_ALERT' : 'NOMINAL',
-          alerts: isSpikeActive ? ['CMR Reg 155: CH4 concentration >= 0.75% threshold'] : [],
-          power_interlock: isSpikeActive ? 'TRIPPED_SAFE' : 'ENERGIZED'
-        });
-      }
-    }
-    fetchTelemetry();
-    const interval = setInterval(fetchTelemetry, 6000);
-    return () => clearInterval(interval);
-  }, [mineId, isSpikeActive]);
 
   // Live clock
   useEffect(() => {
@@ -223,16 +180,16 @@ export default function CollieryManagerDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">MINISTRY OF COAL / OPERATIONS / COLLIERY MANAGEMENT</span>
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">{t('cm_header_ministry', 'MINISTRY OF COAL / OPERATIONS / COLLIERY MANAGEMENT')}</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
-            Colliery Manager Console
+            {t('cm_dashboard_title', 'Colliery Manager Console')}
             <span className="text-[11px] font-mono font-medium px-2.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800">
               {mineName}
             </span>
           </h1>
           <p className="text-xs text-slate-400 mt-1 font-mono">
-            LOCAL TIME: <span className="text-slate-200">{time}</span> (UTC+05:30)
+            {t('cm_local_time', 'LOCAL TIME')}: <span className="text-slate-200">{time}</span> (UTC+05:30)
           </p>
         </div>
 
@@ -240,13 +197,13 @@ export default function CollieryManagerDashboard() {
           {/* Offline/Online Indicator */}
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-wider font-mono ${isOnline ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-400' : 'bg-red-950/60 border-red-500/40 text-red-400 animate-pulse'}`}>
             {isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-            {isOnline ? 'Network Online' : 'OFFLINE MODE'}
+            {isOnline ? t('cm_network_online', 'Network Online') : t('cm_network_offline', 'OFFLINE MODE')}
           </div>
           
           {pendingCount > 0 && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-400 text-xs font-bold font-mono">
               <DatabaseBackup className="w-3.5 h-3.5" />
-              {pendingCount} Q'd
+              {pendingCount} {t('cm_queued', "Q'd")}
             </div>
           )}
 
@@ -254,14 +211,14 @@ export default function CollieryManagerDashboard() {
             to="/inspections"
             className="flex items-center gap-2 px-3.5 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-lg transition border border-slate-700"
           >
-            <ClipboardCheck className="w-3.5 h-3.5 text-cyan-400" /> INSPECTIONS
+            <ClipboardCheck className="w-3.5 h-3.5 text-cyan-400" /> {t('btn_inspections', 'INSPECTIONS')}
           </Link>
 
           <Link
             to="/statutory-registers"
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-xs rounded-lg transition shadow-lg shadow-amber-500/20"
           >
-            <ShieldCheck className="w-3.5 h-3.5" /> CMR STATUTORY REGISTERS
+            <ShieldCheck className="w-3.5 h-3.5" /> {t('btn_cmr_registers', 'CMR STATUTORY REGISTERS')}
           </Link>
 
           <button
@@ -269,7 +226,7 @@ export default function CollieryManagerDashboard() {
             onClick={() => setShowHazardForm(true)}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg transition shadow-lg shadow-red-600/20"
           >
-            <AlertTriangle className="w-3.5 h-3.5" /> REPORT HAZARD
+            <AlertTriangle className="w-3.5 h-3.5" /> {t('btn_report_hazard', 'REPORT HAZARD')}
           </button>
         </div>
       </div>
@@ -277,10 +234,10 @@ export default function CollieryManagerDashboard() {
       {/* 2. KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {[
-          { label: 'Workers On-Site', value: '357', icon: <Users className="w-4 h-4 text-blue-400" />, sub: '3 Active Shifts' },
-          { label: 'Open Violations', value: String(violations.length), icon: <AlertTriangle className="w-4 h-4 text-amber-400" />, sub: 'Requiring Action' },
-          { label: 'Compliance Items', value: String(complianceItems.length), icon: <ClipboardCheck className="w-4 h-4 text-indigo-400" />, sub: 'Tracked This Month' },
-          { label: 'Contractors Active', value: String(CONTRACTOR_CHECKINS.filter(c => c.status === 'checked-in').length), icon: <Truck className="w-4 h-4 text-emerald-400" />, sub: `of ${CONTRACTOR_CHECKINS.length} registered` },
+          { label: t('metric_workers', 'Workers On-Site'), value: '357', icon: <Users className="w-4 h-4 text-blue-400" />, sub: t('metric_workers_sub', '3 Active Shifts') },
+          { label: t('metric_violations', 'Open Violations'), value: String(violations.length), icon: <AlertTriangle className="w-4 h-4 text-amber-400" />, sub: t('metric_violations_sub', 'Requiring Action') },
+          { label: t('metric_compliance', 'Compliance Items'), value: String(complianceItems.length), icon: <ClipboardCheck className="w-4 h-4 text-indigo-400" />, sub: t('metric_compliance_sub', 'Tracked This Month') },
+          { label: t('metric_contractors', 'Contractors Active'), value: String(CONTRACTOR_CHECKINS.filter(c => c.status === 'checked-in').length), icon: <Truck className="w-4 h-4 text-emerald-400" />, sub: t('metric_contractors_sub', 'of {{total}} registered', { total: CONTRACTOR_CHECKINS.length }) },
         ].map(card => (
           <div key={card.label} className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
             <div className="flex justify-between items-center mb-1">
@@ -295,122 +252,13 @@ export default function CollieryManagerDashboard() {
         ))}
       </div>
 
-      {/* 2B. Live SCADA Gas & Ventilation Telemetry Watchdog (CMR 2017 Reg 153 & 155) */}
-      <div className={`mt-6 p-4 rounded-xl border transition-all duration-300 ${
-        telemetry.status === 'STATUTORY_ALERT' 
-          ? 'bg-red-950/40 border-red-500/60 shadow-lg shadow-red-950/50' 
-          : 'bg-[#0B1326] border-slate-800'
-      }`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-2.5 h-2.5 rounded-full ${telemetry.status === 'STATUTORY_ALERT' ? 'bg-red-500 animate-ping' : 'bg-emerald-500'}`} />
-            <div>
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-amber-400" />
-                SCADA Environmental Telemetry — Seam III East District
-              </span>
-              <span className="text-[10px] font-mono text-slate-400">
-                Continuous IoT Gas Monitoring • Interlocked with CMR 2017 Reg 155
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded border uppercase ${
-              telemetry.power_interlock === 'TRIPPED_SAFE'
-                ? 'bg-red-950 text-red-400 border-red-800 animate-pulse'
-                : 'bg-emerald-950 text-emerald-400 border-emerald-800'
-            }`}>
-              Power Interlock: {telemetry.power_interlock}
-            </span>
-
-            <button
-              onClick={() => setIsSpikeActive(prev => !prev)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition border ${
-                isSpikeActive
-                  ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50 hover:bg-emerald-900'
-                  : 'bg-red-950/80 text-red-300 border-red-500/50 hover:bg-red-900'
-              }`}
-            >
-              <Zap className="w-3 h-3" />
-              <span>{isSpikeActive ? 'Normalize Telemetry' : 'Simulate Gas Surge (>0.75%)'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Telemetry Metrics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-          <div className={`p-3 rounded-lg border ${
-            telemetry.ch4 >= 0.75 ? 'bg-red-950/80 border-red-600 text-red-300' : 'bg-slate-900/60 border-slate-800'
-          }`}>
-            <span className="text-[10px] font-mono text-slate-400 block">CH4 (Methane)</span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-mono font-bold text-white">{telemetry.ch4}%</span>
-              <span className="text-[10px] font-mono text-slate-400">CMR: &lt;0.75%</span>
-            </div>
-            {telemetry.ch4 >= 0.75 && (
-              <span className="text-[9px] font-bold text-red-400 block mt-1 uppercase animate-pulse">
-                CMR 155 Threshold Exceeded
-              </span>
-            )}
-          </div>
-
-          <div className={`p-3 rounded-lg border ${
-            telemetry.co > 10.0 ? 'bg-amber-950/80 border-amber-600 text-amber-300' : 'bg-slate-900/60 border-slate-800'
-          }`}>
-            <span className="text-[10px] font-mono text-slate-400 block">CO (Carbon Monoxide)</span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-mono font-bold text-white">{telemetry.co} ppm</span>
-              <span className="text-[10px] font-mono text-slate-400">Limit: &le;10 ppm</span>
-            </div>
-            {telemetry.co > 10.0 && (
-              <span className="text-[9px] font-bold text-amber-400 block mt-1 uppercase">
-                Spontaneous Heating Risk
-              </span>
-            )}
-          </div>
-
-          <div className={`p-3 rounded-lg border ${
-            telemetry.o2 < 19.0 ? 'bg-red-950/80 border-red-600 text-red-300' : 'bg-slate-900/60 border-slate-800'
-          }`}>
-            <span className="text-[10px] font-mono text-slate-400 block">O2 (Oxygen)</span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-mono font-bold text-white">{telemetry.o2}%</span>
-              <span className="text-[10px] font-mono text-slate-400">Min: &ge;19.0%</span>
-            </div>
-            {telemetry.o2 < 19.0 && (
-              <span className="text-[9px] font-bold text-red-400 block mt-1 uppercase">
-                Anoxia Hazard
-              </span>
-            )}
-          </div>
-
-          <div className={`p-3 rounded-lg border ${
-            telemetry.dust > 300.0 ? 'bg-amber-950/80 border-amber-600 text-amber-300' : 'bg-slate-900/60 border-slate-800'
-          }`}>
-            <span className="text-[10px] font-mono text-slate-400 block">Dust (PM10 Particulate)</span>
-            <div className="flex items-baseline justify-between mt-1">
-              <span className="text-xl font-mono font-bold text-white">{telemetry.dust} µg/m³</span>
-              <span className="text-[10px] font-mono text-slate-400">Cap: 300</span>
-            </div>
-            {telemetry.dust > 300.0 && (
-              <span className="text-[9px] font-bold text-amber-400 block mt-1 uppercase">
-                Bowsers Required
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* 3. Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-
-
         {/* Left: Shift Schedules */}
         <div className="lg:col-span-1 bg-[#0B1326] border border-slate-800 rounded-xl flex flex-col shadow-xl">
           <div className="p-4 border-b border-slate-800 flex items-center gap-2">
             <Activity className="w-4 h-4 text-blue-400" />
-            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">Shift Schedule</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">{t('section_shift_schedule', 'Shift Schedule')}</h3>
           </div>
           <div className="divide-y divide-slate-800/60">
             {SHIFT_DATA.map((s) => (
@@ -424,11 +272,11 @@ export default function CollieryManagerDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-bold text-slate-200">{s.foreman}</div>
-                    <div className="text-[10px] font-mono text-slate-500 uppercase">Shift Foreman</div>
+                    <div className="text-[10px] font-mono text-slate-500 uppercase">{t('cm_shift_foreman', 'Shift Foreman')}</div>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 font-bold bg-cyan-950/30 px-2 py-1 rounded border border-cyan-800/50">
                     <Users className="w-3.5 h-3.5" />
-                    {s.workers} MINERS
+                    {s.workers} {t('cm_miners', 'MINERS')}
                   </div>
                 </div>
               </div>
@@ -440,7 +288,7 @@ export default function CollieryManagerDashboard() {
         <div className="lg:col-span-1 bg-[#0B1326] border border-slate-800 rounded-xl flex flex-col shadow-xl">
           <div className="p-4 border-b border-slate-800 flex items-center gap-2">
             <Truck className="w-4 h-4 text-emerald-400" />
-            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">Contractor Manifest</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">{t('section_contractor_manifest', 'Contractor Manifest')}</h3>
           </div>
           <div className="divide-y divide-slate-800/60 flex-1">
             {CONTRACTOR_CHECKINS.map((c) => (
@@ -452,13 +300,13 @@ export default function CollieryManagerDashboard() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
-                  <span className="flex items-center gap-1"><Users className="w-3 h-3" />{c.workers} WORKERS</span>
+                  <span className="flex items-center gap-1"><Users className="w-3 h-3" />{c.workers} {t('cm_workers', 'WORKERS')}</span>
                   <span>{c.time}</span>
                 </div>
                 {c.cert === 'expiring' && (
                   <div className="flex items-center gap-1 text-[10px] font-mono text-amber-400 font-medium">
                     <ShieldAlert className="w-3 h-3" />
-                    SAFETY CERT EXPIRING SOON
+                    {t('cm_cert_expiring', 'SAFETY CERT EXPIRING SOON')}
                   </div>
                 )}
               </div>
@@ -471,17 +319,17 @@ export default function CollieryManagerDashboard() {
           <div className="p-4 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-red-400" />
-              <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">Open Hazards</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">{t('section_open_hazards', 'Open Hazards')}</h3>
             </div>
             <Link to="/violations" className="text-[11px] font-mono font-bold text-amber-400 hover:text-amber-300 transition-colors">
-              Violations & Sync &rarr;
+              {t('cm_violations_link', 'Violations & Sync &rarr;')}
             </Link>
           </div>
           <div className="divide-y divide-slate-800/60 flex-1 overflow-y-auto max-h-80">
             {violations.length === 0 && (
               <div className="p-6 text-center text-slate-500 text-xs font-mono flex flex-col items-center gap-2">
                 <CheckCircle2 className="w-8 h-8 text-emerald-500/50" />
-                NO OPEN HAZARDS
+                {t('cm_no_hazards', 'NO OPEN HAZARDS')}
               </div>
             )}
             {violations.map(v => (
@@ -502,16 +350,16 @@ export default function CollieryManagerDashboard() {
       <div className="bg-[#0B1326] border border-slate-800 rounded-xl flex flex-col mt-6 shadow-xl overflow-hidden">
         <div className="p-4 border-b border-slate-800 flex items-center gap-2">
           <FileText className="w-4 h-4 text-indigo-400" />
-          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">Colliery Compliance Tracker</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-200">{t('section_compliance_tracker', 'Colliery Compliance Tracker')}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead className="bg-slate-900/80 font-mono text-slate-400 uppercase text-[10px] border-b border-slate-800">
               <tr>
-                <th className="px-5 py-3">Directive / Requirement</th>
-                <th className="px-5 py-3">Category</th>
-                <th className="px-5 py-3">Due Date</th>
-                <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3">{t('table_col_directive', 'Directive / Requirement')}</th>
+                <th className="px-5 py-3">{t('table_col_category', 'Category')}</th>
+                <th className="px-5 py-3">{t('table_col_due_date', 'Due Date')}</th>
+                <th className="px-5 py-3">{t('table_col_status', 'Status')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-mono">
@@ -540,10 +388,10 @@ export default function CollieryManagerDashboard() {
             <div className="flex items-center justify-between p-4 bg-slate-900/80 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-400" />
-                <h2 className="text-sm font-bold text-white uppercase tracking-wide">Report Field Hazard</h2>
+                <h2 className="text-sm font-bold text-white uppercase tracking-wide">{t('modal_report_hazard', 'Report Field Hazard')}</h2>
               </div>
               <div className="flex items-center gap-3">
-                {!isOnline && <span className="text-[9px] font-bold font-mono uppercase px-2 py-0.5 rounded bg-amber-950/60 border border-amber-800 text-amber-400 animate-pulse">OFFLINE: QUEUING</span>}
+                {!isOnline && <span className="text-[9px] font-bold font-mono uppercase px-2 py-0.5 rounded bg-amber-950/60 border border-amber-800 text-amber-400 animate-pulse">{t('cm_offline_queuing', 'OFFLINE: QUEUING')}</span>}
                 <button onClick={() => { setShowHazardForm(false); resetForm(); }} className="text-slate-500 hover:text-white transition">
                   <X className="w-5 h-5" />
                 </button>
@@ -553,7 +401,7 @@ export default function CollieryManagerDashboard() {
             <div className="p-5 space-y-5">
               {/* Category */}
               <div>
-                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">Hazard Category</label>
+                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">{t('form_label_category', 'Hazard Category')}</label>
                 <div className="relative">
                   <select
                     value={formData.category}
@@ -568,7 +416,7 @@ export default function CollieryManagerDashboard() {
 
               {/* Severity */}
               <div>
-                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">Severity Index</label>
+                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">{t('form_label_severity', 'Severity Index')}</label>
                 <div className="grid grid-cols-4 gap-2">
                   {['low', 'medium', 'high', 'critical'].map(sev => (
                     <button
@@ -584,7 +432,7 @@ export default function CollieryManagerDashboard() {
 
               {/* Description */}
               <div>
-                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">Incident Description</label>
+                <label className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1.5">{t('form_label_description', 'Incident Description')}</label>
                 <textarea
                   rows={3}
                   value={formData.description}
@@ -603,10 +451,10 @@ export default function CollieryManagerDashboard() {
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded border text-[10px] font-bold font-mono uppercase transition-all ${gpsStatus === 'done' ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400' : gpsStatus === 'error' ? 'bg-red-950/60 border-red-800 text-red-400' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'}`}
                 >
                   <MapPin className="w-3 h-3" />
-                  {gpsStatus === 'idle' && 'Tag Location'}
-                  {gpsStatus === 'capturing' && 'Acquiring...'}
+                  {gpsStatus === 'idle' && t('form_btn_tag_location', 'Tag Location')}
+                  {gpsStatus === 'capturing' && t('form_btn_acquiring', 'Acquiring...')}
                   {gpsStatus === 'done' && `${coords?.lat?.toFixed(4)}, ${coords?.lng?.toFixed(4)}`}
-                  {gpsStatus === 'error' && 'GPS Error'}
+                  {gpsStatus === 'error' && t('form_btn_gps_error', 'GPS Error')}
                 </button>
                 <button
                   id="voice-log-btn"
@@ -614,7 +462,7 @@ export default function CollieryManagerDashboard() {
                   className={`flex items-center gap-2 px-4 py-2 rounded border text-[10px] font-bold font-mono uppercase transition-all ${isRecording ? 'bg-red-950/60 border-red-800 text-red-400 animate-pulse' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'}`}
                 >
                   {isRecording ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
-                  {isRecording ? 'Stop' : 'Voice Memo'}
+                  {isRecording ? t('form_btn_stop', 'Stop') : t('form_btn_voice_memo', 'Voice Memo')}
                 </button>
               </div>
             </div>
@@ -624,7 +472,7 @@ export default function CollieryManagerDashboard() {
                 onClick={() => { setShowHazardForm(false); resetForm(); }}
                 className="flex-1 py-2 rounded border border-slate-700 text-slate-400 text-xs font-bold font-mono hover:text-white transition"
               >
-                CANCEL
+                {t('form_btn_cancel', 'CANCEL')}
               </button>
               <button
                 id="submit-hazard-btn"
@@ -635,9 +483,9 @@ export default function CollieryManagerDashboard() {
                 {submitStatus === 'submitting' && <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                 {submitStatus === 'done' && <CheckCircle2 className="w-3.5 h-3.5" />}
                 {submitStatus === 'idle' && <Send className="w-3.5 h-3.5" />}
-                {submitStatus === 'idle' && (!isOnline ? 'QUEUE OFFLINE' : 'TRANSMIT LOG')}
-                {submitStatus === 'submitting' && 'TRANSMITTING...'}
-                {submitStatus === 'done' && 'LOGGED'}
+                {submitStatus === 'idle' && (!isOnline ? t('form_btn_queue_offline', 'QUEUE OFFLINE') : t('form_btn_transmit', 'TRANSMIT LOG'))}
+                {submitStatus === 'submitting' && t('form_btn_transmitting', 'TRANSMITTING...')}
+                {submitStatus === 'done' && t('form_btn_logged', 'LOGGED')}
               </button>
             </div>
           </div>

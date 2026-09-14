@@ -324,9 +324,7 @@ export default function Landing() {
                   style={{ backgroundImage: `url('${HERO_IMAGES[currentImgIndex]}')` }}
                 />
               </AnimatePresence>
-              <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-surface-container-lowest/20"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-surface/90 via-surface/40 to-transparent"></div>
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#38bdf80a_1px,transparent_1px),linear-gradient(to_bottom,#38bdf80a_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none"></div>
+              {/* Overlays removed per user request */}
               
               <div className="relative w-full max-w-7xl mx-auto px-space-xl flex flex-col gap-space-2xl z-10 pt-16">
                 <motion.div 

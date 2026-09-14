@@ -15,7 +15,6 @@ import Contractors from './pages/Contractors';
 import ContractorDetail from './pages/ContractorDetail';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
 import ManageUsers from './pages/ManageUsers';
 import Compliance from './pages/Compliance';
 import Violations from './pages/Violations';
@@ -122,7 +121,6 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/public" element={<PublicTracking />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
           
           <Route element={<ProtectedRoute />}>
             <Route path="/mines-map" element={<GeospatialMap />} />

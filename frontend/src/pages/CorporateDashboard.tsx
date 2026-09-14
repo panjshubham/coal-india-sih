@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabase';
 import { 
   ShieldAlert, AlertTriangle, Activity, AlertCircle, RefreshCw, BarChart2, 
@@ -42,6 +43,7 @@ interface Violation {
 }
 
 export default function CorporateDashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     totalMines: 0,
     activeViolations: 0,
@@ -244,14 +246,14 @@ export default function CorporateDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
-            HQ Command Center
+            {t('corp_dashboard_title', 'HQ Command Center')}
             <span className="text-[11px] font-mono font-medium px-2.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 flex items-center gap-1.5">
               <Globe2 className="w-3 h-3" />
-              GLOBAL OPERATIONS
+              {t('corp_global_operations', 'GLOBAL OPERATIONS')}
             </span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Enterprise-wide telemetric aggregation and autonomous statutory compliance tracking.
+            {t('corp_dashboard_desc', 'Enterprise-wide telemetric aggregation and autonomous statutory compliance tracking.')}
           </p>
         </div>
 
@@ -262,7 +264,7 @@ export default function CorporateDashboard() {
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-bold hover:bg-indigo-500/30 transition-colors shadow-sm"
           >
             <Users className="w-3.5 h-3.5 text-indigo-400" />
-            Manage Mine Officials
+            {t('btn_manage_officials', 'Manage Mine Officials')}
           </Link>
 
           {/* Bulk Data Import Button */}
@@ -271,7 +273,7 @@ export default function CorporateDashboard() {
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-cyan-500/30 transition-colors shadow-sm"
           >
             <Database className="w-3.5 h-3.5 text-cyan-400" />
-            Data Import
+            {t('btn_data_import', 'Data Import')}
           </Link>
 
           {/* PDF Export Button */}
@@ -280,13 +282,13 @@ export default function CorporateDashboard() {
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.2)]"
           >
             <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
-            Export Compliance Report
+            {t('btn_export_compliance', 'Export Compliance Report')}
           </button>
 
           {/* Live Telemetry Stream Badge */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono">
             <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-            <span>LIVE TELEMETRY STREAM: CONNECTED</span>
+            <span>{t('corp_live_telemetry', 'LIVE TELEMETRY STREAM: CONNECTED')}</span>
           </div>
         </div>
       </div>
@@ -294,36 +296,36 @@ export default function CorporateDashboard() {
       {/* 2. Top-Level Operational Metrics Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
-          <p className="text-xs font-mono text-slate-400 uppercase">Total Supervised Sites</p>
+          <p className="text-xs font-mono text-slate-400 uppercase">{t('corp_metric_total_mines', 'Total Supervised Sites')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-white">{stats.totalMines}</h3>
-            <span className="text-xs text-blue-400 font-mono"><Server className="w-3.5 h-3.5 inline mr-1" />Nodes Active</span>
+            <span className="text-xs text-blue-400 font-mono"><Server className="w-3.5 h-3.5 inline mr-1" />{t('corp_metric_nodes_active', 'Nodes Active')}</span>
           </div>
         </div>
 
         <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
-          <p className="text-xs font-mono text-slate-400 uppercase">Active Violations</p>
+          <p className="text-xs font-mono text-slate-400 uppercase">{t('metric_violations', 'Active Violations')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-amber-400">{stats.activeViolations}</h3>
             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800">
-              Requiring Intervention
+              {t('metric_violations_sub', 'Requiring Intervention')}
             </span>
           </div>
         </div>
 
         <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
-          <p className="text-xs font-mono text-slate-400 uppercase">Overdue Compliance</p>
+          <p className="text-xs font-mono text-slate-400 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-red-400">{stats.overdueCompliance}</h3>
-            <span className="text-xs text-slate-400 font-mono">Escalation Triggered</span>
+            <span className="text-xs text-slate-400 font-mono">{t('corp_metric_escalation', 'Escalation Triggered')}</span>
           </div>
         </div>
 
         <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
-          <p className="text-xs font-mono text-slate-400 uppercase">Global Avg Risk Score</p>
+          <p className="text-xs font-mono text-slate-400 uppercase">{t('corp_metric_avg_risk', 'Global Avg Risk Score')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-cyan-400">{stats.avgRiskScore} <span className="text-sm font-normal text-slate-500">/ 100</span></h3>
-            <span className="text-[10px] text-slate-400 font-mono">Weighted Mean</span>
+            <span className="text-[10px] text-slate-400 font-mono">{t('corp_metric_weighted_mean', 'Weighted Mean')}</span>
           </div>
         </div>
       </div>
@@ -459,18 +461,18 @@ export default function CorporateDashboard() {
           <div className="p-4 border-b border-slate-800 flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-200 tracking-wide uppercase flex items-center gap-2">
               <BarChart2 className="w-4 h-4 text-cyan-400" />
-              Consolidated Risk-Ranked Subsidiaries
+              {t('corp_section_risk_ranked', 'Consolidated Risk-Ranked Subsidiaries')}
             </h2>
-            <span className="text-[10px] font-mono text-slate-400">Click &apos;Explain Risk&apos; for SHAP Model Breakdown</span>
+            <span className="text-[10px] font-mono text-slate-400">{t('corp_click_explain', 'Click \'Explain Risk\' for SHAP Model Breakdown')}</span>
           </div>
           <div className="p-0 overflow-y-auto max-h-[450px]">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-900/80 font-mono text-slate-400 uppercase text-[10px] border-b border-slate-800 sticky top-0 backdrop-blur-md z-10">
                 <tr>
-                  <th className="px-5 py-3">Mine Location</th>
-                  <th className="px-5 py-3">Risk Index</th>
-                  <th className="px-5 py-3">Telemetry Bar</th>
-                  <th className="px-5 py-3 text-right">Explainability</th>
+                  <th className="px-5 py-3">{t('table_col_mine_location', 'Mine Location')}</th>
+                  <th className="px-5 py-3">{t('table_col_risk_index', 'Risk Index')}</th>
+                  <th className="px-5 py-3">{t('table_col_telemetry', 'Telemetry Bar')}</th>
+                  <th className="px-5 py-3 text-right">{t('table_col_explainability', 'Explainability')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-mono">
@@ -501,14 +503,14 @@ export default function CorporateDashboard() {
                         className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 rounded font-sans text-xs font-semibold transition-colors"
                       >
                         <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                        Explain Risk (XAI)
+                        {t('btn_explain_risk', 'Explain Risk (XAI)')}
                       </button>
                     </td>
                   </tr>
                 ))}
                 {riskScores.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-5 py-8 text-center text-slate-500">No risk data available.</td>
+                    <td colSpan={4} className="px-5 py-8 text-center text-slate-500">{t('corp_no_risk_data', 'No risk data available.')}</td>
                   </tr>
                 )}
               </tbody>
@@ -524,9 +526,9 @@ export default function CorporateDashboard() {
           <div className="pb-3 border-b border-slate-800 relative z-10 flex justify-between items-center">
             <h2 className="text-sm font-bold text-slate-200 tracking-wide flex items-center gap-2">
               <Activity className="w-4 h-4 text-indigo-400" />
-              HQ AI RISK INSIGHTS
+              {t('corp_section_ai_insights', 'HQ AI RISK INSIGHTS')}
             </h2>
-            <span className="text-[10px] font-mono text-slate-400">XGBoost Diagnostics</span>
+            <span className="text-[10px] font-mono text-slate-400">{t('corp_xgboost_diagnostics', 'XGBoost Diagnostics')}</span>
           </div>
           
           <div className="mt-4 space-y-3 flex-1 relative z-10 font-sans">
@@ -576,7 +578,7 @@ export default function CorporateDashboard() {
               className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-400 text-sm font-bold rounded-lg transition-colors disabled:opacity-50"
             >
               {calculatingRisk ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              {calculatingRisk ? 'Recalculating Globally...' : 'Recalculate Global Risk Scores'}
+              {calculatingRisk ? t('btn_recalculating', 'Recalculating Globally...') : t('btn_recalculate_global', 'Recalculate Global Risk Scores')}
             </button>
           </div>
         </div>
@@ -586,21 +588,21 @@ export default function CorporateDashboard() {
       {/* 4. Bottom: Recent Violations Feed */}
       <div className="mt-6 bg-[#0B1326] border border-slate-800 rounded-xl overflow-hidden shadow-xl">
         <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">Enterprise Live Violations Feed</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">{t('corp_section_violations_feed', 'Enterprise Live Violations Feed')}</h3>
           <span className="flex items-center gap-2 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            REALTIME INTERCONNECT ACTIVE
+            {t('corp_realtime_active', 'REALTIME INTERCONNECT ACTIVE')}
           </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-900/80 font-mono text-slate-400 uppercase text-[10px] border-b border-slate-800">
               <tr>
-                <th className="px-5 py-3">Mine & Subsidiary</th>
-                <th className="px-5 py-3">Category</th>
-                <th className="px-5 py-3">Severity</th>
-                <th className="px-5 py-3">Escalation Status</th>
-                <th className="px-5 py-3">Timestamp</th>
+                <th className="px-5 py-3">{t('table_col_mine', 'Mine & Subsidiary')}</th>
+                <th className="px-5 py-3">{t('table_col_category', 'Category')}</th>
+                <th className="px-5 py-3">{t('table_col_severity', 'Severity')}</th>
+                <th className="px-5 py-3">{t('table_col_escalation_status', 'Escalation Status')}</th>
+                <th className="px-5 py-3">{t('table_col_timestamp', 'Timestamp')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-mono">
@@ -645,20 +647,20 @@ export default function CorporateDashboard() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-black text-white">SHAP Explainability Diagnostic</h3>
+                    <h3 className="text-lg font-black text-white">{t('xai_modal_title', 'SHAP Explainability Diagnostic')}</h3>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700">
-                      TreeSHAP Engine
+                      {t('xai_engine', 'TreeSHAP Engine')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Additive Feature Attribution for <strong className="text-slate-200">{selectedXaiMine.mines?.name}</strong>
+                    {t('xai_attribution', 'Additive Feature Attribution for')} <strong className="text-slate-200">{selectedXaiMine.mines?.name}</strong>
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <div className="text-[10px] font-mono text-slate-400 uppercase">Risk Index</div>
+                  <div className="text-[10px] font-mono text-slate-400 uppercase">{t('xai_risk_index', 'Risk Index')}</div>
                   <div className={`text-xl font-black ${
                     selectedXaiMine.score > 70 ? 'text-red-400' :
                     selectedXaiMine.score > 45 ? 'text-amber-400' : 'text-emerald-400'
@@ -689,8 +691,8 @@ export default function CorporateDashboard() {
               {/* Feature Attribution Waterfall */}
               <div>
                 <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-3 flex items-center justify-between">
-                  <span>Contributing Risk Drivers (SHAP Values)</span>
-                  <span className="text-[10px] text-slate-500">Positive = Increases Risk</span>
+                  <span>{t('xai_drivers', 'Contributing Risk Drivers (SHAP Values)')}</span>
+                  <span className="text-[10px] text-slate-500">{t('xai_positive', 'Positive = Increases Risk')}</span>
                 </h4>
 
                 <div className="space-y-3">
@@ -731,7 +733,7 @@ export default function CorporateDashboard() {
                 <div className="flex items-center gap-2 text-rose-400">
                   <ShieldAlert className="w-4 h-4" />
                   <span className="text-xs font-mono font-bold uppercase tracking-wider">
-                    Statutory Mitigation Directive (Mines Act 1952 Sec 22)
+                    {t('xai_statutory_directive', 'Statutory Mitigation Directive (Mines Act 1952 Sec 22)')}
                   </span>
                 </div>
                 <p className="text-xs text-slate-200 leading-relaxed">
@@ -752,13 +754,13 @@ export default function CorporateDashboard() {
                   className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  Dispatch Statutory Remediation Ticket
+                  {t('btn_dispatch_ticket', 'Dispatch Statutory Remediation Ticket')}
                 </button>
                 <button
                   onClick={() => setSelectedXaiMine(null)}
                   className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
                 >
-                  Close
+                  {t('btn_close', 'Close')}
                 </button>
               </div>
             </div>

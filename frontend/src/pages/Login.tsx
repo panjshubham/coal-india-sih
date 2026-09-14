@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
-import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 export default function Login() {
@@ -11,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState('Demo@2026');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -145,7 +146,7 @@ export default function Login() {
         </div>
 
         <div className="w-full max-w-md pt-12 lg:pt-0">
-          <div className="mb-6">
+          <div className="mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--cg-text-primary)] mb-2 tracking-tight">
               Sign In
             </h2>
@@ -166,7 +167,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setDemoCredentials('corporate')}
-                className={`px-2.5 py-2 rounded text-xs font-semibold flex flex-col items-center gap-1 border transition-all cursor-pointer ${
+                className={`px-2.5 py-2 rounded text-xs font-semibold flex flex-col items-center gap-1 border transition-all duration-200 active:scale-[0.97] cursor-pointer ${
                   email.startsWith('corporate') 
                     ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 font-bold' 
                     : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-300 hover:border-amber-500/40'
@@ -178,7 +179,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setDemoCredentials('mine_official')}
-                className={`px-2.5 py-2 rounded text-xs font-semibold flex flex-col items-center gap-1 border transition-all cursor-pointer ${
+                className={`px-2.5 py-2 rounded text-xs font-semibold flex flex-col items-center gap-1 border transition-all duration-200 active:scale-[0.97] cursor-pointer ${
                   email.startsWith('mine_official') 
                     ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 font-bold' 
                     : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-300 hover:border-amber-500/40'
@@ -190,7 +191,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setDemoCredentials('regulator')}
-                className={`px-2.5 py-2 rounded text-xs font-semibold flex flex-col items-center gap-1 border transition-all cursor-pointer ${
+                className={`px-2.5 py-2 rounded text-xs font-semibold flex flex-col items-center gap-1 border transition-all duration-200 active:scale-[0.97] cursor-pointer ${
                   email.startsWith('regulator') 
                     ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 font-bold' 
                     : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-300 hover:border-amber-500/40'
@@ -218,40 +219,46 @@ export default function Login() {
                 type="email" 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full h-11 px-3 border border-[var(--cg-border)] rounded-lg bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors text-sm"
+                className="w-full h-11 px-3 border border-[var(--cg-border)] rounded-lg bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/50 transition-all duration-200 ease-in-out text-sm"
                 placeholder="official@coalguard.demo"
                 required
               />
             </div>
             
-            <div className="space-y-1">
+            <div className="space-y-1 relative">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Password
                 </label>
                 <span className="text-[11px] text-slate-400">Standard Demo Password: <span className="font-mono text-amber-400">Demo@2026</span></span>
               </div>
-              <input 
-                type="password" 
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full h-11 px-3 border border-[var(--cg-border)] rounded-lg bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors text-sm font-mono"
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative">
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full h-11 px-3 pr-10 border border-[var(--cg-border)] rounded-lg bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/50 transition-all duration-200 ease-in-out text-sm font-mono"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(p => !p)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col gap-3 mt-6">
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full h-11 flex items-center justify-center bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold tracking-wide rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-amber-500/10 text-sm"
+                className="w-full h-11 flex items-center justify-center bg-amber-500 hover:brightness-105 text-slate-900 font-bold tracking-wide rounded-lg transition-all duration-150 ease-in-out disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-amber-500/10 text-sm"
               >
                 {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Authenticating...
-                  </>
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
                     <Lock className="w-4 h-4 mr-2" />
@@ -262,15 +269,6 @@ export default function Login() {
             </div>
           </form>
 
-          {/* Security Assurance Footer */}
-          <div className="mt-8 pt-6 border-t border-[var(--cg-border)] text-center text-sm text-slate-400 space-y-2">
-            <p className="text-slate-400">
-              Don't have an account?{' '}
-              <Link to="/signup" className="text-amber-500 hover:text-amber-400 font-semibold transition-colors">
-                Sign up here
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
 

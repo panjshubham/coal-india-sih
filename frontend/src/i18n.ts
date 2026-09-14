@@ -5,7 +5,6 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
-      // Core Dashboard
       "dashboard_title": "National Command",
       "subsidiary_radar": "Subsidiary Radar",
       "recalculate": "Recalculate Risk Scores (AI)",
@@ -19,7 +18,6 @@ const resources = {
       "crypto_audit": "Cryptographic Audit",
       "verified_ledger": "Verified Dispatch Ledger",
 
-      // Sidebar Nav
       "nav_dashboard_colliery": "Colliery Manager",
       "nav_dashboard_corporate": "Corporate HQ",
       "nav_dashboard_regulator": "Regulator Portal",
@@ -36,7 +34,6 @@ const resources = {
       "nav_audit": "Audit Log",
       "nav_profile": "Officer Profile",
 
-      // Landing / Homepage
       "landing_title": "CoalGuard",
       "landing_subtitle": "AI-Based Smart Governance and Compliance Monitoring System",
       "landing_cta": "Sign In to Command Center",
@@ -49,7 +46,6 @@ const resources = {
       "feat_4_title": "Automated Workflows",
       "feat_4_desc": "Instant escalation pathways for safety hazards.",
 
-      // Mobile Form (NewInspection.tsx)
       "form_title": "Log Violation",
       "form_mine": "Select Mine",
       "form_type": "Inspection Type",
@@ -60,7 +56,6 @@ const resources = {
       "form_submit": "Submit Inspection",
       "form_offline_notice": "Saved offline - will sync when connected",
       
-      // Status Labels
       "status_active": "Active",
       "status_critical": "Critical",
       "status_high": "High",
@@ -71,7 +66,6 @@ const resources = {
   },
   hi: {
     translation: {
-      // Core Dashboard
       "dashboard_title": "राष्ट्रीय कमान (National Command)",
       "subsidiary_radar": "सहायक रडार (Subsidiary Radar)",
       "recalculate": "जोखिम स्कोर की पुनर्गणना (AI)",
@@ -85,7 +79,6 @@ const resources = {
       "crypto_audit": "क्रिप्टोग्राफ़िक ऑडिट (Cryptographic Audit)",
       "verified_ledger": "सत्यापित डिस्पैच लेजर (Verified Dispatch Ledger)",
 
-      // Sidebar Nav
       "nav_dashboard_colliery": "कोलिरी प्रबंधक (Colliery)",
       "nav_dashboard_corporate": "कॉर्पोरेट मुख्यालय (Corporate)",
       "nav_dashboard_regulator": "नियामक पोर्टल (Regulator)",
@@ -102,7 +95,6 @@ const resources = {
       "nav_audit": "ऑडिट लॉग",
       "nav_profile": "अधिकारी प्रोफ़ाइल",
 
-      // Landing / Homepage
       "landing_title": "CoalGuard",
       "landing_subtitle": "एआई-आधारित स्मार्ट गवर्नेंस और अनुपालन निगरानी प्रणाली",
       "landing_cta": "कमांड सेंटर में प्रवेश करें",
@@ -115,7 +107,6 @@ const resources = {
       "feat_4_title": "स्वचालित वर्कफ़्लो",
       "feat_4_desc": "सुरक्षा खतरों के लिए त्वरित वृद्धि मार्ग।",
 
-      // Mobile Form (NewInspection.tsx)
       "form_title": "उल्लंघन दर्ज करें",
       "form_mine": "खदान चुनें",
       "form_type": "निरीक्षण का प्रकार",
@@ -126,13 +117,129 @@ const resources = {
       "form_submit": "निरीक्षण जमा करें",
       "form_offline_notice": "ऑफ़लाइन सहेजा गया - कनेक्ट होने पर सिंक हो जाएगा",
 
-      // Status Labels
       "status_active": "सक्रिय",
       "status_critical": "अति गंभीर",
       "status_high": "उच्च",
       "status_medium": "मध्यम",
       "status_low": "निम्न",
-      "status_compliant": "अनुपालन"
+      "status_compliant": "अनुपालन",
+      
+      // New Dashboard Keys
+      "cm_header_ministry": "कोयला मंत्रालय / संचालन / कोलिरी प्रबंधन",
+      "cm_dashboard_title": "कोलिरी प्रबंधक कंसोल",
+      "cm_local_time": "स्थानीय समय",
+      "cm_network_online": "नेटवर्क ऑनलाइन",
+      "cm_network_offline": "ऑफ़लाइन मोड",
+      "cm_queued": "कतार में",
+      "btn_inspections": "निरीक्षण",
+      "btn_cmr_registers": "सीएमआर वैधानिक रजिस्टर",
+      "btn_report_hazard": "खतरे की रिपोर्ट करें",
+      "metric_workers": "कार्यस्थल पर कर्मचारी",
+      "metric_workers_sub": "3 सक्रिय शिफ्ट",
+      "metric_violations": "खुले उल्लंघन",
+      "metric_violations_sub": "कार्रवाई की आवश्यकता",
+      "metric_compliance": "अनुपालन आइटम",
+      "metric_compliance_sub": "इस महीने ट्रैक किया गया",
+      "metric_contractors": "सक्रिय ठेकेदार",
+      "metric_contractors_sub": "कुल {{total}} पंजीकृत",
+      "section_shift_schedule": "शिफ्ट अनुसूची",
+      "cm_shift_foreman": "शिफ्ट फोरमैन",
+      "cm_miners": "खनिक",
+      "section_contractor_manifest": "ठेकेदार सूची",
+      "cm_workers": "कर्मचारी",
+      "cm_cert_expiring": "सुरक्षा प्रमाणपत्र जल्द समाप्त हो रहा है",
+      "section_open_hazards": "खुले खतरे",
+      "cm_violations_link": "उल्लंघन और सिंक &rarr;",
+      "cm_no_hazards": "कोई खुले खतरे नहीं",
+      "section_compliance_tracker": "कोलिरी अनुपालन ट्रैकर",
+      "table_col_directive": "निर्देश / आवश्यकता",
+      "table_col_category": "श्रेणी",
+      "table_col_due_date": "नियत तारीख",
+      "table_col_status": "स्थिति",
+      "modal_report_hazard": "फील्ड खतरे की रिपोर्ट करें",
+      "cm_offline_queuing": "ऑफ़लाइन: कतारबद्ध",
+      "form_label_category": "खतरे की श्रेणी",
+      "form_label_severity": "गंभीरता सूचकांक",
+      "form_label_description": "घटना विवरण",
+      "form_btn_tag_location": "स्थान टैग करें",
+      "form_btn_acquiring": "प्राप्त कर रहा है...",
+      "form_btn_gps_error": "जीपीएस त्रुटि",
+      "form_btn_stop": "रोकें",
+      "form_btn_voice_memo": "वॉयस मेमो",
+      "form_btn_cancel": "रद्द करें",
+      "form_btn_queue_offline": "ऑफ़लाइन कतार",
+      "form_btn_transmit": "लॉग प्रेषित करें",
+      "form_btn_transmitting": "प्रेषित कर रहा है...",
+      "form_btn_logged": "लॉग किया गया",
+
+      "corp_dashboard_title": "मुख्यालय कमांड सेंटर",
+      "corp_global_operations": "वैश्विक संचालन",
+      "corp_dashboard_desc": "उद्यम-व्यापी टेलीमेट्रिक एकत्रीकरण और स्वायत्त वैधानिक अनुपालन ट्रैकिंग।",
+      "btn_manage_officials": "खदान अधिकारियों का प्रबंधन करें",
+      "btn_data_import": "डेटा आयात",
+      "btn_export_compliance": "अनुपालन रिपोर्ट निर्यात करें",
+      "corp_live_telemetry": "लाइव टेलीमेट्री स्ट्रीम: कनेक्टेड",
+      "corp_metric_total_mines": "कुल पर्यवेक्षित साइटें",
+      "corp_metric_nodes_active": "सक्रिय नोड्स",
+      "corp_metric_overdue_compliance": "अतिदेय अनुपालन",
+      "corp_metric_escalation": "वृद्धि ट्रिगर",
+      "corp_metric_avg_risk": "वैश्विक औसत जोखिम स्कोर",
+      "corp_metric_weighted_mean": "भारित औसत",
+      "corp_section_risk_ranked": "समेकित जोखिम-रैंक वाली सहायक कंपनियां",
+      "corp_click_explain": "SHAP मॉडल ब्रेकडाउन के लिए 'जोखिम समझाएं' पर क्लिक करें",
+      "table_col_mine_location": "खदान का स्थान",
+      "table_col_risk_index": "जोखिम सूचकांक",
+      "table_col_telemetry": "टेलीमेट्री बार",
+      "table_col_explainability": "व्याख्यात्मकता",
+      "btn_explain_risk": "जोखिम समझाएं (XAI)",
+      "corp_no_risk_data": "कोई जोखिम डेटा उपलब्ध नहीं है।",
+      "corp_section_ai_insights": "मुख्यालय एआई जोखिम अंतर्दृष्टि",
+      "corp_xgboost_diagnostics": "XGBoost डायग्नोस्टिक्स",
+      "btn_recalculating": "विश्व स्तर पर पुनर्गणना हो रही है...",
+      "btn_recalculate_global": "वैश्विक जोखिम स्कोर की पुनर्गणना करें",
+      "corp_section_violations_feed": "एंटरप्राइज लाइव उल्लंघन फ़ीड",
+      "corp_realtime_active": "रीयलटाइम इंटरकनेक्ट सक्रिय",
+      "table_col_mine": "खदान और सहायक",
+      "table_col_severity": "गंभीरता",
+      "table_col_escalation_status": "वृद्धि की स्थिति",
+      "table_col_timestamp": "समय-मोहर",
+      "xai_modal_title": "SHAP व्याख्यात्मकता डायग्नोस्टिक",
+      "xai_engine": "TreeSHAP इंजन",
+      "xai_attribution": "के लिए योगात्मक सुविधा एट्रिब्यूशन",
+      "xai_risk_index": "जोखिम सूचकांक",
+      "xai_drivers": "योगदान देने वाले जोखिम चालक (SHAP मान)",
+      "xai_positive": "सकारात्मक = जोखिम बढ़ाता है",
+      "xai_statutory_directive": "वैधानिक शमन निर्देश (खान अधिनियम 1952 धारा 22)",
+      "btn_dispatch_ticket": "वैधानिक सुधार टिकट भेजें",
+      "btn_close": "बंद करें",
+
+      "reg_dashboard_title": "नियामक और निगरानी पोर्टल",
+      "reg_dgms_audit_ready": "डीजीएमएस ऑडिट तैयार",
+      "reg_dashboard_desc": "सभी CIL सहायक परिचालनों में वैधानिक निगरानी और स्वचालित वृद्धि (Read-only)।",
+      "reg_ledger_verified": "लेजर: 100% सत्यापित (ब्लॉक #18,492)",
+      "btn_export_form_v": "फॉर्म V निर्यात करें (PDF)",
+      "reg_metric_monitored_mines": "निगरानी वाली खदानें",
+      "reg_metric_active_100": "100% सक्रिय",
+      "reg_metric_sla": "3 अंडर 2-Hr SLA",
+      "reg_metric_action_flagged": "कार्रवाई फ़्लैग की गई",
+      "reg_metric_risk_score": "समग्र जोखिम स्कोर",
+      "reg_metric_xgboost": "XGBoost भारित",
+      "reg_crypto_integrity": "क्रिप्टोग्राफ़िक अखंडता की पुष्टि: हैश {{hash}} रूट मर्कल अवस्था से मेल खाता है।",
+      "reg_tamper_proof": "टैम्पर-प्रूफ प्रूफ-ऑफ-स्टेट",
+      "reg_filter": "फ़िल्टर:",
+      "reg_search_placeholder": "खदान का नाम खोजें...",
+      "reg_section_subsidiary_risk": "सहायक जोखिम और वैधानिक ऑडिट स्थिति",
+      "reg_showing_facilities": "{{count}} सुविधाएं दिखा रहा है",
+      "table_col_ledger_hash": "लेजर हैश",
+      "table_col_audit_action": "ऑडिट कार्रवाई",
+      "reg_sla_escalated": "SLA वृद्धि (2H)",
+      "reg_normal_audit": "सामान्य ऑडिट",
+      "btn_verify_hash": "हैश सत्यापित करें",
+      "reg_section_ai_reasoning": "एआई वैधानिक तर्क",
+      "reg_xgboost_shap": "XGBoost + SHAP",
+      "reg_live_audit_stream": "लाइव डीजीएमएस ऑडिट स्ट्रीम:",
+      "reg_audit_log_example": "[10:14:02 IST] Karo Spl Bench #4 निरीक्षण लेजर से जुड़ा (0x7f8a...c3d1)",
+      "reg_chain_validated": "श्रृंखला मान्य"
     }
   }
 };
