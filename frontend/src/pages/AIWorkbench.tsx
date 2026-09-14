@@ -1678,6 +1678,7 @@ function PPEPanel() {
   const analyzeImagePixels = (img: HTMLImageElement): {
     hasHardHat: boolean;
     hasVest: boolean;
+    uncertain: boolean;
     personDetected: boolean;
     confidence: number;
     headBox: { xmin: number; ymin: number; xmax: number; ymax: number };
@@ -1685,16 +1686,21 @@ function PPEPanel() {
     personBox: { xmin: number; ymin: number; xmax: number; ymax: number };
     helmetPct: number;
     vestPct: number;
+    helmCount: number;
+    vestCount: number;
+    headAreaScanned: number;
+    torsoAreaScanned: number;
   } => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       return {
-        hasHardHat: false, hasVest: false, personDetected: true, confidence: 0.96,
-        headBox: { xmin: 0.25, ymin: 0.05, xmax: 0.75, ymax: 0.35 },
-        torsoBox: { xmin: 0.15, ymin: 0.35, xmax: 0.85, ymax: 0.80 },
+        hasHardHat: false, hasVest: false, uncertain: false, personDetected: false, confidence: 0,
+        headBox: { xmin: 0.25, ymin: 0.05, xmax: 0.75, ymax: 0.30 },
+        torsoBox: { xmin: 0.15, ymin: 0.30, xmax: 0.85, ymax: 0.75 },
         personBox: { xmin: 0.10, ymin: 0.05, xmax: 0.90, ymax: 0.95 },
-        helmetPct: 0, vestPct: 0
+        helmetPct: 0, vestPct: 0, helmCount: 0, vestCount: 0,
+        headAreaScanned: 0, torsoAreaScanned: 0
       };
     }
 
@@ -1703,189 +1709,155 @@ function PPEPanel() {
     canvas.width = width;
     canvas.height = height;
     ctx.drawImage(img, 0, 0, width, height);
-
     const imgData = ctx.getImageData(0, 0, width, height).data;
 
-    // Helper: is letterbox black or white background
+    // Background classifier (letterbox or plain background)
     const isLetterboxOrBg = (r: number, g: number, b: number) => {
-      // Black letterbox bars (from screenshots/videos)
       if (r < 30 && g < 30 && b < 30) return true;
-      // White studio backdrop / blank background
       if (r > 240 && g > 240 && b > 240) return true;
       return false;
     };
 
-    // ── Standard Safety Color Classifiers ──
-    // 1. Hard Hat Colors: Safety Red, Safety Yellow, Safety Orange, Electric Blue, Electric Green, White Dome
-    const isHelmetColor = (r: number, g: number, b: number) => {
-      // Safety Red hard hat (crimson / industrial red helmet)
-      const isRed = (r > 140 && g < 100 && b < 100 && (r - Math.max(g, b)) > 45) ||
-                    (r > 165 && g < 120 && b < 120 && (r - g) > 50 && (r - b) > 50);
-      // Safety Yellow hard hat
-      const isYellow = (r > 160 && g > 130 && b < 100 && (r + g) / 2 - b > 65 && Math.abs(r - g) < 55);
-      // Safety Orange hard hat
-      const isOrange = (r > 175 && g > 65 && g < 160 && b < 80 && (r - g) > 35 && (r - b) > 95);
-      // Electric Safety Blue
-      const isBlue = (b > 135 && b > r * 1.35 && b > g * 1.20 && (b - r) > 35);
-      // Electric Safety Green
-      const isGreen = (g > 135 && g > r * 1.25 && g > b * 1.25 && (g - r) > 25);
-      // Safety White hard hat (glossy white with high brightness)
-      const isWhite = (r > 225 && g > 225 && b > 225 && Math.max(r, g, b) - Math.min(r, g, b) < 14);
-
-      return isRed || isYellow || isOrange || isBlue || isGreen || isWhite;
+    // Hard Hat color detector — safety-saturated colors only (calibrated to exclude skin tones)
+    const isHelmetColor = (r: number, g: number, b: number): boolean => {
+      // Safety Yellow: vibrant yellow with high green, low blue, distinct from warm skin tones
+      if (r > 170 && g > 150 && b < 90 && (g - b) > 70 && Math.abs(r - g) < 45) return true;
+      // Safety Orange: vibrant hi-vis orange (b < 75 rules out warm skin tones)
+      if (r > 175 && g > 60 && g < 155 && b < 75 && (r - b) > 95 && (r - g) > 30) return true;
+      // Safety Red: deep safety red (not flushed skin: g and b strictly low)
+      if (r > 150 && g < 90 && b < 90 && (r - Math.max(g, b)) > 50) return true;
+      // Electric Blue hard hat
+      if (b > 130 && b > r * 1.3 && b > g * 1.2 && (b - r) > 35) return true;
+      // Safety Green hard hat
+      if (g > 130 && g > r * 1.25 && g > b * 1.25 && (g - r) > 25) return true;
+      // Glossy White hard hat (very high luminance, extremely low saturation)
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      if (r > 225 && g > 225 && b > 225 && (max - min) < 15) return true;
+      return false;
     };
 
-    // 2. Safety Vest Colors: Fluorescent Safety Orange & Fluorescent Lime-Yellow
-    const isVestColor = (r: number, g: number, b: number) => {
-      // Fluorescent Safety Orange (bright orange with high red, medium green, low blue)
-      const isNeonOrange = (r > 165 && g > 55 && g < 165 && b < 85 && (r - g) > 30 && (r - b) > 85);
-      // Fluorescent Lime-Yellow (bright neon yellow-green)
-      const isNeonLime = (g > 135 && r > 110 && b < 95 && (g - b) > 45 && (r - b) > 30);
-
-      return isNeonOrange || isNeonLime;
+    // Safety Vest color detector — fluorescent hi-vis only
+    const isVestColor = (r: number, g: number, b: number): boolean => {
+      // Fluorescent Safety Orange (b < 75, r - b > 95 eliminates skin tones)
+      if (r > 170 && g > 55 && g < 155 && b < 75 && (r - g) > 30 && (r - b) > 95) return true;
+      // Fluorescent Lime-Yellow (high green dominance, low blue)
+      if (g > 140 && r > 110 && b < 85 && (g - b) > 55 && (r - b) > 25) return true;
+      // Retroreflective silver/white safety tape stripes
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      if (r > 200 && g > 200 && b > 200 && (max - min) < 25) return true;
+      return false;
     };
 
-    // Scan the entire image for safety clusters
-    let helmCount = 0;
-    let helmXMin = width, helmXMax = 0, helmYMin = height, helmYMax = 0;
-
-    let vestCount = 0;
-    let vestXMin = width, vestXMax = 0, vestYMin = height, vestYMax = 0;
-
+    // Step 1: Find person bounding box via foreground detection
     let personXMin = width, personXMax = 0, personYMin = height, personYMax = 0;
     let fgPixels = 0;
-
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        const idx = (y * width + x) * 4;
-        const r = imgData[idx], g = imgData[idx+1], b = imgData[idx+2];
-
-        if (!isLetterboxOrBg(r, g, b)) {
+        const i = (y * width + x) * 4;
+        if (!isLetterboxOrBg(imgData[i], imgData[i+1], imgData[i+2])) {
           fgPixels++;
           if (x < personXMin) personXMin = x;
           if (x > personXMax) personXMax = x;
           if (y < personYMin) personYMin = y;
           if (y > personYMax) personYMax = y;
         }
+      }
+    }
+    if (personYMin >= personYMax) {
+      personXMin = Math.round(width * 0.15); personXMax = Math.round(width * 0.85);
+      personYMin = Math.round(height * 0.05); personYMax = Math.round(height * 0.95);
+    }
+    const personH = personYMax - personYMin;
 
-        if (isHelmetColor(r, g, b)) {
-          helmCount++;
-          if (x < helmXMin) helmXMin = x;
-          if (x > helmXMax) helmXMax = x;
-          if (y < helmYMin) helmYMin = y;
-          if (y > helmYMax) helmYMax = y;
-        }
+    // Step 2: Anatomically grounded scan regions within person bounds
+    // True human proportions: head is top ~18% of height, torso spans from 18% to 62%
+    const headY1 = personYMin;
+    const headY2 = Math.min(height - 1, personYMin + Math.round(personH * 0.18));
+    const torsoY1 = headY2;
+    const torsoY2 = Math.min(height - 1, personYMin + Math.round(personH * 0.62));
 
-        if (isVestColor(r, g, b)) {
-          vestCount++;
-          if (x < vestXMin) vestXMin = x;
-          if (x > vestXMax) vestXMax = x;
-          if (y < vestYMin) vestYMin = y;
-          if (y > vestYMax) vestYMax = y;
+    // Step 3: Scan head region for helmet color pixels
+    let helmCount = 0, headAreaScanned = 0;
+    let helmXMin = width, helmXMax = 0, helmYMin = height, helmYMax = 0;
+    for (let y = headY1; y <= headY2; y++) {
+      for (let x = personXMin; x <= personXMax; x++) {
+        const i = (y * width + x) * 4;
+        const r = imgData[i], g = imgData[i+1], b = imgData[i+2];
+        if (!isLetterboxOrBg(r, g, b)) {
+          headAreaScanned++;
+          if (isHelmetColor(r, g, b)) {
+            helmCount++;
+            if (x < helmXMin) helmXMin = x;
+            if (x > helmXMax) helmXMax = x;
+            if (y < helmYMin) helmYMin = y;
+            if (y > helmYMax) helmYMax = y;
+          }
         }
       }
     }
 
-    if (personYMin >= personYMax) {
-      personXMin = Math.round(width * 0.2);
-      personXMax = Math.round(width * 0.8);
-      personYMin = Math.round(height * 0.15);
-      personYMax = Math.round(height * 0.85);
+    // Step 4: Scan torso region for vest color pixels
+    let vestCount = 0, torsoAreaScanned = 0;
+    let vestXMin = width, vestXMax = 0, vestYMin = height, vestYMax = 0;
+    for (let y = torsoY1; y <= torsoY2; y++) {
+      for (let x = personXMin; x <= personXMax; x++) {
+        const i = (y * width + x) * 4;
+        const r = imgData[i], g = imgData[i+1], b = imgData[i+2];
+        if (!isLetterboxOrBg(r, g, b)) {
+          torsoAreaScanned++;
+          if (isVestColor(r, g, b)) {
+            vestCount++;
+            if (x < vestXMin) vestXMin = x;
+            if (x > vestXMax) vestXMax = x;
+            if (y < vestYMin) vestYMin = y;
+            if (y > vestYMax) vestYMax = y;
+          }
+        }
+      }
     }
 
-    const personW = personXMax - personXMin;
-    const personH = personYMax - personYMin;
+    // Step 5: Real coverage percentage — strictly derived from scanned pixel ratios, NO hardcoded floor
+    const helmetPct = headAreaScanned > 0
+      ? Math.round((helmCount / headAreaScanned) * 1000) / 10
+      : 0;
+    const vestPct = torsoAreaScanned > 0
+      ? Math.round((vestCount / torsoAreaScanned) * 1000) / 10
+      : 0;
 
-    // Detect helmet and vest based on genuine cluster counts
-    const hasHardHat = helmCount >= 30;
-    const hasVest = vestCount >= 45;
+    // Step 6: Multi-tier compliance & honest uncertainty thresholds
+    const hasHardHat = helmetPct >= 12.0 && helmCount >= 15;
+    const hasVest    = vestPct  >= 15.0 && vestCount >= 25;
+    const uncertain  = (!hasHardHat && helmetPct >= 4.0) || (!hasVest && vestPct >= 5.0);
     const personDetected = fgPixels >= (width * height * 0.02) || hasHardHat || hasVest;
 
-    // Calculate realistic coverage percentage for display
-    const headAreaEst = Math.max(1, Math.round((personW * 0.5) * (personH * 0.25)));
-    const torsoAreaEst = Math.max(1, Math.round((personW * 0.7) * (personH * 0.45)));
+    // Step 7: Bounding boxes from real pixel clusters
+    const finalHeadBox = (hasHardHat && helmXMax > helmXMin)
+      ? { xmin: Math.max(0, helmXMin - 6) / width, ymin: Math.max(0, helmYMin - 6) / height,
+          xmax: Math.min(width, helmXMax + 6) / width, ymax: Math.min(height, helmYMax + 6) / height }
+      : { xmin: personXMin / width, ymin: headY1 / height,
+          xmax: personXMax / width, ymax: headY2 / height };
 
-    const helmetPct = hasHardHat
-      ? Math.min(96.5, Math.max(35.0, Number(((helmCount / headAreaEst) * 100).toFixed(1))))
-      : 0;
-
-    const vestPct = hasVest
-      ? Math.min(94.2, Math.max(42.0, Number(((vestCount / torsoAreaEst) * 100).toFixed(1))))
-      : 0;
-
-    // Determine normalized bounding boxes
-    let finalHeadBox;
-    if (hasHardHat && helmXMax > helmXMin && helmYMax > helmYMin) {
-      finalHeadBox = {
-        xmin: Math.max(0, helmXMin - 8) / width,
-        ymin: Math.max(0, helmYMin - 6) / height,
-        xmax: Math.min(width, helmXMax + 8) / width,
-        ymax: Math.min(height, helmYMax + 10) / height
-      };
-    } else if (hasVest && vestYMin > 0) {
-      // Place head box right above detected vest
-      const estHeadH = Math.round(personH * 0.22);
-      finalHeadBox = {
-        xmin: Math.max(0, vestXMin) / width,
-        ymin: Math.max(0, vestYMin - estHeadH) / height,
-        xmax: Math.min(width, vestXMax) / width,
-        ymax: Math.min(height, vestYMin) / height
-      };
-    } else {
-      finalHeadBox = {
-        xmin: Math.max(0, personXMin + Math.round(personW * 0.2)) / width,
-        ymin: Math.max(0, personYMin) / height,
-        xmax: Math.min(width, personXMax - Math.round(personW * 0.2)) / width,
-        ymax: Math.min(height, personYMin + Math.round(personH * 0.24)) / height
-      };
-    }
-
-    let finalTorsoBox;
-    if (hasVest && vestXMax > vestXMin && vestYMax > vestYMin) {
-      finalTorsoBox = {
-        xmin: Math.max(0, vestXMin - 6) / width,
-        ymin: Math.max(0, vestYMin - 6) / height,
-        xmax: Math.min(width, vestXMax + 6) / width,
-        ymax: Math.min(height, vestYMax + 6) / height
-      };
-    } else if (hasHardHat && helmYMax > 0) {
-      // Place torso box right below detected helmet
-      const estTorsoH = Math.round(personH * 0.45);
-      finalTorsoBox = {
-        xmin: Math.max(0, helmXMin - Math.round(personW * 0.15)) / width,
-        ymin: Math.max(0, helmYMax) / height,
-        xmax: Math.min(width, helmXMax + Math.round(personW * 0.15)) / width,
-        ymax: Math.min(height, helmYMax + estTorsoH) / height
-      };
-    } else {
-      finalTorsoBox = {
-        xmin: Math.max(0, personXMin + Math.round(personW * 0.1)) / width,
-        ymin: Math.max(0, personYMin + Math.round(personH * 0.24)) / height,
-        xmax: Math.min(width, personXMax - Math.round(personW * 0.1)) / width,
-        ymax: Math.min(height, personYMin + Math.round(personH * 0.70)) / height
-      };
-    }
-
-    const finalPersonBox = {
-      xmin: Math.max(0, Math.min(personXMin, hasHardHat ? helmXMin : personXMin, hasVest ? vestXMin : personXMin) - 4) / width,
-      ymin: Math.max(0, Math.min(personYMin, hasHardHat ? helmYMin : personYMin) - 4) / height,
-      xmax: Math.min(width, Math.max(personXMax, hasHardHat ? helmXMax : personXMax, hasVest ? vestXMax : personXMax) + 4) / width,
-      ymax: Math.min(height, personYMax + 4) / height
-    };
+    const finalTorsoBox = (hasVest && vestXMax > vestXMin)
+      ? { xmin: Math.max(0, vestXMin - 6) / width, ymin: Math.max(0, vestYMin - 6) / height,
+          xmax: Math.min(width, vestXMax + 6) / width, ymax: Math.min(height, vestYMax + 6) / height }
+      : { xmin: personXMin / width, ymin: torsoY1 / height,
+          xmax: personXMax / width, ymax: torsoY2 / height };
 
     return {
-      hasHardHat,
-      hasVest,
-      personDetected,
-      confidence: personDetected ? 0.98 : 0.0,
-      headBox: finalHeadBox,
-      torsoBox: finalTorsoBox,
-      personBox: finalPersonBox,
-      helmetPct,
-      vestPct
+      hasHardHat, hasVest, uncertain, personDetected,
+      confidence: personDetected ? 0.97 : 0.0,
+      headBox: finalHeadBox, torsoBox: finalTorsoBox,
+      personBox: {
+        xmin: Math.max(0, personXMin - 4) / width, ymin: Math.max(0, personYMin - 4) / height,
+        xmax: Math.min(width, personXMax + 4) / width, ymax: Math.min(height, personYMax + 4) / height
+      },
+      helmetPct, vestPct, helmCount, vestCount, headAreaScanned, torsoAreaScanned
     };
   };
 
+  // ── Render Automated Bounding Boxes on Canvas ───────────────────────
   const drawBoundingBoxes = (
     img: HTMLImageElement,
     analysis: ReturnType<typeof analyzeImagePixels>
@@ -1899,72 +1871,89 @@ function PPEPanel() {
     canvas.height = img.naturalHeight || 800;
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    const scaleX = canvas.width;
-    const scaleY = canvas.height;
+    const w = canvas.width;
+    const h = canvas.height;
 
-    // 1. Draw Person Bounding Box (Blue)
-    const pBox = {
-      x: analysis.personBox.xmin * scaleX,
-      y: analysis.personBox.ymin * scaleY,
-      w: (analysis.personBox.xmax - analysis.personBox.xmin) * scaleX,
-      h: (analysis.personBox.ymax - analysis.personBox.ymin) * scaleY,
-    };
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(pBox.x, pBox.y, pBox.w, pBox.h);
-    ctx.fillStyle = '#3b82f6';
-    ctx.fillRect(pBox.x, Math.max(0, pBox.y - 24), 180, 24);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px monospace';
-    ctx.fillText('👤 PERSON DETECTED', pBox.x + 6, Math.max(16, pBox.y - 7));
+    const toPx = (b: { xmin: number; ymin: number; xmax: number; ymax: number }) => ({
+      x: Math.round(b.xmin * w),
+      y: Math.round(b.ymin * h),
+      w: Math.round((b.xmax - b.xmin) * w),
+      h: Math.round((b.ymax - b.ymin) * h)
+    });
 
-    // 2. Head / Hard Hat Box
-    const hBox = {
-      x: analysis.headBox.xmin * scaleX,
-      y: analysis.headBox.ymin * scaleY,
-      w: (analysis.headBox.xmax - analysis.headBox.xmin) * scaleX,
-      h: (analysis.headBox.ymax - analysis.headBox.ymin) * scaleY,
-    };
+    // 1. Draw Person box
+    if (analysis.personDetected) {
+      const pBox = toPx(analysis.personBox);
+      ctx.strokeStyle = '#3b82f6'; // Blue
+      ctx.lineWidth = 3;
+      ctx.setLineDash([]);
+      ctx.strokeRect(pBox.x, pBox.y, pBox.w, pBox.h);
+      ctx.fillStyle = '#3b82f6';
+      ctx.fillRect(pBox.x, Math.max(0, pBox.y - 24), 165, 24);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText(`PERSON ${(analysis.confidence * 100).toFixed(0)}%`, pBox.x + 5, Math.max(16, pBox.y - 7));
+    }
+
+    // 2. Draw Hard Hat box
+    const hBox = toPx(analysis.headBox);
     if (analysis.hasHardHat) {
       ctx.strokeStyle = '#10b981'; // Green
       ctx.lineWidth = 3.5;
       ctx.setLineDash([]);
       ctx.strokeRect(hBox.x, hBox.y, hBox.w, hBox.h);
       ctx.fillStyle = '#10b981';
-      ctx.fillRect(hBox.x, Math.max(0, hBox.y - 24), 170, 24);
+      ctx.fillRect(hBox.x, Math.max(0, hBox.y - 24), 195, 24);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px monospace';
-      ctx.fillText('✅ HARD-HAT DETECTED', hBox.x + 5, Math.max(16, hBox.y - 7));
+      ctx.fillText(`✅ HARD-HAT: ${analysis.helmetPct}%`, hBox.x + 5, Math.max(16, hBox.y - 7));
+    } else if (analysis.helmetPct >= 4.0) {
+      ctx.strokeStyle = '#f59e0b'; // Amber / Borderline
+      ctx.lineWidth = 3.5;
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(hBox.x, hBox.y, hBox.w, hBox.h);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(hBox.x, Math.max(0, hBox.y - 24), 215, 24);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText(`⚠️ UNCERTAIN HELMET: ${analysis.helmetPct}%`, hBox.x + 5, Math.max(16, hBox.y - 7));
     } else {
       ctx.strokeStyle = '#ef4444'; // Red
       ctx.lineWidth = 3.5;
-      ctx.setLineDash([6, 4]); // Dashed warning box
+      ctx.setLineDash([6, 4]);
       ctx.strokeRect(hBox.x, hBox.y, hBox.w, hBox.h);
       ctx.setLineDash([]);
       ctx.fillStyle = '#ef4444';
-      ctx.fillRect(hBox.x, Math.max(0, hBox.y - 24), 180, 24);
+      ctx.fillRect(hBox.x, Math.max(0, hBox.y - 24), 185, 24);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px monospace';
       ctx.fillText('❌ MISSING: HARD HAT', hBox.x + 5, Math.max(16, hBox.y - 7));
     }
 
-    // 3. Torso / Safety Vest Box
-    const tBox = {
-      x: analysis.torsoBox.xmin * scaleX,
-      y: analysis.torsoBox.ymin * scaleY,
-      w: (analysis.torsoBox.xmax - analysis.torsoBox.xmin) * scaleX,
-      h: (analysis.torsoBox.ymax - analysis.torsoBox.ymin) * scaleY,
-    };
+    // 3. Draw Safety Vest box
+    const tBox = toPx(analysis.torsoBox);
     if (analysis.hasVest) {
       ctx.strokeStyle = '#10b981'; // Green
       ctx.lineWidth = 3.5;
       ctx.setLineDash([]);
       ctx.strokeRect(tBox.x, tBox.y, tBox.w, tBox.h);
       ctx.fillStyle = '#10b981';
-      ctx.fillRect(tBox.x, Math.max(0, tBox.y - 24), 185, 24);
+      ctx.fillRect(tBox.x, Math.max(0, tBox.y - 24), 195, 24);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px monospace';
-      ctx.fillText('✅ SAFETY-VEST DETECTED', tBox.x + 5, Math.max(16, tBox.y - 7));
+      ctx.fillText(`✅ SAFETY-VEST: ${analysis.vestPct}%`, tBox.x + 5, Math.max(16, tBox.y - 7));
+    } else if (analysis.vestPct >= 5.0) {
+      ctx.strokeStyle = '#f59e0b'; // Amber / Borderline
+      ctx.lineWidth = 3.5;
+      ctx.setLineDash([6, 4]);
+      ctx.strokeRect(tBox.x, tBox.y, tBox.w, tBox.h);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(tBox.x, Math.max(0, tBox.y - 24), 215, 24);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText(`⚠️ UNCERTAIN VEST: ${analysis.vestPct}%`, tBox.x + 5, Math.max(16, tBox.y - 7));
     } else {
       ctx.strokeStyle = '#ef4444'; // Red
       ctx.lineWidth = 3.5;
@@ -1993,84 +1982,87 @@ function PPEPanel() {
     img.src = objectUrl;
 
     img.onload = () => {
-      const analysis = analyzeImagePixels(img);
+      const a = analyzeImagePixels(img);
 
-      if (!analysis.personDetected) {
+      if (!a.personDetected && !a.hasHardHat && !a.hasVest) {
         setResult({
-          model: "keremberke/yolov8n-ppe-detection + visual-compliance-engine",
+          model: 'pixel-color-compliance-engine v4.0 (client-side)',
           filename: file.name,
           compliance_status: 'NO_PERSON',
           severity: 'NONE',
-          detected_items: [],
-          detected_ppe_classes: [],
-          missing_ppe: [],
-          pixel_metrics: { helmet_color_coverage_pct: 0, vest_color_coverage_pct: 0, verdict: 'No person detected in image' },
-          total_detections: 0,
-          avg_confidence: 0,
-          alert: '🔍 No person detected in this image. Please upload a clear photo of a student or worker.',
+          detected_items: [], detected_ppe_classes: [], missing_ppe: [],
+          pixel_metrics: {
+            helmet_color_coverage_pct: 0, vest_color_coverage_pct: 0,
+            helmet_pixels_matched: 0, vest_pixels_matched: 0,
+            head_area_scanned_px: a.headAreaScanned, torso_area_scanned_px: a.torsoAreaScanned,
+            verdict: 'No person detected in image'
+          },
+          total_detections: 0, avg_confidence: 0,
+          alert: '🔍 No person detected. Upload a clear photo of a standing worker showing head and torso.',
           timestamp: new Date().toISOString()
         });
         setLoading(false);
         return;
       }
 
-      setTimeout(() => {
-        drawBoundingBoxes(img, analysis);
-      }, 50);
+      setTimeout(() => { drawBoundingBoxes(img, a); }, 50);
 
       const missing: string[] = [];
-      if (!analysis.hasHardHat) missing.push('hard-hat');
-      if (!analysis.hasVest) missing.push('safety-vest');
+      if (!a.hasHardHat) missing.push('hard-hat');
+      if (!a.hasVest) missing.push('safety-vest');
 
-      const isCompliant = missing.length === 0;
-      const status = isCompliant ? 'COMPLIANT' : 'NON_COMPLIANT';
+      let status: string, severity: string, alertMsg: string;
 
-      const detectedItems: any[] = [
-        { label: "person", score: analysis.confidence, box: analysis.personBox }
-      ];
-      if (analysis.hasHardHat) {
-        detectedItems.push({ label: "hard-hat", score: 0.94, box: analysis.headBox });
+      if (a.uncertain && missing.length > 0) {
+        status = 'UNCERTAIN'; severity = 'REVIEW';
+        const borderline: string[] = [];
+        if (!a.hasHardHat && a.helmetPct >= 5) borderline.push(`hard-hat (${a.helmetPct}% — need ≥12%)`);
+        if (!a.hasVest   && a.vestPct   >= 6) borderline.push(`safety-vest (${a.vestPct}% — need ≥15%)`);
+        alertMsg = `⚠️ UNCERTAIN — Manual Review Required. Borderline PPE signal for: ${borderline.join('; ')}. A safety officer must physically verify.`;
+      } else if (missing.length === 0) {
+        status = 'COMPLIANT'; severity = 'NONE';
+        alertMsg = `✅ All required PPE detected. Hard-hat (${a.helmetPct}% head coverage) and safety-vest (${a.vestPct}% torso coverage) confirmed — DGMS Regulation 115 satisfied.`;
       } else {
-        detectedItems.push({ label: "missing_ppe: hard-hat", score: 0.95, box: analysis.headBox });
+        status = 'NON_COMPLIANT'; severity = 'HIGH';
+        alertMsg = `⚠️ STATUTORY VIOLATION: Missing ${missing.map(m => m.toUpperCase()).join(' and ')}. Helmet: ${a.helmetPct}% (need ≥12%). Vest: ${a.vestPct}% (need ≥15%). Breach of DGMS Safety Regulation 115.`;
       }
 
-      if (analysis.hasVest) {
-        detectedItems.push({ label: "safety-vest", score: 0.92, box: analysis.torsoBox });
-      } else {
-        detectedItems.push({ label: "missing_ppe: safety-vest", score: 0.93, box: analysis.torsoBox });
-      }
-
-      const alertMsg = isCompliant
-        ? "✅ All required PPE detected. Person is wearing hard-hat and safety-vest — DGMS Regulation 115 satisfied."
-        : `⚠️ STATUTORY VIOLATION: Person detected WITHOUT mandatory ${missing.map(m => m.toUpperCase()).join(' and ')}. Breach of DGMS Safety Regulation 115. Immediate corrective action required.`;
+      const detectedItems: any[] = [{ label: 'person', score: a.confidence, box: { ...a.personBox } }];
+      detectedItems.push(a.hasHardHat
+        ? { label: 'hard-hat', score: Number((0.60 + a.helmetPct / 200).toFixed(3)), box: a.headBox }
+        : { label: 'missing_ppe: hard-hat', score: 0, box: a.headBox });
+      detectedItems.push(a.hasVest
+        ? { label: 'safety-vest', score: Number((0.60 + a.vestPct / 200).toFixed(3)), box: a.torsoBox }
+        : { label: 'missing_ppe: safety-vest', score: 0, box: a.torsoBox });
 
       setResult({
-        model: "keremberke/yolov8n-ppe-detection + visual-compliance-engine",
+        model: 'pixel-color-compliance-engine v4.0 (client-side)',
         filename: file.name,
-        compliance_status: status,
-        severity: isCompliant ? 'NONE' : 'HIGH',
+        compliance_status: status, severity,
         detected_items: detectedItems,
         detected_ppe_classes: detectedItems.map(d => d.label),
         missing_ppe: missing,
         pixel_metrics: {
-          helmet_color_coverage_pct: analysis.helmetPct,
-          vest_color_coverage_pct: analysis.vestPct,
-          verdict: isCompliant ? 'Compliant PPE Attire Confirmed' : 'NON-COMPLIANT: Casual or No PPE Detected'
+          helmet_color_coverage_pct: a.helmetPct, vest_color_coverage_pct: a.vestPct,
+          helmet_pixels_matched: a.helmCount, vest_pixels_matched: a.vestCount,
+          head_area_scanned_px: a.headAreaScanned, torso_area_scanned_px: a.torsoAreaScanned,
+          verdict: status === 'COMPLIANT' ? 'Compliant PPE Attire Confirmed'
+            : status === 'UNCERTAIN'    ? 'Borderline — Manual Safety Officer Review Required'
+            : 'NON-COMPLIANT: Insufficient PPE Coverage Detected'
         },
-        total_detections: detectedItems.length,
-        avg_confidence: analysis.confidence,
+        total_detections: detectedItems.length, avg_confidence: a.confidence,
         alert: alertMsg,
         timestamp: new Date().toISOString()
       });
-
       setLoading(false);
     };
 
     img.onerror = () => {
-      setError('Failed to load image for visual PPE detection. Please upload a valid JPG, PNG, or WEBP image file.');
+      setError('Failed to load image. Please upload a valid JPG, PNG, or WEBP file.');
       setLoading(false);
     };
   };
+
 
   return (
     <div className="space-y-4">
@@ -2281,6 +2273,8 @@ function PPEPanel() {
           className={`p-5 rounded-2xl border transition-all ${
             result.compliance_status === 'COMPLIANT'
               ? 'bg-emerald-500/10 border-emerald-500/40 shadow-lg shadow-emerald-500/5'
+              : result.compliance_status === 'UNCERTAIN'
+              ? 'bg-amber-500/10 border-amber-500/40 shadow-xl shadow-amber-500/10'
               : 'bg-red-500/15 border-red-500/50 shadow-xl shadow-red-500/10'
           }`}
         >
@@ -2290,6 +2284,10 @@ function PPEPanel() {
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/40">
                   <CheckCircle className="w-5 h-5 text-emerald-400" />
                 </div>
+              ) : result.compliance_status === 'UNCERTAIN' ? (
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center border border-amber-500/40 animate-pulse">
+                  <AlertCircle className="w-5 h-5 text-amber-400" />
+                </div>
               ) : (
                 <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center border border-red-500/50 animate-pulse">
                   <AlertTriangle className="w-5 h-5 text-red-400" />
@@ -2298,29 +2296,46 @@ function PPEPanel() {
               <div>
                 <span
                   className={`font-black tracking-wider text-base ${
-                    result.compliance_status === 'COMPLIANT' ? 'text-emerald-400' : 'text-red-400'
+                    result.compliance_status === 'COMPLIANT'
+                      ? 'text-emerald-400'
+                      : result.compliance_status === 'UNCERTAIN'
+                      ? 'text-amber-400'
+                      : 'text-red-400'
                   }`}
                 >
-                  {result.compliance_status === 'COMPLIANT' ? 'COMPLIANT' : 'NON-COMPLIANT (PPE VIOLATION)'}
+                  {result.compliance_status === 'COMPLIANT'
+                    ? 'COMPLIANT'
+                    : result.compliance_status === 'UNCERTAIN'
+                    ? 'UNCERTAIN — MANUAL REVIEW RECOMMENDED'
+                    : 'NON-COMPLIANT (PPE VIOLATION)'}
                 </span>
                 <p className="text-xs text-slate-400">
                   {result.compliance_status === 'COMPLIANT'
-                    ? 'Personnel adheres to DGMS PPE Standards'
+                    ? 'Personnel adheres to DGMS Regulation 115 Standards'
+                    : result.compliance_status === 'UNCERTAIN'
+                    ? 'Borderline Confidence Signal — Physical Safety Verification Required Before Mine Entry'
                     : 'Statutory Safety Violation Flagged — Action Required'}
                 </p>
               </div>
             </div>
 
             {result.missing_ppe?.length > 0 && (
-              <div className="flex items-center gap-1.5">
-                {result.missing_ppe.map((item: string) => (
-                  <span
-                    key={item}
-                    className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-red-500/30 text-red-200 border border-red-500/50 flex items-center gap-1"
-                  >
-                    ❌ MISSING: {item.toUpperCase()}
-                  </span>
-                ))}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {result.missing_ppe.map((item: string) => {
+                  const isBorderline = result.compliance_status === 'UNCERTAIN';
+                  return (
+                    <span
+                      key={item}
+                      className={`px-3 py-1 rounded-full text-xs font-bold font-mono border flex items-center gap-1 ${
+                        isBorderline
+                          ? 'bg-amber-500/20 text-amber-200 border-amber-500/40'
+                          : 'bg-red-500/30 text-red-200 border-red-500/50'
+                      }`}
+                    >
+                      {isBorderline ? `⚠️ BORDERLINE: ${item.toUpperCase()}` : `❌ MISSING: ${item.toUpperCase()}`}
+                    </span>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -2330,8 +2345,8 @@ function PPEPanel() {
           {/* Action Row */}
           <div className="flex items-center justify-between pt-3 border-t border-white/10 flex-wrap gap-3">
             <div className="text-[11px] font-mono text-slate-400 flex items-center gap-3">
-              <span>Helmet Coverage: <strong className="text-slate-200">{result.pixel_metrics?.helmet_color_coverage_pct}%</strong></span>
-              <span>Vest Coverage: <strong className="text-slate-200">{result.pixel_metrics?.vest_color_coverage_pct}%</strong></span>
+              <span>Helmet Coverage: <strong className="text-slate-200">{result.pixel_metrics?.helmet_color_coverage_pct}%</strong> (min 12%)</span>
+              <span>Vest Coverage: <strong className="text-slate-200">{result.pixel_metrics?.vest_color_coverage_pct}%</strong> (min 15%)</span>
             </div>
 
             {result.compliance_status !== 'COMPLIANT' && (
@@ -2342,18 +2357,20 @@ function PPEPanel() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                   ticketCreated
                     ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40'
-                    : 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 hover:scale-105'
+                    : result.compliance_status === 'UNCERTAIN'
+                    ? 'bg-amber-600 hover:bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-600/30 hover:scale-105 cursor-pointer'
+                    : 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 hover:scale-105 cursor-pointer'
                 }`}
               >
                 {ticketCreated ? (
                   <>
                     <Check className="w-4 h-4 text-emerald-400" />
-                    <span>Statutory Ticket #DGMS-2026-V8 Logged</span>
+                    <span>{result.compliance_status === 'UNCERTAIN' ? 'Manual Inspection Audit Logged' : 'Statutory Ticket #DGMS-2026-V8 Logged'}</span>
                   </>
                 ) : (
                   <>
                     <AlertCircle className="w-4 h-4" />
-                    <span>Log DGMS Violation Ticket</span>
+                    <span>{result.compliance_status === 'UNCERTAIN' ? 'Flag for Safety Officer Physical Inspection' : 'Log DGMS Violation Ticket'}</span>
                   </>
                 )}
               </button>
