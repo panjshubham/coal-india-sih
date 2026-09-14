@@ -426,7 +426,7 @@ export default function PPELiveFeed() {
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-5 pb-24">
 
       {/* Header — Official Government Portal Standard */}
-      <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-800 dark:text-slate-500 mb-1.5 font-semibold uppercase tracking-wider">
             <span>Ministry of Coal</span> <span>/</span>
@@ -493,7 +493,7 @@ export default function PPELiveFeed() {
       {/* KPI Row — Symmetrical, High-Contrast Government Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
         {/* Compliance Ring */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col items-center justify-center gap-1.5">
+        <div className="lg:col-span-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col items-center justify-center gap-1.5">
           <ComplianceRing pct={compPct} isDark={isDark} />
           <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 text-center">Statutory Compliance</p>
           <div className="flex items-center gap-1 text-[11px] text-slate-800 dark:text-slate-500">
@@ -508,7 +508,7 @@ export default function PPELiveFeed() {
           { label: 'Critical Safety Alerts', value: summary.critical_violations, icon: ShieldAlert, color: 'text-red-700 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-950/30' },
           { label: 'Active Open Violations', value: summary.active_violations, icon: Zap, color: 'text-orange-700 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-950/30' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
+          <div key={label} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{label}</span>
               <div className={`p-1.5 rounded-lg ${bg}`}>
@@ -543,7 +543,7 @@ export default function PPELiveFeed() {
         <div className="xl:col-span-2 space-y-5">
 
           {/* Zone Compliance Bar Chart */}
-          <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                 Zone Compliance Index (24-Hour Average)
@@ -581,7 +581,7 @@ export default function PPELiveFeed() {
           </div>
 
           {/* Live Event Feed */}
-          <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
@@ -664,7 +664,7 @@ export default function PPELiveFeed() {
       </div>
 
       {/* How It Works Banner — Clean Government Explainer */}
-      <div className="bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
+      <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs">
         <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2">
           <Activity className="w-4 h-4 text-amber-600 dark:text-amber-500" /> Statutory Edge AI Architecture (DGMS Standard)
         </h3>

@@ -298,7 +298,7 @@ export default function CorporateDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mt-6">
         
         {/* Left: Production vs Risk Matrix */}
-        <div className="xl:col-span-3 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+        <div className="xl:col-span-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-600/40 text-amber-700 dark:text-amber-400">
@@ -385,7 +385,7 @@ export default function CorporateDashboard() {
         </div>
 
         {/* Right: AI Insights */}
-        <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col relative overflow-hidden transition-colors">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col relative overflow-hidden transition-colors">
           <div className="pb-3 border-b border-slate-200 dark:border-slate-800 relative z-10 flex justify-between items-center">
             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-200 tracking-wide flex items-center gap-2">
               <Activity className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -424,7 +424,7 @@ export default function CorporateDashboard() {
 
       {/* 3. Operational KPIs Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mt-6">
-        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
           <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_total_mines', 'Total Supervised Sites')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.totalMines}</h3>
@@ -432,7 +432,7 @@ export default function CorporateDashboard() {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
           <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('metric_violations', 'Active Violations')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-amber-600 dark:text-amber-400">{stats.activeViolations}</h3>
@@ -442,7 +442,7 @@ export default function CorporateDashboard() {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
           <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-red-600 dark:text-red-400">{stats.overdueCompliance}</h3>
@@ -450,7 +450,7 @@ export default function CorporateDashboard() {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
           <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_avg_risk', 'Global Avg Risk Score')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-indigo-700 dark:text-cyan-400">{stats.avgRiskScore} <span className="text-sm font-normal text-slate-700 dark:text-slate-500">/ 100</span></h3>
@@ -476,7 +476,7 @@ export default function CorporateDashboard() {
       </div>
 
       {/* 4. Environmental & Logistics Limits Watchdog */}
-      <div className="mt-6 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+      <div className="mt-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-600/40 text-emerald-700 dark:text-emerald-400">
@@ -599,7 +599,7 @@ export default function CorporateDashboard() {
       </div>
 
       {/* 5. Main Body: Ranked Table */}
-      <div className="mt-6 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+      <div className="mt-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-900 dark:text-slate-200 tracking-wide uppercase flex items-center gap-2">
             <BarChart2 className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
@@ -619,7 +619,7 @@ export default function CorporateDashboard() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
               {riskScores.map(risk => (
-                <tr key={risk.mine_id} className="hover:bg-slate-50 dark:hover:bg-white dark:bg-slate-900/40 transition-colors">
+                <tr key={risk.mine_id} className="hover:bg-slate-50 dark:hover:bg-slate-700 dark:bg-slate-900/40 transition-colors">
                   <td className="px-5 py-3.5 font-sans font-bold text-slate-900 dark:text-slate-100">
                     {risk.mines?.name}
                   </td>
@@ -661,7 +661,7 @@ export default function CorporateDashboard() {
       </div>
 
       {/* 4. Bottom: Recent Violations Feed */}
-      <div className="mt-6 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+      <div className="mt-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-300">{t('corp_section_violations_feed', 'Enterprise Live Violations Feed')}</h3>
           <span className="flex items-center gap-2 text-[10px] font-mono text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2 py-1 rounded">
@@ -682,7 +682,7 @@ export default function CorporateDashboard() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
               {violations.map(v => (
-                <tr key={v.id} className="hover:bg-slate-50 dark:hover:bg-white dark:bg-slate-900/40 transition-colors">
+                <tr key={v.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 dark:bg-slate-900/40 transition-colors">
                   <td className="px-5 py-3.5 font-sans font-bold text-slate-900 dark:text-slate-200">{v.mines?.name || `Mine #${v.mine_id}`}</td>
                   <td className="px-5 py-3.5 text-slate-600 dark:text-slate-400">{v.category}</td>
                   <td className="px-5 py-3.5">
@@ -745,7 +745,7 @@ export default function CorporateDashboard() {
                 </div>
                 <button
                   onClick={() => setSelectedXaiMine(null)}
-                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:hover:text-slate-900 dark:text-white dark:hover:bg-slate-700 transition-colors"
+                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:hover:text-slate-100 dark:text-white dark:hover:bg-slate-700 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>

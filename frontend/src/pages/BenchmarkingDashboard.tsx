@@ -128,7 +128,7 @@ function AIChatPanel() {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col h-[480px] shadow-xs">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col h-[480px] shadow-xs">
       <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-200 dark:border-slate-800">
         <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 rounded-lg">
           <Brain className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
@@ -219,7 +219,7 @@ export default function BenchmarkingDashboard() {
     <div className="p-6 max-w-7xl mx-auto space-y-6 pb-24">
 
       {/* Header */}
-      <div className="bg-white dark:bg-slate-850 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
             <BarChart2 className="w-6 h-6 text-indigo-700 dark:text-indigo-400" />
@@ -252,7 +252,7 @@ export default function BenchmarkingDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {KPI_CARDS.map(({ label, value, delta, positive, icon: Icon }) => (
-          <div key={label} className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-300 dark:hover:border-slate-300 dark:border-slate-700 transition-colors">
+          <div key={label} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm hover:border-slate-300 dark:hover:border-slate-300 dark:border-slate-700 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <Icon className="w-5 h-5 text-slate-800 dark:text-slate-500" />
               <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${
@@ -270,7 +270,7 @@ export default function BenchmarkingDashboard() {
       </div>
 
       {/* Tab Nav */}
-      <div className="flex gap-1.5 bg-slate-100 dark:bg-slate-850 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 w-fit flex-wrap">
+      <div className="flex gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 w-fit flex-wrap">
         {([
           { id: 'benchmark', label: 'Industry Benchmark', icon: BarChart2 },
           { id: 'weather', label: 'Weather Correlation', icon: CloudRain },
@@ -282,7 +282,7 @@ export default function BenchmarkingDashboard() {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all ${
               activeTab === id 
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white dark:bg-indigo-600 dark:text-white shadow-sm' 
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white hover:bg-white/60 dark:hover:bg-slate-100 dark:bg-slate-800/60'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 dark:text-white hover:bg-white/60 dark:hover:bg-slate-100 dark:bg-slate-800/60'
             }`}>
             <Icon className="w-4 h-4" />{label}
           </button>
@@ -292,7 +292,7 @@ export default function BenchmarkingDashboard() {
       {/* Tab: Industry Benchmark */}
       {activeTab === 'benchmark' && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
             <h2 className="text-base font-bold text-slate-900 dark:text-white mb-0.5">12-Month Production Benchmark</h2>
             <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">Your mine vs national Open Cast & Underground averages (Metric Tons / month)</p>
             <div className="h-[320px]">
@@ -311,7 +311,7 @@ export default function BenchmarkingDashboard() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
             <h2 className="text-base font-bold text-slate-900 dark:text-white mb-0.5">Multi-Dimensional Performance Radar</h2>
             <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">Your colliery vs national sector average across 6 core regulatory dimensions</p>
             <div className="h-[320px]">
@@ -333,7 +333,7 @@ export default function BenchmarkingDashboard() {
       {/* Tab: Weather Correlation */}
       {activeTab === 'weather' && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
             <h2 className="text-base font-bold text-slate-900 dark:text-white mb-0.5">Weather × Production × Incidents Correlation</h2>
             <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">Dual-axis correlation: Monsoon Rainfall (bars) vs Production (area) vs Safety Incidents (red line)</p>
             <div className="h-[360px]">
@@ -354,7 +354,7 @@ export default function BenchmarkingDashboard() {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
               <h2 className="text-base font-bold text-slate-900 dark:text-white mb-0.5">Temperature vs Incident Rate</h2>
               <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">Bubble size = monthly incident count across thermal threshold</p>
               <div className="h-[280px]">
@@ -376,7 +376,7 @@ export default function BenchmarkingDashboard() {
             </div>
 
             {/* Seasonal Risk Summary */}
-            <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
               <h2 className="text-base font-bold text-slate-900 dark:text-white mb-3">Seasonal Safety Risk Heatmap</h2>
               <div className="space-y-2">
                 {weatherData.map(d => {
@@ -409,7 +409,7 @@ export default function BenchmarkingDashboard() {
       {/* Tab: AI Forecast */}
       {activeTab === 'forecast' && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
             <div className="flex items-center justify-between gap-2 mb-1">
               <h2 className="text-base font-bold text-slate-900 dark:text-white">AI Production Forecast</h2>
               <span className="text-xs bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 rounded font-medium">Next 3 Months</span>
@@ -451,7 +451,7 @@ export default function BenchmarkingDashboard() {
       {/* Tab: Anomaly Detection */}
       {activeTab === 'anomaly' && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <Zap className="w-5 h-5 text-amber-700 dark:text-amber-400" />
@@ -492,7 +492,7 @@ export default function BenchmarkingDashboard() {
           </div>
 
           {/* Live Anomaly Detector input */}
-          <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
             <h2 className="text-base font-bold text-slate-900 dark:text-white mb-0.5">Live Statutory Incident Classifier</h2>
             <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">Input incident log description for real-time Zero-Shot NLI classification</p>
             <LiveAnomalyClassifier />
@@ -502,7 +502,7 @@ export default function BenchmarkingDashboard() {
 
       {/* Tab: Mining News Intelligence */}
       {activeTab === 'news' && (
-        <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
           <MiningNewsIntelligence />
         </div>
       )}

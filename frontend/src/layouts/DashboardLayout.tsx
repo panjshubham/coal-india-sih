@@ -28,13 +28,13 @@ interface NavItem {
 const navigation: NavItem[] = [
   // 1. Core Dashboards & Overview
   { id: 'dashboard_corporate', href: '/dashboard/corporate', icon: LayoutDashboard, roles: ['corporate'] },
-  { id: 'dashboard_colliery', href: '/dashboard/colliery', icon: LayoutDashboard, roles: ['mine_official', 'corporate', 'regulator'] },
+  { id: 'dashboard_colliery', href: '/dashboard/colliery', icon: LayoutDashboard, roles: ['mine_official', 'corporate'] },
   { id: 'dashboard_regulator', href: '/dashboard/regulator', icon: ShieldAlert, roles: ['regulator', 'corporate'] },
-  { id: 'map', href: '/mines-map', icon: MapIcon, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'map', href: '/mines-map', icon: MapIcon, roles: ['regulator', 'corporate'] },
   { id: 'financialOverview', href: '/financial-overview', icon: IndianRupee, roles: ['corporate'] },
 
   // 2. Daily Operations & Compliance
-  { id: 'compliance', href: '/compliance', icon: ClipboardList, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'compliance', href: '/compliance', icon: ClipboardList, roles: ['mine_official', 'corporate'] },
   { id: 'inspections', href: '/inspections', icon: ClipboardList, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'violations', href: '/violations', icon: AlertTriangle, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'statutoryRegisters', href: '/statutory-registers', icon: ShieldCheck, roles: ['mine_official', 'regulator', 'corporate'] },
@@ -42,11 +42,11 @@ const navigation: NavItem[] = [
 
   // 3. Administration & Intelligence
   { id: 'aiWorkbench', href: '/ai-workbench', icon: Cpu, roles: ['mine_official', 'regulator', 'corporate'] },
-  { id: 'benchmarking', href: '/benchmarking', icon: BarChart2, roles: ['mine_official', 'regulator', 'corporate'] },
-  { id: 'ppeMonitor', href: '/ppe-monitor', icon: Camera, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'benchmarking', href: '/benchmarking', icon: BarChart2, roles: ['corporate', 'regulator'] },
+  { id: 'ppeMonitor', href: '/ppe-monitor', icon: Camera, roles: ['mine_official', 'corporate'] },
   { id: 'manageUsers', href: '/manage-users', icon: ShieldAlert, roles: ['corporate'] },
-  { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate', 'regulator'] },
-  { id: 'audit', href: '/audit-log', icon: ShieldCheck, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate'] },
+  { id: 'audit', href: '/audit-log', icon: ShieldCheck, roles: ['corporate', 'regulator'] },
   
   // 4. User Settings
   { id: 'profile', href: '/profile', icon: UserCheck },

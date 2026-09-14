@@ -213,7 +213,7 @@ export default function RegulatorDashboard() {
 
       {/* 2. Top-Level Operational Metrics Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
           <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('reg_metric_monitored_mines', 'Monitored Mines')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-slate-900 dark:text-white">18</h3>
@@ -221,7 +221,7 @@ export default function RegulatorDashboard() {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
           <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('metric_violations', 'Active Violations')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-amber-600 dark:text-amber-400">11</h3>
@@ -231,7 +231,7 @@ export default function RegulatorDashboard() {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
           <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-red-600 dark:text-red-400">5</h3>
@@ -239,7 +239,7 @@ export default function RegulatorDashboard() {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
           <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('reg_metric_risk_score', 'Composite Risk Score')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-indigo-700 dark:text-cyan-400">29 <span className="text-sm font-normal text-slate-700 dark:text-slate-500">/ 100</span></h3>
@@ -272,7 +272,7 @@ export default function RegulatorDashboard() {
               className={`px-3 py-1 rounded text-xs font-mono transition ${
                 selectedSubsidiary === sub 
                   ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white dark:bg-indigo-600 dark:text-white font-bold shadow-sm' 
-                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:text-slate-900 dark:text-white'
+                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:text-slate-100 dark:text-white'
               }`}
             >
               {sub}
@@ -296,7 +296,7 @@ export default function RegulatorDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
         
         {/* Ranked Table (Takes 2 Columns) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
           <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-200 tracking-wide">
               {t('reg_section_subsidiary_risk', 'SUBSIDIARY RISK & STATUTORY AUDIT STATUS')}
@@ -319,7 +319,7 @@ export default function RegulatorDashboard() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
                 {filteredMines.map(mine => (
-                  <tr key={mine.id} className="hover:bg-slate-50 dark:hover:bg-white dark:bg-slate-900/40 transition">
+                  <tr key={mine.id} className="hover:bg-slate-50 dark:hover:bg-slate-700 dark:bg-slate-900/40 transition">
                     <td className="py-3.5 px-4 font-sans">
                       <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                         {mine.name}
@@ -384,7 +384,7 @@ export default function RegulatorDashboard() {
         </div>
 
         {/* AI & DGMS Insights Panel (Takes 1 Column) */}
-        <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-200 tracking-wide flex items-center gap-2">
@@ -439,7 +439,7 @@ export default function RegulatorDashboard() {
       </div>
 
       {/* 5. Bottom Live Audit Ticker */}
-      <div className="mt-6 p-3 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm flex items-center justify-between text-xs font-mono text-slate-600 dark:text-slate-400">
+      <div className="mt-6 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm flex items-center justify-between text-xs font-mono text-slate-600 dark:text-slate-400">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
           <span className="text-slate-800 dark:text-slate-300 font-bold">{t('reg_live_audit_stream', 'LIVE DGMS AUDIT STREAM:')}</span>
