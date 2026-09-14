@@ -284,46 +284,46 @@ export default function Violations() {
 
         {/* OFFLINE SAVED SUCCESS BANNER */}
         {offlineSavedBanner && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/40 animate-in slide-in-from-top">
-            <span className="material-symbols-outlined text-emerald-400 text-[20px]">task_alt</span>
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-500/40 animate-in slide-in-from-top">
+            <span className="material-symbols-outlined text-emerald-700 dark:text-emerald-400 text-[20px]">task_alt</span>
             <div className="flex-1">
               <span className="font-label-md text-emerald-300 uppercase tracking-wider">Violation Saved Offline</span>
-              <p className="font-body-sm text-emerald-400/80 mt-0.5">
+              <p className="font-body-sm text-emerald-700 dark:text-emerald-400/80 mt-0.5">
                 Your report is stored securely on this device. It will automatically sync to the server when your connection is restored.
               </p>
             </div>
-            <button onClick={() => setOfflineSavedBanner(false)} className="text-emerald-400/60 hover:text-emerald-300 transition-colors">
+            <button onClick={() => setOfflineSavedBanner(false)} className="text-emerald-700 dark:text-emerald-400/60 hover:text-emerald-300 transition-colors">
               <span className="material-symbols-outlined text-[18px]">close</span>
             </button>
           </div>
         )}
 
         {!isOnline && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
-            <span className="material-symbols-outlined text-amber-400 text-[18px]">cloud_off</span>
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30">
+            <span className="material-symbols-outlined text-amber-700 dark:text-amber-400 text-[18px]">cloud_off</span>
             <div className="flex-1">
               <span className="font-label-md text-amber-300 uppercase tracking-wider">Offline Mode</span>
-              <p className="font-body-sm text-amber-400/80 mt-0.5">You are offline. New violations will be saved locally and synced when connection is restored.</p>
+              <p className="font-body-sm text-amber-700 dark:text-amber-400/80 mt-0.5">You are offline. New violations will be saved locally and synced when connection is restored.</p>
             </div>
             {pendingCount > 0 && (
-              <span className="px-2 py-1 rounded bg-amber-500/20 font-label-md text-amber-300 font-bold">{pendingCount} pending</span>
+              <span className="px-2 py-1 rounded bg-amber-200 dark:bg-amber-500/20 font-label-md text-amber-300 font-bold">{pendingCount} pending</span>
             )}
           </div>
         )}
 
         {isOnline && pendingCount > 0 && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/30 shadow-sm">
-            <span className={`material-symbols-outlined text-blue-400 text-[18px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-100 dark:bg-blue-500/10 border border-blue-400 dark:border-blue-500/30 shadow-sm">
+            <span className={`material-symbols-outlined text-blue-700 dark:text-blue-400 text-[18px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
             <div className="flex-1">
               <span className="font-label-md text-blue-300 uppercase tracking-wider">{isSyncing ? 'Syncing Violations...' : 'Pending Offline Reports'}</span>
-              <p className="font-body-sm text-blue-400/80 mt-0.5">
+              <p className="font-body-sm text-blue-700 dark:text-blue-400/80 mt-0.5">
                 {syncMessage || `${pendingCount} offline violation${pendingCount > 1 ? 's' : ''} waiting to be uploaded to the server.`}
               </p>
             </div>
             {!isSyncing && (
               <button
                 onClick={handleSync}
-                className="px-3.5 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 font-label-md uppercase tracking-wider transition-colors flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-lg bg-blue-200 dark:bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 font-label-md uppercase tracking-wider transition-colors flex items-center gap-1.5"
               >
                 <span className="material-symbols-outlined text-[16px]">sync</span>
                 Sync All Now
@@ -333,9 +333,9 @@ export default function Violations() {
         )}
 
         {syncMessage && isOnline && pendingCount === 0 && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 shadow-sm animate-in fade-in duration-200">
-            <span className="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
-            <span className="font-body-sm text-emerald-300">{syncMessage}</span>
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-400 dark:border-emerald-500/30 shadow-sm animate-in fade-in duration-200">
+            <span className="material-symbols-outlined text-emerald-700 dark:text-emerald-400 text-[18px]">check_circle</span>
+            <span className="font-body-sm text-emerald-800 dark:text-emerald-300">{syncMessage}</span>
           </div>
         )}
 
@@ -375,7 +375,7 @@ export default function Violations() {
                 {isSyncing ? 'Syncing...' : 'Sync All Data'}
               </span>
               {pendingCount > 0 && !isSyncing && (
-                <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-950 text-amber-300">
+                <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-50 dark:bg-slate-950 text-amber-300">
                   {pendingCount} Pending
                 </span>
               )}
@@ -444,29 +444,29 @@ export default function Violations() {
                 <p className="font-code-sm text-outline text-center">No regulatory infractions match the current filters.</p>
                 <Link
                   to="/inspections"
-                  className="mt-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 font-label-md uppercase tracking-wider hover:bg-amber-500/20 transition-colors"
+                  className="mt-2 px-4 py-2 rounded-lg bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 font-label-md uppercase tracking-wider hover:bg-amber-200 dark:bg-amber-500/20 transition-colors"
                 >
                   + File New Violation
                 </Link>
               </div>
             ) : (
               violations.map(v => v.is_offline_pending ? (
-                <div key={v.id} className="flex flex-col md:flex-row md:items-center justify-between p-space-md bg-amber-500/5 border-l-4 border-amber-500 hover:bg-amber-500/10 transition-colors gap-space-md">
+                <div key={v.id} className="flex flex-col md:flex-row md:items-center justify-between p-space-md bg-amber-50 dark:bg-amber-500/5 border-l-4 border-amber-500 hover:bg-amber-100 dark:bg-amber-500/10 transition-colors gap-space-md">
                   <div className="flex items-start gap-space-md w-full md:w-auto">
-                    <div className="flex flex-col items-center justify-center p-2 rounded bg-amber-500/10 text-amber-400">
+                    <div className="flex flex-col items-center justify-center p-2 rounded bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
                       <span className="material-symbols-outlined text-[20px] animate-pulse">cloud_off</span>
                     </div>
                     <div className="flex flex-col gap-1.5 w-full">
                       <div className="flex flex-wrap items-center gap-space-xs">
-                        <span className="px-space-xs py-space-2xs rounded bg-amber-500/20 font-label-md text-amber-300 uppercase font-bold tracking-wide flex items-center gap-1">
+                        <span className="px-space-xs py-space-2xs rounded bg-amber-200 dark:bg-amber-500/20 font-label-md text-amber-300 uppercase font-bold tracking-wide flex items-center gap-1">
                           <span className="material-symbols-outlined text-[13px]">schedule</span> OFFLINE QUEUED
                         </span>
                         <span className="font-body-lg text-on-surface font-semibold capitalize">{v.category} Breach</span>
-                        <span className="font-code-sm text-amber-400/80 ml-2">/ LOCAL QUEUE</span>
+                        <span className="font-code-sm text-amber-700 dark:text-amber-400/80 ml-2">/ LOCAL QUEUE</span>
                       </div>
                       <div className="flex items-center gap-space-sm font-body-sm text-on-surface-variant">
-                        <span className="flex items-center gap-1 text-amber-300 font-medium bg-amber-500/10 px-2 py-0.5 rounded">
-                          <span className="material-symbols-outlined text-[14px] text-amber-400">terrain</span>
+                        <span className="flex items-center gap-1 text-amber-300 font-medium bg-amber-100 dark:bg-amber-500/10 px-2 py-0.5 rounded">
+                          <span className="material-symbols-outlined text-[14px] text-amber-700 dark:text-amber-400">terrain</span>
                           {v.mines?.name || 'Mine Target'}
                         </span>
                         <span className="truncate max-w-lg text-on-surface/80">{v.description || 'Statutory review pending field inspector assessment.'}</span>
@@ -477,19 +477,19 @@ export default function Violations() {
                   <div className="flex items-center justify-between md:justify-end gap-space-lg w-full md:w-auto pl-12 md:pl-0 border-t border-surface-container-high/30 md:border-t-0 pt-space-md md:pt-0">
                     <div className="flex flex-col md:text-right">
                       <span className="font-code-sm text-on-surface">{formatDate(v)}</span>
-                      <span className="font-label-md text-amber-400">Waiting for Network</span>
+                      <span className="font-label-md text-amber-700 dark:text-amber-400">Waiting for Network</span>
                     </div>
                     {isOnline ? (
                       <button
                         onClick={() => handleSyncSingle(v)}
                         disabled={isSyncing}
-                        className="px-3 py-1.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 font-label-md uppercase tracking-wider flex items-center gap-1.5 transition-colors"
+                        className="px-3 py-1.5 rounded bg-blue-200 dark:bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 font-label-md uppercase tracking-wider flex items-center gap-1.5 transition-colors"
                       >
                         <span className={`material-symbols-outlined text-[16px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync Now'}
                       </button>
                     ) : (
-                      <span className="px-space-sm py-1 rounded font-label-md uppercase tracking-wider font-bold bg-amber-500/20 text-amber-300">
+                      <span className="px-space-sm py-1 rounded font-label-md uppercase tracking-wider font-bold bg-amber-200 dark:bg-amber-500/20 text-amber-300">
                         PENDING SYNC
                       </span>
                     )}

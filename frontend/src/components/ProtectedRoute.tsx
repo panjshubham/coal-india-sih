@@ -15,7 +15,7 @@ export default function ProtectedRoute({ allowedRoles, children }: ProtectedRout
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[var(--cg-bg)] text-[var(--cg-text-primary)]">
         <Loader2 className="w-10 h-10 text-amber-500 animate-spin mb-4" />
-        <p className="text-sm font-mono tracking-widest text-slate-400 uppercase">
+        <p className="text-sm font-mono tracking-widest text-slate-600 dark:text-slate-400 uppercase">
           Verifying CoalGuard Security Clearance...
         </p>
       </div>

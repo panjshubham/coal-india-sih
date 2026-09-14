@@ -27,6 +27,8 @@ const resources = {
       "nav_inspections": "Inspections",
       "nav_violations": "Violations",
       "nav_map": "Mines Map",
+      "nav_benchmarking": "Advanced Analytics",
+      "nav_ppeMonitor": "PPE Safety Monitor",
       "nav_contractors": "Contractors",
       "nav_manageUsers": "Manage Mine Officials",
       "nav_dataImport": "Bulk Data Import",
@@ -116,6 +118,7 @@ const resources = {
       "nav_inspections": "निरीक्षण",
       "nav_violations": "उल्लंघन",
       "nav_map": "खदान मानचित्र",
+      "nav_ppeMonitor": "पीपीई सुरक्षा मॉनिटर",
       "nav_contractors": "ठेकेदार",
       "nav_manageUsers": "खदान अधिकारी प्रबंधन (Mine Officials)",
       "nav_dataImport": "थोक डेटा आयात (Bulk Data Import)",
@@ -312,3 +315,4 @@ i18n
   });
 
 export default i18n;
+

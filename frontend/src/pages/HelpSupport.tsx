@@ -162,15 +162,15 @@ const FAQS = [
 
 // ─── Colour map ───────────────────────────────────────────────────────────────
 const COL: Record<string, { bg: string; border: string; text: string; iconBg: string }> = {
-  amber:   { bg: 'bg-amber-500/8',   border: 'border-amber-500/20',   text: 'text-amber-400',   iconBg: 'bg-amber-500/15' },
-  blue:    { bg: 'bg-blue-500/8',    border: 'border-blue-500/20',    text: 'text-blue-400',    iconBg: 'bg-blue-500/15' },
-  red:     { bg: 'bg-red-500/8',     border: 'border-red-500/20',     text: 'text-red-400',     iconBg: 'bg-red-500/15' },
-  emerald: { bg: 'bg-emerald-500/8', border: 'border-emerald-500/20', text: 'text-emerald-400', iconBg: 'bg-emerald-500/15' },
+  amber:   { bg: 'bg-amber-500/8',   border: 'border-amber-300 dark:border-amber-500/20',   text: 'text-amber-700 dark:text-amber-400',   iconBg: 'bg-amber-500/15' },
+  blue:    { bg: 'bg-blue-500/8',    border: 'border-blue-300 dark:border-blue-500/20',    text: 'text-blue-700 dark:text-blue-400',    iconBg: 'bg-blue-500/15' },
+  red:     { bg: 'bg-red-500/8',     border: 'border-red-300 dark:border-red-500/20',     text: 'text-red-700 dark:text-red-400',     iconBg: 'bg-red-500/15' },
+  emerald: { bg: 'bg-emerald-500/8', border: 'border-emerald-300 dark:border-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-400', iconBg: 'bg-emerald-500/15' },
   orange:  { bg: 'bg-orange-500/8',  border: 'border-orange-500/20',  text: 'text-orange-400',  iconBg: 'bg-orange-500/15' },
-  cyan:    { bg: 'bg-cyan-500/8',    border: 'border-cyan-500/20',    text: 'text-cyan-400',    iconBg: 'bg-cyan-500/15' },
-  violet:  { bg: 'bg-violet-500/8',  border: 'border-violet-500/20',  text: 'text-violet-400',  iconBg: 'bg-violet-500/15' },
+  cyan:    { bg: 'bg-cyan-500/8',    border: 'border-cyan-500/20',    text: 'text-cyan-700 dark:text-cyan-400',    iconBg: 'bg-cyan-500/15' },
+  violet:  { bg: 'bg-violet-500/8',  border: 'border-violet-500/20',  text: 'text-violet-700 dark:text-violet-400',  iconBg: 'bg-violet-500/15' },
   pink:    { bg: 'bg-pink-500/8',    border: 'border-pink-500/20',    text: 'text-pink-400',    iconBg: 'bg-pink-500/15' },
-  slate:   { bg: 'bg-slate-500/8',   border: 'border-slate-500/20',   text: 'text-slate-300',   iconBg: 'bg-slate-500/15' },
+  slate:   { bg: 'bg-slate-500/8',   border: 'border-slate-500/20',   text: 'text-slate-700 dark:text-slate-300',   iconBg: 'bg-slate-500/15' },
 };
 
 // ─── Weather Panel Component ─────────────────────────────────────────────────
@@ -193,17 +193,17 @@ interface WeatherData {
 
 // Open-Meteo WMO weather interpretation codes
 function interpretWeather(code: number, isDay: number): { label: string; icon: React.ElementType; color: string } {
-  if (code === 0) return { label: isDay ? 'Clear Sky' : 'Clear Night', icon: Sun, color: 'text-amber-400' };
+  if (code === 0) return { label: isDay ? 'Clear Sky' : 'Clear Night', icon: Sun, color: 'text-amber-700 dark:text-amber-400' };
   if (code <= 2) return { label: 'Partly Cloudy', icon: CloudSun, color: 'text-amber-300' };
-  if (code <= 3) return { label: 'Overcast', icon: Cloud, color: 'text-slate-400' };
-  if (code <= 49) return { label: 'Foggy / Haze', icon: Cloud, color: 'text-slate-500' };
-  if (code <= 57) return { label: 'Drizzle', icon: CloudRain, color: 'text-blue-400' };
+  if (code <= 3) return { label: 'Overcast', icon: Cloud, color: 'text-slate-600 dark:text-slate-400' };
+  if (code <= 49) return { label: 'Foggy / Haze', icon: Cloud, color: 'text-slate-700 dark:text-slate-500' };
+  if (code <= 57) return { label: 'Drizzle', icon: CloudRain, color: 'text-blue-700 dark:text-blue-400' };
   if (code <= 67) return { label: 'Rain', icon: CloudRain, color: 'text-blue-500' };
   if (code <= 77) return { label: 'Snow / Sleet', icon: CloudSnow, color: 'text-cyan-300' };
-  if (code <= 82) return { label: 'Rain Showers', icon: CloudRain, color: 'text-blue-400' };
+  if (code <= 82) return { label: 'Rain Showers', icon: CloudRain, color: 'text-blue-700 dark:text-blue-400' };
   if (code <= 86) return { label: 'Heavy Snowfall', icon: CloudSnow, color: 'text-cyan-200' };
   if (code <= 99) return { label: 'Thunderstorm', icon: CloudLightning, color: 'text-yellow-300' };
-  return { label: 'Unknown', icon: Cloud, color: 'text-slate-400' };
+  return { label: 'Unknown', icon: Cloud, color: 'text-slate-600 dark:text-slate-400' };
 }
 
 function windDirection(deg: number): string {
@@ -329,19 +329,19 @@ function WeatherPanel() {
       {/* Loading */}
       {loading && (
         <div className="flex items-center gap-3 p-6 rounded-2xl border" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
-          <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
+          <Loader2 className="w-6 h-6 animate-spin text-amber-700 dark:text-amber-400" />
           <p className="text-sm" style={{ color: 'var(--cg-text-muted)' }}>Detecting your location and fetching live weather data...</p>
         </div>
       )}
 
       {/* Error */}
       {!loading && error && (
-        <div className="flex items-start gap-3 p-5 rounded-2xl border bg-red-500/8 border-red-500/20">
-          <AlertOctagon className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-5 rounded-2xl border bg-red-500/8 border-red-300 dark:border-red-500/20">
+          <AlertOctagon className="w-5 h-5 text-red-700 dark:text-red-400 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-bold text-red-400">Weather Unavailable</p>
+            <p className="text-sm font-bold text-red-700 dark:text-red-400">Weather Unavailable</p>
             <p className="text-xs mt-1" style={{ color: 'var(--cg-text-muted)' }}>{error}</p>
-            <button onClick={detectAndFetch} className="mt-3 text-xs font-bold text-red-400 hover:underline">Try Again</button>
+            <button onClick={detectAndFetch} className="mt-3 text-xs font-bold text-red-700 dark:text-red-400 hover:underline">Try Again</button>
           </div>
         </div>
       )}
@@ -353,10 +353,10 @@ function WeatherPanel() {
           <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
             {/* Location bar */}
             <div className="flex items-center gap-2 px-5 py-3 border-b text-xs" style={{ borderColor: 'var(--cg-border)', backgroundColor: 'var(--cg-surface-elevated)' }}>
-              <MapPin className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-bold text-amber-400">{locName || 'Detected Location'}</span>
-              <span className="text-slate-500">· {weather.lat.toFixed(3)}°N {weather.lon.toFixed(3)}°E</span>
-              <span className="ml-auto text-slate-500 font-mono">Updated just now</span>
+              <MapPin className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
+              <span className="font-bold text-amber-700 dark:text-amber-400">{locName || 'Detected Location'}</span>
+              <span className="text-slate-700 dark:text-slate-500">· {weather.lat.toFixed(3)}°N {weather.lon.toFixed(3)}°E</span>
+              <span className="ml-auto text-slate-700 dark:text-slate-500 font-mono">Updated just now</span>
             </div>
 
             {/* Main weather row */}
@@ -373,11 +373,11 @@ function WeatherPanel() {
               {/* Stat grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 flex-1">
                 {[
-                  { icon: Wind, label: 'Wind', value: `${weather.windSpeed} km/h ${windDirection(weather.windDir)}`, color: 'text-blue-400' },
-                  { icon: Droplets, label: 'Humidity', value: `${weather.humidity}%`, color: 'text-cyan-400' },
+                  { icon: Wind, label: 'Wind', value: `${weather.windSpeed} km/h ${windDirection(weather.windDir)}`, color: 'text-blue-700 dark:text-blue-400' },
+                  { icon: Droplets, label: 'Humidity', value: `${weather.humidity}%`, color: 'text-cyan-700 dark:text-cyan-400' },
                   { icon: CloudRain, label: 'Precip. Chance', value: `${weather.precipProb}%`, color: 'text-blue-300' },
-                  { icon: Eye, label: 'Visibility', value: `${weather.visibility} km`, color: 'text-emerald-400' },
-                  { icon: Sun, label: 'UV Index', value: `${weather.uvIndex} ${weather.uvIndex >= 8 ? '(Very High)' : weather.uvIndex >= 6 ? '(High)' : weather.uvIndex >= 3 ? '(Moderate)' : '(Low)'}`, color: 'text-amber-400' },
+                  { icon: Eye, label: 'Visibility', value: `${weather.visibility} km`, color: 'text-emerald-700 dark:text-emerald-400' },
+                  { icon: Sun, label: 'UV Index', value: `${weather.uvIndex} ${weather.uvIndex >= 8 ? '(Very High)' : weather.uvIndex >= 6 ? '(High)' : weather.uvIndex >= 3 ? '(Moderate)' : '(Low)'}`, color: 'text-amber-700 dark:text-amber-400' },
                   { icon: Thermometer, label: 'Conditions', value: weather.description, color: weatherInfo.color },
                 ].map(stat => (
                   <div key={stat.label} className="flex items-start gap-2 p-3 rounded-xl bg-white/5 border border-white/8">
@@ -431,7 +431,7 @@ function LegalPanel() {
     <div className="space-y-6">
       <div className="p-5 rounded-2xl border bg-slate-500/5 border-slate-500/20">
         <h2 className="text-lg font-black tracking-tight flex items-center gap-2 mb-4">
-          <Scale className="w-5 h-5 text-amber-400" /> Transparency & Legal Hub
+          <Scale className="w-5 h-5 text-amber-700 dark:text-amber-400" /> Transparency & Legal Hub
         </h2>
         <p className="text-sm leading-relaxed" style={{ color: 'var(--cg-text-secondary)' }}>
           CoalGuard operates under the strict guidelines of the Directorate General of Mines Safety (DGMS) and the Ministry of Coal, Government of India. Below are the governing policies for platform usage, data privacy, and statutory compliance.
@@ -442,7 +442,7 @@ function LegalPanel() {
         {/* Terms and Conditions */}
         <div className="p-5 rounded-xl border flex flex-col" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-500/20">
               <FileText className="w-4 h-4" />
             </div>
             <h3 className="font-bold text-sm">Terms and Conditions</h3>
@@ -452,13 +452,13 @@ function LegalPanel() {
             <li>• Sharing account credentials (especially for Manager or Inspector roles) is strictly prohibited and constitutes a security breach.</li>
             <li>• AI-generated risk scores are advisory. Final statutory responsibility remains with the designated Mine Manager.</li>
           </ul>
-          <button className="mt-4 text-xs font-bold text-blue-400 hover:underline text-left">Read Full T&C →</button>
+          <button className="mt-4 text-xs font-bold text-blue-700 dark:text-blue-400 hover:underline text-left">Read Full T&C →</button>
         </div>
 
         {/* Privacy Policy */}
         <div className="p-5 rounded-xl border flex flex-col" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <h3 className="font-bold text-sm">Privacy Policy & Data Security</h3>
@@ -468,13 +468,13 @@ function LegalPanel() {
             <li>• Worker PII (Personally Identifiable Information) is anonymized in AI training sets.</li>
             <li>• Government regulators have audited access. Data is hosted strictly within India (MeitY empaneled data centers).</li>
           </ul>
-          <button className="mt-4 text-xs font-bold text-emerald-400 hover:underline text-left">Read Privacy Policy →</button>
+          <button className="mt-4 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline text-left">Read Privacy Policy →</button>
         </div>
 
         {/* Contractor Disclaimer */}
         <div className="p-5 rounded-xl border flex flex-col" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-500/20">
               <AlertTriangle className="w-4 h-4" />
             </div>
             <h3 className="font-bold text-sm">Contractor Disclaimer</h3>
@@ -487,7 +487,7 @@ function LegalPanel() {
         {/* AI & Automation Disclaimer */}
         <div className="p-5 rounded-xl border flex flex-col" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
               <Brain className="w-4 h-4" />
             </div>
             <h3 className="font-bold text-sm">AI Automation Disclaimer</h3>
@@ -517,16 +517,16 @@ export default function HelpSupport() {
 
       {/* ── Header ── */}
       <div className="flex items-start gap-5 pb-6 border-b" style={{ borderColor: 'var(--cg-border)' }}>
-        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 shrink-0">
-          <HelpCircle className="w-9 h-9 text-amber-400" />
+        <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/20 shrink-0">
+          <HelpCircle className="w-9 h-9 text-amber-700 dark:text-amber-400" />
         </div>
         <div>
           <h1 className="text-2xl font-black tracking-tight">Help & Support Center</h1>
           <p className="text-sm mt-1 leading-relaxed" style={{ color: 'var(--cg-text-muted)' }}>
-            A complete guide to every feature of <span className="text-amber-400 font-bold">CoalGuard</span> — the DGMS-integrated safety & compliance platform for Coal India Limited.
+            A complete guide to every feature of <span className="text-amber-700 dark:text-amber-400 font-bold">CoalGuard</span> — the DGMS-integrated safety & compliance platform for Coal India Limited.
           </p>
           {role && (
-            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-amber-500/10 border border-amber-500/30 text-amber-400">
+            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 text-amber-700 dark:text-amber-400">
               You are logged in as: {role === 'mine_official' ? 'Mine Official / Field Officer' : role === 'corporate' ? 'Corporate HQ Admin' : 'DGMS Regulator'}
             </div>
           )}
@@ -542,7 +542,7 @@ export default function HelpSupport() {
             className={cn(
               'px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all',
               activeTab === tab
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                ? 'bg-amber-200 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-400 dark:border-amber-500/30'
                 : 'hover:bg-white/5'
             )}
             style={{ color: activeTab === tab ? undefined : 'var(--cg-text-secondary)' }}
@@ -567,12 +567,12 @@ export default function HelpSupport() {
 
           {/* Online / Offline notice */}
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-emerald-500/8 border border-emerald-500/20">
-              <Wifi className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-emerald-500/8 border border-emerald-300 dark:border-emerald-500/20">
+              <Wifi className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
               <p className="text-xs text-emerald-300"><strong>Online mode:</strong> All data syncs in real-time. Alerts and dashboards update automatically.</p>
             </div>
-            <div className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-amber-500/8 border border-amber-500/20">
-              <WifiOff className="w-5 h-5 text-amber-400 shrink-0" />
+            <div className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-amber-500/8 border border-amber-300 dark:border-amber-500/20">
+              <WifiOff className="w-5 h-5 text-amber-700 dark:text-amber-400 shrink-0" />
               <p className="text-xs text-amber-300"><strong>Offline mode:</strong> Inspections and violations are saved locally and auto-sync when internet returns.</p>
             </div>
           </div>
@@ -602,8 +602,8 @@ export default function HelpSupport() {
                         </div>
                       </div>
                       {isOpen
-                        ? <ChevronUp className="w-4 h-4 shrink-0 text-slate-400 mt-1" />
-                        : <ChevronDown className="w-4 h-4 shrink-0 text-slate-500 mt-1" />}
+                        ? <ChevronUp className="w-4 h-4 shrink-0 text-slate-600 dark:text-slate-400 mt-1" />
+                        : <ChevronDown className="w-4 h-4 shrink-0 text-slate-700 dark:text-slate-500 mt-1" />}
                     </div>
                   </button>
 
@@ -654,8 +654,8 @@ export default function HelpSupport() {
           </div>
 
           {/* Bell alerts info */}
-          <div className="flex items-start gap-4 p-5 rounded-2xl border bg-blue-500/8 border-blue-500/20 mt-2">
-            <Bell className="w-6 h-6 text-blue-400 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-4 p-5 rounded-2xl border bg-blue-500/8 border-blue-300 dark:border-blue-500/20 mt-2">
+            <Bell className="w-6 h-6 text-blue-700 dark:text-blue-400 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-bold text-blue-300">How Alerts Work</p>
               <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--cg-text-muted)' }}>
@@ -683,8 +683,8 @@ export default function HelpSupport() {
                 >
                   <span className="font-semibold text-sm" style={{ color: 'var(--cg-text-primary)' }}>{faq.q}</span>
                   {isOpen
-                    ? <ChevronUp className="w-4 h-4 text-amber-400 shrink-0" />
-                    : <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />}
+                    ? <ChevronUp className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
+                    : <ChevronDown className="w-4 h-4 text-slate-700 dark:text-slate-500 shrink-0" />}
                 </button>
                 {isOpen && (
                   <div className="px-5 pb-5 pt-0 text-sm leading-relaxed border-t" style={{ borderColor: 'var(--cg-border)', color: 'var(--cg-text-secondary)' }}>
@@ -706,30 +706,30 @@ export default function HelpSupport() {
           <div className="rounded-2xl border divide-y overflow-hidden" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
             <div className="flex items-center gap-4 p-5">
               <div className="p-2.5 rounded-xl bg-blue-500/15">
-                <Mail className="w-5 h-5 text-blue-400" />
+                <Mail className="w-5 h-5 text-blue-700 dark:text-blue-400" />
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--cg-text-muted)' }}>Support Email</p>
-                <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'support@coalindia.in'}`} className="font-mono text-blue-400 hover:underline text-sm mt-0.5 block">
+                <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'support@coalindia.in'}`} className="font-mono text-blue-700 dark:text-blue-400 hover:underline text-sm mt-0.5 block">
                   {import.meta.env.VITE_SUPPORT_EMAIL || 'support@coalindia.in'}
                 </a>
               </div>
             </div>
             <div className="flex items-center gap-4 p-5">
               <div className="p-2.5 rounded-xl bg-emerald-500/15">
-                <Phone className="w-5 h-5 text-emerald-400" />
+                <Phone className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--cg-text-muted)' }}>Helpline (Mon–Sat, 9am–6pm IST)</p>
-                <p className="font-mono text-emerald-400 text-sm mt-0.5">
+                <p className="font-mono text-emerald-700 dark:text-emerald-400 text-sm mt-0.5">
                   {import.meta.env.VITE_SUPPORT_PHONE || '+91 1800-419-2000'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-amber-500/8 border border-amber-500/20 text-xs" style={{ color: 'var(--cg-text-muted)' }}>
-            <strong className="text-amber-400">Before contacting support:</strong> Check the FAQ tab above — most common questions are answered there. If you have a data issue, include your Badge ID and the name of the mine from your profile.
+          <div className="p-4 rounded-xl bg-amber-500/8 border border-amber-300 dark:border-amber-500/20 text-xs" style={{ color: 'var(--cg-text-muted)' }}>
+            <strong className="text-amber-700 dark:text-amber-400">Before contacting support:</strong> Check the FAQ tab above — most common questions are answered there. If you have a data issue, include your Badge ID and the name of the mine from your profile.
           </div>
         </div>
       )}

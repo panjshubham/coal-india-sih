@@ -262,14 +262,14 @@ export default function NewInspection() {
             <div className="flex items-center gap-3 min-w-0">
               <button 
                 onClick={() => navigate(-1)}
-                className="w-10 h-10 min-h-[44px] min-w-[44px] rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-slate-200 hover:bg-white/[0.1] active:scale-95 transition-all shrink-0"
+                className="w-10 h-10 min-h-[44px] min-w-[44px] rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-slate-800 dark:text-slate-200 hover:bg-white/[0.1] active:scale-95 transition-all shrink-0"
               >
                 <span className="material-symbols-outlined text-[20px]">arrow_back</span>
               </button>
               <div className="flex flex-col min-w-0">
-                <span className="text-[11px] uppercase tracking-widest text-slate-400 font-mono font-medium leading-tight">NEW FIELD REPORT</span>
-                <h1 className="text-[16px] font-semibold text-white tracking-tight leading-snug truncate">Statutory Violation Form</h1>
-                <span className="text-[12px] text-slate-400 truncate">DGMS Concession Lease</span>
+                <span className="text-[11px] uppercase tracking-widest text-slate-600 dark:text-slate-400 font-mono font-medium leading-tight">NEW FIELD REPORT</span>
+                <h1 className="text-[16px] font-semibold text-slate-900 dark:text-white tracking-tight leading-snug truncate">Statutory Violation Form</h1>
+                <span className="text-[12px] text-slate-600 dark:text-slate-400 truncate">DGMS Concession Lease</span>
               </div>
             </div>
           </div>
@@ -282,8 +282,8 @@ export default function NewInspection() {
             <section className={`rounded-2xl border p-5 relative overflow-hidden backdrop-blur-sm transition-all ${gpsError ? 'bg-error/10 border-error/30' : 'bg-white/[0.03] border-white/[0.08]'}`}>
               <div className="flex items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2">
-                  <span className={`material-symbols-outlined text-[18px] ${gpsError ? 'text-error' : 'text-amber-400'}`}>satellite_alt</span>
-                  <span className={`text-[11px] font-mono font-semibold tracking-wider uppercase ${gpsError ? 'text-error' : 'text-slate-300'}`}>
+                  <span className={`material-symbols-outlined text-[18px] ${gpsError ? 'text-error' : 'text-amber-700 dark:text-amber-400'}`}>satellite_alt</span>
+                  <span className={`text-[11px] font-mono font-semibold tracking-wider uppercase ${gpsError ? 'text-error' : 'text-slate-700 dark:text-slate-300'}`}>
                     VERIFIED GEO-TELEMETRY
                   </span>
                 </div>
@@ -307,19 +307,19 @@ export default function NewInspection() {
                     <button onClick={captureLocation} className="w-fit px-4 py-2 bg-error text-on-error rounded font-semibold text-[13px] flex items-center gap-2 active:scale-95 transition-transform">
                       <span className="material-symbols-outlined text-[16px]">refresh</span> Retry GPS Lock
                     </button>
-                    <button onClick={forceMockLocation} className="w-fit px-4 py-2 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded font-semibold text-[13px] flex items-center gap-2 active:scale-95 transition-transform">
+                    <button onClick={forceMockLocation} className="w-fit px-4 py-2 bg-amber-200 dark:bg-amber-500/20 text-amber-300 border border-amber-400 dark:border-amber-500/30 rounded font-semibold text-[13px] flex items-center gap-2 active:scale-95 transition-transform">
                       <span className="material-symbols-outlined text-[16px]">bug_report</span> Force Demo Lock (Dev)
                     </button>
                   </div>
                 </div>
               ) : location ? (
                 <div className="space-y-1.5">
-                  <div className="text-[15px] font-mono font-medium text-white tracking-tight flex items-center gap-2">
-                    <span className="material-symbols-outlined text-emerald-400 text-[18px]">my_location</span>
+                  <div className="text-[15px] font-mono font-medium text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <span className="material-symbols-outlined text-emerald-700 dark:text-emerald-400 text-[18px]">my_location</span>
                     {location.lat.toFixed(6)}°N, {location.lng.toFixed(6)}°E
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-slate-400 font-mono">
-                    <span className="text-emerald-400">Time: {new Date(capturedTimestamp!).toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' })} IST</span>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-slate-600 dark:text-slate-400 font-mono">
+                    <span className="text-emerald-700 dark:text-emerald-400">Time: {new Date(capturedTimestamp!).toLocaleString('en-GB', { timeZone: 'Asia/Kolkata' })} IST</span>
                     <span>•</span>
                     <span>Synced via Device GNSS</span>
                   </div>
@@ -329,8 +329,8 @@ export default function NewInspection() {
 
             {/* Section 2: Statutory Category Picker */}
             <section className="flex flex-col gap-2">
-              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300 flex items-center justify-between">
-                <span>Violation Category <span className="text-rose-400 font-bold">*</span></span>
+              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <span>Violation Category <span className="text-rose-700 dark:text-rose-400 font-bold">*</span></span>
               </label>
               <button 
                 type="button"
@@ -338,20 +338,20 @@ export default function NewInspection() {
                 className="w-full min-h-[52px] px-4 py-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/[0.12] flex items-center justify-between gap-3 text-left transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-amber-500/40"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="material-symbols-outlined text-amber-400 text-[20px] shrink-0">rule</span>
-                  <span className="text-[15px] font-medium text-white truncate">{category}</span>
+                  <span className="material-symbols-outlined text-amber-700 dark:text-amber-400 text-[20px] shrink-0">rule</span>
+                  <span className="text-[15px] font-medium text-slate-900 dark:text-white truncate">{category}</span>
                 </div>
-                <span className="material-symbols-outlined text-slate-400 text-[20px] shrink-0">expand_more</span>
+                <span className="material-symbols-outlined text-slate-600 dark:text-slate-400 text-[20px] shrink-0">expand_more</span>
               </button>
             </section>
 
             {/* Section 3: Severity Selection */}
             <section className="flex flex-col gap-2.5">
               <div className="flex items-center justify-between">
-                <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300">Severity Classification <span className="text-rose-400 font-bold">*</span></label>
+                <label className="text-[12px] font-medium tracking-wide uppercase text-slate-700 dark:text-slate-300">Severity Classification <span className="text-rose-700 dark:text-rose-400 font-bold">*</span></label>
                 <span className={`text-[11px] font-semibold uppercase tracking-wider ${
-                  severity === 'advisory' ? 'text-emerald-400' : 
-                  severity === 'moderate' ? 'text-amber-400' : 'text-rose-400'
+                  severity === 'advisory' ? 'text-emerald-700 dark:text-emerald-400' : 
+                  severity === 'moderate' ? 'text-amber-700 dark:text-amber-400' : 'text-rose-700 dark:text-rose-400'
                 }`}>
                   {severityStatus}
                 </span>
@@ -362,8 +362,8 @@ export default function NewInspection() {
                   onClick={() => setSeverity('advisory')}
                   className={`min-h-[50px] py-2 px-3 rounded-xl flex flex-col items-center justify-center text-center transition-all duration-150 active:scale-95 ${
                     severity === 'advisory' 
-                      ? 'bg-emerald-600 text-white font-semibold shadow-lg shadow-emerald-950/40 border border-emerald-500' 
-                      : 'border border-white/15 bg-white/[0.02] text-slate-300'
+                      ? 'bg-emerald-600 text-slate-900 dark:text-white font-semibold shadow-lg shadow-emerald-950/40 border border-emerald-500' 
+                      : 'border border-white/15 bg-white/[0.02] text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   <span className="text-[13px] font-semibold tracking-wide uppercase">Advisory</span>
@@ -374,8 +374,8 @@ export default function NewInspection() {
                   onClick={() => setSeverity('moderate')}
                   className={`min-h-[50px] py-2 px-3 rounded-xl flex flex-col items-center justify-center text-center transition-all duration-150 active:scale-95 ${
                     severity === 'moderate' 
-                      ? 'bg-amber-600 text-white font-semibold shadow-lg shadow-amber-950/40 border border-amber-500' 
-                      : 'border border-white/15 bg-white/[0.02] text-slate-300'
+                      ? 'bg-amber-600 text-slate-900 dark:text-white font-semibold shadow-lg shadow-amber-950/40 border border-amber-500' 
+                      : 'border border-white/15 bg-white/[0.02] text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   <span className="text-[13px] font-semibold tracking-wide uppercase">Moderate</span>
@@ -386,28 +386,28 @@ export default function NewInspection() {
                   onClick={() => setSeverity('critical')}
                   className={`min-h-[50px] py-2 px-3 rounded-xl flex flex-col items-center justify-center text-center transition-all duration-150 active:scale-95 ${
                     severity === 'critical' 
-                      ? 'bg-red-600 text-white font-semibold shadow-lg shadow-red-950/50 border border-red-500' 
-                      : 'border border-white/15 bg-white/[0.02] text-slate-300'
+                      ? 'bg-red-600 text-slate-900 dark:text-white font-semibold shadow-lg shadow-red-950/50 border border-red-500' 
+                      : 'border border-white/15 bg-white/[0.02] text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   <span className="text-[13px] font-bold tracking-wide uppercase flex items-center gap-1">
                     {severity === 'critical' && <span className="material-symbols-outlined text-[15px]">warning</span>}
                     Critical
                   </span>
-                  <span className="text-[10px] text-white/90 mt-0.5 font-mono font-medium">Immediate Stop</span>
+                  <span className="text-[10px] text-slate-900 dark:text-white/90 mt-0.5 font-mono font-medium">Immediate Stop</span>
                 </button>
               </div>
             </section>
 
             {/* Section 4: Headline Tag */}
             <section className="flex flex-col gap-2">
-              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300">Incident Headline <span className="text-rose-400 font-bold">*</span></label>
+              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-700 dark:text-slate-300">Incident Headline <span className="text-rose-700 dark:text-rose-400 font-bold">*</span></label>
               <div className="relative flex items-center">
                 <input 
                   type="text" 
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
-                  className="w-full min-h-[50px] px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.12] text-white text-[15px] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                  className="w-full min-h-[50px] px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.12] text-slate-900 dark:text-white text-[15px] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
                   placeholder="e.g. Tension crack on OB Bench #7" 
                 />
               </div>
@@ -415,13 +415,13 @@ export default function NewInspection() {
 
             {/* Section 5: Description Field */}
             <section className="flex flex-col gap-2">
-              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300">Observations & Directives <span className="text-rose-400 font-bold">*</span></label>
+              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-700 dark:text-slate-300">Observations & Directives <span className="text-rose-700 dark:text-rose-400 font-bold">*</span></label>
               <div className="relative rounded-xl bg-white/[0.04] border border-white/[0.12] focus-within:ring-2 focus-within:ring-amber-500/40 focus-within:border-amber-500 transition-all p-3">
                 <textarea 
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
-                  className="w-full bg-transparent text-white text-[15px] leading-relaxed placeholder-slate-500 focus:outline-none resize-none min-h-[100px]" 
+                  className="w-full bg-transparent text-slate-900 dark:text-white text-[15px] leading-relaxed placeholder-slate-500 focus:outline-none resize-none min-h-[100px]" 
                   placeholder="Detailed description of statutory non-compliances..."
                 />
               </div>
@@ -429,7 +429,7 @@ export default function NewInspection() {
 
             {/* Section 6: Photo Upload Area */}
             <section className="flex flex-col gap-3">
-              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-300">Visual Evidence (Optional)</label>
+              <label className="text-[12px] font-medium tracking-wide uppercase text-slate-700 dark:text-slate-300">Visual Evidence (Optional)</label>
               
               <input 
                 type="file" 
@@ -446,17 +446,17 @@ export default function NewInspection() {
                   onClick={handlePhotoClick}
                   className="w-full border-2 border-dashed border-white/20 hover:border-amber-400/50 rounded-2xl p-6 text-center bg-white/[0.02] hover:bg-white/[0.05] transition-all flex flex-col items-center justify-center gap-2 group min-h-[120px]"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white/[0.06] group-hover:bg-amber-400/20 group-hover:text-amber-300 flex items-center justify-center text-slate-300 transition-all">
+                  <div className="w-12 h-12 rounded-full bg-white/[0.06] group-hover:bg-amber-400/20 group-hover:text-amber-300 flex items-center justify-center text-slate-700 dark:text-slate-300 transition-all">
                     <span className="material-symbols-outlined text-[24px]">photo_camera</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="text-[15px] font-semibold text-white">Add photo</span>
-                    <span className="text-[12px] text-slate-400 mt-0.5">High-resolution geotagged photo</span>
+                    <span className="text-[15px] font-semibold text-slate-900 dark:text-white">Add photo</span>
+                    <span className="text-[12px] text-slate-600 dark:text-slate-400 mt-0.5">High-resolution geotagged photo</span>
                   </div>
                 </button>
               ) : (
                 <div className="relative rounded-xl overflow-hidden border border-white/[0.12] bg-white/[0.03] p-3 flex items-center gap-4 transition-all">
-                  <div className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-white/[0.1] bg-slate-900">
+                  <div className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-white/[0.1] bg-white dark:bg-slate-900">
                     <img 
                       src={photo ? URL.createObjectURL(photo) : ""} 
                       alt="Violation evidence" 
@@ -464,12 +464,12 @@ export default function NewInspection() {
                     />
                   </div>
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="text-[13px] font-medium text-white truncate">{photo ? photo.name : 'evidence.jpg'}</span>
+                    <span className="text-[13px] font-medium text-slate-900 dark:text-white truncate">{photo ? photo.name : 'evidence.jpg'}</span>
                   </div>
                   <button 
                     type="button" 
                     onClick={() => { setPhoto(null); setIsPhotoPreviewVisible(false); }}
-                    className="w-8 h-8 rounded-lg bg-white/[0.08] hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 flex items-center justify-center transition-colors shrink-0"
+                    className="w-8 h-8 rounded-lg bg-white/[0.08] hover:bg-rose-500/20 hover:text-rose-700 dark:text-rose-400 text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors shrink-0"
                   >
                     <span className="material-symbols-outlined text-[18px]">close</span>
                   </button>
@@ -488,9 +488,9 @@ export default function NewInspection() {
               disabled={loading || !location || !capturedTimestamp}
               className={`w-full min-h-[52px] rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all font-bold text-[16px] ${
                 loading 
-                  ? 'bg-emerald-500 text-white' 
+                  ? 'bg-emerald-500 text-slate-900 dark:text-white' 
                   : !location 
-                  ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                  ? 'bg-slate-700 text-slate-600 dark:text-slate-400 cursor-not-allowed'
                   : 'bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-[#080E1D] shadow-amber-950/40'
               }`}
             >
@@ -521,13 +521,13 @@ export default function NewInspection() {
             <div className="relative w-full max-w-2xl mx-auto bg-[#0F172A] border-t border-white/10 sm:border sm:rounded-2xl rounded-t-2xl p-5 pb-safe shadow-2xl flex flex-col gap-4 animate-in slide-in-from-bottom">
               <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
                 <div className="flex flex-col">
-                  <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Select Statutory Classification</span>
-                  <span className="text-[16px] font-bold text-white">Violation Category</span>
+                  <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 uppercase tracking-wider">Select Statutory Classification</span>
+                  <span className="text-[16px] font-bold text-slate-900 dark:text-white">Violation Category</span>
                 </div>
                 <button 
                   type="button" 
                   onClick={() => setIsCategoryDrawerOpen(false)}
-                  className="w-8 h-8 rounded-lg bg-white/[0.08] hover:bg-white/[0.12] text-slate-300 flex items-center justify-center"
+                  className="w-8 h-8 rounded-lg bg-white/[0.08] hover:bg-white/[0.12] text-slate-700 dark:text-slate-300 flex items-center justify-center"
                 >
                   <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
@@ -546,12 +546,12 @@ export default function NewInspection() {
                     onClick={() => { setCategory(cat); setIsCategoryDrawerOpen(false); }}
                     className={`w-full p-3.5 rounded-xl font-medium flex items-center justify-between text-left transition-colors ${
                       category === cat 
-                        ? 'bg-amber-500/10 border border-amber-500/30 text-white' 
-                        : 'bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.08] text-slate-200'
+                        ? 'bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 text-slate-900 dark:text-white' 
+                        : 'bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.08] text-slate-800 dark:text-slate-200'
                     }`}
                   >
                     <span className="text-[14px]">{cat}</span>
-                    <span className={`material-symbols-outlined text-[18px] ${category === cat ? 'text-amber-400' : 'text-transparent'}`}>
+                    <span className={`material-symbols-outlined text-[18px] ${category === cat ? 'text-amber-700 dark:text-amber-400' : 'text-transparent'}`}>
                       {category === cat ? 'check_circle' : 'circle'}
                     </span>
                   </button>

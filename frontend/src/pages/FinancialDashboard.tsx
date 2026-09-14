@@ -34,11 +34,11 @@ const SAAS_TIERS = [
 
 // ─── UI COMPONENTS ─────────────────────────────────────────────────────────
 const COL = {
-  emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-  red:     { bg: 'bg-red-500/10',     text: 'text-red-400',     border: 'border-red-500/20' },
-  blue:    { bg: 'bg-blue-500/10',    text: 'text-blue-400',    border: 'border-blue-500/20' },
-  amber:   { bg: 'bg-amber-500/10',   text: 'text-amber-400',   border: 'border-amber-500/20' },
-  slate:   { bg: 'bg-slate-500/10',   text: 'text-slate-300',   border: 'border-slate-500/20' },
+  emerald: { bg: 'bg-emerald-100 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-300 dark:border-emerald-500/20' },
+  red:     { bg: 'bg-red-100 dark:bg-red-500/10',     text: 'text-red-700 dark:text-red-400',     border: 'border-red-300 dark:border-red-500/20' },
+  blue:    { bg: 'bg-blue-100 dark:bg-blue-500/10',    text: 'text-blue-700 dark:text-blue-400',    border: 'border-blue-300 dark:border-blue-500/20' },
+  amber:   { bg: 'bg-amber-100 dark:bg-amber-500/10',   text: 'text-amber-700 dark:text-amber-400',   border: 'border-amber-300 dark:border-amber-500/20' },
+  slate:   { bg: 'bg-slate-500/10',   text: 'text-slate-700 dark:text-slate-300',   border: 'border-slate-500/20' },
 } as any;
 
 export default function FinancialDashboard() {
@@ -48,8 +48,8 @@ export default function FinancialDashboard() {
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8" style={{ color: 'var(--cg-text-primary)' }}>
       {/* Header */}
       <div className="flex items-center gap-4 border-b pb-6" style={{ borderColor: 'var(--cg-border)' }}>
-        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-          <IndianRupee className="w-8 h-8 text-emerald-400" />
+        <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/20">
+          <IndianRupee className="w-8 h-8 text-emerald-700 dark:text-emerald-400" />
         </div>
         <div>
           <h1 className="text-2xl font-black tracking-tight">{t('fin_title', 'Financial & ROI Overview')}</h1>
@@ -91,9 +91,9 @@ export default function FinancialDashboard() {
           <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
             <div className="px-5 py-4 border-b flex justify-between items-center" style={{ borderColor: 'var(--cg-border)', backgroundColor: 'var(--cg-surface-elevated)' }}>
               <h2 className="text-sm font-bold flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-red-400" /> Automated Penalty Ledger
+                <ShieldAlert className="w-4 h-4 text-red-700 dark:text-red-400" /> Automated Penalty Ledger
               </h2>
-              <span className="text-[10px] font-mono text-amber-400 border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 rounded">AUTO-ENFORCEMENT ACTIVE</span>
+              <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 rounded">AUTO-ENFORCEMENT ACTIVE</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
@@ -112,11 +112,11 @@ export default function FinancialDashboard() {
                       <td className="px-5 py-3 font-mono text-xs">{p.id}</td>
                       <td className="px-5 py-3">{p.mine}</td>
                       <td className="px-5 py-3 text-xs">{p.reason}</td>
-                      <td className="px-5 py-3 text-right font-mono text-red-400 font-bold">₹{p.amount.toLocaleString('en-IN')}</td>
+                      <td className="px-5 py-3 text-right font-mono text-red-700 dark:text-red-400 font-bold">₹{p.amount.toLocaleString('en-IN')}</td>
                       <td className="px-5 py-3">
                         <span className={cn(
                           'px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider',
-                          p.status === 'Collected' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                          p.status === 'Collected' ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400'
                         )}>
                           {p.status}
                         </span>
@@ -131,7 +131,7 @@ export default function FinancialDashboard() {
           {/* SaaS Licensing Revenue */}
           <div className="rounded-2xl border p-5" style={{ backgroundColor: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
             <h2 className="text-sm font-bold flex items-center gap-2 mb-4">
-              <Landmark className="w-4 h-4 text-blue-400" /> SaaS Subscription Revenue (MRR)
+              <Landmark className="w-4 h-4 text-blue-700 dark:text-blue-400" /> SaaS Subscription Revenue (MRR)
             </h2>
             <div className="space-y-4">
               {SAAS_TIERS.map((tier, i) => (
@@ -141,7 +141,7 @@ export default function FinancialDashboard() {
                     <p className="text-xs mt-0.5" style={{ color: 'var(--cg-text-muted)' }}>{tier.mines} Active Sites</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono text-emerald-400 font-bold">{tier.mrr}</p>
+                    <p className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{tier.mrr}</p>
                     <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--cg-text-muted)' }}>/ Month</p>
                   </div>
                 </div>
@@ -153,8 +153,8 @@ export default function FinancialDashboard() {
 
         {/* Right Column: ROI Calculator */}
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl border bg-amber-500/5 border-amber-500/20">
-            <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2 mb-2">
+          <div className="p-6 rounded-2xl border bg-amber-50 dark:bg-amber-500/5 border-amber-300 dark:border-amber-500/20">
+            <h3 className="text-sm font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2 mb-2">
               <Activity className="w-4 h-4" /> Massive Cost Avoidance (ROI)
             </h3>
             <p className="text-xs leading-relaxed mb-5" style={{ color: 'var(--cg-text-secondary)' }}>
@@ -165,7 +165,7 @@ export default function FinancialDashboard() {
               <div>
                 <div className="flex justify-between text-xs mb-1">
                   <span style={{ color: 'var(--cg-text-muted)' }}>Accidents Prevented (Est.)</span>
-                  <span className="font-bold text-emerald-400">12</span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">12</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-black overflow-hidden border border-white/5">
                   <div className="h-full bg-emerald-500 w-[75%] rounded-full"></div>
@@ -176,7 +176,7 @@ export default function FinancialDashboard() {
               <div>
                 <div className="flex justify-between text-xs mb-1">
                   <span style={{ color: 'var(--cg-text-muted)' }}>Audit Man-Hours Saved</span>
-                  <span className="font-bold text-blue-400">14,200 hrs</span>
+                  <span className="font-bold text-blue-700 dark:text-blue-400">14,200 hrs</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-black overflow-hidden border border-white/5">
                   <div className="h-full bg-blue-500 w-[90%] rounded-full"></div>
@@ -187,7 +187,7 @@ export default function FinancialDashboard() {
               <div>
                 <div className="flex justify-between text-xs mb-1">
                   <span style={{ color: 'var(--cg-text-muted)' }}>Production Halts Avoided</span>
-                  <span className="font-bold text-purple-400">5 Shifts</span>
+                  <span className="font-bold text-purple-700 dark:text-purple-400">5 Shifts</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-black overflow-hidden border border-white/5">
                   <div className="h-full bg-purple-500 w-[60%] rounded-full"></div>
@@ -196,9 +196,9 @@ export default function FinancialDashboard() {
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-amber-500/20 text-center">
+            <div className="mt-6 pt-4 border-t border-amber-300 dark:border-amber-500/20 text-center">
               <p className="text-[10px] uppercase tracking-wider font-bold" style={{ color: 'var(--cg-text-muted)' }}>Total Estimated Annual ROI</p>
-              <p className="text-3xl font-black text-amber-400 mt-1">₹12.4 Cr</p>
+              <p className="text-3xl font-black text-amber-700 dark:text-amber-400 mt-1">₹12.4 Cr</p>
             </div>
           </div>
 

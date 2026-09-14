@@ -168,9 +168,9 @@ export default function AlertBell() {
           color: 'var(--cg-text-secondary)'
         }}
       >
-        <Bell className="w-4 h-4 hover:text-amber-400 transition-colors" />
+        <Bell className="w-4 h-4 hover:text-amber-700 dark:text-amber-400 transition-colors" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 border-2 border-[var(--cg-bg)] rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm animate-pulse">
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 border-2 border-[var(--cg-bg)] rounded-full flex items-center justify-center text-[9px] font-bold text-slate-900 dark:text-white shadow-sm animate-pulse">
             {unreadCount}
           </span>
         )}
@@ -201,14 +201,14 @@ export default function AlertBell() {
               {unreadCount > 0 ? (
                 <button
                   onClick={markAllAsRead}
-                  className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 transition-colors cursor-pointer"
+                  className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-400 dark:border-amber-500/30 transition-colors cursor-pointer"
                   title="Mark all as read"
                 >
                   Mark Read ({unreadCount})
                 </button>
               ) : (
                 <span className="text-[10px] font-mono text-[var(--cg-text-faint)] flex items-center gap-1">
-                  <CheckCheck className="w-3 h-3 text-emerald-400" /> Synced
+                  <CheckCheck className="w-3 h-3 text-emerald-700 dark:text-emerald-400" /> Synced
                 </span>
               )}
             </div>
@@ -218,7 +218,7 @@ export default function AlertBell() {
           <div className="max-h-96 overflow-y-auto divide-y divide-[var(--cg-border)]">
             {alerts.length === 0 ? (
               <div className="p-8 text-center text-xs" style={{ color: 'var(--cg-text-muted)' }}>
-                <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-40 text-amber-400" />
+                <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-40 text-amber-700 dark:text-amber-400" />
                 No active pit alerts recorded.
               </div>
             ) : (
@@ -236,7 +236,7 @@ export default function AlertBell() {
                     onKeyDown={(e) => { if (e.key === 'Enter') handleAlertClick(alert, e as any); }}
                     className={`p-3.5 flex items-start gap-3 transition-colors cursor-pointer group text-left ${
                       !alert.is_read 
-                        ? 'bg-amber-500/5 hover:bg-amber-500/10' 
+                        ? 'bg-amber-50 dark:bg-amber-500/5 hover:bg-amber-100 dark:bg-amber-500/10' 
                         : 'hover:bg-white/5'
                     }`}
                   >
@@ -256,21 +256,21 @@ export default function AlertBell() {
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`text-[9px] font-mono uppercase px-1.5 py-0.2 rounded font-bold border ${
                           isCritical
-                            ? 'bg-red-950/60 border-red-800 text-red-400'
+                            ? 'bg-red-950/60 border-red-800 text-red-700 dark:text-red-400'
                             : isHigh
-                            ? 'bg-amber-950/60 border-amber-800 text-amber-400'
-                            : 'bg-slate-800 border-slate-700 text-slate-300'
+                            ? 'bg-amber-950/60 border-amber-800 text-amber-700 dark:text-amber-400'
+                            : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                         }`}>
                           {alert.type || 'Alert'}
                         </span>
                         {alert.related_entity_id && (
-                          <span className="text-[9px] font-mono text-slate-400">
+                          <span className="text-[9px] font-mono text-slate-600 dark:text-slate-400">
                             #{alert.related_entity_id}
                           </span>
                         )}
                       </div>
 
-                      <p className="text-xs font-semibold leading-snug mb-1 group-hover:text-amber-400 transition-colors" style={{ color: 'var(--cg-text-primary)' }}>
+                      <p className="text-xs font-semibold leading-snug mb-1 group-hover:text-amber-700 dark:text-amber-400 transition-colors" style={{ color: 'var(--cg-text-primary)' }}>
                         {alert.message}
                       </p>
 
@@ -278,7 +278,7 @@ export default function AlertBell() {
                         <span className="text-[10px] font-mono" style={{ color: 'var(--cg-text-faint)' }}>
                           {formatISTShort(alert.created_at)}
                         </span>
-                        <span className="text-[10px] font-mono font-bold text-amber-400/80 group-hover:text-amber-400 flex items-center gap-0.5 transition-colors">
+                        <span className="text-[10px] font-mono font-bold text-amber-700 dark:text-amber-400/80 group-hover:text-amber-700 dark:text-amber-400 flex items-center gap-0.5 transition-colors">
                           Open Details <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
                         </span>
                       </div>
@@ -291,7 +291,7 @@ export default function AlertBell() {
 
           {/* Footer: View All Link */}
           <div 
-            className="p-2.5 bg-slate-900/60 border-t flex items-center justify-between"
+            className="p-2.5 bg-white dark:bg-slate-900/60 border-t flex items-center justify-between"
             style={{ 
               borderColor: 'var(--cg-border)',
               backgroundColor: 'var(--cg-surface-elevated)'
@@ -300,7 +300,7 @@ export default function AlertBell() {
             <Link
               to="/violations"
               onClick={() => setIsOpen(false)}
-              className="w-full py-1.5 px-3 rounded-lg text-center text-xs font-bold text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 transition-colors flex items-center justify-center gap-1.5"
+              className="w-full py-1.5 px-3 rounded-lg text-center text-xs font-bold text-amber-700 dark:text-amber-400 hover:text-amber-300 hover:bg-amber-100 dark:bg-amber-500/10 transition-colors flex items-center justify-center gap-1.5"
             >
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>View Full Violations & Alerts Registry</span>

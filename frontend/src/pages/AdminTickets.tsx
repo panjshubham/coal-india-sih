@@ -60,11 +60,11 @@ export default function AdminTickets() {
   const StatusBadge = ({ status }: { status: string }) => {
     switch (status) {
       case 'open':
-        return <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20"><Circle className="w-3 h-3"/> Open</span>;
+        return <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500/20"><Circle className="w-3 h-3"/> Open</span>;
       case 'in_progress':
-        return <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20"><Clock className="w-3 h-3"/> In Progress</span>;
+        return <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-500/20"><Clock className="w-3 h-3"/> In Progress</span>;
       case 'resolved':
-        return <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><CheckCircle className="w-3 h-3"/> Resolved</span>;
+        return <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20"><CheckCircle className="w-3 h-3"/> Resolved</span>;
       default:
         return <span>{status}</span>;
     }
@@ -75,8 +75,8 @@ export default function AdminTickets() {
       {/* Header */}
       <div className="flex items-center justify-between border-b pb-6" style={{ borderColor: 'var(--cg-border)' }}>
         <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
-            <HelpCircle className="w-8 h-8 text-purple-400" />
+          <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-500/10 border border-purple-500/20">
+            <HelpCircle className="w-8 h-8 text-purple-700 dark:text-purple-400" />
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight">{t('admin_tickets_title')}</h1>
@@ -134,9 +134,9 @@ export default function AdminTickets() {
                       onChange={(e) => handleStatusChange(ticket.id, e.target.value)}
                       className="bg-transparent border border-white/20 rounded-lg px-2 py-1 text-xs font-bold uppercase tracking-wider focus:outline-none focus:border-amber-400"
                     >
-                      <option value="open" className="bg-slate-900">OPEN</option>
-                      <option value="in_progress" className="bg-slate-900">IN PROGRESS</option>
-                      <option value="resolved" className="bg-slate-900">RESOLVED</option>
+                      <option value="open" className="bg-white dark:bg-slate-900">OPEN</option>
+                      <option value="in_progress" className="bg-white dark:bg-slate-900">IN PROGRESS</option>
+                      <option value="resolved" className="bg-white dark:bg-slate-900">RESOLVED</option>
                     </select>
                     <div className="mt-2">
                       <StatusBadge status={ticket.status} />

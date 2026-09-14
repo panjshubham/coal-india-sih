@@ -363,7 +363,7 @@ export default function StatutoryRegisters() {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900/90 to-slate-950 border border-amber-500/30 p-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900/90 to-slate-950 border border-amber-400 dark:border-amber-500/30 p-6 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
@@ -385,9 +385,9 @@ export default function StatutoryRegisters() {
           <div className="flex items-center gap-3">
             <button
               onClick={exportPDF}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-sm font-semibold transition shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-sm font-semibold transition shadow-sm"
             >
-              <Download className="w-4 h-4 text-slate-300" />
+              <Download className="w-4 h-4 text-slate-700 dark:text-slate-300" />
               <span>Export Register (PDF)</span>
             </button>
 
@@ -402,26 +402,26 @@ export default function StatutoryRegisters() {
         </div>
 
         {/* Quick Statutory Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-slate-800">
-          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-            <p className="text-xs text-slate-400 font-medium">Active Statutory Records</p>
-            <p className="text-xl font-bold text-white mt-1">{records.length}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">Active Statutory Records</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">{records.length}</p>
           </div>
-          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-            <p className="text-xs text-emerald-400 font-medium">Fully Compliant Logs</p>
-            <p className="text-xl font-bold text-emerald-400 mt-1">
+          <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Fully Compliant Logs</p>
+            <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400 mt-1">
               {records.filter(r => r.compliance_status === 'COMPLIANT').length}
             </p>
           </div>
-          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-            <p className="text-xs text-amber-400 font-medium">Statutory Warnings</p>
-            <p className="text-xl font-bold text-amber-400 mt-1">
+          <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">Statutory Warnings</p>
+            <p className="text-xl font-bold text-amber-700 dark:text-amber-400 mt-1">
               {records.filter(r => r.compliance_status === 'WARNING').length}
             </p>
           </div>
-          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-            <p className="text-xs text-red-400 font-medium">Critical Breaches</p>
-            <p className="text-xl font-bold text-red-400 mt-1">
+          <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <p className="text-xs text-red-700 dark:text-red-400 font-medium">Critical Breaches</p>
+            <p className="text-xl font-bold text-red-700 dark:text-red-400 mt-1">
               {records.filter(r => r.compliance_status === 'STATUTORY_BREACH').length}
             </p>
           </div>
@@ -437,8 +437,8 @@ export default function StatutoryRegisters() {
               onClick={() => setActiveFilter(tab.id)}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-2 border ${
                 activeFilter === tab.id
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
-                  : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-slate-800'
+                  ? 'bg-amber-200 dark:bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                  : 'bg-white dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-800'
               }`}
             >
               {tab.icon && <tab.icon className="w-3.5 h-3.5" />}
@@ -448,23 +448,23 @@ export default function StatutoryRegisters() {
         </div>
 
         <div className="relative min-w-[260px]">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400" />
           <input
             type="text"
             placeholder="Search regulation, seam, inspector..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 placeholder:text-slate-500"
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500/50 placeholder:text-slate-700 dark:text-slate-500"
           />
         </div>
       </div>
 
       {/* Records Table / Cards */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/60 text-[11px] uppercase tracking-wider font-bold text-slate-400">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 text-[11px] uppercase tracking-wider font-bold text-slate-600 dark:text-slate-400">
                 <th className="py-3.5 px-4">Statutory Regulation</th>
                 <th className="py-3.5 px-4">District / Seam</th>
                 <th className="py-3.5 px-4">Shift & Inspector</th>
@@ -477,55 +477,55 @@ export default function StatutoryRegisters() {
             <tbody className="divide-y divide-slate-800/60 text-sm">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-slate-400">
+                  <td colSpan={7} className="text-center py-12 text-slate-600 dark:text-slate-400">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-500" />
                     Loading official statutory registers...
                   </td>
                 </tr>
               ) : filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-slate-500">
+                  <td colSpan={7} className="text-center py-12 text-slate-700 dark:text-slate-500">
                     No statutory records found matching current criteria.
                   </td>
                 </tr>
               ) : (
                 filteredRecords.map(r => (
-                  <tr key={r.id} className="hover:bg-slate-800/40 transition">
+                  <tr key={r.id} className="hover:bg-slate-100 dark:bg-slate-800/40 transition">
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-200">{r.statutory_regulation}</div>
-                      <div className="text-[11px] text-slate-400">{r.register_type.replace(/_/g, ' ')}</div>
+                      <div className="font-bold text-slate-800 dark:text-slate-200">{r.statutory_regulation}</div>
+                      <div className="text-[11px] text-slate-600 dark:text-slate-400">{r.register_type.replace(/_/g, ' ')}</div>
                     </td>
 
-                    <td className="py-3.5 px-4 font-medium text-slate-300">
+                    <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300">
                       {r.seam_or_pit}
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="text-xs font-semibold text-slate-200">{r.inspector_name}</div>
-                      <div className="text-[11px] text-slate-400">{r.inspector_role} • {r.shift.split(' ')[0]}</div>
+                      <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">{r.inspector_name}</div>
+                      <div className="text-[11px] text-slate-600 dark:text-slate-400">{r.inspector_role} • {r.shift.split(' ')[0]}</div>
                     </td>
 
                     <td className="py-3.5 px-4">
                       <div className="flex flex-wrap gap-1.5 max-w-xs text-[11px]">
                         {r.parameters.ch4_pct !== undefined && (
                           <span className={`px-2 py-0.5 rounded font-mono font-bold ${
-                            Number(r.parameters.ch4_pct) >= 0.75 ? 'bg-red-950 text-red-400 border border-red-800/50' : 'bg-slate-800 text-slate-300'
+                            Number(r.parameters.ch4_pct) >= 0.75 ? 'bg-red-950 text-red-700 dark:text-red-400 border border-red-800/50' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                           }`}>
                             CH4: {r.parameters.ch4_pct}%
                           </span>
                         )}
                         {r.parameters.co_ppm !== undefined && (
-                          <span className="px-2 py-0.5 rounded font-mono bg-slate-800 text-slate-300">
+                          <span className="px-2 py-0.5 rounded font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                             CO: {r.parameters.co_ppm} ppm
                           </span>
                         )}
                         {r.parameters.berm_height_m !== undefined && (
-                          <span className="px-2 py-0.5 rounded font-mono bg-slate-800 text-slate-300">
+                          <span className="px-2 py-0.5 rounded font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                             Berm: {r.parameters.berm_height_m}m
                           </span>
                         )}
                         {r.parameters.roof_strata_status !== undefined && (
-                          <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 capitalize">
+                          <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 capitalize">
                             Strata: {r.parameters.roof_strata_status}
                           </span>
                         )}
@@ -534,19 +534,19 @@ export default function StatutoryRegisters() {
 
                     <td className="py-3.5 px-4">
                       {r.compliance_status === 'COMPLIANT' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-500/40">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40">
                           <CheckCircle2 className="w-3 h-3" />
                           COMPLIANT
                         </span>
                       )}
                       {r.compliance_status === 'WARNING' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-950/80 text-amber-400 border border-amber-500/40">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-500/40">
                           <AlertTriangle className="w-3 h-3" />
                           WARNING
                         </span>
                       )}
                       {r.compliance_status === 'STATUTORY_BREACH' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-950/80 text-red-400 border border-red-500/40 animate-pulse">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-950/80 text-red-700 dark:text-red-400 border border-red-500/40 animate-pulse">
                           <XCircle className="w-3 h-3" />
                           BREACH
                         </span>
@@ -554,7 +554,7 @@ export default function StatutoryRegisters() {
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5 font-mono text-[11px] text-emerald-400 bg-slate-950 px-2 py-1 rounded border border-emerald-500/20 max-w-[140px] truncate">
+                      <div className="flex items-center gap-1.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-400 bg-slate-50 dark:bg-slate-950 px-2 py-1 rounded border border-emerald-300 dark:border-emerald-500/20 max-w-[140px] truncate">
                         <Hash className="w-3 h-3 text-emerald-500 shrink-0" />
                         <span className="truncate">{r.hash || 'Verified SHA-256'}</span>
                       </div>
@@ -563,7 +563,7 @@ export default function StatutoryRegisters() {
                     <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => setSelectedRecord(r)}
-                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition"
+                        className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 transition"
                       >
                         Inspect Details
                       </button>
@@ -578,48 +578,48 @@ export default function StatutoryRegisters() {
 
       {/* Entry Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-3xl rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-6 space-y-6 my-8">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-3xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-6 my-8">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
               <div>
-                <div className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                <div className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
                   DGMS Statutory Compliance Submission
                 </div>
-                <h2 className="text-xl font-bold text-white">Log Statutory Shift Register</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Log Statutory Shift Register</h2>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white"
               >
                 ✕
               </button>
             </div>
 
             {/* Quick Demo Presets */}
-            <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800 space-y-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                 Hackathon Judge Scenarios (Quick Presets)
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => applyPreset('safe_gas')}
-                  className="px-3 py-1 rounded-lg text-xs font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60 transition"
+                  className="px-3 py-1 rounded-lg text-xs font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-400 dark:border-emerald-500/30 hover:bg-emerald-900/60 transition"
                 >
                   🟢 Normal Compliant Gas Log
                 </button>
                 <button
                   type="button"
                   onClick={() => applyPreset('methane_breach')}
-                  className="px-3 py-1 rounded-lg text-xs font-medium bg-red-950/60 text-red-300 border border-red-500/30 hover:bg-red-900/60 transition"
+                  className="px-3 py-1 rounded-lg text-xs font-medium bg-red-950/60 text-red-300 border border-red-400 dark:border-red-500/30 hover:bg-red-900/60 transition"
                 >
                   🔴 Simulate Methane Spike (0.95%)
                 </button>
                 <button
                   type="button"
                   onClick={() => applyPreset('berm_defect')}
-                  className="px-3 py-1 rounded-lg text-xs font-medium bg-amber-950/60 text-amber-300 border border-amber-500/30 hover:bg-amber-900/60 transition"
+                  className="px-3 py-1 rounded-lg text-xs font-medium bg-amber-950/60 text-amber-300 border border-amber-400 dark:border-amber-500/30 hover:bg-amber-900/60 transition"
                 >
                   ⚠️ Simulate Berm Height Defect (CMR 83)
                 </button>
@@ -636,13 +636,13 @@ export default function StatutoryRegisters() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Statutory Register Form
                   </label>
                   <select
                     value={registerType}
                     onChange={e => { setRegisterType(e.target.value); setAiVerdict(null); }}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-amber-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500"
                   >
                     <option value="CMR_153_GAS_TESTING">CMR Reg 153 — Gas Testing Book</option>
                     <option value="CMR_129_OVERMAN_DAILY">CMR Reg 129 — Overman Daily Diary</option>
@@ -652,13 +652,13 @@ export default function StatutoryRegisters() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Shift & Hours
                   </label>
                   <select
                     value={shift}
                     onChange={e => setShift(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-amber-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500"
                   >
                     <option>Morning (06:00 - 14:00)</option>
                     <option>Afternoon (14:00 - 22:00)</option>
@@ -667,99 +667,99 @@ export default function StatutoryRegisters() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     District / Seam / Working Face
                   </label>
                   <input
                     type="text"
                     value={seamOrPit}
                     onChange={e => setSeamOrPit(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-amber-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Inspector Name & Role
                   </label>
                   <input
                     type="text"
                     value={inspectorName}
                     onChange={e => setInspectorName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-amber-500"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500"
                     required
                   />
                 </div>
               </div>
 
               {/* Dynamic Parameter Fields */}
-              <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-3">
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                  <Gauge className="w-4 h-4 text-amber-400" />
+              <div className="p-4 bg-slate-50 dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <Gauge className="w-4 h-4 text-amber-700 dark:text-amber-400" />
                   Statutory Parameters & Measurements
                 </div>
 
                 {registerType === 'CMR_153_GAS_TESTING' && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                     <div>
-                      <label className="text-slate-400 block mb-1">CH4 (Methane %)</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">CH4 (Methane %)</label>
                       <input
                         type="number"
                         step="0.01"
                         value={gasParams.ch4_pct}
                         onChange={e => setGasParams({ ...gasParams, ch4_pct: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                       />
-                      <span className="text-[10px] text-slate-500">Legal limit: &lt; 0.75%</span>
+                      <span className="text-[10px] text-slate-700 dark:text-slate-500">Legal limit: &lt; 0.75%</span>
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">CO (ppm)</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">CO (ppm)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={gasParams.co_ppm}
                         onChange={e => setGasParams({ ...gasParams, co_ppm: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                       />
-                      <span className="text-[10px] text-slate-500">Legal limit: &le; 10 ppm</span>
+                      <span className="text-[10px] text-slate-700 dark:text-slate-500">Legal limit: &le; 10 ppm</span>
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">O2 (Oxygen %)</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">O2 (Oxygen %)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={gasParams.o2_pct}
                         onChange={e => setGasParams({ ...gasParams, o2_pct: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                       />
-                      <span className="text-[10px] text-slate-500">Min safe: &ge; 19.0%</span>
+                      <span className="text-[10px] text-slate-700 dark:text-slate-500">Min safe: &ge; 19.0%</span>
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">Air Velocity (m/s)</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Air Velocity (m/s)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={gasParams.air_velocity_m_s}
                         onChange={e => setGasParams({ ...gasParams, air_velocity_m_s: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">Air Quantity (m³/min)</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Air Quantity (m³/min)</label>
                       <input
                         type="number"
                         value={gasParams.air_quantity_m3_min}
                         onChange={e => setGasParams({ ...gasParams, air_quantity_m3_min: parseInt(e.target.value) || 0 })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">Flame Lamp Cap Test</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Flame Lamp Cap Test</label>
                       <select
                         value={gasParams.flame_lamp_check}
                         onChange={e => setGasParams({ ...gasParams, flame_lamp_check: e.target.value })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                       >
                         <option value="passed">Passed (No Cap)</option>
                         <option value="gas_cap_detected">Gas Cap Detected (&gt;1.0%)</option>
@@ -771,34 +771,34 @@ export default function StatutoryRegisters() {
                 {registerType === 'CMR_83_HAUL_ROAD' && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                     <div>
-                      <label className="text-slate-400 block mb-1">Berm Height (m)</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Berm Height (m)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={haulRoadParams.berm_height_m}
                         onChange={e => setHaulRoadParams({ ...haulRoadParams, berm_height_m: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                       />
-                      <span className="text-[10px] text-slate-500">&ge; 0.75x tyre diameter</span>
+                      <span className="text-[10px] text-slate-700 dark:text-slate-500">&ge; 0.75x tyre diameter</span>
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">Dumper Tyre Dia (m)</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Dumper Tyre Dia (m)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={haulRoadParams.dumper_tyre_dia_m}
                         onChange={e => setHaulRoadParams({ ...haulRoadParams, dumper_tyre_dia_m: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">Road Width (m)</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Road Width (m)</label>
                       <input
                         type="number"
                         step="0.5"
                         value={haulRoadParams.road_width_m}
                         onChange={e => setHaulRoadParams({ ...haulRoadParams, road_width_m: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                       />
                     </div>
                   </div>
@@ -807,11 +807,11 @@ export default function StatutoryRegisters() {
                 {registerType === 'CMR_129_OVERMAN_DAILY' && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                     <div>
-                      <label className="text-slate-400 block mb-1">Roof Strata Condition</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Roof Strata Condition</label>
                       <select
                         value={overmanParams.roof_strata_status}
                         onChange={e => setOvermanParams({ ...overmanParams, roof_strata_status: e.target.value })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                       >
                         <option value="stable">Stable / Sound</option>
                         <option value="weighting">Weighting Observed</option>
@@ -819,22 +819,22 @@ export default function StatutoryRegisters() {
                       </select>
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">SSR Props Intact?</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">SSR Props Intact?</label>
                       <select
                         value={overmanParams.wld_supports_intact ? 'yes' : 'no'}
                         onChange={e => setOvermanParams({ ...overmanParams, wld_supports_intact: e.target.value === 'yes' })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                       >
                         <option value="yes">Yes (All props intact)</option>
                         <option value="no">No (Defective / Missing)</option>
                       </select>
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">FLP Flameproof Sealed?</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">FLP Flameproof Sealed?</label>
                       <select
                         value={overmanParams.flp_electricals_ok ? 'yes' : 'no'}
                         onChange={e => setOvermanParams({ ...overmanParams, flp_electricals_ok: e.target.value === 'yes' })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                       >
                         <option value="yes">Yes (Flameproof Intact)</option>
                         <option value="no">No (Gland / Seal Breach)</option>
@@ -846,31 +846,31 @@ export default function StatutoryRegisters() {
                 {registerType === 'DGMS_CIRCULAR_02_HEMM' && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                     <div>
-                      <label className="text-slate-400 block mb-1">Dumper Vehicle ID</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Dumper Vehicle ID</label>
                       <input
                         type="text"
                         value={hemmParams.vehicle_id}
                         onChange={e => setHemmParams({ ...hemmParams, vehicle_id: e.target.value })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-mono"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">Fail-Safe Brake Operational?</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Fail-Safe Brake Operational?</label>
                       <select
                         value={hemmParams.service_fail_safe_brake ? 'yes' : 'no'}
                         onChange={e => setHemmParams({ ...hemmParams, service_fail_safe_brake: e.target.value === 'yes' })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                       >
                         <option value="yes">Yes (Certified Tested)</option>
                         <option value="no">No (Defective / Low Pressure)</option>
                       </select>
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">Operator Fatigue Flag?</label>
+                      <label className="text-slate-600 dark:text-slate-400 block mb-1">Operator Fatigue Flag?</label>
                       <select
                         value={hemmParams.fatigue_detected ? 'yes' : 'no'}
                         onChange={e => setHemmParams({ ...hemmParams, fatigue_detected: e.target.value === 'yes' })}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                       >
                         <option value="no">No (Fit to drive)</option>
                         <option value="yes">Yes (Fatigued / Sleep Deprived)</option>
@@ -895,10 +895,10 @@ export default function StatutoryRegisters() {
                 {aiVerdict && (
                   <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                     aiVerdict.compliance_status === 'COMPLIANT' 
-                      ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/40' 
+                      ? 'bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-500/40' 
                       : aiVerdict.compliance_status === 'WARNING'
-                      ? 'bg-amber-950 text-amber-400 border border-amber-500/40'
-                      : 'bg-red-950 text-red-400 border border-red-500/40 animate-pulse'
+                      ? 'bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-500/40'
+                      : 'bg-red-950 text-red-700 dark:text-red-400 border border-red-500/40 animate-pulse'
                   }`}>
                     {aiVerdict.compliance_status}
                   </span>
@@ -906,17 +906,17 @@ export default function StatutoryRegisters() {
               </div>
 
               {aiVerdict && (
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-2">
-                  <div className="font-semibold text-slate-300">{aiVerdict.statutory_regulation}</div>
-                  <ul className="space-y-1 text-slate-400 list-disc list-inside">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+                  <div className="font-semibold text-slate-700 dark:text-slate-300">{aiVerdict.statutory_regulation}</div>
+                  <ul className="space-y-1 text-slate-600 dark:text-slate-400 list-disc list-inside">
                     {aiVerdict.findings.map((f: string, i: number) => (
-                      <li key={i} className={f.includes('CRITICAL') || f.includes('NON-COMPLIANCE') ? 'text-red-400 font-semibold' : ''}>
+                      <li key={i} className={f.includes('CRITICAL') || f.includes('NON-COMPLIANCE') ? 'text-red-700 dark:text-red-400 font-semibold' : ''}>
                         {f}
                       </li>
                     ))}
                   </ul>
                   {aiVerdict.mandatory_statutory_actions.length > 0 && (
-                    <div className="pt-2 border-t border-slate-800 text-amber-300">
+                    <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-amber-300">
                       <span className="font-bold">Mandatory Statutory Directive: </span>
                       {aiVerdict.mandatory_statutory_actions.join(' ')}
                     </div>
@@ -925,7 +925,7 @@ export default function StatutoryRegisters() {
               )}
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Inspector Observations & Remarks
                 </label>
                 <textarea
@@ -933,15 +933,15 @@ export default function StatutoryRegisters() {
                   value={remarks}
                   onChange={e => setRemarks(e.target.value)}
                   placeholder="Record additional strata, ventilation, or equipment observations..."
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold transition"
                 >
                   Cancel
                 </button>
@@ -960,53 +960,53 @@ export default function StatutoryRegisters() {
 
       {/* Details Modal */}
       {selectedRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-2xl rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div>
-                <div className="text-xs text-amber-400 font-bold">{selectedRecord.statutory_regulation}</div>
-                <h3 className="text-lg font-bold text-white">{selectedRecord.seam_or_pit}</h3>
+                <div className="text-xs text-amber-700 dark:text-amber-400 font-bold">{selectedRecord.statutory_regulation}</div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedRecord.seam_or_pit}</h3>
               </div>
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white"
               >
                 ✕
               </button>
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                <p className="text-slate-400">Inspector & Designation</p>
-                <p className="font-bold text-slate-200 mt-0.5">{selectedRecord.inspector_name}</p>
-                <p className="text-slate-400">{selectedRecord.inspector_role}</p>
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+                <p className="text-slate-600 dark:text-slate-400">Inspector & Designation</p>
+                <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{selectedRecord.inspector_name}</p>
+                <p className="text-slate-600 dark:text-slate-400">{selectedRecord.inspector_role}</p>
               </div>
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                <p className="text-slate-400">Date & Shift</p>
-                <p className="font-bold text-slate-200 mt-0.5">{new Date(selectedRecord.created_at).toLocaleString('en-IN')}</p>
-                <p className="text-slate-400">{selectedRecord.shift}</p>
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+                <p className="text-slate-600 dark:text-slate-400">Date & Shift</p>
+                <p className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">{new Date(selectedRecord.created_at).toLocaleString('en-IN')}</p>
+                <p className="text-slate-600 dark:text-slate-400">{selectedRecord.shift}</p>
               </div>
             </div>
 
-            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
-              <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">Recorded Parameters</p>
-              <pre className="text-xs font-mono text-amber-300 bg-slate-900 p-2.5 rounded-lg overflow-x-auto">
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Recorded Parameters</p>
+              <pre className="text-xs font-mono text-amber-300 bg-white dark:bg-slate-900 p-2.5 rounded-lg overflow-x-auto">
                 {JSON.stringify(selectedRecord.parameters, null, 2)}
               </pre>
             </div>
 
-            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-              <p className="text-xs font-bold text-slate-300">Inspector Remarks</p>
-              <p className="text-xs text-slate-300">{selectedRecord.remarks || 'None'}</p>
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Inspector Remarks</p>
+              <p className="text-xs text-slate-700 dark:text-slate-300">{selectedRecord.remarks || 'None'}</p>
             </div>
 
-            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1 font-mono text-[11px]">
-              <p className="text-slate-400">Cryptographic Block Hash (SHA-256)</p>
-              <p className="text-emerald-400 break-all">{selectedRecord.hash}</p>
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1 font-mono text-[11px]">
+              <p className="text-slate-600 dark:text-slate-400">Cryptographic Block Hash (SHA-256)</p>
+              <p className="text-emerald-700 dark:text-emerald-400 break-all">{selectedRecord.hash}</p>
               {selectedRecord.prev_hash && (
                 <>
-                  <p className="text-slate-500 pt-1">Previous Chained Block</p>
-                  <p className="text-slate-400 break-all">{selectedRecord.prev_hash}</p>
+                  <p className="text-slate-700 dark:text-slate-500 pt-1">Previous Chained Block</p>
+                  <p className="text-slate-600 dark:text-slate-400 break-all">{selectedRecord.prev_hash}</p>
                 </>
               )}
             </div>
@@ -1014,7 +1014,7 @@ export default function StatutoryRegisters() {
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white"
+                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-900 dark:text-white"
               >
                 Close
               </button>

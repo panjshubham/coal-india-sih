@@ -7,7 +7,8 @@ import {
   Tags, ScanText, Loader2, CheckCircle, AlertTriangle,
   ChevronRight, Cpu, ExternalLink, StopCircle, Key, Eye, EyeOff, Copy, Check,
   Volume2, VolumeX, Sparkles, RefreshCw, AlertCircle, Play, FileText, ArrowRight,
-  Gauge, Truck, ShieldAlert, Zap, Camera, CameraOff, FlipHorizontal, X
+  Gauge, Truck, ShieldAlert, Zap, Camera, CameraOff, FlipHorizontal, X,
+  FileJson, FileCheck, FileAudio, FileImage, FileVideo
 } from 'lucide-react';
 
 const AI_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:8000';
@@ -135,25 +136,25 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { id: 'ocr', label: 'OCR', model: 'microsoft/trocr-large-printed', icon: ScanText, color: 'blue', description: 'Extract printed text from DGMS forms, certificates & statutory documents', task: 'Document Text Extraction' },
-  { id: 'donut', label: 'Doc → JSON', model: 'naver-clova-ix/donut-base', icon: FileSearch, color: 'violet', description: 'Convert scanned document images into structured JSON without manual OCR', task: 'Document Understanding' },
-  { id: 'classify', label: 'Classify', model: 'facebook/bart-large-mnli', icon: Tags, color: 'amber', description: 'Zero-shot classify any compliance text into regulatory categories', task: 'Compliance Classification' },
-  { id: 'ner', label: 'Extract Entities', model: 'dslim/bert-base-NER', icon: Brain, color: 'emerald', description: 'Extract officer names, dates, mine names and deadlines from documents', task: 'Named Entity Recognition' },
-  { id: 'translate', label: 'Translate', model: 'ai4bharat/indictrans2-en-indic-dist-200M', icon: Languages, color: 'cyan', description: 'Translate safety notices & compliance text dynamically into Indian languages', task: 'Multilingual Translation' },
-  { id: 'transcribe', label: 'Voice Report', model: 'openai/whisper-large-v3', icon: Mic, color: 'rose', description: 'Real-time speech recognition and text-to-speech for field safety reports', task: 'Speech-to-Text' },
-  { id: 'ppe', label: 'PPE Check', model: 'keremberke/yolov8n-ppe-detection', icon: Shield, color: 'orange', description: 'Detect hard hats, safety vests & violation detection for site personnel/students', task: 'Safety Gear Detection' },
-  { id: 'berm', label: 'Berm Vision', model: 'DGMS-CMR83/berm-safety-vision', icon: Gauge, color: 'yellow', description: 'Inspect opencast bench haul road berms, erosion defects & rollover hazard under CMR Reg 83', task: 'Haul Road Berm Safety' },
+  { id: 'ocr', label: 'OCR', model: 'microsoft/trocr-large-printed', icon: FileText, color: 'blue', description: 'Extract printed text from DGMS forms, certificates & statutory documents', task: 'Document Text Extraction' },
+  { id: 'donut', label: 'Doc → JSON', model: 'naver-clova-ix/donut-base', icon: FileJson, color: 'blue', description: 'Convert scanned document images into structured JSON without manual OCR', task: 'Document Understanding' },
+  { id: 'classify', label: 'Classify', model: 'facebook/bart-large-mnli', icon: FileCheck, color: 'blue', description: 'Zero-shot classify any compliance text into regulatory categories', task: 'Compliance Classification' },
+  { id: 'ner', label: 'Extract Entities', model: 'dslim/bert-base-NER', icon: FileSearch, color: 'blue', description: 'Extract officer names, dates, mine names and deadlines from documents', task: 'Named Entity Recognition' },
+  { id: 'translate', label: 'Translate', model: 'ai4bharat/indictrans2-en-indic-dist-200M', icon: Languages, color: 'blue', description: 'Translate safety notices & compliance text dynamically into Indian languages', task: 'Multilingual Translation' },
+  { id: 'transcribe', label: 'Voice Report', model: 'openai/whisper-large-v3', icon: FileAudio, color: 'blue', description: 'Real-time speech recognition and text-to-speech for field safety reports', task: 'Speech-to-Text' },
+  { id: 'ppe', label: 'PPE Check', model: 'keremberke/yolov8n-ppe-detection', icon: FileImage, color: 'blue', description: 'Detect hard hats, safety vests & violation detection for site personnel/students', task: 'Safety Gear Detection' },
+  { id: 'berm', label: 'Berm Vision', model: 'DGMS-CMR83/berm-safety-vision', icon: FileVideo, color: 'blue', description: 'Inspect opencast bench haul road berms, erosion defects & rollover hazard under CMR Reg 83', task: 'Haul Road Berm Safety' },
 ];
 
 const COLOR_MAP: Record<string, { bg: string; border: string; text: string; badge: string }> = {
-  blue:   { bg: 'bg-blue-500/10',   border: 'border-blue-500/30',   text: 'text-blue-400',   badge: 'bg-blue-500/20 text-blue-300' },
-  violet: { bg: 'bg-violet-500/10', border: 'border-violet-500/30', text: 'text-violet-400', badge: 'bg-violet-500/20 text-violet-300' },
-  amber:  { bg: 'bg-amber-500/10',  border: 'border-amber-500/30',  text: 'text-amber-400',  badge: 'bg-amber-500/20 text-amber-300' },
-  emerald:{ bg: 'bg-emerald-500/10',border: 'border-emerald-500/30',text: 'text-emerald-400',badge: 'bg-emerald-500/20 text-emerald-300' },
-  cyan:   { bg: 'bg-cyan-500/10',   border: 'border-cyan-500/30',   text: 'text-cyan-400',   badge: 'bg-cyan-500/20 text-cyan-300' },
-  rose:   { bg: 'bg-rose-500/10',   border: 'border-rose-500/30',   text: 'text-rose-400',   badge: 'bg-rose-500/20 text-rose-300' },
+  blue:   { bg: 'bg-blue-100 dark:bg-blue-500/10',   border: 'border-2 border-blue-600 dark:border-blue-500/50 shadow-md',   text: 'text-blue-900 dark:text-blue-400 font-black',   badge: 'bg-blue-200 dark:bg-blue-500/20 text-blue-900 dark:text-blue-300 border border-blue-400 dark:border-blue-500/30' },
+  violet: { bg: 'bg-violet-100 dark:bg-violet-500/10', border: 'border-violet-500/30', text: 'text-violet-700 dark:text-violet-400', badge: 'bg-violet-500/20 text-violet-300' },
+  amber:  { bg: 'bg-amber-100 dark:bg-amber-500/10',  border: 'border-amber-400 dark:border-amber-500/30',  text: 'text-amber-700 dark:text-amber-400',  badge: 'bg-amber-200 dark:bg-amber-500/20 text-amber-300' },
+  emerald:{ bg: 'bg-emerald-100 dark:bg-emerald-500/10',border: 'border-emerald-400 dark:border-emerald-500/30',text: 'text-emerald-700 dark:text-emerald-400',badge: 'bg-emerald-200 dark:bg-emerald-500/20 text-emerald-300' },
+  cyan:   { bg: 'bg-cyan-100 dark:bg-cyan-500/10',   border: 'border-cyan-500/30',   text: 'text-cyan-700 dark:text-cyan-400',   badge: 'bg-cyan-500/20 text-cyan-300' },
+  rose:   { bg: 'bg-rose-100 dark:bg-rose-500/10',   border: 'border-rose-500/30',   text: 'text-rose-700 dark:text-rose-400',   badge: 'bg-rose-500/20 text-rose-300' },
   orange: { bg: 'bg-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-400', badge: 'bg-orange-500/20 text-orange-300' },
-  yellow: { bg: 'bg-amber-500/10',  border: 'border-amber-500/30',  text: 'text-amber-400',  badge: 'bg-amber-500/20 text-amber-300' },
+  yellow: { bg: 'bg-amber-100 dark:bg-amber-500/10',  border: 'border-amber-400 dark:border-amber-500/30',  text: 'text-amber-700 dark:text-amber-400',  badge: 'bg-amber-200 dark:bg-amber-500/20 text-amber-300' },
 };
 
 
@@ -164,46 +165,46 @@ function FileDropZone({ onFile, accept, label }: { onFile: (f: File) => void; ac
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${dragActive ? 'border-blue-500 bg-blue-500/10' : 'border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.04]'}`}
+      className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${dragActive ? 'border-blue-500 bg-blue-100 dark:bg-blue-500/10' : 'border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.04]'}`}
     >
       <input {...getInputProps()} />
-      <Upload className="w-8 h-8 mx-auto mb-3 text-slate-500" />
-      <p className="text-sm text-slate-300 font-medium">{label}</p>
-      <p className="text-xs text-slate-500 mt-1">Drop file here or click to browse</p>
+      <Upload className="w-8 h-8 mx-auto mb-3 text-slate-700 dark:text-slate-500" />
+      <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">{label}</p>
+      <p className="text-xs text-slate-700 dark:text-slate-500 mt-1">Drop file here or click to browse</p>
     </div>
   );
 }
 
 function ResultPane({ result, loading, error, loadingText }: { result: any; loading: boolean; error: string; loadingText?: string }) {
   if (loading) return (
-    <div className="flex items-center gap-3 p-6 text-slate-400 bg-slate-900/40 rounded-xl border border-white/5">
-      <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
+    <div className="flex items-center gap-3 p-6 text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900/40 rounded-xl border border-white/5">
+      <Loader2 className="w-5 h-5 animate-spin text-amber-700 dark:text-amber-400" />
       <span className="text-sm">{loadingText || 'Running multi-modal AI inference…'}</span>
     </div>
   );
   if (error) return (
-    <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+    <div className="p-4 bg-red-100 dark:bg-red-500/10 border border-red-400 dark:border-red-500/30 rounded-xl">
       <div className="flex items-start gap-2">
-        <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+        <AlertTriangle className="w-4 h-4 text-red-700 dark:text-red-400 mt-0.5 flex-shrink-0" />
         <p className="text-sm text-red-300">{error}</p>
       </div>
     </div>
   );
   if (!result) return null;
   return (
-    <div className="bg-slate-900/70 border border-white/10 rounded-xl overflow-hidden shadow-xl">
+    <div className="bg-white dark:bg-slate-900/70 border border-white/10 rounded-xl overflow-hidden shadow-xl">
       <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-emerald-400" />
-          <span className="text-xs font-mono text-emerald-400 font-medium">Model Output JSON</span>
+          <CheckCircle className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+          <span className="text-xs font-mono text-emerald-700 dark:text-emerald-400 font-medium">Model Output JSON</span>
         </div>
         {result?.model && (
-          <span className="text-[10px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-white/5 px-2 py-0.5 rounded">
             {result.model}
           </span>
         )}
       </div>
-      <pre className="p-4 text-xs text-slate-300 overflow-auto max-h-80 font-mono leading-relaxed whitespace-pre-wrap">
+      <pre className="p-4 text-xs text-slate-700 dark:text-slate-300 overflow-auto max-h-80 font-mono leading-relaxed whitespace-pre-wrap">
         {JSON.stringify(result, null, 2)}
       </pre>
     </div>
@@ -369,46 +370,46 @@ function DocumentCameraScanner({
 
   const colorConfig = {
     blue: {
-      activeTab: 'bg-blue-600 text-white shadow-md shadow-blue-600/20',
+      activeTab: 'bg-blue-600 text-slate-900 dark:text-white shadow-md shadow-blue-600/20',
       border: 'border-blue-500/40',
       corner: 'border-blue-400',
-      btn: 'bg-blue-600 hover:bg-blue-500 text-white',
-      badge: 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+      btn: 'bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white',
+      badge: 'bg-blue-200 dark:bg-blue-500/20 text-blue-300 border border-blue-400 dark:border-blue-500/30'
     },
     violet: {
-      activeTab: 'bg-violet-600 text-white shadow-md shadow-violet-600/20',
+      activeTab: 'bg-violet-600 text-slate-900 dark:text-white shadow-md shadow-violet-600/20',
       border: 'border-violet-500/40',
       corner: 'border-violet-400',
-      btn: 'bg-violet-600 hover:bg-violet-500 text-white',
+      btn: 'bg-violet-600 hover:bg-violet-500 text-slate-900 dark:text-white',
       badge: 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
     },
     emerald: {
-      activeTab: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20',
+      activeTab: 'bg-emerald-600 text-slate-900 dark:text-white shadow-md shadow-emerald-600/20',
       border: 'border-emerald-500/40',
       corner: 'border-emerald-400',
-      btn: 'bg-emerald-600 hover:bg-emerald-500 text-white',
-      badge: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+      btn: 'bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white',
+      badge: 'bg-emerald-200 dark:bg-emerald-500/20 text-emerald-300 border border-emerald-400 dark:border-emerald-500/30'
     },
     amber: {
-      activeTab: 'bg-amber-600 text-white shadow-md shadow-amber-600/20',
+      activeTab: 'bg-amber-600 text-slate-900 dark:text-white shadow-md shadow-amber-600/20',
       border: 'border-amber-500/40',
       corner: 'border-amber-400',
-      btn: 'bg-amber-600 hover:bg-amber-500 text-white',
-      badge: 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+      btn: 'bg-amber-600 hover:bg-amber-500 text-slate-900 dark:text-white',
+      badge: 'bg-amber-200 dark:bg-amber-500/20 text-amber-300 border border-amber-400 dark:border-amber-500/30'
     }
   }[accentColor] || {
-    activeTab: 'bg-blue-600 text-white',
+    activeTab: 'bg-blue-600 text-slate-900 dark:text-white',
     border: 'border-blue-500/40',
     corner: 'border-blue-400',
-    btn: 'bg-blue-600 hover:bg-blue-500 text-white',
-    badge: 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+    btn: 'bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white',
+    badge: 'bg-blue-200 dark:bg-blue-500/20 text-blue-300 border border-blue-400 dark:border-blue-500/30'
   };
 
   return (
     <div className="space-y-3">
       {/* Mode Selection Tabs */}
       <div className="flex items-center justify-between flex-wrap gap-2 pb-1">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-xl">
+        <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
           <button
             type="button"
             onClick={() => {
@@ -418,7 +419,7 @@ function DocumentCameraScanner({
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
               sourceMode === 'upload'
                 ? colorConfig.activeTab
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-white/5'
             }`}
           >
             <Upload className="w-3.5 h-3.5" />
@@ -433,7 +434,7 @@ function DocumentCameraScanner({
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
               sourceMode === 'camera'
                 ? colorConfig.activeTab
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-white/5'
             }`}
           >
             <Camera className="w-3.5 h-3.5" />
@@ -454,10 +455,10 @@ function DocumentCameraScanner({
           <button
             type="button"
             onClick={() => mobileInputRef.current?.click()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium transition cursor-pointer"
             title="Snap document directly using your phone or tablet camera"
           >
-            <Camera className="w-3.5 h-3.5 text-amber-400" />
+            <Camera className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
             <span>Snap with Device Camera</span>
           </button>
         </div>
@@ -469,12 +470,12 @@ function DocumentCameraScanner({
         <div className={`relative border ${colorConfig.border} rounded-xl overflow-hidden bg-black flex flex-col items-center justify-between min-h-72 shadow-2xl`}>
           {cameraError ? (
             <div className="p-6 md:p-8 text-center space-y-4 my-auto max-w-md mx-auto">
-              <div className="w-12 h-12 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-                <CameraOff className="w-6 h-6 text-red-400" />
+              <div className="w-12 h-12 mx-auto rounded-full bg-red-100 dark:bg-red-500/10 border border-red-400 dark:border-red-500/30 flex items-center justify-center">
+                <CameraOff className="w-6 h-6 text-red-700 dark:text-red-400" />
               </div>
 
               <div>
-                <h4 className="text-sm font-bold text-white">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                   {cameraError === 'PERMISSION_DENIED'
                     ? 'Camera Permission Blocked in Browser'
                     : cameraError === 'NO_CAMERA_FOUND'
@@ -483,11 +484,11 @@ function DocumentCameraScanner({
                     ? 'Camera is in Use by Another App'
                     : 'Camera Access Denied or Unavailable'}
                 </h4>
-                <div className="text-xs text-slate-300 mt-2 leading-relaxed">
+                <div className="text-xs text-slate-700 dark:text-slate-300 mt-2 leading-relaxed">
                   {cameraError === 'PERMISSION_DENIED' ? (
                     <div className="space-y-2">
-                      <p className="text-slate-300">Your browser is blocking camera access for this tab. To enable it:</p>
-                      <div className="font-mono text-[11px] text-amber-200 bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-lg text-left space-y-1">
+                      <p className="text-slate-700 dark:text-slate-300">Your browser is blocking camera access for this tab. To enable it:</p>
+                      <div className="font-mono text-[11px] text-amber-200 bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 p-2.5 rounded-lg text-left space-y-1">
                         <div>1. Click the <strong>lock icon 🔒</strong> or <strong>camera icon 📷</strong> on the address bar.</div>
                         <div>2. Set <strong>Camera</strong> permission to <strong>Allow</strong>.</div>
                         <div>3. Click <strong>Retry Permission</strong> below.</div>
@@ -506,7 +507,7 @@ function DocumentCameraScanner({
                 <button
                   type="button"
                   onClick={() => mobileInputRef.current?.click()}
-                  className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition cursor-pointer"
                 >
                   <Camera className="w-4 h-4" />
                   <span>Snap Photo with Device Camera (Bypass)</span>
@@ -523,7 +524,7 @@ function DocumentCameraScanner({
                   <button
                     type="button"
                     onClick={() => setSourceMode('upload')}
-                    className="flex-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-medium transition cursor-pointer"
+                    className="flex-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-700 dark:text-slate-300 text-xs font-medium transition cursor-pointer"
                   >
                     Upload File Instead
                   </button>
@@ -533,7 +534,7 @@ function DocumentCameraScanner({
           ) : (
             <>
               {/* Video Stream */}
-              <div className="relative w-full h-80 bg-slate-950 flex items-center justify-center overflow-hidden">
+              <div className="relative w-full h-80 bg-slate-50 dark:bg-slate-950 flex items-center justify-center overflow-hidden">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -560,7 +561,7 @@ function DocumentCameraScanner({
 
                     {/* Frame Center Guide */}
                     <div className="absolute bottom-3 inset-x-0 flex justify-center">
-                      <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-[10px] text-slate-200 border border-white/10 shadow font-mono">
+                      <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-[10px] text-slate-800 dark:text-slate-200 border border-white/10 shadow font-mono">
                         📄 Align statutory paper inside corner guides
                       </span>
                     </div>
@@ -570,7 +571,7 @@ function DocumentCameraScanner({
                 {/* Top Control Bar Overlay */}
                 <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-auto">
                   <div className="flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[10px] text-slate-300 border border-white/10 font-mono">
+                    <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[10px] text-slate-700 dark:text-slate-300 border border-white/10 font-mono">
                       {facingMode === 'environment' ? '📷 Rear Lens' : '🤳 Front Lens'}
                     </span>
                     <button
@@ -579,7 +580,7 @@ function DocumentCameraScanner({
                       className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono border transition cursor-pointer ${
                         contrastBoost
                           ? 'bg-amber-500/30 border-amber-500/60 text-amber-300'
-                          : 'bg-black/60 border-white/10 text-slate-400 hover:text-slate-200'
+                          : 'bg-black/60 border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200'
                       }`}
                       title="Enhance document contrast and text sharpness for OCR recognition"
                     >
@@ -592,7 +593,7 @@ function DocumentCameraScanner({
                     <button
                       type="button"
                       onClick={flipCamera}
-                      className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-300 hover:text-white border border-white/10 transition cursor-pointer"
+                      className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white border border-white/10 transition cursor-pointer"
                       title="Flip Camera (Front/Rear)"
                     >
                       <FlipHorizontal className="w-3.5 h-3.5" />
@@ -603,7 +604,7 @@ function DocumentCameraScanner({
                         stopCamera();
                         setSourceMode('upload');
                       }}
-                      className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-400 hover:text-red-400 border border-white/10 transition cursor-pointer"
+                      className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-600 dark:text-slate-400 hover:text-red-700 dark:text-red-400 border border-white/10 transition cursor-pointer"
                       title="Close Camera"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -613,8 +614,8 @@ function DocumentCameraScanner({
               </div>
 
               {/* Bottom Shutter Action Bar */}
-              <div className="w-full p-3 bg-slate-950 border-t border-white/10 flex items-center justify-between gap-3">
-                <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
+              <div className="w-full p-3 bg-slate-50 dark:bg-slate-950 border-t border-white/10 flex items-center justify-between gap-3">
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   <span>Scanner ready • Hold steady & ensure good lighting</span>
                 </div>
@@ -737,11 +738,11 @@ function OcrPanel() {
       />
 
       {previewUrl && result && (
-        <div className="flex items-center justify-between gap-3 p-3 bg-slate-900/80 border border-blue-500/20 rounded-xl">
+        <div className="flex items-center justify-between gap-3 p-3 bg-white dark:bg-slate-900/80 border border-blue-300 dark:border-blue-500/20 rounded-xl">
           <div className="flex items-center gap-3 min-w-0">
             <img src={previewUrl} alt="Scanned Document" className="w-14 h-16 object-cover rounded-lg border border-white/20 shadow flex-shrink-0" />
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-200 truncate">{result.filename || 'Scanned Document'}</p>
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{result.filename || 'Scanned Document'}</p>
               <p className="text-[11px] text-blue-300 mt-0.5">Optical Character Recognition ({result.confidence_pct || 90}% confidence)</p>
             </div>
           </div>
@@ -751,7 +752,7 @@ function OcrPanel() {
               setPreviewUrl(null);
               setResult(null);
             }}
-            className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 border border-white/10 transition cursor-pointer"
+            className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 border border-white/10 transition cursor-pointer"
           >
             Clear / Scan New
           </button>
@@ -759,7 +760,7 @@ function OcrPanel() {
       )}
       
       {loading && (
-        <div className="space-y-2 p-4 bg-slate-900/60 border border-blue-500/30 rounded-xl">
+        <div className="space-y-2 p-4 bg-white dark:bg-slate-900/60 border border-blue-400 dark:border-blue-500/30 rounded-xl">
           <div className="flex items-center justify-between text-xs text-blue-300 font-mono">
             <span className="flex items-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -774,10 +775,10 @@ function OcrPanel() {
       )}
 
       {result?.extracted_text && (
-        <div className="p-4 bg-slate-800/80 border border-blue-500/30 rounded-xl space-y-3">
+        <div className="p-4 bg-slate-100 dark:bg-slate-800/80 border border-blue-400 dark:border-blue-500/30 rounded-xl space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ScanText className="w-4 h-4 text-blue-400" />
+              <ScanText className="w-4 h-4 text-blue-700 dark:text-blue-400" />
               <p className="text-xs font-semibold text-blue-300 uppercase tracking-wider">
                 Dynamically Extracted Text ({result.word_count} words, {result.confidence_pct ? `${result.confidence_pct}% confidence` : ''})
               </p>
@@ -786,7 +787,7 @@ function OcrPanel() {
               <button
                 onClick={handleSpeak}
                 className={`flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg border transition-all ${
-                  speaking ? 'bg-blue-500/30 border-blue-500/60 text-blue-200' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                  speaking ? 'bg-blue-500/30 border-blue-500/60 text-blue-200' : 'bg-white/5 border-white/10 text-slate-700 dark:text-slate-300 hover:bg-white/10'
                 }`}
               >
                 {speaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
@@ -794,23 +795,23 @@ function OcrPanel() {
               </button>
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 transition-all"
+                className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-700 dark:text-slate-300 transition-all"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
           </div>
           
-          <div className="p-3 bg-slate-950/80 rounded-lg border border-white/10 max-h-56 overflow-auto">
-            <p className="text-sm text-slate-200 whitespace-pre-wrap font-mono leading-relaxed">{result.extracted_text}</p>
+          <div className="p-3 bg-slate-50 dark:bg-slate-950/80 rounded-lg border border-white/10 max-h-56 overflow-auto">
+            <p className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap font-mono leading-relaxed">{result.extracted_text}</p>
           </div>
 
           {result.detected_dates?.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-slate-400 font-medium">Detected Dates:</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">Detected Dates:</span>
               {result.detected_dates.map((d: string) => (
-                <span key={d} className="px-2 py-0.5 text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded font-mono">
+                <span key={d} className="px-2 py-0.5 text-xs bg-amber-200 dark:bg-amber-500/20 text-amber-300 border border-amber-400 dark:border-amber-500/30 rounded font-mono">
                   📅 {d}
                 </span>
               ))}
@@ -819,9 +820,9 @@ function OcrPanel() {
 
           {result.statutory_references?.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-slate-400 font-medium">Regulations:</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">Regulations:</span>
               {result.statutory_references.map((r: string) => (
-                <span key={r} className="px-2 py-0.5 text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded font-mono">
+                <span key={r} className="px-2 py-0.5 text-xs bg-blue-200 dark:bg-blue-500/20 text-blue-300 border border-blue-400 dark:border-blue-500/30 rounded font-mono">
                   ⚖️ {r}
                 </span>
               ))}
@@ -898,11 +899,11 @@ function DonutPanel() {
       />
 
       {previewUrl && result && (
-        <div className="flex items-center justify-between gap-3 p-3 bg-slate-900/80 border border-violet-500/20 rounded-xl">
+        <div className="flex items-center justify-between gap-3 p-3 bg-white dark:bg-slate-900/80 border border-violet-500/20 rounded-xl">
           <div className="flex items-center gap-3 min-w-0">
             <img src={previewUrl} alt="Scanned Document" className="w-14 h-16 object-cover rounded-lg border border-white/20 shadow flex-shrink-0" />
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-200 truncate">{result.filename || 'Scanned Document'}</p>
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{result.filename || 'Scanned Document'}</p>
               <p className="text-[11px] text-violet-300 mt-0.5">Parsed to Structured JSON ({result.structured_output?.compliance_check || 'READY'})</p>
             </div>
           </div>
@@ -912,7 +913,7 @@ function DonutPanel() {
               setPreviewUrl(null);
               setResult(null);
             }}
-            className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 border border-white/10 transition cursor-pointer"
+            className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 border border-white/10 transition cursor-pointer"
           >
             Clear / Scan New
           </button>
@@ -990,27 +991,27 @@ function ClassifyPanel() {
   return (
     <div className="space-y-4">
       <textarea
-        className="w-full h-32 bg-slate-900/60 border border-white/15 rounded-xl p-4 text-sm text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:border-amber-500/60"
+        className="w-full h-32 bg-white dark:bg-slate-900/60 border border-white/15 rounded-xl p-4 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:border-amber-500/60"
         placeholder="Paste any compliance memo, safety observation, or circular to classify dynamically…"
         value={text} onChange={e => setText(e.target.value)}
       />
-      <button onClick={run} disabled={loading || !text.trim()} className="flex items-center gap-2 px-5 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-xl text-sm text-amber-300 font-medium transition-all disabled:opacity-40">
+      <button onClick={run} disabled={loading || !text.trim()} className="flex items-center gap-2 px-5 py-2.5 bg-amber-200 dark:bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-xl text-sm text-amber-300 font-medium transition-all disabled:opacity-40">
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Tags className="w-4 h-4" />}
         Classify Text
       </button>
       {result?.top_category && (
-        <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-          <p className="text-xs text-amber-400/70 mb-1 font-mono uppercase tracking-wider">Top Regulatory Category</p>
+        <div className="p-4 bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 rounded-xl">
+          <p className="text-xs text-amber-700 dark:text-amber-400/70 mb-1 font-mono uppercase tracking-wider">Top Regulatory Category</p>
           <p className="text-lg font-bold text-amber-300">{result.top_category}</p>
-          <p className="text-xs text-slate-400 mt-1">Confidence: {(result.confidence * 100).toFixed(1)}%</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Confidence: {(result.confidence * 100).toFixed(1)}%</p>
           <div className="mt-3 space-y-1.5">
             {result.all_scores?.slice(0, 6).map((s: any) => (
               <div key={s.label} className="flex items-center gap-2">
                 <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                   <div className="h-full bg-amber-500/60 rounded-full" style={{ width: `${s.score * 100}%` }} />
                 </div>
-                <span className="text-xs text-slate-400 w-48 truncate">{s.label}</span>
-                <span className="text-xs font-mono text-amber-400 w-10 text-right">{(s.score * 100).toFixed(0)}%</span>
+                <span className="text-xs text-slate-600 dark:text-slate-400 w-48 truncate">{s.label}</span>
+                <span className="text-xs font-mono text-amber-700 dark:text-amber-400 w-10 text-right">{(s.score * 100).toFixed(0)}%</span>
               </div>
             ))}
           </div>
@@ -1065,7 +1066,7 @@ function NERPanel() {
   const EntityBadge = ({ label, items, color }: { label: string; items: string[]; color: string }) => (
     items.length > 0 ? (
       <div>
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">{label}</p>
+        <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">{label}</p>
         <div className="flex flex-wrap gap-1.5">
           {items.map(i => <span key={i} className={`px-2.5 py-1 rounded-lg text-xs font-medium ${color}`}>{i}</span>)}
         </div>
@@ -1076,22 +1077,22 @@ function NERPanel() {
   return (
     <div className="space-y-4">
       <textarea
-        className="w-full h-32 bg-slate-900/60 border border-white/15 rounded-xl p-4 text-sm text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500/60"
+        className="w-full h-32 bg-white dark:bg-slate-900/60 border border-white/15 rounded-xl p-4 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500/60"
         placeholder="Paste text from a circular or report to dynamically extract officer names, mine locations, dates…"
         value={text} onChange={e => setText(e.target.value)}
       />
-      <button onClick={run} disabled={loading || !text.trim()} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 rounded-xl text-sm text-emerald-300 font-medium transition-all disabled:opacity-40">
+      <button onClick={run} disabled={loading || !text.trim()} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-200 dark:bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 rounded-xl text-sm text-emerald-300 font-medium transition-all disabled:opacity-40">
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
         Extract Entities
       </button>
       {result && (
-        <div className="p-4 bg-slate-800/60 border border-white/10 rounded-xl space-y-3">
-          <EntityBadge label="Persons / Officers" items={result.persons} color="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" />
-          <EntityBadge label="Organisations" items={result.organisations} color="bg-blue-500/20 text-blue-300 border border-blue-500/30" />
-          <EntityBadge label="Mine Locations" items={result.locations} color="bg-amber-500/20 text-amber-300 border border-amber-500/30" />
-          <EntityBadge label="Dates & References" items={result.misc} color="bg-slate-500/30 text-slate-300 border border-slate-500/30" />
+        <div className="p-4 bg-slate-100 dark:bg-slate-800/60 border border-white/10 rounded-xl space-y-3">
+          <EntityBadge label="Persons / Officers" items={result.persons} color="bg-emerald-200 dark:bg-emerald-500/20 text-emerald-300 border border-emerald-400 dark:border-emerald-500/30" />
+          <EntityBadge label="Organisations" items={result.organisations} color="bg-blue-200 dark:bg-blue-500/20 text-blue-300 border border-blue-400 dark:border-blue-500/30" />
+          <EntityBadge label="Mine Locations" items={result.locations} color="bg-amber-200 dark:bg-amber-500/20 text-amber-300 border border-amber-400 dark:border-amber-500/30" />
+          <EntityBadge label="Dates & References" items={result.misc} color="bg-slate-500/30 text-slate-700 dark:text-slate-300 border border-slate-500/30" />
           {result.total_entities === 0 && (
-            <p className="text-xs text-slate-400 italic">No specific named entities found in this text. Try entering text with officer titles (e.g. Er. Rajesh Kumar), dates, or mine names.</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 italic">No specific named entities found in this text. Try entering text with officer titles (e.g. Er. Rajesh Kumar), dates, or mine names.</p>
           )}
         </div>
       )}
@@ -1191,14 +1192,14 @@ function TranslatePanel() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-300">
+      <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-300">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+          <Sparkles className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400 animate-pulse" />
           <span className="font-medium">Dynamic Auto-Translator Active:</span>
           <span className="text-cyan-200/80">Any text pasted into the box is automatically translated in real-time.</span>
         </div>
         {autoTranslated && !loading && (
-          <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono">
+          <span className="text-[10px] bg-emerald-200 dark:bg-emerald-500/20 text-emerald-300 border border-emerald-400 dark:border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono">
             <Check className="w-3 h-3" /> Live Translation
           </span>
         )}
@@ -1207,11 +1208,11 @@ function TranslatePanel() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs text-slate-400 font-medium">Source Text (English)</label>
-            <span className="text-[10px] text-cyan-400/80 font-mono">Paste text here for instant translation</span>
+            <label className="text-xs text-slate-600 dark:text-slate-400 font-medium">Source Text (English)</label>
+            <span className="text-[10px] text-cyan-700 dark:text-cyan-400/80 font-mono">Paste text here for instant translation</span>
           </div>
           <textarea
-            className="w-full h-36 bg-slate-900/70 border border-white/15 rounded-xl p-3.5 text-sm text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:border-cyan-500/70 transition-colors"
+            className="w-full h-36 bg-white dark:bg-slate-900/70 border border-white/15 rounded-xl p-3.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:border-cyan-500/70 transition-colors"
             placeholder="Paste any safety alert, notice, or circular here — it will translate automatically…"
             value={text}
             onChange={e => handleTextChange(e.target.value)}
@@ -1221,7 +1222,7 @@ function TranslatePanel() {
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs text-cyan-400 font-medium">Dynamic Translation ({lang})</label>
+            <label className="text-xs text-cyan-700 dark:text-cyan-400 font-medium">Dynamic Translation ({lang})</label>
             {result?.translated_text && (
               <div className="flex items-center gap-1.5">
                 <button
@@ -1229,7 +1230,7 @@ function TranslatePanel() {
                   onClick={handleSpeak}
                   title="Read translation aloud using Text-to-Speech"
                   className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border transition-all ${
-                    speaking ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400' : 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/10'
+                    speaking ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400' : 'bg-white/5 hover:bg-white/10 text-slate-700 dark:text-slate-300 border-white/10'
                   }`}
                 >
                   {speaking ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
@@ -1239,34 +1240,34 @@ function TranslatePanel() {
                   type="button"
                   onClick={handleCopy}
                   title="Copy translation"
-                  className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-all"
+                  className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-white/10 transition-all"
                 >
-                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  {copied ? <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
                   <span>{copied ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
             )}
           </div>
           
-          <div className="w-full h-36 bg-slate-950/80 border border-white/10 rounded-xl p-3.5 text-sm text-slate-100 overflow-auto font-sans leading-relaxed relative">
+          <div className="w-full h-36 bg-slate-50 dark:bg-slate-950/80 border border-white/10 rounded-xl p-3.5 text-sm text-slate-100 overflow-auto font-sans leading-relaxed relative">
             {loading ? (
-              <div className="h-full flex items-center justify-center gap-2 text-cyan-400">
+              <div className="h-full flex items-center justify-center gap-2 text-cyan-700 dark:text-cyan-400">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span className="text-xs font-mono">Translating into {lang}…</span>
               </div>
             ) : result?.translated_text ? (
               <p className="whitespace-pre-wrap">{result.translated_text}</p>
             ) : (
-              <span className="text-slate-500 text-xs italic">Paste or type text on the left to see instant dynamic translation…</span>
+              <span className="text-slate-700 dark:text-slate-500 text-xs italic">Paste or type text on the left to see instant dynamic translation…</span>
             )}
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-xs text-slate-400">Target Indian Language:</span>
+        <span className="text-xs text-slate-600 dark:text-slate-400">Target Indian Language:</span>
         <select
-          className="bg-slate-900/80 border border-white/15 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-200 focus:outline-none focus:border-cyan-500"
+          className="bg-white dark:bg-slate-900/80 border border-white/15 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-cyan-500"
           value={lang}
           onChange={e => handleLanguageChange(e.target.value)}
         >
@@ -1285,7 +1286,7 @@ function TranslatePanel() {
         {text.trim() && (
           <button
             onClick={() => { setText(''); setResult(null); }}
-            className="text-xs text-slate-500 hover:text-slate-300 underline ml-auto"
+            className="text-xs text-slate-700 dark:text-slate-500 hover:text-slate-700 dark:text-slate-300 underline ml-auto"
           >
             Clear Text
           </button>
@@ -1461,36 +1462,36 @@ function TranscribePanel() {
           onClick={toggleRecording}
           className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-semibold transition-all border shadow-lg ${
             recording
-              ? 'bg-red-500/20 border-red-500/60 text-red-300 animate-pulse shadow-red-500/20'
-              : 'bg-rose-500/10 border-rose-500/40 text-rose-300 hover:bg-rose-500/20 hover:scale-105'
+              ? 'bg-red-200 dark:bg-red-500/20 border-red-500/60 text-red-300 animate-pulse shadow-red-500/20'
+              : 'bg-rose-100 dark:bg-rose-500/10 border-rose-500/40 text-rose-300 hover:bg-rose-500/20 hover:scale-105'
           }`}
         >
           {recording ? (
             <>
-              <StopCircle className="w-5 h-5 text-red-400" />
+              <StopCircle className="w-5 h-5 text-red-700 dark:text-red-400" />
               <span>Stop & Finalize Voice Memo</span>
             </>
           ) : (
             <>
-              <Mic className="w-5 h-5 text-rose-400" />
+              <Mic className="w-5 h-5 text-rose-700 dark:text-rose-400" />
               <span>Start Speaking (Live Speech Recognition)</span>
             </>
           )}
         </button>
 
-        <span className="text-slate-500 text-xs font-mono">or upload recorded audio memo:</span>
+        <span className="text-slate-700 dark:text-slate-500 text-xs font-mono">or upload recorded audio memo:</span>
       </div>
 
       {recording && (
-        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl space-y-2">
+        <div className="p-4 bg-red-100 dark:bg-red-500/10 border border-red-400 dark:border-red-500/30 rounded-xl space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-red-400 flex items-center gap-2">
+            <span className="text-xs font-semibold text-red-700 dark:text-red-400 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
               Listening to your voice in real time… Speak into microphone!
             </span>
             <span className="text-[10px] font-mono text-red-300">Live Interim STT</span>
           </div>
-          <p className="text-sm text-slate-200 font-mono italic">
+          <p className="text-sm text-slate-800 dark:text-slate-200 font-mono italic">
             {interimText || "Listening... speak clearly into your microphone..."}
           </p>
         </div>
@@ -1498,7 +1499,7 @@ function TranscribePanel() {
 
       <FileDropZone onFile={handleAudioUpload} accept={{ 'audio/*': ['.wav', '.mp3', '.ogg', '.flac', '.m4a', '.webm'] }} label="Upload voice audio recording (WAV, MP3, WEBM)" />
 
-      <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
+      <div className="flex items-center gap-2 flex-wrap text-xs text-slate-600 dark:text-slate-400">
         <span className="font-medium">Test Voice Samples:</span>
         {sampleVoiceMemos.map((s, idx) => (
           <button
@@ -1511,7 +1512,7 @@ function TranscribePanel() {
                 timestamp: new Date().toISOString()
               });
             }}
-            className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-300 hover:text-white transition-all truncate max-w-xs"
+            className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white transition-all truncate max-w-xs"
           >
             "{s.slice(0, 32)}…"
           </button>
@@ -1519,17 +1520,17 @@ function TranscribePanel() {
       </div>
 
       {result?.transcribed_text && (
-        <div className="p-4 bg-slate-800/80 border border-rose-500/30 rounded-xl space-y-3">
+        <div className="p-4 bg-slate-100 dark:bg-slate-800/80 border border-rose-500/30 rounded-xl space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-rose-300 uppercase tracking-wider flex items-center gap-2">
-              <Mic className="w-4 h-4 text-rose-400" />
+              <Mic className="w-4 h-4 text-rose-700 dark:text-rose-400" />
               Recognized Speech Transcription
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleSpeak}
                 className={`flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg border transition-all ${
-                  speaking ? 'bg-rose-500/30 border-rose-500/60 text-rose-200' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                  speaking ? 'bg-rose-500/30 border-rose-500/60 text-rose-200' : 'bg-white/5 border-white/10 text-slate-700 dark:text-slate-300 hover:bg-white/10'
                 }`}
               >
                 {speaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
@@ -1537,15 +1538,15 @@ function TranscribePanel() {
               </button>
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 transition-all"
+                className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-700 dark:text-slate-300 transition-all"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
           </div>
-          <div className="p-3 bg-slate-950/80 rounded-lg border border-white/10">
-            <p className="text-sm text-slate-200 leading-relaxed font-mono">{result.transcribed_text}</p>
+          <div className="p-3 bg-slate-50 dark:bg-slate-950/80 rounded-lg border border-white/10">
+            <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-mono">{result.transcribed_text}</p>
           </div>
         </div>
       )}
@@ -2075,7 +2076,7 @@ function PPEPanel() {
     <div className="space-y-4">
       {/* Input Mode Selector Bar */}
       <div className="flex items-center justify-between flex-wrap gap-2 pb-1">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-xl">
+        <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
           <button
             type="button"
             onClick={() => {
@@ -2085,7 +2086,7 @@ function PPEPanel() {
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
               sourceMode === 'upload'
                 ? 'bg-orange-500 text-slate-950 shadow-md shadow-orange-500/20'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-white/5'
             }`}
           >
             <Upload className="w-3.5 h-3.5" />
@@ -2100,7 +2101,7 @@ function PPEPanel() {
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
               sourceMode === 'camera'
                 ? 'bg-orange-500 text-slate-950 shadow-md shadow-orange-500/20'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-white/5'
             }`}
           >
             <Camera className="w-3.5 h-3.5" />
@@ -2121,10 +2122,10 @@ function PPEPanel() {
           <button
             type="button"
             onClick={() => mobileCameraInputRef.current?.click()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium transition cursor-pointer"
             title="Snap photo directly using your phone or laptop camera"
           >
-            <Camera className="w-3.5 h-3.5 text-amber-400" />
+            <Camera className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
             <span>Snap with Device Camera</span>
           </button>
         </div>
@@ -2141,22 +2142,22 @@ function PPEPanel() {
           <div className="relative border border-orange-500/30 rounded-xl overflow-hidden bg-black flex flex-col items-center justify-between min-h-64 shadow-2xl">
             {cameraError ? (
               <div className="p-6 md:p-8 text-center space-y-4 my-auto max-w-md mx-auto">
-                <div className="w-12 h-12 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-                  <CameraOff className="w-6 h-6 text-red-400" />
+                <div className="w-12 h-12 mx-auto rounded-full bg-red-100 dark:bg-red-500/10 border border-red-400 dark:border-red-500/30 flex items-center justify-center">
+                  <CameraOff className="w-6 h-6 text-red-700 dark:text-red-400" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                     {cameraError === 'PERMISSION_DENIED'
                       ? 'Camera Permission Blocked in Browser'
                       : cameraError === 'NO_CAMERA_FOUND'
                       ? 'No Camera Device Detected'
                       : 'Camera Access Denied or Unavailable'}
                   </h4>
-                  <div className="text-xs text-slate-300 mt-2 leading-relaxed">
+                  <div className="text-xs text-slate-700 dark:text-slate-300 mt-2 leading-relaxed">
                     {cameraError === 'PERMISSION_DENIED' ? (
                       <div className="space-y-2">
-                        <p className="text-slate-300">Your browser is blocking camera access for this tab. To unblock:</p>
-                        <div className="font-mono text-[11px] text-amber-200 bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-lg text-left space-y-1">
+                        <p className="text-slate-700 dark:text-slate-300">Your browser is blocking camera access for this tab. To unblock:</p>
+                        <div className="font-mono text-[11px] text-amber-200 bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 p-2.5 rounded-lg text-left space-y-1">
                           <div>1. Click the <strong>lock icon 🔒</strong> or <strong>camera icon 📷</strong> on your browser address bar.</div>
                           <div>2. Change <strong>Camera</strong> permission to <strong>Allow</strong>.</div>
                           <div>3. Click <strong>Retry Permission</strong> below.</div>
@@ -2173,7 +2174,7 @@ function PPEPanel() {
                   <button
                     type="button"
                     onClick={() => mobileCameraInputRef.current?.click()}
-                    className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition cursor-pointer"
+                    className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition cursor-pointer"
                   >
                     <Camera className="w-4 h-4" />
                     <span>Snap Photo with Device Camera (Bypass)</span>
@@ -2193,7 +2194,7 @@ function PPEPanel() {
                         stopCamera();
                         setSourceMode('upload');
                       }}
-                      className="flex-1 px-3 py-1.5 bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-medium rounded-lg transition cursor-pointer"
+                      className="flex-1 px-3 py-1.5 bg-white/10 hover:bg-white/15 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-lg transition cursor-pointer"
                     >
                       Upload File Instead
                     </button>
@@ -2214,10 +2215,10 @@ function PPEPanel() {
                   {/* Framing Reticle */}
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                     <div className="w-44 h-56 border-2 border-dashed border-amber-400/60 rounded-2xl flex flex-col items-center justify-between p-2 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
-                      <span className="text-[9px] font-mono font-bold uppercase bg-black/70 px-2 py-0.5 rounded text-amber-300 border border-amber-500/30">
+                      <span className="text-[9px] font-mono font-bold uppercase bg-black/70 px-2 py-0.5 rounded text-amber-300 border border-amber-400 dark:border-amber-500/30">
                         Align Hard Hat
                       </span>
-                      <span className="text-[9px] font-mono font-bold uppercase bg-black/70 px-2 py-0.5 rounded text-amber-300 border border-amber-500/30">
+                      <span className="text-[9px] font-mono font-bold uppercase bg-black/70 px-2 py-0.5 rounded text-amber-300 border border-amber-400 dark:border-amber-500/30">
                         Align Safety Vest
                       </span>
                     </div>
@@ -2225,11 +2226,11 @@ function PPEPanel() {
                 </div>
 
                 {/* Camera Actions Bar */}
-                <div className="w-full p-3 bg-slate-900/95 border-t border-slate-800 flex items-center justify-between gap-2">
+                <div className="w-full p-3 bg-white dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
                   <button
                     type="button"
                     onClick={flipCamera}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer"
                     title="Flip camera front/back"
                   >
                     <FlipHorizontal className="w-3.5 h-3.5" />
@@ -2251,7 +2252,7 @@ function PPEPanel() {
                       stopCamera();
                       setSourceMode('upload');
                     }}
-                    className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition cursor-pointer"
+                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white transition cursor-pointer"
                     title="Close Camera"
                   >
                     <X className="w-4 h-4" />
@@ -2263,11 +2264,11 @@ function PPEPanel() {
         )}
 
         {/* Live Canvas with Annotated Bounding Boxes */}
-        <div className="relative border border-white/10 rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center min-h-64">
+        <div className="relative border border-white/10 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-950 flex items-center justify-center min-h-64">
           {preview ? (
             <canvas ref={canvasRef} className="max-h-72 w-auto object-contain rounded-lg" />
           ) : (
-            <div className="text-center p-6 text-slate-500 text-xs">
+            <div className="text-center p-6 text-slate-700 dark:text-slate-500 text-xs">
               <Shield className="w-8 h-8 mx-auto mb-2 opacity-40 text-orange-400" />
               <span>Image preview with automated AI bounding boxes will appear here</span>
             </div>
@@ -2279,35 +2280,35 @@ function PPEPanel() {
         <div
           className={`p-5 rounded-2xl border transition-all ${
             result.compliance_status === 'COMPLIANT'
-              ? 'bg-emerald-500/10 border-emerald-500/40 shadow-lg shadow-emerald-500/5'
+              ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-500/40 shadow-lg shadow-emerald-500/5'
               : result.compliance_status === 'UNCERTAIN'
-              ? 'bg-amber-500/10 border-amber-500/40 shadow-xl shadow-amber-500/10'
+              ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-500/40 shadow-xl shadow-amber-500/10'
               : 'bg-red-500/15 border-red-500/50 shadow-xl shadow-red-500/10'
           }`}
         >
           <div className="flex items-start justify-between flex-wrap gap-2 mb-3">
             <div className="flex items-center gap-2.5">
               {result.compliance_status === 'COMPLIANT' ? (
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/40">
-                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                <div className="w-8 h-8 rounded-lg bg-emerald-200 dark:bg-emerald-500/20 flex items-center justify-center border border-emerald-500/40">
+                  <CheckCircle className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
                 </div>
               ) : result.compliance_status === 'UNCERTAIN' ? (
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center border border-amber-500/40 animate-pulse">
-                  <AlertCircle className="w-5 h-5 text-amber-400" />
+                <div className="w-8 h-8 rounded-lg bg-amber-200 dark:bg-amber-500/20 flex items-center justify-center border border-amber-500/40 animate-pulse">
+                  <AlertCircle className="w-5 h-5 text-amber-700 dark:text-amber-400" />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center border border-red-500/50 animate-pulse">
-                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                <div className="w-8 h-8 rounded-lg bg-red-200 dark:bg-red-500/20 flex items-center justify-center border border-red-500/50 animate-pulse">
+                  <AlertTriangle className="w-5 h-5 text-red-700 dark:text-red-400" />
                 </div>
               )}
               <div>
                 <span
                   className={`font-black tracking-wider text-base ${
                     result.compliance_status === 'COMPLIANT'
-                      ? 'text-emerald-400'
+                      ? 'text-emerald-700 dark:text-emerald-400'
                       : result.compliance_status === 'UNCERTAIN'
-                      ? 'text-amber-400'
-                      : 'text-red-400'
+                      ? 'text-amber-700 dark:text-amber-400'
+                      : 'text-red-700 dark:text-red-400'
                   }`}
                 >
                   {result.compliance_status === 'COMPLIANT'
@@ -2316,7 +2317,7 @@ function PPEPanel() {
                     ? 'UNCERTAIN — MANUAL REVIEW RECOMMENDED'
                     : 'NON-COMPLIANT (PPE VIOLATION)'}
                 </span>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   {result.compliance_status === 'COMPLIANT'
                     ? 'Personnel adheres to DGMS Regulation 115 Standards'
                     : result.compliance_status === 'UNCERTAIN'
@@ -2335,7 +2336,7 @@ function PPEPanel() {
                       key={item}
                       className={`px-3 py-1 rounded-full text-xs font-bold font-mono border flex items-center gap-1 ${
                         isBorderline
-                          ? 'bg-amber-500/20 text-amber-200 border-amber-500/40'
+                          ? 'bg-amber-200 dark:bg-amber-500/20 text-amber-200 border-amber-500/40'
                           : 'bg-red-500/30 text-red-200 border-red-500/50'
                       }`}
                     >
@@ -2347,13 +2348,13 @@ function PPEPanel() {
             )}
           </div>
 
-          <p className="text-sm text-slate-200 font-medium leading-relaxed mb-4">{result.alert}</p>
+          <p className="text-sm text-slate-800 dark:text-slate-200 font-medium leading-relaxed mb-4">{result.alert}</p>
 
           {/* Action Row */}
           <div className="flex items-center justify-between pt-3 border-t border-white/10 flex-wrap gap-3">
-            <div className="text-[11px] font-mono text-slate-400 flex items-center gap-3">
-              <span>Helmet Coverage: <strong className="text-slate-200">{result.pixel_metrics?.helmet_color_coverage_pct}%</strong> (min 12%)</span>
-              <span>Vest Coverage: <strong className="text-slate-200">{result.pixel_metrics?.vest_color_coverage_pct}%</strong> (min 15%)</span>
+            <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 flex items-center gap-3">
+              <span>Helmet Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.helmet_color_coverage_pct}%</strong> (min 12%)</span>
+              <span>Vest Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.vest_color_coverage_pct}%</strong> (min 15%)</span>
             </div>
 
             {result.compliance_status !== 'COMPLIANT' && (
@@ -2366,12 +2367,12 @@ function PPEPanel() {
                     ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40'
                     : result.compliance_status === 'UNCERTAIN'
                     ? 'bg-amber-600 hover:bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-600/30 hover:scale-105 cursor-pointer'
-                    : 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 hover:scale-105 cursor-pointer'
+                    : 'bg-red-600 hover:bg-red-500 text-slate-900 dark:text-white shadow-lg shadow-red-600/30 hover:scale-105 cursor-pointer'
                 }`}
               >
                 {ticketCreated ? (
                   <>
-                    <Check className="w-4 h-4 text-emerald-400" />
+                    <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                     <span>{result.compliance_status === 'UNCERTAIN' ? 'Manual Inspection Audit Logged' : 'Statutory Ticket #DGMS-2026-V8 Logged'}</span>
                   </>
                 ) : (
@@ -2531,7 +2532,7 @@ function BermPanel() {
     <div className="space-y-4">
       {/* Quick Judge Presets */}
       <div className="p-3 bg-white/5 border border-white/10 rounded-xl space-y-2">
-        <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+        <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
           <Zap className="w-3.5 h-3.5" />
           Pre-Loaded Haul Road Drone & Dashcam Imagery (Instant Judge Test)
         </span>
@@ -2541,7 +2542,7 @@ function BermPanel() {
             onClick={() => loadPreset('Bench 3 North Haul Road', false)}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-900 transition flex items-center gap-1.5"
           >
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
             <span>🟢 Compliant Berm (H = 2.35m, CAT 777D)</span>
           </button>
           <button
@@ -2549,7 +2550,7 @@ function BermPanel() {
             onClick={() => loadPreset('Incline 2 Ramp Washout', true)}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-950/80 text-red-300 border border-red-500/40 hover:bg-red-900 transition flex items-center gap-1.5"
           >
-            <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+            <AlertTriangle className="w-3.5 h-3.5 text-red-700 dark:text-red-400" />
             <span>🔴 Eroded Berm Defect (H = 1.15m &lt; Required)</span>
           </button>
         </div>
@@ -2564,8 +2565,8 @@ function BermPanel() {
           />
         </div>
 
-        <div className="p-4 bg-slate-900/60 border border-white/10 rounded-xl space-y-2">
-          <label className="text-xs font-bold text-slate-300 block">
+        <div className="p-4 bg-white dark:bg-slate-900/60 border border-white/10 rounded-xl space-y-2">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
             Reference Dumper Tyre Diameter (m)
           </label>
           <select
@@ -2575,24 +2576,24 @@ function BermPanel() {
               setDumperWheelDia(d);
               if (file) runBermAnalysis(file, d);
             }}
-            className="w-full bg-slate-950 border border-white/15 rounded-lg px-3 py-2 text-xs text-amber-300 font-mono focus:outline-none"
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-white/15 rounded-lg px-3 py-2 text-xs text-amber-300 font-mono focus:outline-none"
           >
             <option value={2.2}>CAT 777D (100T Dumper) — 2.2m Tyre</option>
             <option value={2.7}>Komatsu HD785 (100T Dumper) — 2.7m Tyre</option>
             <option value={3.2}>BEML BH205E (200T Dumper) — 3.2m Tyre</option>
             <option value={1.8}>Ashok Leyland Tipper (35T) — 1.8m Tyre</option>
           </select>
-          <span className="text-[10px] text-slate-400 block font-mono">
+          <span className="text-[10px] text-slate-600 dark:text-slate-400 block font-mono">
             Mandatory min berm: {(dumperWheelDia * 0.75).toFixed(2)}m (CMR Reg 83)
           </span>
         </div>
       </div>
 
       {preview && (
-        <div className="p-4 bg-slate-900/60 border border-white/10 rounded-xl space-y-3">
+        <div className="p-4 bg-white dark:bg-slate-900/60 border border-white/10 rounded-xl space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <Eye className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Eye className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
               Computer Vision Bench Crest Inspection
             </span>
             {result && (
@@ -2609,15 +2610,15 @@ function BermPanel() {
           <div className="relative rounded-lg overflow-hidden border border-white/10 max-h-72 flex justify-center bg-black">
             <img src={preview} alt="Haul road preview" className="object-contain max-h-72 w-full" />
             {result && (
-              <div className="absolute bottom-3 left-3 right-3 bg-slate-950/85 backdrop-blur-md p-3 rounded-xl border border-white/15 flex items-center justify-between flex-wrap gap-2 text-xs font-mono">
+              <div className="absolute bottom-3 left-3 right-3 bg-slate-50 dark:bg-slate-950/85 backdrop-blur-md p-3 rounded-xl border border-white/15 flex items-center justify-between flex-wrap gap-2 text-xs font-mono">
                 <div>
-                  <span className="text-slate-400">Measured Berm: </span>
-                  <strong className={result.measured_berm_height_m < result.statutory_required_height_m ? 'text-red-400' : 'text-emerald-400'}>
+                  <span className="text-slate-600 dark:text-slate-400">Measured Berm: </span>
+                  <strong className={result.measured_berm_height_m < result.statutory_required_height_m ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}>
                     {result.measured_berm_height_m}m
                   </strong>
-                  <span className="text-slate-500"> (Required: &ge; {result.statutory_required_height_m}m)</span>
+                  <span className="text-slate-700 dark:text-slate-500"> (Required: &ge; {result.statutory_required_height_m}m)</span>
                 </div>
-                <div className="text-slate-300">
+                <div className="text-slate-700 dark:text-slate-300">
                   Defect: <strong className="text-amber-300">{result.defect_type}</strong>
                 </div>
               </div>
@@ -2631,7 +2632,7 @@ function BermPanel() {
                 : 'bg-red-950/40 border-red-500/40'
             } space-y-2`}>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-200">{result.statutory_regulation}</span>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{result.statutory_regulation}</span>
                 {result.compliance_status !== 'COMPLIANT' && (
                   <button
                     type="button"
@@ -2640,7 +2641,7 @@ function BermPanel() {
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                       ticketCreated
                         ? 'bg-emerald-800 text-emerald-200'
-                        : 'bg-red-600 hover:bg-red-500 text-white shadow-lg'
+                        : 'bg-red-600 hover:bg-red-500 text-slate-900 dark:text-white shadow-lg'
                     }`}
                   >
                     {ticketCreated ? <Check className="w-3.5 h-3.5" /> : <ShieldAlert className="w-3.5 h-3.5" />}
@@ -2649,9 +2650,9 @@ function BermPanel() {
                 )}
               </div>
 
-              <ul className="text-xs space-y-1 list-disc list-inside text-slate-300">
+              <ul className="text-xs space-y-1 list-disc list-inside text-slate-700 dark:text-slate-300">
                 {result.findings.map((f: string, i: number) => (
-                  <li key={i} className={f.includes('CRITICAL') ? 'text-red-400 font-bold' : ''}>{f}</li>
+                  <li key={i} className={f.includes('CRITICAL') ? 'text-red-700 dark:text-red-400 font-bold' : ''}>{f}</li>
                 ))}
               </ul>
               <p className="text-xs text-amber-300 pt-1 border-t border-white/10">
@@ -2739,14 +2740,14 @@ export default function AIWorkbench() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
-              <Cpu className="w-4 h-4 text-white" />
+              <Cpu className="w-4 h-4 text-slate-900 dark:text-white" />
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">AI Workbench</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">AI Workbench</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-200 dark:bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
               Active Multi-Modal Engine
             </span>
           </div>
-          <p className="text-sm text-slate-400">Dynamic AI models for coal mine governance — OCR, Real-Time Translation, Speech & Vision Violation Detection</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Dynamic AI models for coal mine governance — OCR, Real-Time Translation, Speech & Vision Violation Detection</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -2759,8 +2760,8 @@ export default function AIWorkbench() {
               title="Click to view or edit Hugging Face API token"
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-105 ${
                 hfStatus.configured
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
-                  : 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
+                  ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-400 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:bg-emerald-500/20'
+                  : 'bg-amber-100 dark:bg-amber-500/10 border-amber-400 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:bg-amber-500/20'
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${hfStatus.configured ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-amber-400 animate-pulse'}`} />
@@ -2774,40 +2775,40 @@ export default function AIWorkbench() {
       {/* Token Settings Modal */}
       {showTokenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/80 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative space-y-4">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                <div className="w-8 h-8 rounded-lg bg-emerald-200 dark:bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
                   <Key className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Hugging Face & AI Microservice Key</h3>
-                  <p className="text-xs text-slate-400">Configures serverless cloud endpoints</p>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Hugging Face & AI Microservice Key</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">Configures serverless cloud endpoints</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowTokenModal(false)}
-                className="text-slate-400 hover:text-white text-sm px-2 py-1 rounded-lg hover:bg-white/10"
+                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white text-sm px-2 py-1 rounded-lg hover:bg-white/10"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-300 block">Current API Key / Token</label>
+              <label className="text-xs font-medium text-slate-700 dark:text-slate-300 block">Current API Key / Token</label>
               <div className="relative flex items-center">
                 <input
                   type={showTokenSecret ? 'text' : 'password'}
                   value={tokenInput}
                   onChange={(e) => setTokenInput(e.target.value)}
                   placeholder="hf_..."
-                  className="w-full bg-slate-950 border border-white/15 rounded-xl px-3.5 py-2.5 pr-20 font-mono text-xs text-emerald-300 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-white/15 rounded-xl px-3.5 py-2.5 pr-20 font-mono text-xs text-emerald-300 focus:outline-none focus:border-emerald-500"
                 />
                 <div className="absolute right-2 flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => setShowTokenSecret(!showTokenSecret)}
-                    className="p-1.5 text-slate-400 hover:text-white rounded hover:bg-white/10"
+                    className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded hover:bg-white/10"
                     title={showTokenSecret ? "Hide" : "Show"}
                   >
                     {showTokenSecret ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -2815,18 +2816,18 @@ export default function AIWorkbench() {
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="p-1.5 text-slate-400 hover:text-white rounded hover:bg-white/10"
+                    className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded hover:bg-white/10"
                     title="Copy token"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
                 </div>
               </div>
             </div>
 
             {saveSuccess && (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400" />
+              <div className="p-3 bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-400 dark:border-emerald-500/30 rounded-xl text-xs text-emerald-300 flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 Token successfully saved and activated!
               </div>
             )}
@@ -2835,7 +2836,7 @@ export default function AIWorkbench() {
               <button
                 type="button"
                 onClick={() => setTokenInput(import.meta.env.VITE_HF_API_TOKEN || '')}
-                className="text-xs text-slate-400 hover:text-slate-200 underline"
+                className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 underline"
               >
                 Reset to default token
               </button>
@@ -2843,14 +2844,14 @@ export default function AIWorkbench() {
                 <button
                   type="button"
                   onClick={() => setShowTokenModal(false)}
-                  className="px-4 py-2 text-xs font-medium text-slate-300 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10"
+                  className="px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveToken}
-                  className="px-4 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg shadow-emerald-600/30"
+                  className="px-4 py-2 text-xs font-medium text-slate-900 dark:text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg shadow-emerald-600/30"
                 >
                   Save & Apply
                 </button>
@@ -2869,24 +2870,24 @@ export default function AIWorkbench() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative p-3 rounded-xl border text-left transition-all group ${isActive ? `${c.bg} ${c.border}` : 'bg-white/[0.02] border-white/10 hover:bg-white/[0.05]'}`}
+              className={`relative p-3 rounded-xl border text-left transition-all group ${isActive ? `${c.bg} ${c.border}` : 'bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/[0.05]'}`}
             >
-              <tab.icon className={`w-5 h-5 mb-2 ${isActive ? c.text : 'text-slate-500 group-hover:text-slate-300'}`} />
-              <p className={`text-xs font-semibold leading-tight ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`}>{tab.label}</p>
+              <tab.icon className={`w-5 h-5 mb-2 ${isActive ? c.text : 'text-slate-700 dark:text-slate-500 group-hover:text-slate-700 dark:text-slate-300'}`} />
+              <p className={`text-xs leading-tight ${isActive ? 'font-black text-slate-950 dark:text-white' : 'font-semibold text-slate-600 dark:text-slate-400 group-hover:text-slate-800 dark:text-slate-200'}`}>{tab.label}</p>
             </button>
           );
         })}
       </div>
 
       {/* Active Panel */}
-      <div className={`rounded-2xl border ${colors.border} ${colors.bg} p-6 space-y-5 shadow-2xl`}>
+      <div className={`rounded-2xl ${colors.border} ${colors.bg} p-6 space-y-5 shadow-2xl`}>
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <activeTabInfo.icon className={`w-5 h-5 ${colors.text}`} />
-              <h2 className="font-bold text-white text-lg">{activeTabInfo.task}</h2>
+              <h2 className="font-bold text-slate-900 dark:text-white text-lg">{activeTabInfo.task}</h2>
             </div>
-            <p className="text-sm text-slate-400">{activeTabInfo.description}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{activeTabInfo.description}</p>
           </div>
           <a
             href={`https://huggingface.co/${activeTabInfo.model}`}
@@ -2916,10 +2917,10 @@ export default function AIWorkbench() {
             >
               <div className="flex items-center justify-between mb-2">
                 <tab.icon className={`w-4 h-4 ${c.text}`} />
-                <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-slate-400 transition-colors" />
+                <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-slate-600 dark:text-slate-400 transition-colors" />
               </div>
-              <p className="text-xs font-semibold text-slate-300 mb-0.5">{tab.task}</p>
-              <p className="text-[10px] font-mono text-slate-500 truncate">{tab.model}</p>
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-0.5">{tab.task}</p>
+              <p className="text-[10px] font-mono text-slate-700 dark:text-slate-500 truncate">{tab.model}</p>
             </button>
           );
         })}

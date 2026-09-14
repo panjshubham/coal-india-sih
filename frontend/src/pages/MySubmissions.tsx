@@ -74,13 +74,13 @@ export default function MySubmissions() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-500">Loading submissions...</div>;
+  if (loading) return <div className="p-8 text-center text-slate-700 dark:text-slate-500">Loading submissions...</div>;
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-8 w-full">
       <div>
         <h1 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">My Submissions</h1>
-        <p className="text-sm text-slate-500 mt-1">Track your recent statutory field reports and offline sync status.</p>
+        <p className="text-sm text-slate-700 dark:text-slate-500 mt-1">Track your recent statutory field reports and offline sync status.</p>
       </div>
 
       <div className="space-y-6">
@@ -100,23 +100,23 @@ export default function MySubmissions() {
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${getSeverityBadge(item.payload.severity)}`}>
                       {item.payload.severity}
                     </span>
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{item.payload.category}</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest">{item.payload.category}</span>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900">Mine ID: {item.payload.mineId}</h4>
                   {item.payload.lat && (
-                    <div className="flex items-center gap-1 text-xs text-slate-500 mt-1 font-mono">
+                    <div className="flex items-center gap-1 text-xs text-slate-700 dark:text-slate-500 mt-1 font-mono">
                       <MapPin className="w-3 h-3" /> {item.payload.lat.toFixed(4)}, {item.payload.lng.toFixed(4)}
                     </div>
                   )}
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-medium text-amber-600 block mb-1">Waiting for connection...</span>
-                  <span className="text-xs text-slate-400">{formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-400">{formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
                 </div>
               </div>
             ))}
             {pending.length === 0 && (
-              <div className="p-6 text-center text-slate-500 text-sm">No pending offline submissions.</div>
+              <div className="p-6 text-center text-slate-700 dark:text-slate-500 text-sm">No pending offline submissions.</div>
             )}
           </div>
         </div>
@@ -136,7 +136,7 @@ export default function MySubmissions() {
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${getSeverityBadge(item.severity)}`}>
                       {item.severity}
                     </span>
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{item.category}</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest">{item.category}</span>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900">{item.mines?.name}</h4>
                 </div>
@@ -144,7 +144,7 @@ export default function MySubmissions() {
                   <span className="text-xs font-medium text-emerald-600 mb-1 flex items-center gap-1">
                     Synced <CheckCircle2 className="w-3 h-3" />
                   </span>
-                  <span className="text-xs text-slate-400 mr-4 sm:mr-0">{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-400 mr-4 sm:mr-0">{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
                   <Link to={`/violations/${item.id}`} className="text-xs font-bold text-blue-600 hover:underline sm:hidden mt-2">View</Link>
                 </div>
                 <Link to={`/violations/${item.id}`} className="hidden sm:inline-flex px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded transition-colors">
@@ -153,7 +153,7 @@ export default function MySubmissions() {
               </div>
             ))}
             {synced.length === 0 && (
-              <div className="p-6 text-center text-slate-500 text-sm">No recent synced submissions found.</div>
+              <div className="p-6 text-center text-slate-700 dark:text-slate-500 text-sm">No recent synced submissions found.</div>
             )}
           </div>
         </div>

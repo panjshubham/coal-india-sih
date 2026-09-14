@@ -57,56 +57,56 @@
   --cg-toggle-icon:      #9FB2C8;
 }
 
-/* Light mode overrides */
-[data-theme="light"] {
+/* Light mode overrides — Clean, High-Contrast Official Government Portal */
+[data-theme="light"], .light {
   /* Backgrounds */
-  --cg-bg:               #F8FAFC;
-  --cg-surface:          #FFFFFF;
-  --cg-surface-elevated: #F1F5F9;
-  --cg-surface-high:     #E9EEF5;
-  --cg-surface-highest:  #DDE4EE;
-  --cg-surface-low:      #F4F7FB;
+  --cg-bg:               #F1F5F9;  /* Crisp slate-100 backdrop */
+  --cg-surface:          #FFFFFF;  /* Pure white cards */
+  --cg-surface-elevated: #F8FAFC;  /* Subtle slate-50 */
+  --cg-surface-high:     #E2E8F0;
+  --cg-surface-highest:  #CBD5E1;
+  --cg-surface-low:      #FFFFFF;
 
   /* Sidebar & Topbar */
-  --cg-sidebar-bg:       #1E293B;  /* Sidebar stays dark — better contrast for nav */
-  --cg-sidebar-border:   rgba(255, 255, 255, 0.06);
-  --cg-topbar-bg:        rgba(248, 250, 252, 0.95);
-  --cg-topbar-border:    rgba(0, 0, 0, 0.06);
-  --cg-ribbon-bg:        #1E293B;  /* Gov ribbon stays dark for authority feel */
+  --cg-sidebar-bg:       #0F172A;  /* Deep official Navy-Slate — maximum readability for navigation */
+  --cg-sidebar-border:   rgba(255, 255, 255, 0.10);
+  --cg-topbar-bg:        #FFFFFF;
+  --cg-topbar-border:    #E2E8F0;
+  --cg-ribbon-bg:        #0B1329;
 
-  /* Text */
-  --cg-text-primary:     #1E293B;
-  --cg-text-secondary:   #334155;
-  --cg-text-muted:       #64748B;
-  --cg-text-faint:       #94A3B8;
+  /* Text — Deep, high-contrast, razor-sharp readability for evaluators/judges */
+  --cg-text-primary:     #0F172A;  /* Slate-900 */
+  --cg-text-secondary:   #334155;  /* Slate-700 */
+  --cg-text-muted:       #475569;  /* Slate-600 */
+  --cg-text-faint:       #64748B;  /* Slate-500 */
 
-  /* Borders */
-  --cg-border:           rgba(0, 0, 0, 0.08);
-  --cg-border-strong:    rgba(0, 0, 0, 0.14);
+  /* Borders — Clean structural delineation */
+  --cg-border:           #E2E8F0;
+  --cg-border-strong:    #CBD5E1;
 
-  /* Accent — slightly darkened for contrast against white */
-  --cg-accent:           #D97706;
-  --cg-accent-hover:     #B45309;
+  /* Accent — Ministry Gold / Deep Amber */
+  --cg-accent:           #B45309;
+  --cg-accent-hover:     #92400E;
   --cg-accent-text:      #FFFFFF;
 
-  /* Status — Muted/adjusted for light backgrounds */
-  --cg-success:          #059669;
-  --cg-success-bg:       rgba(5, 150, 105, 0.08);
+  /* Status — Official, non-fluorescent government badges */
+  --cg-success:          #047857;
+  --cg-success-bg:       #ECFDF5;
   --cg-warning:          #B45309;
-  --cg-warning-bg:       rgba(180, 83, 9, 0.08);
-  --cg-danger:           #BE123C;
-  --cg-danger-bg:        rgba(190, 18, 60, 0.08);
+  --cg-warning-bg:       #FFFBEB;
+  --cg-danger:           #B91C1C;
+  --cg-danger-bg:        #FEF2F2;
 
   /* Card shadows */
-  --cg-shadow:           0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --cg-shadow-lg:        0 4px 20px rgba(0, 0, 0, 0.12);
+  --cg-shadow:           0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --cg-shadow-lg:        0 4px 12px rgba(0, 0, 0, 0.08);
 
   /* Scrollbar */
   --cg-scrollbar-track:  #F1F5F9;
-  --cg-scrollbar-thumb:  #CBD5E1;
+  --cg-scrollbar-thumb:  #94A3B8;
 
   /* Toggle icon */
-  --cg-toggle-icon:      #64748B;
+  --cg-toggle-icon:      #334155;
 }
 
 /* ============================================================

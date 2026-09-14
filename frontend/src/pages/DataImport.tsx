@@ -189,7 +189,7 @@ export default function DataImport() {
           <div 
             {...getRootProps()} 
             className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors ${
-              isDragActive ? 'border-[var(--cg-accent)] bg-amber-500/5' : 'border-[var(--cg-border-strong)] hover:border-[var(--cg-text-muted)] hover:bg-[var(--cg-surface-elevated)]'
+              isDragActive ? 'border-[var(--cg-accent)] bg-amber-50 dark:bg-amber-500/5' : 'border-[var(--cg-border-strong)] hover:border-[var(--cg-text-muted)] hover:bg-[var(--cg-surface-elevated)]'
             }`}
           >
             <input {...getInputProps()} />
@@ -276,7 +276,7 @@ export default function DataImport() {
             </div>
             <div className="card-surface p-6 border-l-4 border-l-emerald-500">
               <div className="text-[var(--cg-text-muted)] text-sm mb-1 uppercase tracking-wider font-bold">Ready to Import</div>
-              <div className="text-3xl font-serif text-emerald-400">{validationResults.valid.length}</div>
+              <div className="text-3xl font-serif text-emerald-700 dark:text-emerald-400">{validationResults.valid.length}</div>
               <div className="text-xs mt-2 text-[var(--cg-text-faint)] flex gap-4">
                 <span>{validationResults.willCreate} New</span>
                 <span>{validationResults.willUpdate} Updates</span>
@@ -284,7 +284,7 @@ export default function DataImport() {
             </div>
             <div className={`card-surface p-6 border-l-4 ${validationResults.invalid.length > 0 ? 'border-l-rose-500' : 'border-l-[var(--cg-border)]'}`}>
               <div className="text-[var(--cg-text-muted)] text-sm mb-1 uppercase tracking-wider font-bold">Errors</div>
-              <div className={`text-3xl font-serif ${validationResults.invalid.length > 0 ? 'text-rose-400' : 'text-[var(--cg-text-primary)]'}`}>
+              <div className={`text-3xl font-serif ${validationResults.invalid.length > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-[var(--cg-text-primary)]'}`}>
                 {validationResults.invalid.length}
               </div>
             </div>
@@ -313,7 +313,7 @@ export default function DataImport() {
                       <tr key={i} className="hover:bg-[var(--cg-surface-high)]">
                         <td className="p-3 font-mono text-[var(--cg-text-muted)]">{row._originalIndex}</td>
                         <td className="p-3 font-medium">{row.name || '(Empty)'}</td>
-                        <td className="p-3 text-rose-400 text-xs">
+                        <td className="p-3 text-rose-700 dark:text-rose-400 text-xs">
                           <ul className="list-disc pl-4 space-y-1">
                             {row._errors.map((e: string, j: number) => <li key={j}>{e}</li>)}
                           </ul>
@@ -328,7 +328,7 @@ export default function DataImport() {
 
           <div className="card-surface p-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                 <CheckCircle className="w-5 h-5" />
               </div>
               <div>

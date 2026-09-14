@@ -554,21 +554,21 @@ export default function Landing() {
                   {/* Card 1: REAL-TIME MONITORING (Fully Real - Live Data) */}
                   <motion.div 
                     variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
-                    className="p-space-lg rounded-xl bg-surface-container-low/50 backdrop-blur-sm border border-emerald-500/30 hover:border-emerald-500/50 hover:bg-surface-container-low transition-all group flex flex-col justify-between relative overflow-hidden shadow-lg hover:shadow-emerald-500/10"
+                    className="p-space-lg rounded-xl bg-surface-container-low/50 backdrop-blur-sm border border-emerald-400 dark:border-emerald-500/30 hover:border-emerald-500/50 hover:bg-surface-container-low transition-all group flex flex-col justify-between relative overflow-hidden shadow-lg hover:shadow-emerald-500/10"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                     <div className="space-y-space-md z-10">
                       <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-sm">
+                        <div className="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-400 dark:border-emerald-500/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400 shadow-sm">
                           <span className="material-symbols-outlined text-[24px]">radar</span>
                         </div>
-                        <span className="font-label-md px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 uppercase font-bold border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
+                        <span className="font-label-md px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 uppercase font-bold border border-emerald-400 dark:border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                           LIVE DATA
                         </span>
                       </div>
                       <div className="space-y-space-xs">
-                        <h3 className="font-headline-md text-on-surface font-semibold group-hover:text-emerald-400 transition-colors">
+                        <h3 className="font-headline-md text-on-surface font-semibold group-hover:text-emerald-700 dark:text-emerald-400 transition-colors">
                           Real-Time Monitoring
                         </h3>
                         <p className="font-body-md text-on-surface-variant leading-relaxed">
@@ -579,14 +579,14 @@ export default function Landing() {
 
                     <div className="mt-space-xl p-space-md rounded-lg bg-[#0b101a] border border-outline-variant/20 space-y-space-sm font-code-sm relative overflow-hidden z-10 shadow-inner">
                       <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
-                        <span className="text-[11px] font-mono text-slate-400">SUPABASE STREAM:</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                        <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">SUPABASE STREAM:</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20 font-bold">
                           VERIFIED LIVE
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
                         <span>Active Open Violations:</span>
-                        <span className="text-amber-400 font-mono font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                        <span className="text-amber-700 dark:text-amber-400 font-mono font-bold bg-amber-100 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-500/20">
                           {featureStats.activeViolationsCount} Open
                         </span>
                       </div>
@@ -598,7 +598,7 @@ export default function Landing() {
                       </div>
                       <div className="flex justify-between items-center text-on-surface-variant">
                         <span>Last Telemetry Ingestion:</span>
-                        <span className="text-emerald-400 font-mono text-[11px]">
+                        <span className="text-emerald-700 dark:text-emerald-400 font-mono text-[11px]">
                           {formatIsoDate(featureStats.lastViolationTimestamp)}
                         </span>
                       </div>
@@ -608,21 +608,21 @@ export default function Landing() {
                   {/* Card 2: AI RISK DETECTION (Fully Real - ML Powered) */}
                   <motion.div 
                     variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
-                    className="p-space-lg rounded-xl bg-surface-container-low/50 backdrop-blur-sm border border-amber-500/30 hover:border-amber-500/50 hover:bg-surface-container-low transition-all group flex flex-col justify-between relative overflow-hidden shadow-lg hover:shadow-amber-500/10"
+                    className="p-space-lg rounded-xl bg-surface-container-low/50 backdrop-blur-sm border border-amber-400 dark:border-amber-500/30 hover:border-amber-500/50 hover:bg-surface-container-low transition-all group flex flex-col justify-between relative overflow-hidden shadow-lg hover:shadow-amber-500/10"
                   >
                     <div className="absolute inset-0 bg-gradient-to-bl from-amber-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                     <div className="space-y-space-md z-10">
                       <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-sm">
+                        <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 flex items-center justify-center text-amber-700 dark:text-amber-400 shadow-sm">
                           <span className="material-symbols-outlined text-[24px]">psychology</span>
                         </div>
-                        <span className="font-label-md px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 uppercase font-bold border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
+                        <span className="font-label-md px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 uppercase font-bold border border-amber-400 dark:border-amber-500/30 flex items-center gap-1.5 shadow-sm">
                           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                           ML-POWERED · LIVE
                         </span>
                       </div>
                       <div className="space-y-space-xs">
-                        <h3 className="font-headline-md text-on-surface font-semibold group-hover:text-amber-400 transition-colors">
+                        <h3 className="font-headline-md text-on-surface font-semibold group-hover:text-amber-700 dark:text-amber-400 transition-colors">
                           AI Risk Detection
                         </h3>
                         <p className="font-body-md text-on-surface-variant leading-relaxed">
@@ -633,8 +633,8 @@ export default function Landing() {
 
                     <div className="mt-space-xl p-space-md rounded-lg bg-[#0b101a] border border-outline-variant/20 space-y-space-sm font-code-sm relative z-10 shadow-inner">
                       <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
-                        <span className="text-[11px] font-mono text-slate-400">HIGHEST-RISK SEEDED MINE:</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">
+                        <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">HIGHEST-RISK SEEDED MINE:</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-500/20 font-bold">
                           XGBOOST · LIVE
                         </span>
                       </div>
@@ -646,13 +646,13 @@ export default function Landing() {
                       </div>
                       <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
                         <span>Statutory Risk Level:</span>
-                        <span className="text-red-400 font-mono font-bold bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
+                        <span className="text-red-700 dark:text-red-400 font-mono font-bold bg-red-100 dark:bg-red-500/10 px-2 py-0.5 rounded border border-red-300 dark:border-red-500/20">
                           {featureStats.topRisk.score}/100 ({featureStats.topRisk.riskLevel.toUpperCase()})
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-on-surface-variant">
                         <span>Active ML Model:</span>
-                        <span className="text-slate-300 font-mono text-[11px]">
+                        <span className="text-slate-700 dark:text-slate-300 font-mono text-[11px]">
                           {featureStats.topRisk.mlModel}
                         </span>
                       </div>
@@ -666,52 +666,52 @@ export default function Landing() {
                   >
                     <div className="space-y-space-md z-10">
                       <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 shadow-sm">
+                        <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-400 shadow-sm">
                           <span className="material-symbols-outlined text-[24px]">sensors</span>
                         </div>
-                        <span className="font-label-md px-2.5 py-1 rounded-full bg-slate-800/90 text-slate-300 uppercase font-bold border border-dashed border-slate-600 flex items-center gap-1.5 shadow-sm">
+                        <span className="font-label-md px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 uppercase font-bold border border-dashed border-slate-600 flex items-center gap-1.5 shadow-sm">
                           <span className="w-2 h-2 rounded-full bg-slate-400"></span>
                           ROADMAP CAPABILITY
                         </span>
                       </div>
                       <div className="space-y-space-xs">
-                        <h3 className="font-headline-md text-slate-200 font-semibold group-hover:text-amber-300 transition-colors">
+                        <h3 className="font-headline-md text-slate-800 dark:text-slate-200 font-semibold group-hover:text-amber-300 transition-colors">
                           IoT Sensor Integration (Roadmap)
                         </h3>
-                        <p className="font-body-md text-slate-400 leading-relaxed">
+                        <p className="font-body-md text-slate-600 dark:text-slate-400 leading-relaxed">
                           Designed to ingest live slope stability, seismic, and gas-concentration sensor feeds once hardware is deployed at mine sites.
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-space-xl p-space-md rounded-lg bg-[#080d14] border border-dashed border-slate-700/80 space-y-space-sm font-code-sm relative z-10 shadow-inner">
-                      <div className="flex justify-between items-center text-slate-400 border-b border-white/5 pb-2">
-                        <span className="text-[11px] font-mono text-slate-400">HARDWARE TELEMETRY:</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-600 font-bold uppercase tracking-wider">
+                    <div className="mt-space-xl p-space-md rounded-lg bg-[#080d14] border border-dashed border-slate-300 dark:border-slate-700/80 space-y-space-sm font-code-sm relative z-10 shadow-inner">
+                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 border-b border-white/5 pb-2">
+                        <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">HARDWARE TELEMETRY:</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-600 font-bold uppercase tracking-wider">
                           SIMULATED PREVIEW
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-slate-400 border-b border-white/5 pb-2">
+                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 border-b border-white/5 pb-2">
                         <span className="flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
                           Slope Inclinometers (X/Y/Z):
                         </span>
-                        <span className="text-slate-300 font-mono font-medium">
+                        <span className="text-slate-700 dark:text-slate-300 font-mono font-medium">
                           {sensorSim.slopeInclinometer} mm/hr
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-slate-400 border-b border-white/5 pb-2">
+                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 border-b border-white/5 pb-2">
                         <span>Seismic Peak Velocity:</span>
-                        <span className="text-slate-300 font-mono">
-                          {sensorSim.seismicPPV} mm/s <span className="text-slate-500 text-[10px]">(Lim:10)</span>
+                        <span className="text-slate-700 dark:text-slate-300 font-mono">
+                          {sensorSim.seismicPPV} mm/s <span className="text-slate-700 dark:text-slate-500 text-[10px]">(Lim:10)</span>
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-slate-400">
+                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
                         <span className="flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
                           Ambient Methane (Shaft #3):
                         </span>
-                        <span className="text-slate-300 font-mono">
+                        <span className="text-slate-700 dark:text-slate-300 font-mono">
                           {sensorSim.methanePpm}% vol
                         </span>
                       </div>
@@ -726,16 +726,16 @@ export default function Landing() {
                     <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                     <div className="space-y-space-md z-10">
                       <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-sm">
+                        <div className="w-12 h-12 rounded-lg bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-700 dark:text-cyan-400 shadow-sm">
                           <span className="material-symbols-outlined text-[24px]">location_on</span>
                         </div>
-                        <span className="font-label-md px-2.5 py-1 rounded-full bg-cyan-500/15 text-cyan-400 uppercase font-bold border border-cyan-500/30 flex items-center gap-1.5 shadow-sm">
+                        <span className="font-label-md px-2.5 py-1 rounded-full bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 uppercase font-bold border border-cyan-500/30 flex items-center gap-1.5 shadow-sm">
                           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
                           GPS + OFFLINE SYNC · LIVE
                         </span>
                       </div>
                       <div className="space-y-space-xs">
-                        <h3 className="font-headline-md text-on-surface font-semibold group-hover:text-cyan-400 transition-colors">
+                        <h3 className="font-headline-md text-on-surface font-semibold group-hover:text-cyan-700 dark:text-cyan-400 transition-colors">
                           Geo-Tagged Inspections
                         </h3>
                         <p className="font-body-md text-on-surface-variant leading-relaxed">
@@ -746,8 +746,8 @@ export default function Landing() {
 
                     <div className="mt-space-xl p-space-md rounded-lg bg-[#0b101a] border border-outline-variant/20 space-y-space-sm font-code-sm relative z-10 shadow-inner">
                       <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
-                        <span className="text-[11px] font-mono text-slate-400">FIELD GPS LOCK:</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold">
+                        <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">FIELD GPS LOCK:</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20 font-bold">
                           VERIFIED SEEDED RECORD
                         </span>
                       </div>
@@ -765,7 +765,7 @@ export default function Landing() {
                       </div>
                       <div className="flex justify-between items-center text-on-surface-variant">
                         <span>Offline Client Architecture:</span>
-                        <span className="text-emerald-400 font-mono text-[11px]">
+                        <span className="text-emerald-700 dark:text-emerald-400 font-mono text-[11px]">
                           IndexedDB Sync Cache Active
                         </span>
                       </div>
@@ -775,21 +775,21 @@ export default function Landing() {
                   {/* Card 5: AUTOMATED WORKFLOWS & AUDIT LEDGER (Fully Real - Live Alerts & Ledger) */}
                   <motion.div 
                     variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
-                    className="p-space-lg rounded-xl bg-surface-container-low/50 backdrop-blur-sm border border-emerald-500/30 hover:border-emerald-500/50 hover:bg-surface-container-low transition-all group flex flex-col justify-between relative overflow-hidden shadow-lg hover:shadow-emerald-500/10 md:col-span-2 lg:col-span-2"
+                    className="p-space-lg rounded-xl bg-surface-container-low/50 backdrop-blur-sm border border-emerald-400 dark:border-emerald-500/30 hover:border-emerald-500/50 hover:bg-surface-container-low transition-all group flex flex-col justify-between relative overflow-hidden shadow-lg hover:shadow-emerald-500/10 md:col-span-2 lg:col-span-2"
                   >
                     <div className="absolute inset-0 bg-gradient-to-tl from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                     <div className="space-y-space-md z-10">
                       <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-sm">
+                        <div className="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-400 dark:border-emerald-500/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400 shadow-sm">
                           <span className="material-symbols-outlined text-[24px]">account_tree</span>
                         </div>
-                        <span className="font-label-md px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 uppercase font-bold border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
+                        <span className="font-label-md px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 uppercase font-bold border border-emerald-400 dark:border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                           LIVE
                         </span>
                       </div>
                       <div className="space-y-space-xs">
-                        <h3 className="font-headline-md text-on-surface font-semibold group-hover:text-emerald-400 transition-colors">
+                        <h3 className="font-headline-md text-on-surface font-semibold group-hover:text-emerald-700 dark:text-emerald-400 transition-colors">
                           Automated Workflows & Cryptographic Audit
                         </h3>
                         <p className="font-body-md text-on-surface-variant leading-relaxed">
@@ -800,26 +800,26 @@ export default function Landing() {
 
                     <div className="mt-space-xl p-space-md rounded-lg bg-[#0b101a] border border-outline-variant/20 space-y-space-sm font-code-sm relative z-10 shadow-inner">
                       <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
-                        <span className="text-[11px] font-mono text-slate-400">STATUTORY LEDGER ENGINE:</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                        <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">STATUTORY LEDGER ENGINE:</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20 font-bold">
                           IMMUTABLE LOG · LIVE
                         </span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                         <div className="flex flex-col border-b sm:border-b-0 sm:border-r border-white/5 pb-2 sm:pb-0 sm:pr-3">
-                          <span className="text-slate-400 text-[11px]">Active Pit Alerts:</span>
-                          <span className="text-amber-400 font-mono font-bold text-sm">
+                          <span className="text-slate-600 dark:text-slate-400 text-[11px]">Active Pit Alerts:</span>
+                          <span className="text-amber-700 dark:text-amber-400 font-mono font-bold text-sm">
                             {featureStats.activeAlertsCount} Unresolved
                           </span>
                         </div>
                         <div className="flex flex-col border-b sm:border-b-0 sm:border-r border-white/5 pb-2 sm:pb-0 sm:pr-3">
-                          <span className="text-slate-400 text-[11px]">Audit Ledger Entries:</span>
-                          <span className="text-emerald-400 font-mono font-bold text-sm">
+                          <span className="text-slate-600 dark:text-slate-400 text-[11px]">Audit Ledger Entries:</span>
+                          <span className="text-emerald-700 dark:text-emerald-400 font-mono font-bold text-sm">
                             {featureStats.auditLogsCount} SHA-256 Blocks
                           </span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-slate-400 text-[11px]">Latest Merkle Hash:</span>
+                          <span className="text-slate-600 dark:text-slate-400 text-[11px]">Latest Merkle Hash:</span>
                           <span className="text-primary font-mono text-[11px] truncate">
                             sha256:{featureStats.latestBlockHash ? `${featureStats.latestBlockHash.slice(0, 12)}...${featureStats.latestBlockHash.slice(-6)}` : '5a6a9490a177...'}
                           </span>
@@ -835,26 +835,26 @@ export default function Landing() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="p-4 sm:p-5 rounded-xl bg-surface-container-low/80 border border-dashed border-slate-700/80 backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs shadow-md mt-2"
+                  className="p-4 sm:p-5 rounded-xl bg-surface-container-low/80 border border-dashed border-slate-300 dark:border-slate-700/80 backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs shadow-md mt-2"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 flex items-center justify-center text-amber-700 dark:text-amber-400 shrink-0 mt-0.5">
                       <span className="material-symbols-outlined text-[18px]">satellite_alt</span>
                     </div>
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-amber-400 uppercase tracking-wider text-[11px]">
+                        <span className="font-mono font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider text-[11px]">
                           Future Roadmap Disclosure
                         </span>
-                        <span className="text-[10px] font-mono text-slate-500">| Architecture Phase 2</span>
+                        <span className="text-[10px] font-mono text-slate-700 dark:text-slate-500">| Architecture Phase 2</span>
                       </div>
-                      <p className="text-slate-300 leading-relaxed text-xs">
+                      <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-xs">
                         Future Roadmap: Satellite boundary monitoring (InSAR), blockchain-anchored transit documentation, and direct DGMS filing integration are architected for but not yet deployed in this prototype.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                    <span className="px-3 py-1 rounded-lg bg-surface-container-high border border-slate-700 font-mono text-[10px] text-slate-400 uppercase tracking-widest">
+                    <span className="px-3 py-1 rounded-lg bg-surface-container-high border border-slate-300 dark:border-slate-700 font-mono text-[10px] text-slate-600 dark:text-slate-400 uppercase tracking-widest">
                       PROTOTYPE SCOPE
                     </span>
                   </div>

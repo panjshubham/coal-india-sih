@@ -179,7 +179,7 @@ export default function ContractorDetail() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-[calc(100vh-8rem)] text-slate-500">Loading contractor dossier...</div>;
+    return <div className="flex items-center justify-center h-[calc(100vh-8rem)] text-slate-700 dark:text-slate-500">Loading contractor dossier...</div>;
   }
 
   if (!contractor) {
@@ -196,7 +196,7 @@ export default function ContractorDetail() {
       
       <button 
         onClick={() => navigate('/contractors')}
-        className="flex items-center gap-1 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
+        className="flex items-center gap-1 text-sm font-bold text-slate-700 dark:text-slate-500 hover:text-slate-800 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" /> Back to Directory
       </button>
@@ -210,9 +210,9 @@ export default function ContractorDetail() {
           <div>
             <h1 className="text-3xl font-serif font-bold text-slate-900 tracking-tight mb-2">{contractor.name}</h1>
             <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-              <span className="flex items-center gap-1.5"><FileText className="w-4 h-4 text-slate-400" /> License: <strong className="font-mono">{contractor.license_no}</strong></span>
-              <span className="text-slate-300">|</span>
-              <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-slate-400" /> Expiry: <strong className={new Date(contractor.license_expiry) < new Date() ? 'text-red-600' : ''}>{contractor.license_expiry}</strong></span>
+              <span className="flex items-center gap-1.5"><FileText className="w-4 h-4 text-slate-600 dark:text-slate-400" /> License: <strong className="font-mono">{contractor.license_no}</strong></span>
+              <span className="text-slate-700 dark:text-slate-300">|</span>
+              <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-slate-600 dark:text-slate-400" /> Expiry: <strong className={new Date(contractor.license_expiry) < new Date() ? 'text-red-600' : ''}>{contractor.license_expiry}</strong></span>
             </div>
             {contractor.document_url && (
               <div className="mt-4 flex items-center gap-2">
@@ -240,13 +240,13 @@ export default function ContractorDetail() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-lg shadow-md transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold rounded-lg shadow-md transition-colors disabled:opacity-50"
             >
               {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
               {uploading ? 'Processing...' : 'Upload Document'}
             </button>
             {uploadStatus && (
-              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">
+              <span className="text-xs font-medium text-slate-700 dark:text-slate-500 bg-slate-100 px-2 py-1 rounded">
                 {uploadStatus}
               </span>
             )}
@@ -255,7 +255,7 @@ export default function ContractorDetail() {
 
         {ocrText && (
           <div className="mt-6 pt-4 border-t border-slate-100">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">OCR Extraction Result</h4>
+            <h4 className="text-xs font-bold text-slate-700 dark:text-slate-500 uppercase tracking-wider mb-2">OCR Extraction Result</h4>
             <div className="bg-slate-50 border border-slate-200 rounded p-3 max-h-32 overflow-y-auto text-xs font-mono text-slate-600 whitespace-pre-wrap">
               {ocrText}
             </div>
@@ -278,10 +278,10 @@ export default function ContractorDetail() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Date</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Severity</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Linked Violation</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Action</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Date</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Severity</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest">Linked Violation</th>
+                  <th className="px-5 py-3 text-[10px] font-bold text-slate-700 dark:text-slate-500 uppercase tracking-widest text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -298,7 +298,7 @@ export default function ContractorDetail() {
                     <td className="px-5 py-4">
                       <div className="flex flex-col">
                         <span className="text-sm font-bold text-slate-800">{incident.violations?.category || 'Unknown Category'}</span>
-                        <span className="text-xs text-slate-500">{incident.violations?.mines?.name || 'Unknown Mine'}</span>
+                        <span className="text-xs text-slate-700 dark:text-slate-500">{incident.violations?.mines?.name || 'Unknown Mine'}</span>
                       </div>
                     </td>
                     <td className="px-5 py-4 text-right">

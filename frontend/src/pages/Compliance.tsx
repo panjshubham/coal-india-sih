@@ -414,7 +414,7 @@ export default function Compliance() {
     
     if (status === 'completed') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-400 dark:border-emerald-500/30">
           <CheckCircle2 className="w-3.5 h-3.5" />
           <span>Compliant</span>
         </span>
@@ -422,7 +422,7 @@ export default function Compliance() {
     }
     if (overdue) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30 animate-pulse">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-pulse">
           <AlertTriangle className="w-3.5 h-3.5" />
           <span>Overdue</span>
         </span>
@@ -437,7 +437,7 @@ export default function Compliance() {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-400 dark:border-amber-500/30">
         <Clock className="w-3.5 h-3.5" />
         <span>Pending</span>
       </span>
@@ -448,15 +448,15 @@ export default function Compliance() {
     const cat = (category || 'safety').toLowerCase();
     switch (cat) {
       case 'safety':
-        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-rose-500/10 text-rose-300 border border-rose-500/20">Safety</span>;
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-rose-100 dark:bg-rose-500/10 text-rose-300 border border-rose-500/20">Safety</span>;
       case 'environment':
-        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">Environment</span>;
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-500/10 text-emerald-300 border border-emerald-300 dark:border-emerald-500/20">Environment</span>;
       case 'production':
-        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-purple-500/10 text-purple-300 border border-purple-500/20">Production</span>;
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-purple-100 dark:bg-purple-500/10 text-purple-300 border border-purple-500/20">Production</span>;
       case 'labour':
-        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-blue-500/10 text-blue-300 border border-blue-500/20">Labour</span>;
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-blue-100 dark:bg-blue-500/10 text-blue-300 border border-blue-300 dark:border-blue-500/20">Labour</span>;
       default:
-        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-300 border border-amber-500/20">{cat}</span>;
+        return <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-amber-100 dark:bg-amber-500/10 text-amber-300 border border-amber-300 dark:border-amber-500/20">{cat}</span>;
     }
   };
 
@@ -465,8 +465,8 @@ export default function Compliance() {
       
       {/* Toast notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-lg bg-[var(--cg-surface-high)] border border-amber-500/40 text-white shadow-2xl animate-fade-in text-sm font-medium">
-          <Check className="w-4 h-4 text-amber-400" />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-lg bg-[var(--cg-surface-high)] border border-amber-500/40 text-slate-900 dark:text-white shadow-2xl animate-fade-in text-sm font-medium">
+          <Check className="w-4 h-4 text-amber-700 dark:text-amber-400" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -474,16 +474,16 @@ export default function Compliance() {
       {/* 1. Header & Quick Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[var(--cg-border)]">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+          <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
             <span>DGMS Apex Regulatory Engine</span>
             <span className="text-slate-600">/</span>
-            <span className="text-amber-400 font-bold">CMR 2017 Registry</span>
+            <span className="text-amber-700 dark:text-amber-400 font-bold">CMR 2017 Registry</span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-[var(--cg-text-primary)]">
             Statutory Directives & Compliance
           </h1>
-          <p className="text-sm text-slate-400 mt-1 max-w-2xl">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl">
             Real-time compliance monitoring, environmental covenants, and mandatory hazard rectifications across active concessions.
           </p>
         </div>
@@ -494,7 +494,7 @@ export default function Compliance() {
             className="btn-secondary h-10 px-4 text-sm font-semibold rounded-lg flex items-center gap-2 transition-all hover:border-[var(--cg-accent)]"
             type="button"
           >
-            <Download className="w-4 h-4 text-slate-300" />
+            <Download className="w-4 h-4 text-slate-700 dark:text-slate-300" />
             <span>Export Registry CSV</span>
           </button>
           
@@ -514,30 +514,30 @@ export default function Compliance() {
         {/* Total Directives */}
         <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] p-5 shadow-sm hover:border-blue-500/40 transition-all flex flex-col justify-between">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Active Directives</span>
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Total Active Directives</span>
+            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-700 dark:text-blue-400">
               <FileText className="w-4 h-4" />
             </div>
           </div>
           <div>
             <span className="text-3xl font-bold text-[var(--cg-text-primary)] font-mono">{stats.total}</span>
-            <p className="text-xs text-slate-400 mt-1 font-medium">Under active DGMS oversight</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">Under active DGMS oversight</p>
           </div>
         </div>
 
         {/* Overdue Breaches */}
         <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] p-5 shadow-sm hover:border-rose-500/40 transition-all flex flex-col justify-between">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
               Overdue Breaches
             </span>
-            <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400">
+            <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center text-rose-700 dark:text-rose-400">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <span className="text-3xl font-bold text-rose-400 font-mono">{stats.overdue}</span>
+            <span className="text-3xl font-bold text-rose-700 dark:text-rose-400 font-mono">{stats.overdue}</span>
             <p className="text-xs text-rose-300/80 mt-1 font-medium">Statutory penalty warnings active</p>
           </div>
         </div>
@@ -545,29 +545,29 @@ export default function Compliance() {
         {/* Pending Inspection */}
         <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] p-5 shadow-sm hover:border-amber-500/40 transition-all flex flex-col justify-between">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Pending Verification</span>
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Pending Verification</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-700 dark:text-amber-400">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <span className="text-3xl font-bold text-amber-400 font-mono">{stats.pending}</span>
-            <p className="text-xs text-slate-400 mt-1 font-medium">Awaiting inspector verification</p>
+            <span className="text-3xl font-bold text-amber-700 dark:text-amber-400 font-mono">{stats.pending}</span>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">Awaiting inspector verification</p>
           </div>
         </div>
 
         {/* 30-Day Resolution Rate */}
         <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] p-5 shadow-sm hover:border-emerald-500/40 transition-all flex flex-col justify-between">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">30-Day Resolution Pace</span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">30-Day Resolution Pace</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-emerald-400 font-mono">{stats.resolutionRate}%</span>
-              <span className="text-xs text-slate-400 font-medium font-sans">Resolved ({stats.completed})</span>
+              <span className="text-3xl font-bold text-emerald-700 dark:text-emerald-400 font-mono">{stats.resolutionRate}%</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-medium font-sans">Resolved ({stats.completed})</span>
             </div>
             <div className="w-full bg-[var(--cg-surface-high)] h-1.5 rounded-full mt-2 overflow-hidden">
               <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${stats.resolutionRate}%` }}></div>
@@ -582,18 +582,18 @@ export default function Compliance() {
           
           {/* Search Input */}
           <div className="md:col-span-5 relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400 pointer-events-none" />
             <input 
               type="text"
               value={search}
               onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
               placeholder="Search directive ID, keyword, mine, officer..."
-              className="w-full h-10 pl-10 pr-9 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+              className="w-full h-10 pl-10 pr-9 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] placeholder:text-slate-600 dark:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
             />
             {search && (
               <button 
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -633,13 +633,13 @@ export default function Compliance() {
           <div className="md:col-span-2">
             <button
               onClick={() => setSortAsc(!sortAsc)}
-              className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-slate-300 hover:text-white hover:border-slate-500 flex items-center justify-between transition-all"
+              className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:border-slate-500 flex items-center justify-between transition-all"
             >
               <span className="flex items-center gap-1.5 truncate">
-                <ArrowUpDown className="w-3.5 h-3.5 text-amber-400" />
+                <ArrowUpDown className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                 <span>Due Date</span>
               </span>
-              <span className="text-xs font-mono font-bold text-amber-400">{sortAsc ? 'ASC ↑' : 'DESC ↓'}</span>
+              <span className="text-xs font-mono font-bold text-amber-700 dark:text-amber-400">{sortAsc ? 'ASC ↑' : 'DESC ↓'}</span>
             </button>
           </div>
 
@@ -653,7 +653,7 @@ export default function Compliance() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'ALL'
                   ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                  : 'bg-[var(--cg-surface-high)] text-slate-300 hover:bg-[var(--cg-surface-highest)] hover:text-white'
+                  : 'bg-[var(--cg-surface-high)] text-slate-700 dark:text-slate-300 hover:bg-[var(--cg-surface-highest)] hover:text-slate-900 dark:text-white'
               }`}
             >
               All Directives ({items.length})
@@ -662,8 +662,8 @@ export default function Compliance() {
               onClick={() => { setStatusFilter('overdue'); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                 statusFilter === 'overdue'
-                  ? 'bg-rose-500 text-white font-bold shadow-sm'
-                  : 'bg-[var(--cg-surface-high)] text-rose-400 hover:bg-rose-500/20'
+                  ? 'bg-rose-500 text-slate-900 dark:text-white font-bold shadow-sm'
+                  : 'bg-[var(--cg-surface-high)] text-rose-700 dark:text-rose-400 hover:bg-rose-500/20'
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
@@ -674,7 +674,7 @@ export default function Compliance() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'pending'
                   ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                  : 'bg-[var(--cg-surface-high)] text-amber-400 hover:bg-amber-500/20'
+                  : 'bg-[var(--cg-surface-high)] text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:bg-amber-500/20'
               }`}
             >
               Pending ({stats.pending})
@@ -683,7 +683,7 @@ export default function Compliance() {
               onClick={() => { setStatusFilter('in_progress'); setCurrentPage(1); }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'in_progress'
-                  ? 'bg-sky-500 text-white font-bold shadow-sm'
+                  ? 'bg-sky-500 text-slate-900 dark:text-white font-bold shadow-sm'
                   : 'bg-[var(--cg-surface-high)] text-sky-400 hover:bg-sky-500/20'
               }`}
             >
@@ -694,15 +694,15 @@ export default function Compliance() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'completed'
                   ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                  : 'bg-[var(--cg-surface-high)] text-emerald-400 hover:bg-emerald-500/20'
+                  : 'bg-[var(--cg-surface-high)] text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:bg-emerald-500/20'
               }`}
             >
               Compliant ({stats.completed})
             </button>
           </div>
 
-          <span className="text-xs font-mono text-slate-400">
-            Showing <strong className="text-white">{filteredItems.length}</strong> matching records
+          <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
+            Showing <strong className="text-slate-900 dark:text-white">{filteredItems.length}</strong> matching records
           </span>
         </div>
       </div>
@@ -711,7 +711,7 @@ export default function Compliance() {
       <div className="bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse whitespace-nowrap">
-            <thead className="bg-[var(--cg-surface-high)] text-xs font-bold uppercase tracking-wider text-slate-300 border-b border-[var(--cg-border)]">
+            <thead className="bg-[var(--cg-surface-high)] text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b border-[var(--cg-border)]">
               <tr>
                 <th className="py-3.5 pl-4 pr-2 w-10">
                   <input 
@@ -734,18 +734,18 @@ export default function Compliance() {
             <tbody className="divide-y divide-[var(--cg-border)]">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-16 text-center text-slate-400 font-mono">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
+                  <td colSpan={9} className="py-16 text-center text-slate-600 dark:text-slate-400 font-mono">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-700 dark:text-amber-400" />
                     Synchronizing DGMS Compliance Register...
                   </td>
                 </tr>
               ) : paginatedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-16 text-center text-slate-400">
+                  <td colSpan={9} className="py-16 text-center text-slate-600 dark:text-slate-400">
                     <div className="max-w-sm mx-auto flex flex-col items-center">
-                      <FileText className="w-10 h-10 text-slate-500 mb-3" />
-                      <h4 className="text-base font-bold text-white mb-1">No directives match criteria</h4>
-                      <p className="text-xs text-slate-400 mb-4">Try clearing filters or search query to view active items.</p>
+                      <FileText className="w-10 h-10 text-slate-700 dark:text-slate-500 mb-3" />
+                      <h4 className="text-base font-bold text-slate-900 dark:text-white mb-1">No directives match criteria</h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">Try clearing filters or search query to view active items.</p>
                       <button 
                         onClick={() => { setSearch(''); setCategoryFilter('ALL'); setStatusFilter('ALL'); setMineFilter('ALL'); }}
                         className="btn-secondary text-xs px-3 py-1.5 rounded"
@@ -763,7 +763,7 @@ export default function Compliance() {
                   <tr 
                     key={item.id}
                     className={`transition-colors duration-150 hover:bg-white/[0.03] ${
-                      isSelected ? 'bg-amber-500/10' : ''
+                      isSelected ? 'bg-amber-100 dark:bg-amber-500/10' : ''
                     } ${
                       overdue ? 'bg-rose-500/[0.02]' : ''
                     }`}
@@ -781,7 +781,7 @@ export default function Compliance() {
                     {/* Tracking ID / Code */}
                     <td className="py-4 px-4 font-mono font-medium text-xs">
                       <div className="flex items-center gap-1.5">
-                        <span className={`font-semibold ${overdue ? 'text-rose-400' : 'text-amber-400'}`}>
+                        <span className={`font-semibold ${overdue ? 'text-rose-700 dark:text-rose-400' : 'text-amber-700 dark:text-amber-400'}`}>
                           {item.tracking_id || `DIR-${item.id}`}
                         </span>
                       </div>
@@ -790,8 +790,8 @@ export default function Compliance() {
                     {/* Mine */}
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                        <span className="font-semibold text-slate-200 text-xs">
+                        <Building2 className="w-4 h-4 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs">
                           {item.mines?.name || `Concession #${item.mine_id}`}
                         </span>
                       </div>
@@ -807,11 +807,11 @@ export default function Compliance() {
                       <div className="flex flex-col">
                         <button 
                           onClick={() => setActiveDossier(item)}
-                          className="font-semibold text-slate-100 hover:text-amber-400 transition-colors text-left leading-snug truncate cursor-pointer"
+                          className="font-semibold text-slate-100 hover:text-amber-700 dark:text-amber-400 transition-colors text-left leading-snug truncate cursor-pointer"
                         >
                           {item.title}
                         </button>
-                        <span className="text-[11px] text-slate-400 truncate mt-0.5">
+                        <span className="text-[11px] text-slate-600 dark:text-slate-400 truncate mt-0.5">
                           {item.statutory_ref || STATUTORY_REFS[item.category] || 'Statutory Regulatory Provision'}
                         </span>
                       </div>
@@ -820,11 +820,11 @@ export default function Compliance() {
                     {/* Due Date */}
                     <td className="py-4 px-4">
                       <div className="flex flex-col text-xs font-mono">
-                        <span className={`font-bold flex items-center gap-1.5 ${overdue ? 'text-rose-400' : 'text-slate-200'}`}>
+                        <span className={`font-bold flex items-center gap-1.5 ${overdue ? 'text-rose-700 dark:text-rose-400' : 'text-slate-800 dark:text-slate-200'}`}>
                           <Calendar className="w-3.5 h-3.5" />
                           {format(new Date(item.due_date), 'dd MMM yyyy')}
                         </span>
-                        <span className={`text-[11px] font-sans ${overdue ? 'text-rose-400/80 font-semibold' : 'text-slate-400'}`}>
+                        <span className={`text-[11px] font-sans ${overdue ? 'text-rose-700 dark:text-rose-400/80 font-semibold' : 'text-slate-600 dark:text-slate-400'}`}>
                           {overdue ? 'Past Deadline' : `${formatDistanceToNow(new Date(item.due_date), { addSuffix: true })}`}
                         </span>
                       </div>
@@ -838,10 +838,10 @@ export default function Compliance() {
                     {/* Assigned Officer */}
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-700/60 border border-slate-600 flex items-center justify-center text-[10px] font-bold text-slate-200">
+                        <div className="w-6 h-6 rounded-full bg-slate-700/60 border border-slate-600 flex items-center justify-center text-[10px] font-bold text-slate-800 dark:text-slate-200">
                           {item.assigned_to ? item.assigned_to.split(' ').map(n => n[0]).slice(0, 2).join('') : 'DG'}
                         </div>
-                        <span className="text-xs text-slate-300 font-medium truncate max-w-[140px]">
+                        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium truncate max-w-[140px]">
                           {item.assigned_to || 'DGMS Directorate'}
                         </span>
                       </div>
@@ -852,7 +852,7 @@ export default function Compliance() {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => setActiveDossier(item)}
-                          className="px-2.5 py-1 rounded bg-[var(--cg-surface-high)] hover:bg-[var(--cg-surface-highest)] text-xs font-medium text-amber-400 hover:text-amber-300 border border-[var(--cg-border)] transition-colors flex items-center gap-1 cursor-pointer"
+                          className="px-2.5 py-1 rounded bg-[var(--cg-surface-high)] hover:bg-[var(--cg-surface-highest)] text-xs font-medium text-amber-700 dark:text-amber-400 hover:text-amber-300 border border-[var(--cg-border)] transition-colors flex items-center gap-1 cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Dossier</span>
@@ -867,13 +867,13 @@ export default function Compliance() {
         </div>
 
         {/* 5. Pagination & Counter Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-[var(--cg-surface-high)] border-t border-[var(--cg-border)] text-xs text-slate-400">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-[var(--cg-surface-high)] border-t border-[var(--cg-border)] text-xs text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-3">
             <span>
-              Showing <strong className="text-white">{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong className="text-white">{Math.min(currentPage * itemsPerPage, filteredItems.length)}</strong> of <strong className="text-white">{filteredItems.length}</strong> statutory records
+              Showing <strong className="text-slate-900 dark:text-white">{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong className="text-slate-900 dark:text-white">{Math.min(currentPage * itemsPerPage, filteredItems.length)}</strong> of <strong className="text-slate-900 dark:text-white">{filteredItems.length}</strong> statutory records
             </span>
             {selectedIds.length > 0 && (
-              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-semibold">
+              <span className="px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-500/20 text-amber-300 font-mono font-semibold">
                 {selectedIds.length} Selected
               </span>
             )}
@@ -883,20 +883,20 @@ export default function Compliance() {
             <button 
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-300 hover:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>Previous</span>
             </button>
 
-            <span className="px-2 font-mono text-xs font-bold text-slate-300">
+            <span className="px-2 font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
               {currentPage} / {totalPages}
             </span>
 
             <button 
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-300 hover:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>Next</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -914,17 +914,17 @@ export default function Compliance() {
             <div className="p-6 border-b border-[var(--cg-border)] flex items-start justify-between gap-4 sticky top-0 bg-[var(--cg-surface-elevated)] z-10">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  <span className="font-mono text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-500/20">
                     {activeDossier.tracking_id || `DIR-${activeDossier.id}`}
                   </span>
                   {getCategoryBadge(activeDossier.category)}
                   {getStatusBadge(activeDossier.status, activeDossier.due_date)}
                 </div>
-                <h2 className="text-xl font-bold text-white tracking-tight">{activeDossier.title}</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{activeDossier.title}</h2>
               </div>
               <button 
                 onClick={() => setActiveDossier(null)}
-                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -935,23 +935,23 @@ export default function Compliance() {
               {/* Meta Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-[var(--cg-surface-high)] border border-[var(--cg-border)]">
                 <div>
-                  <span className="text-xs text-slate-400 uppercase font-bold block mb-1">Target Concession</span>
-                  <p className="font-semibold text-white flex items-center gap-1.5">
-                    <Building2 className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs text-slate-600 dark:text-slate-400 uppercase font-bold block mb-1">Target Concession</span>
+                  <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Building2 className="w-4 h-4 text-amber-700 dark:text-amber-400" />
                     {activeDossier.mines?.name || `Mine #${activeDossier.mine_id}`}
                   </p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 uppercase font-bold block mb-1">Statutory Deadline</span>
-                  <p className="font-semibold text-white font-mono flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs text-slate-600 dark:text-slate-400 uppercase font-bold block mb-1">Statutory Deadline</span>
+                  <p className="font-semibold text-slate-900 dark:text-white font-mono flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-amber-700 dark:text-amber-400" />
                     {format(new Date(activeDossier.due_date), 'dd MMMM yyyy')}
                   </p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 uppercase font-bold block mb-1">Auditing Officer</span>
-                  <p className="font-semibold text-white flex items-center gap-1.5">
-                    <User className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs text-slate-600 dark:text-slate-400 uppercase font-bold block mb-1">Auditing Officer</span>
+                  <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <User className="w-4 h-4 text-amber-700 dark:text-amber-400" />
                     {activeDossier.assigned_to || 'DGMS Directorate'}
                   </p>
                 </div>
@@ -959,36 +959,36 @@ export default function Compliance() {
 
               {/* Statutory Provision */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Statutory Basis & Legal Mandate</h4>
-                <div className="p-3.5 rounded-lg bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-300 font-mono text-xs leading-relaxed">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">Statutory Basis & Legal Mandate</h4>
+                <div className="p-3.5 rounded-lg bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-700 dark:text-slate-300 font-mono text-xs leading-relaxed">
                   {activeDossier.statutory_ref || STATUTORY_REFS[activeDossier.category] || 'Statutory mandate enforced under Coal Mines Regulations (CMR 2017).'}
                 </div>
               </div>
 
               {/* Evidentiary Document / Certificate */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Compliance Certificate / Evidence</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">Compliance Certificate / Evidence</h4>
                 {activeDossier.document_url ? (
-                  <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                  <div className="p-3.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-400 dark:border-emerald-500/30 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-emerald-300 font-medium">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                       <span>Certified Evidentiary File Attached</span>
                     </div>
                     <a 
                       href={activeDossier.document_url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-xs font-bold text-emerald-400 hover:underline"
+                      className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
                     >
                       Download PDF
                     </a>
                   </div>
                 ) : (
                   <div className="border-2 border-dashed border-[var(--cg-border)] rounded-xl p-6 flex flex-col items-center justify-center text-center bg-[var(--cg-surface)] hover:border-amber-500/50 transition-colors">
-                    <UploadCloud className="w-8 h-8 text-slate-400 mb-2" />
-                    <p className="text-xs font-semibold text-slate-200">Drag & Drop Form 24 / Technical Inspection Report</p>
-                    <p className="text-[11px] text-slate-400 mt-1">Accepts PDF, PNG, or certified GeoTIFF scans up to 25MB</p>
-                    <label className="mt-3 px-3 py-1.5 bg-[var(--cg-surface-high)] hover:bg-[var(--cg-surface-highest)] text-white text-xs font-semibold rounded cursor-pointer border border-[var(--cg-border)]">
+                    <UploadCloud className="w-8 h-8 text-slate-600 dark:text-slate-400 mb-2" />
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">Drag & Drop Form 24 / Technical Inspection Report</p>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">Accepts PDF, PNG, or certified GeoTIFF scans up to 25MB</p>
+                    <label className="mt-3 px-3 py-1.5 bg-[var(--cg-surface-high)] hover:bg-[var(--cg-surface-highest)] text-slate-900 dark:text-white text-xs font-semibold rounded cursor-pointer border border-[var(--cg-border)]">
                       Browse Files
                       <input 
                         type="file" 
@@ -1005,14 +1005,14 @@ export default function Compliance() {
 
               {/* Quick Status Toggles */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Update Enforcement Status</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">Update Enforcement Status</h4>
                 <div className="grid grid-cols-3 gap-2">
                   <button 
                     onClick={() => handleUpdateStatus(activeDossier, 'in_progress')}
                     className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                       activeDossier.status === 'in_progress'
                         ? 'bg-sky-500/20 border-sky-500 text-sky-300 font-bold'
-                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-300 hover:text-white'
+                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white'
                     }`}
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
@@ -1023,8 +1023,8 @@ export default function Compliance() {
                     onClick={() => handleUpdateStatus(activeDossier, 'completed')}
                     className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                       activeDossier.status === 'completed'
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold'
-                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-300 hover:text-white'
+                        ? 'bg-emerald-200 dark:bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold'
+                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white'
                     }`}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1036,7 +1036,7 @@ export default function Compliance() {
                     className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                       activeDossier.status === 'overdue'
                         ? 'bg-rose-500/20 border-rose-500 text-rose-300 font-bold'
-                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-300 hover:text-white'
+                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white'
                     }`}
                   >
                     <AlertTriangle className="w-3.5 h-3.5" />
@@ -1067,12 +1067,12 @@ export default function Compliance() {
             
             <div className="p-6 border-b border-[var(--cg-border)] flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-white tracking-tight">Issue Statutory Compliance Directive</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Mandates regulatory rectification under DGMS CMR 2017</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Issue Statutory Compliance Directive</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Mandates regulatory rectification under DGMS CMR 2017</p>
               </div>
               <button 
                 onClick={() => setShowCreateModal(false)}
-                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1080,8 +1080,8 @@ export default function Compliance() {
 
             <form onSubmit={handleCreateDirective} className="p-6 space-y-4 text-sm">
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
-                  Directive Title / Mandate Summary <span className="text-rose-400">*</span>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Directive Title / Mandate Summary <span className="text-rose-700 dark:text-rose-400">*</span>
                 </label>
                 <input 
                   type="text"
@@ -1089,14 +1089,14 @@ export default function Compliance() {
                   placeholder="e.g. Mandatory Overburden Slope Stability Telemetry Re-check"
                   value={newDirective.title}
                   onChange={e => setNewDirective({ ...newDirective, title: e.target.value })}
-                  className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] placeholder:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] placeholder:text-slate-700 dark:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
-                    Target Mine Concession <span className="text-rose-400">*</span>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1.5">
+                    Target Mine Concession <span className="text-rose-700 dark:text-rose-400">*</span>
                   </label>
                   <select 
                     value={newDirective.mine_id}
@@ -1110,8 +1110,8 @@ export default function Compliance() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
-                    Directive Category <span className="text-rose-400">*</span>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1.5">
+                    Directive Category <span className="text-rose-700 dark:text-rose-400">*</span>
                   </label>
                   <select 
                     value={newDirective.category}
@@ -1128,8 +1128,8 @@ export default function Compliance() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
-                    Statutory Deadline <span className="text-rose-400">*</span>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1.5">
+                    Statutory Deadline <span className="text-rose-700 dark:text-rose-400">*</span>
                   </label>
                   <input 
                     type="date"
@@ -1141,7 +1141,7 @@ export default function Compliance() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1.5">
                     Severity Level
                   </label>
                   <select 
@@ -1158,7 +1158,7 @@ export default function Compliance() {
               </div>
 
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 block mb-1.5">
                   Assigned Inspector / Officer
                 </label>
                 <input 
@@ -1166,7 +1166,7 @@ export default function Compliance() {
                   placeholder="e.g. Shri R. K. Mahapatra (DGMS)"
                   value={newDirective.assigned_to}
                   onChange={e => setNewDirective({ ...newDirective, assigned_to: e.target.value })}
-                  className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                  className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-[var(--cg-text-primary)] placeholder:text-slate-700 dark:text-slate-500 focus:outline-none focus:border-amber-500"
                 />
               </div>
 
@@ -1192,16 +1192,16 @@ export default function Compliance() {
       )}
 
       {/* 8. Telemetry Footnote */}
-      <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-xl bg-[var(--cg-surface-elevated)] border border-[var(--cg-border)] text-xs font-mono text-slate-400 gap-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-xl bg-[var(--cg-surface-elevated)] border border-[var(--cg-border)] text-xs font-mono text-slate-600 dark:text-slate-400 gap-2">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="text-slate-300 font-semibold">DGMS COMPLIANCE LEDGER LINKED</span>
+          <span className="text-slate-700 dark:text-slate-300 font-semibold">DGMS COMPLIANCE LEDGER LINKED</span>
           <span className="text-slate-600">|</span>
           <span>SHA-256 INTEGRITY VERIFIED</span>
         </div>
         <div className="flex items-center gap-3">
           <span>CMR 2017 STATUTORY STANDARD</span>
-          <span className="text-amber-400 font-bold">418 ACTIVE PITS</span>
+          <span className="text-amber-700 dark:text-amber-400 font-bold">418 ACTIVE PITS</span>
         </div>
       </div>
 

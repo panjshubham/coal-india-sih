@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, 
+  LayoutDashboard, BarChart2, ClipboardList, AlertTriangle, Map as MapIcon, 
   Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, 
-  Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, User, ExternalLink, HelpCircle, IndianRupee
+  Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, User, ExternalLink, HelpCircle, IndianRupee, Camera
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -26,25 +26,29 @@ interface NavItem {
 }
 
 const navigation: NavItem[] = [
-  // 1. Dashboards (Tailored to role clearance)
-  { id: 'dashboard_colliery', href: '/dashboard/colliery', icon: LayoutDashboard, roles: ['mine_official', 'corporate', 'regulator'] },
+  // 1. Core Dashboards & Overview
   { id: 'dashboard_corporate', href: '/dashboard/corporate', icon: LayoutDashboard, roles: ['corporate'] },
+  { id: 'dashboard_colliery', href: '/dashboard/colliery', icon: LayoutDashboard, roles: ['mine_official', 'corporate', 'regulator'] },
   { id: 'dashboard_regulator', href: '/dashboard/regulator', icon: ShieldAlert, roles: ['regulator', 'corporate'] },
-
-  // 2. Admin Oversight (Only Corporate Admin)
+  { id: 'map', href: '/mines-map', icon: MapIcon, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'financialOverview', href: '/financial-overview', icon: IndianRupee, roles: ['corporate'] },
-  { id: 'manageUsers', href: '/manage-users', icon: ShieldAlert, roles: ['corporate'] },
-  { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate', 'regulator'] },
 
-  // 3. Operational & Field Compliance Modules
+  // 2. Daily Operations & Compliance
+  { id: 'compliance', href: '/compliance', icon: ClipboardList, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'inspections', href: '/inspections', icon: ClipboardList, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'violations', href: '/violations', icon: AlertTriangle, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'statutoryRegisters', href: '/statutory-registers', icon: ShieldCheck, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'contractors', href: '/contractors', icon: Users, roles: ['mine_official', 'corporate'] },
-  { id: 'compliance', href: '/compliance', icon: ClipboardList, roles: ['mine_official', 'regulator', 'corporate'] },
-  { id: 'map', href: '/mines-map', icon: MapIcon, roles: ['mine_official', 'regulator', 'corporate'] },
+
+  // 3. Administration & Intelligence
   { id: 'aiWorkbench', href: '/ai-workbench', icon: Cpu, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'benchmarking', href: '/benchmarking', icon: BarChart2, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'ppeMonitor', href: '/ppe-monitor', icon: Camera, roles: ['mine_official', 'regulator', 'corporate'] },
+  { id: 'manageUsers', href: '/manage-users', icon: ShieldAlert, roles: ['corporate'] },
+  { id: 'dataImport', href: '/data-import', icon: Database, roles: ['corporate', 'regulator'] },
   { id: 'audit', href: '/audit-log', icon: ShieldCheck, roles: ['mine_official', 'regulator', 'corporate'] },
+  
+  // 4. User Settings
   { id: 'profile', href: '/profile', icon: UserCheck },
   { id: 'helpSupport', href: '/help', icon: HelpCircle },
 ];
@@ -149,16 +153,16 @@ export default function DashboardLayout() {
       >
         {/* Brand Header */}
         <div className="flex items-center justify-between h-16 px-4" style={{ borderBottom: '1px solid var(--cg-sidebar-border)' }}>
-          <Link to="/" className="flex items-center gap-3 font-black text-xl text-white tracking-tight overflow-hidden">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.35)] shrink-0">
-              <Pickaxe className="w-5 h-5 text-amber-950" />
+          <Link to="/" className="flex items-center gap-3 font-black text-xl text-slate-900 dark:text-white tracking-tight overflow-hidden">
+            <div className="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm shrink-0">
+              <Pickaxe className="w-5 h-5 text-slate-950" />
             </div>
             {!isCollapsed && (
               <span className="truncate font-bold tracking-tight">CoalGuard</span>
             )}
           </Link>
           <button 
-            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors" 
+            className="lg:hidden p-1.5 rounded-lg text-slate-800 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors" 
             onClick={() => setSidebarOpen(false)}
             aria-label="Close menu"
           >
@@ -170,16 +174,16 @@ export default function DashboardLayout() {
         <nav className="p-3 flex-1 space-y-1 overflow-y-auto overflow-x-hidden">
           {!isCollapsed && (
             <div className="flex items-center justify-between mb-2.5 px-3">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest" style={{ color: 'var(--cg-text-faint)' }}>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-800 dark:text-slate-500">
                 Mission Command
               </span>
               {role && (
                 <span className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-bold border ${
                   role === 'corporate' 
-                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' 
+                    ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-500/30' 
                     : role === 'regulator' 
-                    ? 'bg-purple-500/15 text-purple-400 border-purple-500/30' 
-                    : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                    ? 'bg-indigo-50 dark:bg-purple-500/15 text-indigo-800 dark:text-purple-400 border-indigo-300 dark:border-purple-500/30' 
+                    : 'bg-blue-50 dark:bg-blue-500/15 text-blue-800 dark:text-blue-400 border-blue-300 dark:border-blue-500/30'
                 }`}>
                   {role === 'corporate' ? 'HQ Admin' : role === 'regulator' ? 'Regulator' : 'Mine Official'}
                 </span>
@@ -202,14 +206,14 @@ export default function DashboardLayout() {
                   "flex items-center rounded-lg text-sm font-semibold transition-all duration-200 group relative",
                   isCollapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5",
                   isActive 
-                    ? "bg-amber-500/15 text-amber-400 font-bold" 
-                    : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
+                    ? "bg-amber-50 dark:bg-amber-500/15 text-amber-900 dark:text-amber-400 font-bold border border-amber-200 dark:border-amber-500/30 shadow-xs" 
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-100"
                 )}
               >
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-amber-400 rounded-r-full shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-amber-500 dark:bg-amber-400 rounded-r-full" />
                 )}
-                <item.icon className={cn("w-4 h-4 shrink-0 transition-colors", isActive ? "text-amber-400" : "text-slate-400 group-hover:text-amber-300")} />
+                <item.icon className={cn("w-4 h-4 shrink-0 transition-colors", isActive ? "text-amber-700 dark:text-amber-400" : "text-slate-800 dark:text-slate-500 group-hover:text-slate-900 dark:group-hover:text-amber-300")} />
                 {!isCollapsed && (
                   <span className="truncate">{t(`nav_${item.id}`)}</span>
                 )}
@@ -219,19 +223,19 @@ export default function DashboardLayout() {
         </nav>
 
         {/* Sidebar Footer Controls */}
-        <div className="p-3 border-t border-white/5 space-y-2">
+        <div className="p-3 border-t border-slate-200 dark:border-white/5 space-y-2">
           {/* Security status indicator */}
           {!isCollapsed ? (
-            <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs">
-              <div className="flex items-center gap-2 text-emerald-400 font-mono font-bold text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-xs">
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 font-mono font-bold text-[11px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
                 SYSTEM SECURE
               </div>
-              <div className="text-emerald-500/70 text-[9px] font-mono mt-0.5">DGMS Handshake Valid</div>
+              <div className="text-emerald-700 dark:text-emerald-500/70 text-[9px] font-mono mt-0.5">DGMS Handshake Valid</div>
             </div>
           ) : (
             <div className="flex justify-center p-2" title="SYSTEM SECURE — DGMS Handshake Valid">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)] animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
             </div>
           )}
 
@@ -244,7 +248,7 @@ export default function DashboardLayout() {
                 localStorage.setItem('coalguard_sidebar_collapsed', String(next));
               } catch {}
             }}
-            className="hidden lg:flex w-full items-center justify-center gap-2 p-2 rounded-lg text-xs font-mono text-slate-400 hover:text-amber-400 hover:bg-white/5 transition-colors cursor-pointer"
+            className="hidden lg:flex w-full items-center justify-center gap-2 p-2 rounded-lg text-xs font-mono text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-amber-700 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -265,7 +269,7 @@ export default function DashboardLayout() {
               navigate('/login');
             }}
             className={cn(
-              "w-full flex items-center justify-center gap-2 rounded-lg text-xs font-bold text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all cursor-pointer",
+              "w-full flex items-center justify-center gap-2 rounded-lg text-xs font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/10 border border-transparent hover:border-red-300 dark:border-red-500/20 transition-all cursor-pointer",
               isCollapsed ? "p-2.5" : "px-3 py-2.5"
             )}
             title="Sign out"
@@ -279,17 +283,24 @@ export default function DashboardLayout() {
       {/* Main content viewport */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         
+        {/* National Tri-Color Accent Line (Official Government Portal Hallmark) */}
+        <div className="h-0.5 w-full flex shrink-0">
+          <div className="h-full w-1/3 bg-[#FF9933]" />
+          <div className="h-full w-1/3 bg-white" />
+          <div className="h-full w-1/3 bg-[#138808]" />
+        </div>
+
         {/* Micro Gov Info Ribbon */}
-        <div className="text-[10px] font-mono py-1 px-4 lg:px-8 flex justify-between items-center tracking-widest w-full select-none" style={{ backgroundColor: 'var(--cg-ribbon-bg)', borderBottom: '1px solid rgba(255,255,255,0.05)', color: 'rgba(148,163,184,0.8)' }}>
+        <div className="text-[10px] font-mono py-1 px-4 lg:px-8 flex justify-between items-center tracking-widest w-full select-none" style={{ backgroundColor: 'var(--cg-ribbon-bg)', borderBottom: '1px solid var(--cg-border)', color: 'var(--cg-text-faint)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-amber-500 font-bold">सत्यमेव जयते | GOVT. OF INDIA</span>
+            <span className="text-amber-500 font-bold">सत्यमेव जयते | MINISTRY OF COAL</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-emerald-500 font-bold flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> DGMS NETWORK
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> DGMS STATUTORY NETWORK
             </span>
-            <span style={{ color: 'rgba(100,116,139,0.6)' }}>|</span>
-            <span className="text-amber-400 font-bold">{time || 'SYNCING...'}</span>
+            <span style={{ color: 'var(--cg-text-faint)' }}>|</span>
+            <span className="text-amber-700 dark:text-amber-400 font-bold">{time || 'SYNCING...'}</span>
           </div>
         </div>
 
@@ -300,7 +311,7 @@ export default function DashboardLayout() {
             <button
               id="cg-menu-toggle-btn"
               onClick={toggleSidebar}
-              className="flex items-center justify-center w-8 h-8 rounded-lg text-amber-400 hover:text-amber-300 hover:bg-amber-400/15 border border-amber-400/30 mr-3 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-700 dark:text-amber-400 hover:text-slate-900 dark:hover:text-amber-300 bg-slate-100/80 dark:bg-amber-400/10 hover:bg-slate-200 dark:hover:bg-amber-400/20 border border-slate-300 dark:border-amber-400/30 mr-3 transition-all cursor-pointer shadow-xs active:scale-95"
               aria-label="Toggle navigation menu"
               title={isCollapsed ? "Expand navigation menu" : "Collapse navigation menu"}
               type="button"
@@ -308,7 +319,7 @@ export default function DashboardLayout() {
               <Menu className="w-4 h-4" />
             </button>
             <h1 className="text-sm font-bold tracking-wider uppercase hidden sm:block" style={{ color: 'var(--cg-text-primary)' }}>
-              Coal India Limited
+              Coal India Limited · Statutory Governance
             </h1>
           </div>
           
@@ -321,12 +332,12 @@ export default function DashboardLayout() {
             {/* Language switch button */}
             <button 
               onClick={toggleLanguage}
-              className="px-2.5 py-1 rounded-lg font-bold text-[10px] tracking-widest uppercase transition-colors cursor-pointer flex items-center gap-1"
+              className="px-2.5 py-1 rounded-lg font-bold text-[10px] tracking-widest uppercase transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
               style={{ background: 'var(--cg-surface-elevated)', border: '1px solid var(--cg-border)', color: 'var(--cg-text-secondary)' }}
               title="Change Language (English / हिन्दी)"
               aria-label="Change Language"
             >
-              <Languages className="w-3.5 h-3.5 text-amber-400" />
+              <Languages className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               {i18n.language.startsWith('hi') ? 'HI' : 'EN'}
             </button>
 
@@ -349,7 +360,7 @@ export default function DashboardLayout() {
                 title="Officer Profile Menu"
               >
                 <div className="text-right hidden sm:block leading-tight">
-                  <p className="text-[11px] font-bold group-hover:text-amber-400 transition-colors uppercase tracking-wider" style={{ color: 'var(--cg-text-secondary)' }}>{profile.fullName}</p>
+                  <p className="text-[11px] font-bold group-hover:text-amber-700 dark:text-amber-400 transition-colors uppercase tracking-wider" style={{ color: 'var(--cg-text-secondary)' }}>{profile.fullName}</p>
                   <p className="text-[9px] font-mono" style={{ color: 'var(--cg-text-faint)' }}>ID: {profile.badgeId}</p>
                 </div>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-amber-500 font-bold text-xs transition-colors shadow-sm" style={{ background: 'var(--cg-surface-elevated)', border: '1px solid rgba(245,158,11,0.35)' }}>
@@ -371,7 +382,7 @@ export default function DashboardLayout() {
                     <p className="font-bold text-xs" style={{ color: 'var(--cg-text-primary)' }}>{profile.fullName}</p>
                     <p className="text-[10px] font-mono" style={{ color: 'var(--cg-text-muted)' }}>{profile.email}</p>
                     <div className="mt-2 flex items-center gap-1.5">
-                      <span className="text-[9px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold">
+                      <span className="text-[9px] font-mono uppercase px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-400 dark:border-amber-500/30 font-bold">
                         {role || 'Officer'}
                       </span>
                       <span className="text-[9px] font-mono text-[var(--cg-text-faint)]">
@@ -387,7 +398,7 @@ export default function DashboardLayout() {
                       className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 transition-colors"
                       style={{ color: 'var(--cg-text-secondary)' }}
                     >
-                      <User className="w-3.5 h-3.5 text-amber-400" />
+                      <User className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                       View Officer Profile
                     </Link>
 
@@ -397,7 +408,7 @@ export default function DashboardLayout() {
                       className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-white/5 transition-colors"
                       style={{ color: 'var(--cg-text-secondary)' }}
                     >
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                       Cryptographic Audit Log
                     </Link>
 
@@ -407,7 +418,7 @@ export default function DashboardLayout() {
                         await signOut();
                         navigate('/login');
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/10 transition-colors cursor-pointer"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       Sign Out
@@ -427,3 +438,4 @@ export default function DashboardLayout() {
     </div>
   );
 }
+

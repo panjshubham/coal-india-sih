@@ -234,27 +234,27 @@ export default function CorporateDashboard() {
 
   const getSeverityBadge = (sev: string) => {
     switch(sev.toLowerCase()) {
-      case 'critical': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'high': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-      case 'medium': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-      default: return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'critical': return 'bg-red-50 dark:bg-red-500/20 text-red-800 dark:text-red-400 border border-red-200 dark:border-red-500/30 font-bold';
+      case 'high': return 'bg-amber-50 dark:bg-orange-500/20 text-amber-800 dark:text-orange-400 border border-amber-200 dark:border-orange-500/30 font-bold';
+      case 'medium': return 'bg-yellow-50 dark:bg-amber-500/20 text-yellow-800 dark:text-amber-400 border border-yellow-200 dark:border-amber-500/30 font-bold';
+      default: return 'bg-blue-50 dark:bg-blue-500/20 text-blue-800 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30 font-bold';
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#070D18] text-slate-100 font-sans p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans p-6 pb-24">
       {/* 1. Header with Command Center Badge */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 dark:border-slate-800 gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
-            Global Overview
-            <span className="text-[11px] font-mono font-medium px-2.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 flex items-center gap-1.5">
-              <Globe2 className="w-3 h-3" />
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+            Global Enterprise Overview
+            <span className="text-[11px] font-mono font-medium px-2.5 py-0.5 rounded bg-slate-100 dark:bg-blue-950 text-slate-800 dark:text-blue-400 border border-slate-300 dark:border-blue-800 flex items-center gap-1.5">
+              <Globe2 className="w-3.5 h-3.5" />
               HQ COMMAND
             </span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time monitoring of all mines, production targets, and AI safety alerts.
+          <p className="text-xs text-slate-800 dark:text-slate-500 mt-1">
+            Real-time monitoring of all mines, production targets, and statutory AI safety alerts.
           </p>
         </div>
 
@@ -262,53 +262,53 @@ export default function CorporateDashboard() {
           {/* Manage Mine Officials Button */}
           <Link
             to="/manage-users"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-bold hover:bg-indigo-500/30 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/40 text-indigo-800 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors shadow-sm"
           >
-            <Users className="w-3.5 h-3.5 text-indigo-400" />
+            <Users className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             {t('btn_manage_officials', 'Manage Mine Officials')}
           </Link>
 
           {/* Bulk Data Import Button */}
           <Link
             to="/data-import"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-cyan-500/30 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-cyan-500/20 border border-blue-200 dark:border-cyan-500/40 text-blue-800 dark:text-cyan-300 text-xs font-bold hover:bg-blue-100 dark:hover:bg-cyan-500/30 transition-colors shadow-sm"
           >
-            <Database className="w-3.5 h-3.5 text-cyan-400" />
+            <Database className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
             {t('btn_data_import', 'Data Import')}
           </Link>
 
           {/* PDF Export Button */}
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-colors shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/40 text-amber-800 dark:text-amber-400 text-xs font-bold hover:bg-amber-100 dark:hover:bg-amber-500/30 transition-colors shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
             {t('btn_export_compliance', 'Export Compliance Report')}
           </button>
 
           {/* Live Telemetry Stream Badge */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold">
-            <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-400 text-xs font-mono font-bold">
+            <Radio className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
             <span>SYSTEM ONLINE</span>
           </div>
         </div>
       </div>
 
-      {/* 2. Critical AI Alerts & Production Risk (MOVED TO TOP) */}
+      {/* 2. Critical AI Alerts & Production Risk */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mt-6">
         
-        {/* Left: Production vs Risk Matrix (Spans 3 cols on extra large screens) */}
-        <div className="xl:col-span-3 bg-[#0B1326] border border-slate-800 rounded-xl p-5 shadow-xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+        {/* Left: Production vs Risk Matrix */}
+        <div className="xl:col-span-3 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-amber-950/80 border border-amber-600/40 text-amber-400">
+              <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-600/40 text-amber-700 dark:text-amber-400">
                 <TrendingUp className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide uppercase flex items-center gap-2">
                   Production Output vs. Safety Risk Matrix
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-800 dark:text-slate-500">
                   Identifying high-output mines with dangerous AI statutory compliance risk scores.
                 </p>
               </div>
@@ -316,95 +316,91 @@ export default function CorporateDashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
-            <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
+            <div className="p-4 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-900/50">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="text-sm font-bold text-white">Gevra OCP (SECL)</h3>
-                  <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Chhattisgarh</p>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Gevra OCP (SECL)</h3>
+                  <p className="text-[10px] font-mono text-slate-800 dark:text-slate-500 mt-0.5">Mega-Project · Chhattisgarh</p>
                 </div>
-                <span className="px-2 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold font-mono">
+                <span className="px-2 py-0.5 rounded bg-red-50 dark:bg-red-500/20 text-red-800 dark:text-red-400 border border-red-200 dark:border-red-500/30 text-[10px] font-bold font-mono">
                   RISK: 88 (CRITICAL)
                 </span>
               </div>
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">Daily Coal Output</span>
-                    <span className="font-bold text-emerald-400">142,000 Tonnes</span>
+                    <span className="text-slate-800 dark:text-slate-500">Daily Coal Output</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400">142,000 Tonnes</span>
                   </div>
-                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[95%]"></div></div>
+                  <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-600 dark:bg-emerald-500 w-[95%]"></div></div>
                 </div>
-                <p className="text-[10px] text-red-400 leading-tight">⚠️ AI Alert: Massive output target causing haul road berm maintenance delays. High risk of heavy dumper accidents.</p>
+                <p className="text-[10px] text-red-700 dark:text-red-400 leading-tight">⚠️ AI Alert: Massive output target causing haul road berm maintenance delays. High risk of heavy dumper accidents.</p>
               </div>
             </div>
 
-            <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
+            <div className="p-4 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-900/50">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="text-sm font-bold text-white">Kusmunda OCP (SECL)</h3>
-                  <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Chhattisgarh</p>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Kusmunda OCP (SECL)</h3>
+                  <p className="text-[10px] font-mono text-slate-800 dark:text-slate-500 mt-0.5">Mega-Project · Chhattisgarh</p>
                 </div>
-                <span className="px-2 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold font-mono">
+                <span className="px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30 text-[10px] font-bold font-mono">
                   RISK: 65 (HIGH)
                 </span>
               </div>
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">Daily Coal Output</span>
-                    <span className="font-bold text-emerald-400">128,000 Tonnes</span>
+                    <span className="text-slate-800 dark:text-slate-500">Daily Coal Output</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400">128,000 Tonnes</span>
                   </div>
-                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[85%]"></div></div>
+                  <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-600 dark:bg-emerald-500 w-[85%]"></div></div>
                 </div>
-                <p className="text-[10px] text-amber-400 leading-tight">⚠️ AI Alert: Fast-paced extraction leading to contractor PPE violations and unregistered workers in pit.</p>
+                <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-tight">⚠️ AI Alert: Fast-paced extraction leading to contractor PPE violations and unregistered workers in pit.</p>
               </div>
             </div>
 
-            <div className="p-4 border border-slate-800 rounded-lg bg-slate-900/50">
+            <div className="p-4 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-900/50">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="text-sm font-bold text-white">Jayant OCP (NCL)</h3>
-                  <p className="text-[10px] font-mono text-slate-400 mt-0.5">Mega-Project · Madhya Pradesh</p>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Jayant OCP (NCL)</h3>
+                  <p className="text-[10px] font-mono text-slate-800 dark:text-slate-500 mt-0.5">Mega-Project · Madhya Pradesh</p>
                 </div>
-                <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold font-mono">
+                <span className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 text-[10px] font-bold font-mono">
                   RISK: 24 (SAFE)
                 </span>
               </div>
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">Daily Coal Output</span>
-                    <span className="font-bold text-emerald-400">95,000 Tonnes</span>
+                    <span className="text-slate-800 dark:text-slate-500">Daily Coal Output</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400">95,000 Tonnes</span>
                   </div>
-                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 w-[70%]"></div></div>
+                  <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-600 dark:bg-emerald-500 w-[70%]"></div></div>
                 </div>
-                <p className="text-[10px] text-emerald-400 leading-tight">✅ Ideal Operation: High production maintained perfectly in tandem with all DGMS safety compliance clearances.</p>
+                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 leading-tight">✅ Ideal Operation: High production maintained perfectly in tandem with all DGMS safety compliance clearances.</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right: AI Insights (Spans 1 col) */}
-        <div className="bg-[#0B1326] border border-slate-800 rounded-xl p-4 shadow-xl flex flex-col relative overflow-hidden transition-colors">
-          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-            <Fingerprint className="w-32 h-32 text-indigo-500" />
-          </div>
-          <div className="pb-3 border-b border-slate-800 relative z-10 flex justify-between items-center">
-            <h2 className="text-sm font-bold text-slate-200 tracking-wide flex items-center gap-2">
-              <Activity className="w-4 h-4 text-indigo-400" />
+        {/* Right: AI Insights */}
+        <div className="bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex flex-col relative overflow-hidden transition-colors">
+          <div className="pb-3 border-b border-slate-200 dark:border-slate-800 relative z-10 flex justify-between items-center">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-200 tracking-wide flex items-center gap-2">
+              <Activity className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               AI SAFETY WARNINGS
             </h2>
           </div>
           
           <div className="mt-4 space-y-3 flex-1 relative z-10 font-sans overflow-y-auto max-h-[300px]">
             {riskScores.slice(0, 3).map(risk => {
-              const cf = (risk as any).contributing_factors;
               return (
-                <div key={risk.mine_id} className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 text-sm">
-                  <div className="font-bold text-slate-100 mb-1 flex items-center justify-between">
-                    <span>{risk.mines?.name} <span className={`text-[10px] ml-1 px-1.5 py-0.5 rounded ${risk.score > 70 ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>Score: {risk.score}</span></span>
+                <div key={risk.mine_id} className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-lg border border-slate-200 dark:border-slate-800 text-sm">
+                  <div className="font-bold text-slate-900 dark:text-slate-100 mb-1 flex items-center justify-between">
+                    <span>{risk.mines?.name} <span className={`text-[10px] ml-1 px-1.5 py-0.5 rounded border ${risk.score > 70 ? 'bg-red-50 dark:bg-red-500/20 text-red-800 dark:text-red-400 border-red-200 dark:border-red-500/30' : 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30'}`}>Score: {risk.score}</span></span>
                   </div>
-                  <div className="text-slate-400 leading-relaxed text-xs mb-2">
+                  <div className="text-slate-600 dark:text-slate-400 leading-relaxed text-xs mb-2">
                     {risk.explanation || 'No AI explanation generated yet.'}
                   </div>
                 </div>
@@ -412,11 +408,11 @@ export default function CorporateDashboard() {
             })}
           </div>
           
-          <div className="mt-4 pt-3 border-t border-slate-800 relative z-10">
+          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 relative z-10">
             <button 
               onClick={handleRecalculate}
               disabled={calculatingRisk}
-              className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-400 text-sm font-bold rounded-lg transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/30 border border-transparent dark:border-indigo-500/40 text-slate-900 dark:text-white dark:text-indigo-400 text-xs font-bold rounded-lg transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
             >
               {calculatingRisk ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               {calculatingRisk ? t('btn_recalculating', 'Recalculating Globally...') : t('btn_recalculate_global', 'Recalculate Global Risk Scores')}
@@ -428,79 +424,79 @@ export default function CorporateDashboard() {
 
       {/* 3. Operational KPIs Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mt-6">
-        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
-          <p className="text-xs font-mono text-slate-400 uppercase">{t('corp_metric_total_mines', 'Total Supervised Sites')}</p>
+        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_total_mines', 'Total Supervised Sites')}</p>
           <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-white">{stats.totalMines}</h3>
-            <span className="text-xs text-blue-400 font-mono"><Server className="w-3.5 h-3.5 inline mr-1" />{t('corp_metric_nodes_active', 'Nodes Active')}</span>
+            <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.totalMines}</h3>
+            <span className="text-xs text-blue-600 dark:text-blue-400 font-mono"><Server className="w-3.5 h-3.5 inline mr-1" />{t('corp_metric_nodes_active', 'Nodes Active')}</span>
           </div>
         </div>
 
-        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
-          <p className="text-xs font-mono text-slate-400 uppercase">{t('metric_violations', 'Active Violations')}</p>
+        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('metric_violations', 'Active Violations')}</p>
           <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-amber-400">{stats.activeViolations}</h3>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800">
+            <h3 className="text-3xl font-black text-amber-600 dark:text-amber-400">{stats.activeViolations}</h3>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
               {t('metric_violations_sub', 'Requiring Intervention')}
             </span>
           </div>
         </div>
 
-        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
-          <p className="text-xs font-mono text-slate-400 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
+        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
           <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-red-400">{stats.overdueCompliance}</h3>
-            <span className="text-xs text-slate-400 font-mono">{t('corp_metric_escalation', 'Escalation Triggered')}</span>
+            <h3 className="text-3xl font-black text-red-600 dark:text-red-400">{stats.overdueCompliance}</h3>
+            <span className="text-xs text-slate-800 dark:text-slate-500 font-mono">{t('corp_metric_escalation', 'Escalation Triggered')}</span>
           </div>
         </div>
 
-        <div className="p-4 bg-[#0B1326] border border-slate-800 rounded-xl">
-          <p className="text-xs font-mono text-slate-400 uppercase">{t('corp_metric_avg_risk', 'Global Avg Risk Score')}</p>
+        <div className="p-4 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_avg_risk', 'Global Avg Risk Score')}</p>
           <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-cyan-400">{stats.avgRiskScore} <span className="text-sm font-normal text-slate-500">/ 100</span></h3>
-            <span className="text-[10px] text-slate-400 font-mono">{t('corp_metric_weighted_mean', 'Weighted Mean')}</span>
+            <h3 className="text-3xl font-black text-indigo-700 dark:text-cyan-400">{stats.avgRiskScore} <span className="text-sm font-normal text-slate-700 dark:text-slate-500">/ 100</span></h3>
+            <span className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">{t('corp_metric_weighted_mean', 'Weighted Mean')}</span>
           </div>
         </div>
 
-        <div className="p-4 bg-emerald-950/20 border border-emerald-900/50 rounded-xl">
-          <p className="text-xs font-mono text-emerald-400 uppercase">Daily Extraction (Est)</p>
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-xl shadow-sm">
+          <p className="text-xs font-mono text-emerald-800 dark:text-emerald-400 uppercase font-semibold">Daily Extraction (Est)</p>
           <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-emerald-400">1.84 <span className="text-sm font-normal text-emerald-500">MT</span></h3>
-            <span className="text-xs text-emerald-500/70 font-mono"><Pickaxe className="w-3.5 h-3.5 inline mr-1" />Pit Output</span>
+            <h3 className="text-3xl font-black text-emerald-800 dark:text-emerald-400">1.84 <span className="text-sm font-normal text-emerald-600 dark:text-emerald-500">MT</span></h3>
+            <span className="text-xs text-emerald-700 dark:text-emerald-500/70 font-mono"><Pickaxe className="w-3.5 h-3.5 inline mr-1" />Pit Output</span>
           </div>
         </div>
 
-        <div className="p-4 bg-blue-950/20 border border-blue-900/50 rounded-xl">
-          <p className="text-xs font-mono text-blue-400 uppercase">Daily Dispatch</p>
+        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 rounded-xl shadow-sm">
+          <p className="text-xs font-mono text-blue-800 dark:text-blue-400 uppercase font-semibold">Daily Dispatch</p>
           <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-blue-400">1.79 <span className="text-sm font-normal text-blue-500">MT</span></h3>
-            <span className="text-xs text-blue-500/70 font-mono"><Truck className="w-3.5 h-3.5 inline mr-1" />Rail / Road</span>
+            <h3 className="text-3xl font-black text-blue-800 dark:text-blue-400">1.79 <span className="text-sm font-normal text-blue-600 dark:text-blue-500">MT</span></h3>
+            <span className="text-xs text-blue-700 dark:text-blue-500/70 font-mono"><Truck className="w-3.5 h-3.5 inline mr-1" />Rail / Road</span>
           </div>
         </div>
       </div>
 
       {/* 4. Environmental & Logistics Limits Watchdog */}
-      <div className="mt-6 bg-[#0B1326] border border-slate-800 rounded-xl p-5 shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+      <div className="mt-6 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/40 text-emerald-400">
+            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-600/40 text-emerald-700 dark:text-emerald-400">
               <Trees className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white tracking-wide uppercase flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide uppercase flex items-center gap-2">
                 Environmental & Logistics Limits
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                   STATUTORY CEILING
                 </span>
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-800 dark:text-slate-500">
                 Continuous reconciliation of Pit Extraction vs Statutory EC Production Limits vs Railway Siding Dispatches.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300 flex items-center gap-1.5">
-              <Gauge className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="text-[11px] font-mono px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Gauge className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
               FY 2025-26 QUOTA TRACKING
             </span>
           </div>
@@ -508,94 +504,94 @@ export default function CorporateDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           {/* Tetaria Khar - Warning */}
-          <div className="p-3.5 bg-slate-900/70 border border-amber-500/40 rounded-lg relative overflow-hidden">
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-900/70 border border-amber-300 dark:border-amber-500/40 rounded-lg relative overflow-hidden">
             <div className="flex justify-between items-start mb-2">
               <div>
-                <span className="text-xs font-bold text-white">Tetaria Khar (ECL)</span>
-                <p className="text-[10px] text-slate-400 font-mono">EC Ref: J-11015/84/2018-IA.II(M)</p>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Tetaria Khar (ECL)</span>
+                <p className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">EC Ref: J-11015/84/2018-IA.II(M)</p>
               </div>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-700 animate-pulse">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 animate-pulse">
                 87.1% CEILING REACHED
               </span>
             </div>
             
             <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between text-slate-400">
-                <span>Extracted: <strong className="text-white">3.92 MT</strong></span>
-                <span>Statutory Cap: <strong className="text-slate-300">4.50 MTPA</strong></span>
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>Extracted: <strong className="text-slate-900 dark:text-white">3.92 MT</strong></span>
+                <span>Statutory Cap: <strong className="text-slate-700 dark:text-slate-300">4.50 MTPA</strong></span>
               </div>
-              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-amber-500 to-red-500 rounded-full" style={{ width: '87.1%' }} />
               </div>
-              <div className="flex justify-between text-[11px] font-mono text-slate-400 pt-1">
-                <span>Rail Siding Dispatch: <span className="text-emerald-400 font-bold">3.65 MT</span></span>
-                <span className="text-amber-400">Pithead Stock: +0.27 MT</span>
+              <div className="flex justify-between text-[11px] font-mono text-slate-800 dark:text-slate-500 pt-1">
+                <span>Rail Siding Dispatch: <span className="text-emerald-700 dark:text-emerald-400 font-bold">3.65 MT</span></span>
+                <span className="text-amber-700 dark:text-amber-400">Pithead Stock: +0.27 MT</span>
               </div>
             </div>
-            <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center gap-1.5 text-[10px] text-amber-300 font-mono">
-              <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+            <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center gap-1.5 text-[10px] text-amber-800 dark:text-amber-300 font-mono">
+              <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>MoEFCC Section 15 alert: Extraction pace will breach cap in 28 days</span>
             </div>
           </div>
 
           {/* Dhori Khas - Compliant */}
-          <div className="p-3.5 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-lg">
             <div className="flex justify-between items-start mb-2">
               <div>
-                <span className="text-xs font-bold text-white">Dhori Khas (CCL)</span>
-                <p className="text-[10px] text-slate-400 font-mono">EC Ref: J-11015/22/2016-IA.II(M)</p>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Dhori Khas (CCL)</span>
+                <p className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">EC Ref: J-11015/22/2016-IA.II(M)</p>
               </div>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 68.3% CEILING
               </span>
             </div>
             
             <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between text-slate-400">
-                <span>Extracted: <strong className="text-white">4.10 MT</strong></span>
-                <span>Statutory Cap: <strong className="text-slate-300">6.00 MTPA</strong></span>
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>Extracted: <strong className="text-slate-900 dark:text-white">4.10 MT</strong></span>
+                <span>Statutory Cap: <strong className="text-slate-700 dark:text-slate-300">6.00 MTPA</strong></span>
               </div>
-              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '68.3%' }} />
+              <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-600 dark:bg-emerald-500 rounded-full" style={{ width: '68.3%' }} />
               </div>
-              <div className="flex justify-between text-[11px] font-mono text-slate-400 pt-1">
-                <span>Rail Siding Dispatch: <span className="text-emerald-400 font-bold">4.05 MT</span></span>
-                <span className="text-slate-400">Stockpile Variance: 1.2% (Nominal)</span>
+              <div className="flex justify-between text-[11px] font-mono text-slate-800 dark:text-slate-500 pt-1">
+                <span>Rail Siding Dispatch: <span className="text-emerald-700 dark:text-emerald-400 font-bold">4.05 MT</span></span>
+                <span className="text-slate-800 dark:text-slate-500">Stockpile Variance: 1.2% (Nominal)</span>
               </div>
             </div>
-            <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center gap-1.5 text-[10px] text-emerald-400 font-mono">
-              <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+            <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center gap-1.5 text-[10px] text-emerald-800 dark:text-emerald-400 font-mono">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Optimal extraction schedule. Dispatch capacity balanced.</span>
             </div>
           </div>
 
           {/* Govindpur Colliery - Compliant */}
-          <div className="p-3.5 bg-slate-900/70 border border-slate-800 rounded-lg">
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-lg">
             <div className="flex justify-between items-start mb-2">
               <div>
-                <span className="text-xs font-bold text-white">Govindpur Colliery (BCCL)</span>
-                <p className="text-[10px] text-slate-400 font-mono">EC Ref: J-11015/39/2019-IA.II(M)</p>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Govindpur Colliery (BCCL)</span>
+                <p className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">EC Ref: J-11015/39/2019-IA.II(M)</p>
               </div>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 67.2% CEILING
               </span>
             </div>
             
             <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between text-slate-400">
-                <span>Extracted: <strong className="text-white">2.15 MT</strong></span>
-                <span>Statutory Cap: <strong className="text-slate-300">3.20 MTPA</strong></span>
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>Extracted: <strong className="text-slate-900 dark:text-white">2.15 MT</strong></span>
+                <span>Statutory Cap: <strong className="text-slate-700 dark:text-slate-300">3.20 MTPA</strong></span>
               </div>
-              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '67.2%' }} />
+              <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-600 dark:bg-emerald-500 rounded-full" style={{ width: '67.2%' }} />
               </div>
-              <div className="flex justify-between text-[11px] font-mono text-slate-400 pt-1">
-                <span>Rail Siding Dispatch: <span className="text-emerald-400 font-bold">2.12 MT</span></span>
-                <span className="text-slate-400">Stockpile Variance: 1.4% (Nominal)</span>
+              <div className="flex justify-between text-[11px] font-mono text-slate-800 dark:text-slate-500 pt-1">
+                <span>Rail Siding Dispatch: <span className="text-emerald-700 dark:text-emerald-400 font-bold">2.12 MT</span></span>
+                <span className="text-slate-800 dark:text-slate-500">Stockpile Variance: 1.4% (Nominal)</span>
               </div>
             </div>
-            <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center gap-1.5 text-[10px] text-emerald-400 font-mono">
-              <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+            <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center gap-1.5 text-[10px] text-emerald-800 dark:text-emerald-400 font-mono">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Valid till Mar 2028. Full logistics harmony with railway rakes.</span>
             </div>
           </div>
@@ -603,17 +599,17 @@ export default function CorporateDashboard() {
       </div>
 
       {/* 5. Main Body: Ranked Table */}
-      <div className="mt-6 bg-[#0B1326] border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-200 tracking-wide uppercase flex items-center gap-2">
-            <BarChart2 className="w-4 h-4 text-cyan-400" />
+      <div className="mt-6 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-slate-200 tracking-wide uppercase flex items-center gap-2">
+            <BarChart2 className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
             Consolidated Risk-Ranked Subsidiaries
           </h2>
-          <span className="text-[10px] font-mono text-slate-400">Click 'Explain Risk' for SHAP AI Model Breakdown</span>
+          <span className="text-[10px] font-mono text-slate-800 dark:text-slate-500">Click 'Explain Risk' for SHAP AI Model Breakdown</span>
         </div>
         <div className="p-0 overflow-y-auto max-h-[450px]">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/80 font-mono text-slate-400 uppercase text-[10px] border-b border-slate-800 sticky top-0 backdrop-blur-md z-10">
+            <thead className="bg-slate-50 dark:bg-slate-900/80 font-mono text-slate-700 dark:text-slate-400 uppercase text-[10px] border-b border-slate-200 dark:border-slate-800 sticky top-0 backdrop-blur-md z-10">
               <tr>
                 <th className="px-5 py-3">Mine Location</th>
                 <th className="px-5 py-3">Risk Index</th>
@@ -621,22 +617,22 @@ export default function CorporateDashboard() {
                 <th className="px-5 py-3 text-right">Explainability</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
               {riskScores.map(risk => (
-                <tr key={risk.mine_id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="px-5 py-3.5 font-sans font-bold text-slate-100">
+                <tr key={risk.mine_id} className="hover:bg-slate-50 dark:hover:bg-white dark:bg-slate-900/40 transition-colors">
+                  <td className="px-5 py-3.5 font-sans font-bold text-slate-900 dark:text-slate-100">
                     {risk.mines?.name}
                   </td>
                   <td className="px-5 py-3.5">
                     <span className={`font-bold ${
-                      risk.score > 70 ? 'text-red-400' :
-                      risk.score > 45 ? 'text-amber-400' : 'text-emerald-400'
+                      risk.score > 70 ? 'text-red-700 dark:text-red-400' :
+                      risk.score > 45 ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'
                     }`}>
                       {risk.score}
                     </span>
                   </td>
                   <td className="px-5 py-3.5 w-1/3">
-                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div 
                         className={`h-full ${getRiskColor(risk.score)}`} 
                         style={{ width: `${risk.score}%` }}
@@ -646,9 +642,9 @@ export default function CorporateDashboard() {
                   <td className="px-5 py-3.5 text-right">
                     <button
                       onClick={() => setSelectedXaiMine(risk)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 rounded font-sans text-xs font-semibold transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/40 border border-indigo-200 dark:border-indigo-500/40 text-indigo-800 dark:text-indigo-300 rounded font-sans text-xs font-semibold transition-colors shadow-sm cursor-pointer"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                       Explain Risk (XAI)
                     </button>
                   </td>
@@ -656,7 +652,7 @@ export default function CorporateDashboard() {
               ))}
               {riskScores.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-slate-500">No risk data available.</td>
+                  <td colSpan={4} className="px-5 py-8 text-center text-slate-700 dark:text-slate-500">No risk data available.</td>
                 </tr>
               )}
             </tbody>
@@ -665,17 +661,17 @@ export default function CorporateDashboard() {
       </div>
 
       {/* 4. Bottom: Recent Violations Feed */}
-      <div className="mt-6 bg-[#0B1326] border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">{t('corp_section_violations_feed', 'Enterprise Live Violations Feed')}</h3>
-          <span className="flex items-center gap-2 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded">
+      <div className="mt-6 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-300">{t('corp_section_violations_feed', 'Enterprise Live Violations Feed')}</h3>
+          <span className="flex items-center gap-2 text-[10px] font-mono text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2 py-1 rounded">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             {t('corp_realtime_active', 'REALTIME INTERCONNECT ACTIVE')}
           </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/80 font-mono text-slate-400 uppercase text-[10px] border-b border-slate-800">
+            <thead className="bg-slate-50 dark:bg-slate-900/80 font-mono text-slate-700 dark:text-slate-400 uppercase text-[10px] border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="px-5 py-3">{t('table_col_mine', 'Mine & Subsidiary')}</th>
                 <th className="px-5 py-3">{t('table_col_category', 'Category')}</th>
@@ -684,29 +680,29 @@ export default function CorporateDashboard() {
                 <th className="px-5 py-3">{t('table_col_timestamp', 'Timestamp')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
               {violations.map(v => (
-                <tr key={v.id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="px-5 py-3.5 font-sans font-bold text-slate-200">{v.mines?.name || `Mine #${v.mine_id}`}</td>
-                  <td className="px-5 py-3.5 text-slate-400">{v.category}</td>
+                <tr key={v.id} className="hover:bg-slate-50 dark:hover:bg-white dark:bg-slate-900/40 transition-colors">
+                  <td className="px-5 py-3.5 font-sans font-bold text-slate-900 dark:text-slate-200">{v.mines?.name || `Mine #${v.mine_id}`}</td>
+                  <td className="px-5 py-3.5 text-slate-600 dark:text-slate-400">{v.category}</td>
                   <td className="px-5 py-3.5">
                     <span className={`inline-flex px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide ${getSeverityBadge(v.severity)}`}>
                       {v.severity}
                     </span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`inline-flex px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${v.status === 'open' ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'}`}>
+                    <span className={`inline-flex px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wider ${v.status === 'open' ? 'text-amber-800 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30' : 'text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'}`}>
                       {v.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5 text-slate-500 text-xs font-mono">
+                  <td className="px-5 py-3.5 text-slate-700 dark:text-slate-500 text-xs font-mono">
                     {formatDistanceToNow(new Date(v.created_at), { addSuffix: true })}
                   </td>
                 </tr>
               ))}
               {violations.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-8 text-center text-slate-500">No recent violations found.</td>
+                  <td colSpan={5} className="px-5 py-8 text-center text-slate-700 dark:text-slate-500">No recent violations found.</td>
                 </tr>
               )}
             </tbody>
@@ -716,40 +712,40 @@ export default function CorporateDashboard() {
 
       {/* 5. Explainable AI (XAI) TreeSHAP Diagnostic Modal */}
       {selectedXaiMine && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-[#0B1326] border border-indigo-500/40 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-[0_0_50px_rgba(99,102,241,0.2)] overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-indigo-500/40 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             {/* Modal Header */}
-            <div className="p-5 border-b border-slate-800 flex items-start justify-between bg-gradient-to-r from-indigo-950/40 to-slate-900/60">
+            <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between bg-slate-50 dark:bg-slate-800/80">
               <div className="flex items-start gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
+                <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-400">
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-black text-white">{t('xai_modal_title', 'SHAP Explainability Diagnostic')}</h3>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700">
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white">{t('xai_modal_title', 'SHAP Explainability Diagnostic')}</h3>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-indigo-950 text-slate-800 dark:text-indigo-300 border border-slate-300 dark:border-indigo-700">
                       {t('xai_engine', 'TreeSHAP Engine')}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {t('xai_attribution', 'Additive Feature Attribution for')} <strong className="text-slate-200">{selectedXaiMine.mines?.name}</strong>
+                  <p className="text-xs text-slate-800 dark:text-slate-500 mt-0.5">
+                    {t('xai_attribution', 'Additive Feature Attribution for')} <strong className="text-slate-800 dark:text-slate-200">{selectedXaiMine.mines?.name}</strong>
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <div className="text-[10px] font-mono text-slate-400 uppercase">{t('xai_risk_index', 'Risk Index')}</div>
+                  <div className="text-[10px] font-mono text-slate-800 dark:text-slate-500 uppercase">{t('xai_risk_index', 'Risk Index')}</div>
                   <div className={`text-xl font-black ${
-                    selectedXaiMine.score > 70 ? 'text-red-400' :
-                    selectedXaiMine.score > 45 ? 'text-amber-400' : 'text-emerald-400'
+                    selectedXaiMine.score > 70 ? 'text-red-700 dark:text-red-400' :
+                    selectedXaiMine.score > 45 ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'
                   }`}>
-                    {selectedXaiMine.score} <span className="text-xs text-slate-500 font-normal">/ 100</span>
+                    {selectedXaiMine.score} <span className="text-xs text-slate-700 dark:text-slate-500 font-normal">/ 100</span>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedXaiMine(null)}
-                  className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 dark:hover:text-slate-900 dark:text-white dark:hover:bg-slate-700 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -759,19 +755,19 @@ export default function CorporateDashboard() {
             {/* Modal Body */}
             <div className="p-5 overflow-y-auto space-y-5 flex-1">
               {/* Architecture info strip */}
-              <div className="p-3 rounded-lg bg-indigo-950/20 border border-indigo-500/20 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-indigo-300">
-                  <Zap className="w-4 h-4 text-indigo-400 shrink-0" />
+              <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-500/20 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-indigo-800 dark:text-indigo-300">
+                  <Zap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                   <span>XGBoost Classifier + Coal Mines Regulations (CMR 2017) Rule-Weights</span>
                 </div>
-                <span className="text-[11px] font-mono text-slate-400">Base Value: E[f(x)] = 25.0 pts</span>
+                <span className="text-[11px] font-mono text-slate-800 dark:text-slate-500">Base Value: E[f(x)] = 25.0 pts</span>
               </div>
 
               {/* Feature Attribution Waterfall */}
               <div>
-                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-3 flex items-center justify-between">
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center justify-between">
                   <span>{t('xai_drivers', 'Contributing Risk Drivers (SHAP Values)')}</span>
-                  <span className="text-[10px] text-slate-500">{t('xai_positive', 'Positive = Increases Risk')}</span>
+                  <span className="text-[10px] text-slate-700 dark:text-slate-500">{t('xai_positive', 'Positive = Increases Risk')}</span>
                 </h4>
 
                 <div className="space-y-3">
@@ -779,24 +775,24 @@ export default function CorporateDashboard() {
                     { feature: 'Active Statutory Safety Deficiencies', contribution_pts: 24.5, regulation: 'CMR 2017 General', severity: 'high', description: 'Compound safety non-compliances flagged in recent inspection cycles.' },
                     { feature: 'Inspection Cadence Lag', contribution_pts: 14.0, regulation: 'Mines Act 1952 Sec 22', severity: 'medium', description: 'Overdue periodic safety committee review.' }
                   ]).map((factor, idx) => (
-                    <div key={idx} className="p-3 bg-slate-900/80 border border-slate-800 rounded-xl space-y-2">
+                    <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-200">{factor.feature}</span>
-                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 border border-slate-700 text-cyan-300">
+                            <span className="text-xs font-bold text-slate-900 dark:text-slate-200">{factor.feature}</span>
+                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-indigo-700 dark:text-cyan-300">
                               {factor.regulation}
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">{factor.description}</p>
+                          <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{factor.description}</p>
                         </div>
-                        <span className="text-xs font-mono font-black text-rose-400 shrink-0 bg-rose-950/60 border border-rose-800/60 px-2 py-0.5 rounded">
+                        <span className="text-xs font-mono font-black text-rose-700 dark:text-rose-400 shrink-0 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 px-2 py-0.5 rounded">
                           +{factor.contribution_pts.toFixed(1)} pts
                         </span>
                       </div>
 
                       {/* Bar Visualization */}
-                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-amber-500 to-rose-500 rounded-full"
                           style={{ width: `${Math.min(factor.contribution_pts * 2.8, 100)}%` }}
@@ -808,36 +804,36 @@ export default function CorporateDashboard() {
               </div>
 
               {/* Statutory Recommendation Box */}
-              <div className="p-4 bg-rose-950/20 border border-rose-500/40 rounded-xl space-y-2">
-                <div className="flex items-center gap-2 text-rose-400">
+              <div className="p-4 bg-red-50 dark:bg-rose-950/20 border border-red-200 dark:border-rose-500/40 rounded-xl space-y-2">
+                <div className="flex items-center gap-2 text-red-700 dark:text-rose-400">
                   <ShieldAlert className="w-4 h-4" />
                   <span className="text-xs font-mono font-bold uppercase tracking-wider">
                     {t('xai_statutory_directive', 'Statutory Mitigation Directive (Mines Act 1952 Sec 22)')}
                   </span>
                 </div>
-                <p className="text-xs text-slate-200 leading-relaxed">
+                <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
                   {selectedXaiMine.recommendation || 'Remediate all flagged statutory defects immediately to avoid administrative closure orders.'}
                 </p>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-800 bg-slate-900/60 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="text-[11px] font-mono text-slate-800 dark:text-slate-500 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 DGMS-Ready Audit Traceability
               </span>
               <div className="flex items-center gap-2.5 w-full sm:w-auto">
                 <button
                   onClick={() => alert(`Statutory remediation ticket dispatched to Colliery Manager for ${selectedXaiMine.mines?.name}. Tracking ID: TKT-CMR-${Math.floor(1000 + Math.random() * 9000)}`)}
-                  className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5"
+                  className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-slate-900 dark:text-white text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   {t('btn_dispatch_ticket', 'Dispatch Statutory Remediation Ticket')}
                 </button>
                 <button
                   onClick={() => setSelectedXaiMine(null)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+                  className="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   {t('btn_close', 'Close')}
                 </button>

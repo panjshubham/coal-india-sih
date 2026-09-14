@@ -604,21 +604,21 @@ export default function Inspections() {
                 </button>
                 
                 {usingCachedGps && (
-                  <p className="font-code-sm text-emerald-400 mt-space-sm flex items-center justify-center gap-1 font-medium">
+                  <p className="font-code-sm text-emerald-700 dark:text-emerald-400 mt-space-sm flex items-center justify-center gap-1 font-medium">
                     <span className="material-symbols-outlined text-[16px]">public_off</span>
                     🌐 Working Offline: Using Cached GPS Location.
                   </p>
                 )}
                 
                 {status === 'success_online' && (
-                  <div className="mt-space-md p-space-md bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/30 flex items-center justify-between gap-space-sm">
+                  <div className="mt-space-md p-space-md bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg border border-emerald-400 dark:border-emerald-500/30 flex items-center justify-between gap-space-sm">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[20px] text-emerald-400 shrink-0">verified</span>
+                      <span className="material-symbols-outlined text-[20px] text-emerald-700 dark:text-emerald-400 shrink-0">verified</span>
                       <p className="font-body-sm font-bold">Violation Dossier Filed &amp; Confirmed on Server!</p>
                     </div>
                     <Link
                       to="/violations"
-                      className="px-3 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-label-md uppercase tracking-wider transition-colors shrink-0"
+                      className="px-3 py-1 rounded bg-emerald-200 dark:bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-label-md uppercase tracking-wider transition-colors shrink-0"
                     >
                       View Violations Archive →
                     </Link>
@@ -626,17 +626,17 @@ export default function Inspections() {
                 )}
                 
                 {status === 'success_offline' && (
-                  <div className="mt-space-md p-space-md bg-amber-500/10 text-amber-400 rounded-lg border border-amber-500/30 flex items-center justify-between gap-space-sm">
+                  <div className="mt-space-md p-space-md bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-lg border border-amber-400 dark:border-amber-500/30 flex items-center justify-between gap-space-sm">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[20px] text-amber-400 shrink-0">cloud_done</span>
+                      <span className="material-symbols-outlined text-[20px] text-amber-700 dark:text-amber-400 shrink-0">cloud_done</span>
                       <div>
                         <p className="font-body-sm font-bold">Queued Offline Locally</p>
-                        <p className="text-xs text-amber-400/80">Stored on device. Will auto-sync to violations ledger once back online.</p>
+                        <p className="text-xs text-amber-700 dark:text-amber-400/80">Stored on device. Will auto-sync to violations ledger once back online.</p>
                       </div>
                     </div>
                     <Link
                       to="/violations"
-                      className="px-3 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-label-md uppercase tracking-wider transition-colors shrink-0"
+                      className="px-3 py-1 rounded bg-amber-200 dark:bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-label-md uppercase tracking-wider transition-colors shrink-0"
                     >
                       View Queue →
                     </Link>

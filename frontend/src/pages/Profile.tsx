@@ -49,7 +49,7 @@ export default function Profile() {
       {/* Top Banner / Breadcrumb */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0f2b5c] to-blue-800 flex items-center justify-center text-white text-2xl font-black shadow-md border-2 border-amber-400">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0f2b5c] to-blue-800 flex items-center justify-center text-slate-900 dark:text-white text-2xl font-black shadow-md border-2 border-amber-400">
             {profile.fullName.split(' ').map((n) => n[0]).slice(0, 2).join('')}
           </div>
           <div>
@@ -99,7 +99,7 @@ export default function Profile() {
         <div className="bg-gradient-to-br from-amber-500/5 via-white to-red-500/5 dark:from-gray-800 dark:to-gray-800/90 rounded-2xl border-2 border-amber-500/40 shadow-sm p-6 space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-amber-200/80 dark:border-gray-700">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-800 dark:text-amber-400 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-amber-200 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 flex items-center justify-center font-bold">
                 <HeartHandshake className="w-5 h-5" />
               </div>
               <div>

@@ -11,6 +11,8 @@ import NewInspection from './pages/NewInspection';
 import MySubmissions from './pages/MySubmissions';
 import AuditLog from './pages/AuditLog';
 import DataImport from './pages/DataImport';
+import BenchmarkingDashboard from './pages/BenchmarkingDashboard';
+import PPELiveFeed from './pages/PPELiveFeed';
 import Contractors from './pages/Contractors';
 import ContractorDetail from './pages/ContractorDetail';
 import Profile from './pages/Profile';
@@ -88,7 +90,7 @@ function SyncToastContainer() {
               ? 'bg-emerald-950/95 border-emerald-500/40 text-emerald-300'
               : toast.type === 'syncing'
               ? 'bg-amber-950/95 border-amber-500/40 text-amber-300'
-              : 'bg-slate-900/95 border-white/10 text-slate-300'
+              : 'bg-white dark:bg-slate-900/95 border-white/10 text-slate-700 dark:text-slate-300'
             }`}
         >
           {toast.message}
@@ -154,6 +156,8 @@ function App() {
               <Route path="pit-inspector" element={<PitInspector />} />
               <Route path="submissions" element={<MySubmissions />} />
               <Route path="audit-log" element={<AuditLog />} />
+              <Route path="benchmarking" element={<BenchmarkingDashboard />} />
+              <Route path="ppe-monitor" element={<PPELiveFeed />} />
               <Route path="data-import" element={
                 <ProtectedRoute allowedRoles={['corporate', 'regulator']}>
                   <DataImport />
@@ -186,3 +190,4 @@ function App() {
 }
 
 export default App;
+

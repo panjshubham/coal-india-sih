@@ -20,8 +20,15 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
-    // Apply theme via data-theme attribute on <html> so CSS variables cascade globally
+    // Apply theme via data-theme attribute AND class on <html> so both CSS vars and Tailwind dark: variants work
     document.documentElement.setAttribute("data-theme", theme);
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+    } else {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+    }
     localStorage.setItem("coalguard-theme", theme);
   }, [theme]);
 
