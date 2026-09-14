@@ -261,7 +261,9 @@ function DocumentCameraScanner({
         console.error('Webcam access error:', e2);
         const msg = e2.message || '';
         const name = e2.name || '';
-        if (
+        if (name === 'NotReadableError' || name === 'TrackStartError') {
+          setCameraError('CAMERA_IN_USE');
+        } else if (
           name === 'NotAllowedError' ||
           name === 'PermissionDeniedError' ||
           msg.toLowerCase().includes('denied') ||
@@ -271,7 +273,7 @@ function DocumentCameraScanner({
         } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
           setCameraError('NO_CAMERA_FOUND');
         } else {
-          setCameraError(msg || 'Unable to access camera.');
+          setCameraError(`CAMERA_ERROR: ${name} - ${msg || 'Unable to access camera.'}`);
         }
         return;
       }
@@ -477,6 +479,8 @@ function DocumentCameraScanner({
                     ? 'Camera Permission Blocked in Browser'
                     : cameraError === 'NO_CAMERA_FOUND'
                     ? 'No Camera Device Detected'
+                    : cameraError === 'CAMERA_IN_USE'
+                    ? 'Camera is in Use by Another App'
                     : 'Camera Access Denied or Unavailable'}
                 </h4>
                 <div className="text-xs text-slate-300 mt-2 leading-relaxed">
@@ -489,6 +493,8 @@ function DocumentCameraScanner({
                         <div>3. Click <strong>Retry Permission</strong> below.</div>
                       </div>
                     </div>
+                  ) : cameraError === 'CAMERA_IN_USE' ? (
+                    <p className="text-amber-300">Your camera is currently being used by another application (like Zoom, Teams, or another browser tab). Please close it there and try again.</p>
                   ) : (
                     <p>{cameraError}</p>
                   )}
@@ -1826,11 +1832,12 @@ function PPEPanel() {
       ? Math.round((vestCount / torsoAreaScanned) * 1000) / 10
       : 0;
 
-    // Step 6: Multi-tier compliance & honest uncertainty thresholds
-    const hasHardHat = helmetPct >= 12.0 && helmCount >= 15;
-    const hasVest    = vestPct  >= 15.0 && vestCount >= 25;
-    const uncertain  = (!hasHardHat && helmetPct >= 4.0) || (!hasVest && vestPct >= 5.0);
-    const personDetected = fgPixels >= (width * height * 0.02) || hasHardHat || hasVest;
+    // Step 6: Strict compliance & honest uncertainty thresholds
+    // MADE STRICTER AS PER USER REQUEST (Make strong so no one can skip)
+    const hasHardHat = helmetPct >= 18.0 && helmCount >= 100;
+    const hasVest    = vestPct  >= 25.0 && vestCount >= 250;
+    const uncertain  = (!hasHardHat && helmetPct >= 8.0) || (!hasVest && vestPct >= 12.0);
+    const personDetected = fgPixels >= (width * height * 0.05) || hasHardHat || hasVest;
 
     // Step 7: Bounding boxes from real pixel clusters
     const finalHeadBox = (hasHardHat && helmXMax > helmXMin)
@@ -2016,15 +2023,15 @@ function PPEPanel() {
       if (a.uncertain && missing.length > 0) {
         status = 'UNCERTAIN'; severity = 'REVIEW';
         const borderline: string[] = [];
-        if (!a.hasHardHat && a.helmetPct >= 5) borderline.push(`hard-hat (${a.helmetPct}% — need ≥12%)`);
-        if (!a.hasVest   && a.vestPct   >= 6) borderline.push(`safety-vest (${a.vestPct}% — need ≥15%)`);
+        if (!a.hasHardHat && a.helmetPct >= 8) borderline.push(`hard-hat (${a.helmetPct}% — need ≥18%)`);
+        if (!a.hasVest   && a.vestPct   >= 12) borderline.push(`safety-vest (${a.vestPct}% — need ≥25%)`);
         alertMsg = `⚠️ UNCERTAIN — Manual Review Required. Borderline PPE signal for: ${borderline.join('; ')}. A safety officer must physically verify.`;
       } else if (missing.length === 0) {
         status = 'COMPLIANT'; severity = 'NONE';
         alertMsg = `✅ All required PPE detected. Hard-hat (${a.helmetPct}% head coverage) and safety-vest (${a.vestPct}% torso coverage) confirmed — DGMS Regulation 115 satisfied.`;
       } else {
         status = 'NON_COMPLIANT'; severity = 'HIGH';
-        alertMsg = `⚠️ STATUTORY VIOLATION: Missing ${missing.map(m => m.toUpperCase()).join(' and ')}. Helmet: ${a.helmetPct}% (need ≥12%). Vest: ${a.vestPct}% (need ≥15%). Breach of DGMS Safety Regulation 115.`;
+        alertMsg = `⚠️ STATUTORY VIOLATION: Missing ${missing.map(m => m.toUpperCase()).join(' and ')}. Helmet: ${a.helmetPct}% (need ≥18%). Vest: ${a.vestPct}% (need ≥25%). Breach of DGMS Safety Regulation 115.`;
       }
 
       const detectedItems: any[] = [{ label: 'person', score: a.confidence, box: { ...a.personBox } }];
