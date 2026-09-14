@@ -61,7 +61,31 @@ const resources = {
       "status_high": "High",
       "status_medium": "Medium",
       "status_low": "Low",
-      "status_compliant": "Compliant"
+      "status_compliant": "Compliant",
+
+      "nav_helpSupport": "Help & Support",
+      "nav_adminTickets": "Support Tickets",
+      "help_title": "Help & Support Center",
+      "help_desc": "Find answers to common questions or raise a support ticket.",
+      "help_tab_faq": "FAQ & Guide",
+      "help_tab_contact": "Contact Support",
+      "help_faq_officers": "For Field Officers",
+      "help_faq_managers": "For Managers",
+      "help_faq_regulators": "For Regulators",
+      "help_contact_title": "Raise a Support Ticket",
+      "help_contact_desc": "Need technical assistance? Submit a ticket and our IT team will help you.",
+      "help_ticket_subject": "Subject",
+      "help_ticket_category": "Category",
+      "help_ticket_desc": "Description",
+      "help_ticket_submit": "Submit Ticket",
+      "help_ticket_success": "Ticket submitted successfully! Reference:",
+      "help_quick_start": "Quick Start Guide",
+      "admin_tickets_title": "Manage Support Tickets",
+      "admin_tickets_desc": "View and update support tickets submitted by users.",
+      "table_col_ticket_id": "Ticket ID",
+      "table_col_subject": "Subject",
+      "table_col_user": "User",
+      "table_col_date": "Date"
     }
   },
   hi: {
@@ -239,7 +263,31 @@ const resources = {
       "reg_xgboost_shap": "XGBoost + SHAP",
       "reg_live_audit_stream": "लाइव डीजीएमएस ऑडिट स्ट्रीम:",
       "reg_audit_log_example": "[10:14:02 IST] Karo Spl Bench #4 निरीक्षण लेजर से जुड़ा (0x7f8a...c3d1)",
-      "reg_chain_validated": "श्रृंखला मान्य"
+      "reg_chain_validated": "श्रृंखला मान्य",
+
+      "nav_helpSupport": "सहायता एवं समर्थन",
+      "nav_adminTickets": "समर्थन टिकट",
+      "help_title": "सहायता एवं समर्थन केंद्र",
+      "help_desc": "सामान्य प्रश्नों के उत्तर खोजें या समर्थन टिकट उठाएं।",
+      "help_tab_faq": "सामान्य प्रश्न और गाइड",
+      "help_tab_contact": "समर्थन से संपर्क करें",
+      "help_faq_officers": "फील्ड अधिकारियों के लिए",
+      "help_faq_managers": "प्रबंधकों के लिए",
+      "help_faq_regulators": "नियामकों के लिए",
+      "help_contact_title": "एक समर्थन टिकट उठाएं",
+      "help_contact_desc": "तकनीकी सहायता चाहिए? एक टिकट जमा करें और हमारी आईटी टीम आपकी मदद करेगी।",
+      "help_ticket_subject": "विषय",
+      "help_ticket_category": "श्रेणी",
+      "help_ticket_desc": "विवरण",
+      "help_ticket_submit": "टिकट जमा करें",
+      "help_ticket_success": "टिकट सफलतापूर्वक जमा हो गया! संदर्भ:",
+      "help_quick_start": "त्वरित आरंभ गाइड",
+      "admin_tickets_title": "समर्थन टिकट प्रबंधित करें",
+      "admin_tickets_desc": "उपयोगकर्ताओं द्वारा सबमिट किए गए समर्थन टिकट देखें और अपडेट करें।",
+      "table_col_ticket_id": "टिकट आईडी",
+      "table_col_subject": "विषय",
+      "table_col_user": "उपयोगकर्ता",
+      "table_col_date": "दिनांक"
     }
   }
 };

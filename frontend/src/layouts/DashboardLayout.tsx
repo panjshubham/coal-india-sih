@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, ClipboardList, AlertTriangle, Map as MapIcon, 
   Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, 
-  Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, User, ExternalLink
+  Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, User, ExternalLink, HelpCircle
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -45,6 +45,7 @@ const navigation: NavItem[] = [
   { id: 'aiWorkbench', href: '/ai-workbench', icon: Cpu, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'audit', href: '/audit-log', icon: ShieldCheck, roles: ['mine_official', 'regulator', 'corporate'] },
   { id: 'profile', href: '/profile', icon: UserCheck },
+  { id: 'helpSupport', href: '/help', icon: HelpCircle },
 ];
 
 export default function DashboardLayout() {

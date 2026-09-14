@@ -20,6 +20,7 @@ import Compliance from './pages/Compliance';
 import Violations from './pages/Violations';
 import ViolationDetail from './pages/ViolationDetail';
 import AIWorkbench from './pages/AIWorkbench';
+import HelpSupport from './pages/HelpSupport';
 import ProtectedRoute from './components/ProtectedRoute';
 import { processSyncQueue } from './services/syncService';
 import { syncOfflineQueue } from './lib/offlineQueue';
@@ -167,6 +168,7 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Profile />} />
               <Route path="ai-workbench" element={<AIWorkbench />} />
+              <Route path="help" element={<HelpSupport />} />
             </Route>
           </Route>
 
