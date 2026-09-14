@@ -214,6 +214,18 @@ export default function NewInspection() {
       
       if (violError) throw violError;
 
+      // 3. Auto-generate an alert for the newly created violation
+      if (violData) {
+        await supabase.from('alerts').insert({
+          type: 'violation',
+          related_entity_id: violData.id,
+          related_entity_type: 'violation',
+          message: `New ${dbSeverity.toLowerCase()} hazard reported in ${dbCategory}.`,
+          severity: dbSeverity.toLowerCase(),
+          is_read: false
+        });
+      }
+
       // Navigate to the newly created violation
       setTimeout(() => {
         navigate(`/violations/${violData.id}`);
