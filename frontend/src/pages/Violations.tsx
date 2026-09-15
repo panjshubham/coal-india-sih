@@ -342,44 +342,40 @@ export default function Violations() {
         {/* HEADER */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
           <div className="space-y-space-xs">
-            <div className="flex items-center gap-space-xs font-label-md text-error tracking-widest uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
-              STATUTORY ENFORCEMENT
-            </div>
             <h1 className="font-headline-lg text-on-surface font-semibold tracking-tight">
-              Violations &amp; Directives Archive
+              Hazards &amp; Issues
             </h1>
             <p className="font-body-md text-on-surface-variant max-w-2xl">
-              Immutable ledger of statutory breaches, DGMS show-cause notices, and automated regulatory triaging.
+              List of safety hazards and violations that need to be fixed on site.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-space-sm">
-            {/* SYNC ALL DATA OF VIOLATION BUTTON */}
-            <button
-              onClick={handleSync}
-              disabled={isSyncing}
-              title={!isOnline ? 'You are offline. Submissions will sync when connection returns.' : 'Sync all offline violations in parallel and refresh live ledger'}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-label-md uppercase tracking-wider font-semibold transition-all duration-200 border shadow-sm ${
-                isSyncing
-                  ? 'bg-blue-600/30 text-blue-200 border-blue-400/50 cursor-wait animate-pulse'
-                  : pendingCount > 0
-                  ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-400 shadow-amber-500/20 shadow-md font-bold'
-                  : 'bg-surface-container-high hover:bg-surface-container-highest text-on-surface border-surface-container-highest hover:border-primary/40'
-              }`}
-            >
-              <span className={`material-symbols-outlined text-[18px] ${isSyncing ? 'animate-spin text-blue-300' : pendingCount > 0 ? 'text-slate-950' : 'text-primary'}`}>
-                sync
-              </span>
-              <span>
-                {isSyncing ? 'Syncing...' : 'Sync All Data'}
-              </span>
-              {pendingCount > 0 && !isSyncing && (
-                <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-50 dark:bg-slate-950 text-amber-300">
-                  {pendingCount} Pending
+            {/* SYNC OFFLINE BUTTON */}
+            {pendingCount > 0 && (
+              <button
+                onClick={handleSync}
+                disabled={isSyncing}
+                title={!isOnline ? 'You are offline. Submissions will sync when connection returns.' : 'Sync offline reports'}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-label-md uppercase tracking-wider font-bold transition-all duration-200 border shadow-sm ${
+                  isSyncing
+                    ? 'bg-blue-600/30 text-blue-200 border-blue-400/50 cursor-wait animate-pulse'
+                    : 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-400 shadow-amber-500/20 shadow-md'
+                }`}
+              >
+                <span className={`material-symbols-outlined text-[18px] ${isSyncing ? 'animate-spin text-blue-300' : 'text-slate-950'}`}>
+                  sync
                 </span>
-              )}
-            </button>
+                <span>
+                  {isSyncing ? 'Syncing...' : 'Sync Offline Reports'}
+                </span>
+                {!isSyncing && (
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-50 dark:bg-slate-950 text-amber-300">
+                    {pendingCount} Pending
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* FILTER BUTTONS */}
             <div className="flex items-center gap-space-sm bg-surface-container-low p-space-xs rounded-lg border border-surface-container-high/40">
@@ -387,25 +383,25 @@ export default function Violations() {
                 onClick={() => setFilter('all')}
                 className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'all' ? 'bg-surface-container-high text-on-surface font-semibold shadow-sm' : 'text-outline hover:text-on-surface'}`}
               >
-                All Records
+                All
               </button>
               <button 
                 onClick={() => setFilter('open')}
                 className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'open' ? 'bg-error/20 text-error font-semibold' : 'text-outline hover:text-error'}`}
               >
-                Open Active
+                Needs Action
               </button>
               <button 
                 onClick={() => setFilter('in_progress')}
                 className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'in_progress' ? 'bg-secondary/20 text-secondary font-semibold' : 'text-outline hover:text-secondary'}`}
               >
-                Remediating
+                Fixing Now
               </button>
               <button 
                 onClick={() => setFilter('resolved')}
                 className={`px-space-md py-space-xs rounded font-label-md uppercase tracking-wider transition-colors ${filter === 'resolved' ? 'bg-primary/20 text-primary font-semibold' : 'text-outline hover:text-primary'}`}
               >
-                Closed
+                Done
               </button>
             </div>
           </div>
@@ -417,20 +413,18 @@ export default function Violations() {
             <div className="flex items-center gap-space-md">
               <div className="flex items-center gap-space-xs">
                 <span className="material-symbols-outlined text-[18px] text-primary">format_list_bulleted</span>
-                <span className="font-headline-sm text-on-surface font-semibold">Regulatory Log ({violations.length})</span>
+                <span className="font-headline-sm text-on-surface font-semibold">Reported Issues ({violations.length})</span>
               </div>
             </div>
             <div className="flex items-center gap-space-sm font-code-sm text-on-surface-variant">
-              <span>Cryptographic Hash Sync:</span>
-              <span className="px-2 py-0.5 rounded bg-surface-container text-primary">ECDSA Valid</span>
               <button
                 onClick={handleSync}
                 disabled={isSyncing}
-                title="Refresh & Sync Data"
+                title="Refresh Data"
                 className="ml-2 flex items-center gap-1 px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md uppercase tracking-wider transition-colors"
               >
                 <span className={`material-symbols-outlined text-[15px] ${isSyncing ? 'animate-spin text-primary' : 'text-outline'}`}>refresh</span>
-                <span>Refresh</span>
+                <span>Refresh List</span>
               </button>
             </div>
           </div>
@@ -458,18 +452,17 @@ export default function Violations() {
                     </div>
                     <div className="flex flex-col gap-1.5 w-full">
                       <div className="flex flex-wrap items-center gap-space-xs">
-                        <span className="px-space-xs py-space-2xs rounded bg-amber-200 dark:bg-amber-500/20 font-label-md text-amber-300 uppercase font-bold tracking-wide flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px]">schedule</span> OFFLINE QUEUED
+                        <span className="px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-500/20 text-[10px] text-amber-800 dark:text-amber-200 uppercase font-bold tracking-wide flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px]">schedule</span> Offline Queued
                         </span>
-                        <span className="font-body-lg text-on-surface font-semibold capitalize">{v.category} Breach</span>
-                        <span className="font-code-sm text-amber-700 dark:text-amber-400/80 ml-2">/ LOCAL QUEUE</span>
+                        <span className="font-body-lg text-on-surface font-semibold capitalize">{v.category} Issue</span>
                       </div>
                       <div className="flex items-center gap-space-sm font-body-sm text-on-surface-variant">
-                        <span className="flex items-center gap-1 text-amber-300 font-medium bg-amber-100 dark:bg-amber-500/10 px-2 py-0.5 rounded">
-                          <span className="material-symbols-outlined text-[14px] text-amber-700 dark:text-amber-400">terrain</span>
+                        <span className="flex items-center gap-1 text-amber-800 dark:text-amber-200 font-medium bg-amber-100 dark:bg-amber-500/10 px-2 py-0.5 rounded">
+                          <span className="material-symbols-outlined text-[14px]">terrain</span>
                           {v.mines?.name || 'Mine Target'}
                         </span>
-                        <span className="truncate max-w-lg text-on-surface/80">{v.description || 'Statutory review pending field inspector assessment.'}</span>
+                        <span className="truncate max-w-lg text-on-surface/80">{v.description || 'Waiting to sync...'}</span>
                       </div>
                     </div>
                   </div>
@@ -477,20 +470,19 @@ export default function Violations() {
                   <div className="flex items-center justify-between md:justify-end gap-space-lg w-full md:w-auto pl-12 md:pl-0 border-t border-surface-container-high/30 md:border-t-0 pt-space-md md:pt-0">
                     <div className="flex flex-col md:text-right">
                       <span className="font-code-sm text-on-surface">{formatDate(v)}</span>
-                      <span className="font-label-md text-amber-700 dark:text-amber-400">Waiting for Network</span>
                     </div>
                     {isOnline ? (
                       <button
                         onClick={() => handleSyncSingle(v)}
                         disabled={isSyncing}
-                        className="px-3 py-1.5 rounded bg-blue-200 dark:bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 font-label-md uppercase tracking-wider flex items-center gap-1.5 transition-colors"
+                        className="px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 dark:text-blue-300 font-label-md uppercase tracking-wider flex items-center gap-1.5 transition-colors font-bold"
                       >
                         <span className={`material-symbols-outlined text-[16px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync Now'}
                       </button>
                     ) : (
-                      <span className="px-space-sm py-1 rounded font-label-md uppercase tracking-wider font-bold bg-amber-200 dark:bg-amber-500/20 text-amber-300">
-                        PENDING SYNC
+                      <span className="px-space-sm py-1 rounded font-label-md uppercase tracking-wider font-bold text-amber-700 dark:text-amber-400">
+                        Waiting for connection
                       </span>
                     )}
                   </div>
@@ -503,16 +495,15 @@ export default function Violations() {
                     </div>
                     <div className="flex flex-col gap-1.5 w-full">
                       <div className="flex flex-wrap items-center gap-space-xs">
-                        {getSeverityPill(v.severity)}
-                        <span className="font-body-lg text-on-surface font-semibold capitalize group-hover:text-primary transition-colors">{v.category} Breach</span>
-                        <span className="font-code-sm text-outline ml-2">/ VIO-{String(v.id).substring(0, 8).toUpperCase()}</span>
+                        <span className={`inline-block w-2.5 h-2.5 rounded-full ${v.severity?.toLowerCase() === 'critical' || v.severity?.toLowerCase() === 'high' ? 'bg-red-500 animate-pulse' : v.severity?.toLowerCase() === 'medium' ? 'bg-amber-500' : 'bg-blue-500'}`}></span>
+                        <span className="font-body-lg text-on-surface font-semibold capitalize group-hover:text-primary transition-colors">{v.category} Hazard</span>
                       </div>
                       <div className="flex items-center gap-space-sm font-body-sm text-on-surface-variant">
                         <span className="flex items-center gap-1 text-on-surface font-medium bg-surface-container-high px-2 py-0.5 rounded">
                           <span className="material-symbols-outlined text-[14px] text-primary">terrain</span>
                           {v.mines?.name || 'Unknown Facility'}
                         </span>
-                        <span className="truncate max-w-lg">{v.description || 'Statutory review pending field inspector assessment.'}</span>
+                        <span className="truncate max-w-lg">{v.description || 'Review pending.'}</span>
                       </div>
                     </div>
                   </div>
@@ -520,12 +511,11 @@ export default function Violations() {
                   <div className="flex items-center justify-between md:justify-end gap-space-lg w-full md:w-auto pl-12 md:pl-0 border-t border-surface-container-high/30 md:border-t-0 pt-space-md md:pt-0">
                     <div className="flex flex-col md:text-right">
                       <span className="font-code-sm text-on-surface">{formatDate(v)}</span>
-                      <span className="font-label-md text-outline">Incident Logged</span>
                     </div>
                     <div className="flex items-center gap-space-md">
                       <div className="flex flex-col text-right">
-                        <span className={`px-space-sm py-1 rounded font-label-md uppercase tracking-wider font-bold ${getStatusColor(v.status)}`}>
-                          {(v.status || '').replace('_', ' ')}
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${getStatusColor(v.status)}`}>
+                          {(v.status === 'open' ? 'Needs Action' : v.status === 'in_progress' ? 'Fixing Now' : 'Done')}
                         </span>
                       </div>
                       <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors translate-x-0 group-hover:translate-x-1 duration-200">
@@ -536,13 +526,6 @@ export default function Violations() {
                 </Link>
               ))
             )}
-          </div>
-          
-          <div className="p-space-sm bg-surface-container-lowest border-t border-surface-container-high/50 flex items-center justify-between font-label-md text-outline">
-            <div className="flex items-center gap-space-xs">
-              <span className="material-symbols-outlined text-[16px] text-primary">verified_user</span>
-              <span>All records cryptographically sealed against DGMS Central Ledger</span>
-            </div>
           </div>
         </div>
         
