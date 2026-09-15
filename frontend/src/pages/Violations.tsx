@@ -270,14 +270,14 @@ export default function Violations() {
         .gap-space-md { gap: 0.75rem; }
         .gap-space-lg { gap: 1rem; }
         
-        .font-headline-lg { font-family: 'Hanken Grotesk', sans-serif; font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: -0.015em; }
-        .font-headline-md { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; line-height: 28px; font-weight: 500; letter-spacing: -0.01em; }
-        .font-headline-sm { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; line-height: 24px; font-weight: 500; }
-        .font-body-lg { font-family: 'Geist', sans-serif; font-size: 15px; line-height: 24px; font-weight: 400; }
-        .font-body-md { font-family: 'Geist', sans-serif; font-size: 13px; line-height: 20px; font-weight: 400; }
-        .font-body-sm { font-family: 'Geist', sans-serif; font-size: 12px; line-height: 18px; font-weight: 400; }
-        .font-label-md { font-family: 'Geist', sans-serif; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; }
-        .font-code-sm { font-family: 'Geist', monospace; font-size: 12px; line-height: 16px; font-weight: 400; }
+        .font-headline-lg { font-family: 'Hanken Grotesk', sans-serif; font-size: 32px; line-height: 40px; font-weight: 700; letter-spacing: -0.015em; }
+        .font-headline-md { font-family: 'Hanken Grotesk', sans-serif; font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.01em; }
+        .font-headline-sm { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; line-height: 28px; font-weight: 600; }
+        .font-body-lg { font-family: 'Geist', sans-serif; font-size: 18px; line-height: 28px; font-weight: 500; }
+        .font-body-md { font-family: 'Geist', sans-serif; font-size: 16px; line-height: 24px; font-weight: 400; }
+        .font-body-sm { font-family: 'Geist', sans-serif; font-size: 14px; line-height: 20px; font-weight: 400; }
+        .font-label-md { font-family: 'Geist', sans-serif; font-size: 13px; line-height: 18px; font-weight: 600; letter-spacing: 0.04em; }
+        .font-code-sm { font-family: 'Geist', monospace; font-size: 14px; line-height: 20px; font-weight: 500; }
       `}</style>
 
       <div className="w-full bg-surface min-h-screen text-on-surface font-body-md p-space-lg flex flex-col gap-space-lg">
