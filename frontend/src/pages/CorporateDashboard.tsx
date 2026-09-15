@@ -246,16 +246,7 @@ export default function CorporateDashboard() {
       {/* 1. Header with Command Center Badge */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 dark:border-slate-800 gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-            Global Enterprise Overview
-            <span className="text-[11px] font-mono font-medium px-2.5 py-0.5 rounded bg-slate-100 dark:bg-blue-950 text-slate-800 dark:text-blue-400 border border-slate-300 dark:border-blue-800 flex items-center gap-1.5">
-              <Globe2 className="w-3.5 h-3.5" />
-              HQ COMMAND
-            </span>
-          </h1>
-          <p className="text-xs text-slate-800 dark:text-slate-500 mt-1">
-            Real-time monitoring of all mines, production targets, and statutory AI safety alerts.
-          </p>
+          
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
@@ -294,7 +285,60 @@ export default function CorporateDashboard() {
         </div>
       </div>
 
-      {/* 2. Critical AI Alerts & Production Risk */}
+      {/* 3. Operational KPIs Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mt-6">
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+          <p className="text-sm font-bold font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_total_mines', 'Total Supervised Sites')}</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-5xl font-black text-slate-900 dark:text-white">{stats.totalMines}</h3>
+            <span className="text-sm font-bold text-blue-600 dark:text-blue-400 font-mono"><Server className="w-3.5 h-3.5 inline mr-1" />{t('corp_metric_nodes_active', 'Nodes Active')}</span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+          <p className="text-sm font-bold font-mono text-slate-800 dark:text-slate-500 uppercase">{t('metric_violations', 'Active Violations')}</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-5xl font-black text-amber-600 dark:text-amber-400">{stats.activeViolations}</h3>
+            <span className="text-xs font-bold font-mono px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+              {t('metric_violations_sub', 'Requiring Intervention')}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+          <p className="text-sm font-bold font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-5xl font-black text-red-600 dark:text-red-400">{stats.overdueCompliance}</h3>
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-500 font-mono">{t('corp_metric_escalation', 'Escalation Triggered')}</span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+          <p className="text-sm font-bold font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_avg_risk', 'Global Avg Risk Score')}</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-5xl font-black text-indigo-700 dark:text-cyan-400">{stats.avgRiskScore} <span className="text-sm font-normal text-slate-700 dark:text-slate-500">/ 100</span></h3>
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-500 font-mono">{t('corp_metric_weighted_mean', 'Weighted Mean')}</span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-xl shadow-sm">
+          <p className="text-sm font-bold font-mono text-emerald-800 dark:text-emerald-400 uppercase">Daily Extraction (Est)</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-5xl font-black text-emerald-800 dark:text-emerald-400">1.84 <span className="text-sm font-normal text-emerald-600 dark:text-emerald-500">MT</span></h3>
+            <span className="text-sm font-bold text-emerald-700 dark:text-emerald-500/70 font-mono"><Pickaxe className="w-3.5 h-3.5 inline mr-1" />Pit Output</span>
+          </div>
+        </div>
+
+        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 rounded-xl shadow-sm">
+          <p className="text-sm font-bold font-mono text-blue-800 dark:text-blue-400 uppercase">Daily Dispatch</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <h3 className="text-5xl font-black text-blue-800 dark:text-blue-400">1.79 <span className="text-sm font-normal text-blue-600 dark:text-blue-500">MT</span></h3>
+            <span className="text-sm font-bold text-blue-700 dark:text-blue-500/70 font-mono"><Truck className="w-3.5 h-3.5 inline mr-1" />Rail / Road</span>
+          </div>
+        </div>
+      </div>
+
+{/* 2. Critical AI Alerts & Production Risk */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mt-6">
         
         {/* Left: Production vs Risk Matrix */}
@@ -308,7 +352,7 @@ export default function CorporateDashboard() {
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide uppercase flex items-center gap-2">
                   Production Output vs. Safety Risk Matrix
                 </h2>
-                <p className="text-xs text-slate-800 dark:text-slate-500">
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-500">
                   Identifying high-output mines with dangerous AI statutory compliance risk scores.
                 </p>
               </div>
@@ -334,7 +378,7 @@ export default function CorporateDashboard() {
                   </div>
                   <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-600 dark:bg-emerald-500 w-[95%]"></div></div>
                 </div>
-                <p className="text-[10px] text-red-700 dark:text-red-400 leading-tight">⚠️ AI Alert: Massive output target causing haul road berm maintenance delays. High risk of heavy dumper accidents.</p>
+                <p className="text-sm font-semibold text-red-700 dark:text-red-400 leading-tight">⚠️ <span className="font-black text-sm">AI Alert:</span> Massive output target causing haul road berm maintenance delays. High risk of heavy dumper accidents.</p>
               </div>
             </div>
 
@@ -356,7 +400,7 @@ export default function CorporateDashboard() {
                   </div>
                   <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-600 dark:bg-emerald-500 w-[85%]"></div></div>
                 </div>
-                <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-tight">⚠️ AI Alert: Fast-paced extraction leading to contractor PPE violations and unregistered workers in pit.</p>
+                <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 leading-tight">⚠️ <span className="font-black text-sm">AI Alert:</span> Fast-paced extraction leading to contractor PPE violations and unregistered workers in pit.</p>
               </div>
             </div>
 
@@ -378,7 +422,7 @@ export default function CorporateDashboard() {
                   </div>
                   <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-600 dark:bg-emerald-500 w-[70%]"></div></div>
                 </div>
-                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 leading-tight">✅ Ideal Operation: High production maintained perfectly in tandem with all DGMS safety compliance clearances.</p>
+                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 leading-tight">✅ <span className="font-black text-sm">Ideal Operation:</span> High production maintained perfectly in tandem with all DGMS safety compliance clearances.</p>
               </div>
             </div>
           </div>
@@ -400,7 +444,7 @@ export default function CorporateDashboard() {
                   <div className="font-bold text-slate-900 dark:text-slate-100 mb-1 flex items-center justify-between">
                     <span>{risk.mines?.name} <span className={`text-[10px] ml-1 px-1.5 py-0.5 rounded border ${risk.score > 70 ? 'bg-red-50 dark:bg-red-500/20 text-red-800 dark:text-red-400 border-red-200 dark:border-red-500/30' : 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30'}`}>Score: {risk.score}</span></span>
                   </div>
-                  <div className="text-slate-600 dark:text-slate-400 leading-relaxed text-xs mb-2">
+                  <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm font-medium mb-2">
                     {risk.explanation || 'No AI explanation generated yet.'}
                   </div>
                 </div>
@@ -422,59 +466,6 @@ export default function CorporateDashboard() {
 
       </div>
 
-      {/* 3. Operational KPIs Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mt-6">
-        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_total_mines', 'Total Supervised Sites')}</p>
-          <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.totalMines}</h3>
-            <span className="text-xs text-blue-600 dark:text-blue-400 font-mono"><Server className="w-3.5 h-3.5 inline mr-1" />{t('corp_metric_nodes_active', 'Nodes Active')}</span>
-          </div>
-        </div>
-
-        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('metric_violations', 'Active Violations')}</p>
-          <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-amber-600 dark:text-amber-400">{stats.activeViolations}</h3>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/80 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-              {t('metric_violations_sub', 'Requiring Intervention')}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
-          <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-red-600 dark:text-red-400">{stats.overdueCompliance}</h3>
-            <span className="text-xs text-slate-800 dark:text-slate-500 font-mono">{t('corp_metric_escalation', 'Escalation Triggered')}</span>
-          </div>
-        </div>
-
-        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_avg_risk', 'Global Avg Risk Score')}</p>
-          <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-indigo-700 dark:text-cyan-400">{stats.avgRiskScore} <span className="text-sm font-normal text-slate-700 dark:text-slate-500">/ 100</span></h3>
-            <span className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">{t('corp_metric_weighted_mean', 'Weighted Mean')}</span>
-          </div>
-        </div>
-
-        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-emerald-800 dark:text-emerald-400 uppercase font-semibold">Daily Extraction (Est)</p>
-          <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-emerald-800 dark:text-emerald-400">1.84 <span className="text-sm font-normal text-emerald-600 dark:text-emerald-500">MT</span></h3>
-            <span className="text-xs text-emerald-700 dark:text-emerald-500/70 font-mono"><Pickaxe className="w-3.5 h-3.5 inline mr-1" />Pit Output</span>
-          </div>
-        </div>
-
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-blue-800 dark:text-blue-400 uppercase font-semibold">Daily Dispatch</p>
-          <div className="flex items-baseline justify-between mt-1">
-            <h3 className="text-3xl font-black text-blue-800 dark:text-blue-400">1.79 <span className="text-sm font-normal text-blue-600 dark:text-blue-500">MT</span></h3>
-            <span className="text-xs text-blue-700 dark:text-blue-500/70 font-mono"><Truck className="w-3.5 h-3.5 inline mr-1" />Rail / Road</span>
-          </div>
-        </div>
-      </div>
-
       {/* 4. Environmental & Logistics Limits Watchdog */}
       <div className="mt-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 gap-2">
@@ -489,7 +480,7 @@ export default function CorporateDashboard() {
                   STATUTORY LIMITS
                 </span>
               </h2>
-              <p className="text-xs text-slate-800 dark:text-slate-500">
+              <p className="text-sm font-medium text-slate-800 dark:text-slate-500">
                 Real-time tracking of coal extracted vs maximum allowed limits.
               </p>
             </div>
@@ -508,7 +499,7 @@ export default function CorporateDashboard() {
             <div className="flex justify-between items-start mb-2">
               <div>
                 <span className="text-xs font-bold text-slate-900 dark:text-white">Tetaria Khar (ECL)</span>
-                <p className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">EC Ref: J-11015/84/2018-IA.II(M)</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-500 font-mono">EC Ref: J-11015/84/2018-IA.II(M)</p>
               </div>
               <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 animate-pulse">
                 87.1% CEILING REACHED
@@ -539,7 +530,7 @@ export default function CorporateDashboard() {
             <div className="flex justify-between items-start mb-2">
               <div>
                 <span className="text-xs font-bold text-slate-900 dark:text-white">Dhori Khas (CCL)</span>
-                <p className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">EC Ref: J-11015/22/2016-IA.II(M)</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-500 font-mono">EC Ref: J-11015/22/2016-IA.II(M)</p>
               </div>
               <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 68.3% CEILING
@@ -570,7 +561,7 @@ export default function CorporateDashboard() {
             <div className="flex justify-between items-start mb-2">
               <div>
                 <span className="text-xs font-bold text-slate-900 dark:text-white">Govindpur Colliery (BCCL)</span>
-                <p className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">EC Ref: J-11015/39/2019-IA.II(M)</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-500 font-mono">EC Ref: J-11015/39/2019-IA.II(M)</p>
               </div>
               <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 67.2% CEILING
@@ -728,7 +719,7 @@ export default function CorporateDashboard() {
                       AI Generated
                     </span>
                   </div>
-                  <p className="text-xs text-slate-800 dark:text-slate-500 mt-0.5">
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-500 mt-0.5">
                     Factors driving the risk score for <strong className="text-slate-800 dark:text-slate-200">{selectedXaiMine.mines?.name}</strong>
                   </p>
                 </div>
