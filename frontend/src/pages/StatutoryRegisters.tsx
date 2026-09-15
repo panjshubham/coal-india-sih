@@ -368,17 +368,13 @@ export default function StatutoryRegisters() {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
               <ShieldCheck className="w-4 h-4 text-amber-400" />
-              <span>CMR 2017 & The Mines Act 1952 Engine</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 text-[10px]">
-                Cryptographically Immutable
-              </span>
+              <span>Smart Document Digitization</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-              Statutory Digital Registers
+              OCR Statutory Registers
             </h1>
             <p className="text-sm text-slate-400 max-w-2xl">
-              Official electronic replacement for bound-paged logbooks under Coal Mines Regulations 2017.
-              Includes real-time threshold verification, gas-inundation interlocks, and SHA-256 block hashing.
+              Upload physical logbooks to instantly digitize, translate, and extract compliance data using our advanced AI-OCR engine.
             </p>
           </div>
 
@@ -388,15 +384,15 @@ export default function StatutoryRegisters() {
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-sm font-semibold transition shadow-sm"
             >
               <Download className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-              <span>Export Register (PDF)</span>
+              <span>Export Records</span>
             </button>
 
             <button
               onClick={() => { setShowModal(true); setAiVerdict(null); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm transition shadow-lg shadow-amber-500/20"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-base transition shadow-[0_0_20px_rgba(245,158,11,0.4)] animate-pulse"
             >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span>New Statutory Log</span>
+              <span className="material-symbols-outlined text-[24px]">document_scanner</span>
+              <span>Upload & Scan Document (OCR)</span>
             </button>
           </div>
         </div>
@@ -465,12 +461,11 @@ export default function StatutoryRegisters() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 text-[11px] uppercase tracking-wider font-bold text-slate-600 dark:text-slate-400">
-                <th className="py-3.5 px-4">Statutory Regulation</th>
-                <th className="py-3.5 px-4">District / Seam</th>
-                <th className="py-3.5 px-4">Shift & Inspector</th>
-                <th className="py-3.5 px-4">Key Parameters</th>
-                <th className="py-3.5 px-4">Verdict</th>
-                <th className="py-3.5 px-4">Hash Verification</th>
+                <th className="py-3.5 px-4">Document Type</th>
+                <th className="py-3.5 px-4">Location</th>
+                <th className="py-3.5 px-4">Uploaded By</th>
+                <th className="py-3.5 px-4">Extracted Data</th>
+                <th className="py-3.5 px-4">Compliance</th>
                 <th className="py-3.5 px-4 text-right">Action</th>
               </tr>
             </thead>
@@ -553,19 +548,12 @@ export default function StatutoryRegisters() {
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-400 bg-slate-50 dark:bg-slate-950 px-2 py-1 rounded border border-emerald-300 dark:border-emerald-500/20 max-w-[140px] truncate">
-                        <Hash className="w-3 h-3 text-emerald-500 shrink-0" />
-                        <span className="truncate">{r.hash || 'Verified SHA-256'}</span>
-                      </div>
-                    </td>
-
                     <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => setSelectedRecord(r)}
                         className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300 transition"
                       >
-                        Inspect Details
+                        View Details
                       </button>
                     </td>
                   </tr>
@@ -583,9 +571,9 @@ export default function StatutoryRegisters() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
               <div>
                 <div className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                  DGMS Statutory Compliance Submission
+                  OCR Engine
                 </div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Log Statutory Shift Register</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Upload & Scan Document</h2>
               </div>
               <button
                 onClick={() => setShowModal(false)}

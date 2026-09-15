@@ -250,10 +250,10 @@ export default function GeospatialMap() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-status-sage animate-pulse" />
-              <span className="font-mono font-medium text-[11px] tracking-wider text-slate-800 dark:text-slate-200 uppercase">DGMS GEO-SENTINEL</span>
+              <span className="font-mono font-medium text-[11px] tracking-wider text-slate-800 dark:text-slate-200 uppercase">GEO-SENTINEL</span>
             </div>
             <span className="text-slate-600 font-mono">/</span>
-            <span className="font-sans text-[11px] text-slate-600 dark:text-slate-400 hidden sm:inline">National Coal Basin Risk Grid</span>
+            <span className="font-sans text-[11px] text-slate-600 dark:text-slate-400 hidden sm:inline">Coal Mines Map</span>
           </div>
           <div className="hidden lg:flex items-center gap-6 font-mono text-[10px] text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-1.5">

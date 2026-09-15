@@ -409,13 +409,13 @@ export default function Inspections() {
             <div className="space-y-space-xs">
               <div className="flex items-center gap-space-xs font-label-md text-primary tracking-widest uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                INSPECTORATE TERMINAL
+                FIELD INSPECTION
               </div>
               <h1 className="font-headline-lg text-on-surface font-semibold tracking-tight">
-                Log New Violation
+                Log New Inspection
               </h1>
               <p className="font-body-md text-on-surface-variant max-w-2xl">
-                Draft a statutory show-cause dossier with cryptographic GPS-tagging and offline syncing capabilities.
+                Submit an inspection report. Works offline with automatic GPS tagging.
               </p>
             </div>
             <div className="flex flex-col items-end gap-space-2xs">
@@ -439,7 +439,7 @@ export default function Inspections() {
             <div className="p-space-md bg-surface-container-lowest border-b border-surface-container-high/50 flex items-center justify-between">
               <div className="flex items-center gap-space-xs">
                 <span className="material-symbols-outlined text-primary text-[18px]">rule</span>
-                <span className="font-headline-sm font-semibold">Incident Dossier</span>
+                <span className="font-headline-sm font-semibold">Inspection Details</span>
               </div>
               <div className="flex items-center gap-space-sm font-code-sm text-outline">
                 <span>Network Status:</span>
@@ -453,14 +453,14 @@ export default function Inspections() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-space-xl">
                 <div className="space-y-space-xs">
-                  <label className="font-label-md uppercase tracking-wider text-outline">Concession / Mine Site *</label>
+                  <label className="font-label-md uppercase tracking-wider text-outline">Select Mine *</label>
                   <select 
                     required
                     value={formData.mine_id}
                     onChange={e => setFormData(prev => ({...prev, mine_id: e.target.value}))}
                     className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
                   >
-                    <option value="" className="bg-surface-container-high">-- Select Grid Target --</option>
+                    <option value="" className="bg-surface-container-high">-- Select Mine --</option>
                     {mines.map(m => (
                       <option key={m.id} value={m.id} className="bg-surface-container-high">{m.name}</option>
                     ))}
@@ -468,13 +468,13 @@ export default function Inspections() {
                 </div>
 
                 <div className="space-y-space-xs">
-                  <label className="font-label-md uppercase tracking-wider text-outline">Operating Contractor</label>
+                  <label className="font-label-md uppercase tracking-wider text-outline">Contractor</label>
                   <select 
                     value={formData.contractor_id}
                     onChange={e => setFormData(prev => ({...prev, contractor_id: e.target.value}))}
                     className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
                   >
-                    <option value="" className="bg-surface-container-high">-- Direct CIL Operator --</option>
+                    <option value="" className="bg-surface-container-high">-- None (CIL Direct) --</option>
                     {contractors.map(c => (
                       <option key={c.id} value={c.id} className="bg-surface-container-high">{c.name}</option>
                     ))}
@@ -499,7 +499,7 @@ export default function Inspections() {
                 </div>
 
                 <div className="space-y-space-xs">
-                  <label className="font-label-md uppercase tracking-wider text-outline">Threat Severity *</label>
+                  <label className="font-label-md uppercase tracking-wider text-outline">Severity *</label>
                   <select 
                     required
                     value={formData.severity}
@@ -514,21 +514,21 @@ export default function Inspections() {
               </div>
 
               <div className="space-y-space-xs">
-                <label className="font-label-md uppercase tracking-wider text-outline">Dossier Narrative *</label>
+                <label className="font-label-md uppercase tracking-wider text-outline">Description *</label>
                 <textarea 
                   required
                   rows={4}
                   value={formData.description}
                   onChange={e => setFormData(prev => ({...prev, description: e.target.value}))}
                   className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm resize-none"
-                  placeholder="Provide statutory findings, exact regulatory breaches, and immediate directives..."
+                  placeholder="Describe the issue, observations, or action required..."
                 />
               </div>
 
               <div className="space-y-space-xs">
                 <label className="font-label-md uppercase tracking-wider text-outline flex items-center justify-between">
-                  <span>Geospatial RTK Tracking *</span>
-                  {formData.lat && <span className="text-primary normal-case font-code-sm flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">my_location</span> Latched: {new Date().toLocaleTimeString()}</span>}
+                  <span>GPS Location *</span>
+                  {formData.lat && <span className="text-primary normal-case font-code-sm flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">my_location</span> Saved: {new Date().toLocaleTimeString()}</span>}
                 </label>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-space-md bg-surface-container p-space-sm rounded border border-surface-container-highest">
                   <button
@@ -538,7 +538,7 @@ export default function Inspections() {
                     className="flex items-center justify-center gap-2 px-space-md py-space-xs bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded transition-colors font-body-sm min-w-[200px]"
                   >
                     <span className="material-symbols-outlined text-[18px]">satellite_alt</span>
-                    {loadingLocation ? 'Locking GNSS...' : 'Sync GNSS Coordinates'}
+                    {loadingLocation ? 'Finding Location...' : 'Tag GPS Location'}
                   </button>
                   
                   {formData.lat && formData.lng ? (
@@ -554,7 +554,7 @@ export default function Inspections() {
               
               <div className="space-y-space-xs">
                 <label className="font-label-md uppercase tracking-wider text-outline flex items-center justify-between">
-                  <span>Visual Evidence Archive</span>
+                  <span>Photo Evidence</span>
                   {formData.photo_base64 && (
                     <button type="button" onClick={handleOcr} disabled={isOcrLoading} className="text-secondary hover:text-secondary-container normal-case font-body-sm flex items-center gap-1 transition-colors">
                       {isOcrLoading ? <span className="material-symbols-outlined text-[14px] animate-spin">sync</span> : <span className="material-symbols-outlined text-[14px]">document_scanner</span>}
@@ -575,9 +575,9 @@ export default function Inspections() {
                       <div className="w-12 h-12 rounded bg-surface-container-high flex items-center justify-center text-outline mb-space-sm group-hover:text-primary transition-colors">
                         <span className="material-symbols-outlined text-[24px]">add_a_photo</span>
                       </div>
-                      <p className="font-body-sm text-outline-variant">Initialize field camera to capture evidence.</p>
+                      <p className="font-body-sm text-outline-variant">Take a photo to attach to this report.</p>
                       <label htmlFor="camera-input" className="mt-space-md px-space-md py-space-xs bg-surface-container-high text-on-surface hover:bg-surface-bright rounded text-sm font-medium cursor-pointer transition-colors border border-surface-container-highest">
-                        Open Field Camera
+                        Open Camera
                       </label>
                     </>
                   )}
@@ -600,7 +600,7 @@ export default function Inspections() {
                   className="w-full flex items-center justify-center gap-space-xs px-space-md py-space-sm bg-primary text-on-primary rounded font-headline-sm text-[15px] hover:bg-primary-container transition-all shadow-[0_0_12px_rgba(142,213,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
                   <span className="material-symbols-outlined text-[20px]">send</span>
-                  {status === 'submitting' ? 'Encrypting & Dispatching...' : 'File Statutory Dossier'}
+                  {status === 'submitting' ? 'Submitting...' : 'Submit Report'}
                 </button>
                 
                 {usingCachedGps && (
@@ -614,13 +614,13 @@ export default function Inspections() {
                   <div className="mt-space-md p-space-md bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg border border-emerald-400 dark:border-emerald-500/30 flex items-center justify-between gap-space-sm">
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-[20px] text-emerald-700 dark:text-emerald-400 shrink-0">verified</span>
-                      <p className="font-body-sm font-bold">Violation Dossier Filed &amp; Confirmed on Server!</p>
+                      <p className="font-body-sm font-bold">Inspection Report Submitted Successfully!</p>
                     </div>
                     <Link
                       to="/violations"
                       className="px-3 py-1 rounded bg-emerald-200 dark:bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-label-md uppercase tracking-wider transition-colors shrink-0"
                     >
-                      View Violations Archive →
+                      View Reports →
                     </Link>
                   </div>
                 )}
@@ -646,7 +646,7 @@ export default function Inspections() {
                 {status === 'error' && (
                   <div className="mt-space-md p-space-sm bg-error/10 text-error rounded border border-error/20 flex items-center justify-center gap-space-sm">
                     <span className="material-symbols-outlined text-[20px]">error</span>
-                    <p className="font-body-sm">Cryptographic handshake failed. Attempting local save.</p>
+                    <p className="font-body-sm">Connection failed. Saved to offline queue.</p>
                   </div>
                 )}
               </div>

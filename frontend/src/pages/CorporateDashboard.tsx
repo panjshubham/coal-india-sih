@@ -486,11 +486,11 @@ export default function CorporateDashboard() {
               <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide uppercase flex items-center gap-2">
                 Environmental & Logistics Limits
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                  STATUTORY CEILING
+                  STATUTORY LIMITS
                 </span>
               </h2>
               <p className="text-xs text-slate-800 dark:text-slate-500">
-                Continuous reconciliation of Pit Extraction vs Statutory EC Production Limits vs Railway Siding Dispatches.
+                Real-time tracking of coal extracted vs maximum allowed limits.
               </p>
             </div>
           </div>
@@ -603,9 +603,9 @@ export default function CorporateDashboard() {
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-900 dark:text-slate-200 tracking-wide uppercase flex items-center gap-2">
             <BarChart2 className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
-            Consolidated Risk-Ranked Subsidiaries
+            Subsidiary Risk Rankings
           </h2>
-          <span className="text-xs text-slate-600 dark:text-slate-500">Click <BrainCircuit className="w-3.5 h-3.5 inline text-indigo-500 mx-0.5" /> on any row for AI explanation</span>
+          <span className="text-xs text-slate-600 dark:text-slate-500">Click <BrainCircuit className="w-3.5 h-3.5 inline text-indigo-500 mx-0.5" /> to see AI Risk Analysis</span>
         </div>
         <div className="p-0 overflow-y-auto max-h-[450px]">
           <table className="w-full text-left text-xs">
@@ -613,8 +613,8 @@ export default function CorporateDashboard() {
               <tr>
                 <th className="px-5 py-3">Mine Location</th>
                 <th className="px-5 py-3">Risk Index</th>
-                <th className="px-5 py-3">Telemetry Bar</th>
-                <th className="px-5 py-3 text-right">Explainability</th>
+                <th className="px-5 py-3">Risk Level</th>
+                <th className="px-5 py-3 text-right">View Analysis</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
@@ -628,7 +628,7 @@ export default function CorporateDashboard() {
                       risk.score > 70 ? 'text-red-700 dark:text-red-400' :
                       risk.score > 45 ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'
                     }`}>
-                      {risk.score}
+                      {risk.score} / 100
                     </span>
                   </td>
                   <td className="px-5 py-3.5 w-1/3">
@@ -664,7 +664,7 @@ export default function CorporateDashboard() {
       {/* 4. Bottom: Recent Violations Feed */}
       <div className="mt-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-300">{t('corp_section_violations_feed', 'Enterprise Live Violations Feed')}</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-slate-300">Live Violations Feed</h3>
           <span className="flex items-center gap-2 text-[10px] font-mono text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2 py-1 rounded">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             {t('corp_realtime_active', 'REALTIME INTERCONNECT ACTIVE')}
@@ -723,13 +723,13 @@ export default function CorporateDashboard() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white">{t('xai_modal_title', 'SHAP Explainability Diagnostic')}</h3>
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white">AI Risk Analysis</h3>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-indigo-950 text-slate-800 dark:text-indigo-300 border border-slate-300 dark:border-indigo-700">
-                      {t('xai_engine', 'TreeSHAP Engine')}
+                      AI Generated
                     </span>
                   </div>
                   <p className="text-xs text-slate-800 dark:text-slate-500 mt-0.5">
-                    {t('xai_attribution', 'Additive Feature Attribution for')} <strong className="text-slate-800 dark:text-slate-200">{selectedXaiMine.mines?.name}</strong>
+                    Factors driving the risk score for <strong className="text-slate-800 dark:text-slate-200">{selectedXaiMine.mines?.name}</strong>
                   </p>
                 </div>
               </div>
@@ -759,16 +759,14 @@ export default function CorporateDashboard() {
               <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-500/20 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-indigo-800 dark:text-indigo-300">
                   <Zap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                  <span>XGBoost Classifier + Coal Mines Regulations (CMR 2017) Rule-Weights</span>
+                  <span>Statutory Rule-Weights Active</span>
                 </div>
-                <span className="text-[11px] font-mono text-slate-800 dark:text-slate-500">Base Value: E[f(x)] = 25.0 pts</span>
               </div>
 
               {/* Feature Attribution Waterfall */}
               <div>
                 <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3 flex items-center justify-between">
-                  <span>{t('xai_drivers', 'Contributing Risk Drivers (SHAP Values)')}</span>
-                  <span className="text-[10px] text-slate-700 dark:text-slate-500">{t('xai_positive', 'Positive = Increases Risk')}</span>
+                  <span>Top Risk Drivers</span>
                 </h4>
 
                 <div className="space-y-3">

@@ -207,14 +207,14 @@ export default function AuditLog() {
           <div className="flex items-center gap-3 mb-2">
             <Key className="w-5 h-5 text-amber-700 dark:text-amber-400" />
             <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight font-sans">
-              System Audit Log & Immutable Activity Trail
+              System Audit Log
             </h1>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-800 flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3" /> APPEND-ONLY
+              <ShieldCheck className="w-3 h-3" /> SECURE
             </span>
           </div>
           <p className="text-xs text-slate-800 dark:text-slate-500 max-w-3xl leading-relaxed font-sans">
-            Cryptographically chained journal logging all DGMS statutory operations, compliance sign-offs, and field hazard mutations. Any modification or deletion is strictly forbidden at the database engine level.
+            A secure record of all system activities, compliance updates, and hazard reports. Data integrity is enforced automatically.
           </p>
         </div>
         
@@ -248,34 +248,34 @@ export default function AuditLog() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 bg-slate-50 dark:bg-[#0B1326] border border-slate-200 dark:border-slate-800 rounded-xl">
           <span className="text-[10px] uppercase font-bold text-slate-800 dark:text-slate-500 flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-blue-700 dark:text-blue-400" /> Total Ledger Blocks
+            <Layers className="w-3.5 h-3.5 text-blue-700 dark:text-blue-400" /> Total Logs
           </span>
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{totalCount}</div>
-          <span className="text-[9px] text-slate-700 dark:text-slate-500">Append-Only Sequenced</span>
+          <span className="text-[9px] text-slate-700 dark:text-slate-500">System Records</span>
         </div>
 
         <div className="p-4 bg-slate-50 dark:bg-[#0B1326] border border-slate-200 dark:border-slate-800 rounded-xl">
           <span className="text-[10px] uppercase font-bold text-slate-800 dark:text-slate-500 flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> Chain Integrity
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> System Integrity
           </span>
-          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1">100% VALID</div>
-          <span className="text-[9px] text-emerald-500/80">Zero Tamper Detections</span>
+          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1">100% SECURE</div>
+          <span className="text-[9px] text-emerald-500/80">No Tampering Detected</span>
         </div>
 
         <div className="p-4 bg-slate-50 dark:bg-[#0B1326] border border-slate-200 dark:border-slate-800 rounded-xl">
           <span className="text-[10px] uppercase font-bold text-slate-800 dark:text-slate-500 flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" /> Database Enforcement
+            <Lock className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" /> Access Control
           </span>
-          <div className="text-sm font-bold text-amber-300 mt-2">BEFORE UPDATE/DELETE</div>
-          <span className="text-[9px] text-slate-700 dark:text-slate-500">PL/pgSQL Trigger Active</span>
+          <div className="text-sm font-bold text-amber-300 mt-2">ACTIVE</div>
+          <span className="text-[9px] text-slate-700 dark:text-slate-500">Role Based Validation</span>
         </div>
 
         <div className="p-4 bg-slate-50 dark:bg-[#0B1326] border border-slate-200 dark:border-slate-800 rounded-xl">
           <span className="text-[10px] uppercase font-bold text-slate-800 dark:text-slate-500 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" /> Hashing Standard
+            <Sparkles className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" /> Data Security
           </span>
-          <div className="text-sm font-bold text-purple-300 mt-2">SHA-256 (256-BIT)</div>
-          <span className="text-[9px] text-slate-700 dark:text-slate-500">Web Crypto API Sealed</span>
+          <div className="text-sm font-bold text-purple-300 mt-2">ENCRYPTED</div>
+          <span className="text-[9px] text-slate-700 dark:text-slate-500">Standard Encryption Applied</span>
         </div>
       </div>
 
@@ -355,11 +355,11 @@ export default function AuditLog() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#15223A] border-b border-slate-300 dark:border-slate-700/50">
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Timestamp (IST)</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Actor / Authority</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest">Statutory Action</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Target Entity</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Cryptographic Hash Chain</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Timestamp</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">User</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest">Action</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Target</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Security Hash</th>
                 <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap text-right">Verification</th>
               </tr>
             </thead>
