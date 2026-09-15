@@ -6,7 +6,7 @@ import {
   ShieldAlert, AlertTriangle, Activity, AlertCircle, RefreshCw, BarChart2, 
   Globe2, Radio, Server, Fingerprint, Trees, ChevronRight, X, Gauge, 
   Zap, TrendingUp, ShieldCheck, Sparkles, CheckCircle2, Users, Database,
-  Pickaxe, Truck
+  Pickaxe, Truck, BrainCircuit
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -605,7 +605,7 @@ export default function CorporateDashboard() {
             <BarChart2 className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
             Consolidated Risk-Ranked Subsidiaries
           </h2>
-          <span className="text-[10px] font-mono text-slate-800 dark:text-slate-500">Click 'Explain Risk' for SHAP AI Model Breakdown</span>
+          <span className="text-xs text-slate-600 dark:text-slate-500">Click <BrainCircuit className="w-3.5 h-3.5 inline text-indigo-500 mx-0.5" /> on any row for AI explanation</span>
         </div>
         <div className="p-0 overflow-y-auto max-h-[450px]">
           <table className="w-full text-left text-xs">
@@ -642,10 +642,11 @@ export default function CorporateDashboard() {
                   <td className="px-5 py-3.5 text-right">
                     <button
                       onClick={() => setSelectedXaiMine(risk)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/40 border border-indigo-200 dark:border-indigo-500/40 text-indigo-800 dark:text-indigo-300 rounded font-sans text-xs font-semibold transition-colors shadow-sm cursor-pointer"
+                      className="inline-flex items-center justify-center w-8 h-8 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-600/20 dark:hover:bg-indigo-600/40 border border-indigo-200 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-300 rounded-lg transition-colors shadow-sm cursor-pointer"
+                      title="View AI Risk Explanation (XAI)"
+                      aria-label={`View XAI explanation for ${risk.mines?.name}`}
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                      Explain Risk (XAI)
+                      <BrainCircuit className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
