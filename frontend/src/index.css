@@ -57,39 +57,39 @@
   --cg-toggle-icon:      #9FB2C8;
 }
 
-/* Light mode overrides — Clean, High-Contrast Official Government Portal */
+/* Light mode overrides — Clean, High-Contrast, Bold Official Government Portal */
 [data-theme="light"], .light {
   /* Backgrounds */
-  --cg-bg:               #F1F5F9;  /* Crisp slate-100 backdrop */
+  --cg-bg:               #F8FAFC;  /* Crisp slate-50 backdrop */
   --cg-surface:          #FFFFFF;  /* Pure white cards */
-  --cg-surface-elevated: #F8FAFC;  /* Subtle slate-50 */
-  --cg-surface-high:     #E2E8F0;
-  --cg-surface-highest:  #CBD5E1;
+  --cg-surface-elevated: #F1F5F9;  /* Light slate-100 */
+  --cg-surface-high:     #E2E8F0;  /* Slate-200 */
+  --cg-surface-highest:  #CBD5E1;  /* Slate-300 */
   --cg-surface-low:      #FFFFFF;
 
   /* Sidebar & Topbar */
-  --cg-sidebar-bg:       #0F172A;  /* Deep official Navy-Slate — maximum readability for navigation */
-  --cg-sidebar-border:   rgba(255, 255, 255, 0.10);
+  --cg-sidebar-bg:       #FFFFFF;  /* Pure clean white sidebar in light mode */
+  --cg-sidebar-border:   #E2E8F0;
   --cg-topbar-bg:        #FFFFFF;
   --cg-topbar-border:    #E2E8F0;
-  --cg-ribbon-bg:        #0B1329;
+  --cg-ribbon-bg:        #F1F5F9;
 
-  /* Text — Deep, high-contrast, razor-sharp readability for evaluators/judges */
-  --cg-text-primary:     #0F172A;  /* Slate-900 */
-  --cg-text-secondary:   #334155;  /* Slate-700 */
-  --cg-text-muted:       #475569;  /* Slate-600 */
-  --cg-text-faint:       #64748B;  /* Slate-500 */
+  /* Text — Deep, high-contrast, bold, razor-sharp readability */
+  --cg-text-primary:     #0F172A;  /* Deep Slate-900 */
+  --cg-text-secondary:   #1E293B;  /* Slate-800 */
+  --cg-text-muted:       #334155;  /* Slate-700 — high contrast & visible */
+  --cg-text-faint:       #475569;  /* Slate-600 */
 
   /* Borders — Clean structural delineation */
   --cg-border:           #E2E8F0;
   --cg-border-strong:    #CBD5E1;
 
   /* Accent — Ministry Gold / Deep Amber */
-  --cg-accent:           #B45309;
-  --cg-accent-hover:     #92400E;
+  --cg-accent:           #D97706;
+  --cg-accent-hover:     #B45309;
   --cg-accent-text:      #FFFFFF;
 
-  /* Status — Official, non-fluorescent government badges */
+  /* Status — Official, high contrast government badges */
   --cg-success:          #047857;
   --cg-success-bg:       #ECFDF5;
   --cg-warning:          #B45309;
@@ -98,15 +98,79 @@
   --cg-danger-bg:        #FEF2F2;
 
   /* Card shadows */
-  --cg-shadow:           0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --cg-shadow-lg:        0 4px 12px rgba(0, 0, 0, 0.08);
+  --cg-shadow:           0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --cg-shadow-lg:        0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 
   /* Scrollbar */
   --cg-scrollbar-track:  #F1F5F9;
   --cg-scrollbar-thumb:  #94A3B8;
 
   /* Toggle icon */
-  --cg-toggle-icon:      #334155;
+  --cg-toggle-icon:      #1E293B;
+}
+
+/* Light mode bold & high-contrast typography enhancement */
+[data-theme="light"] body, .light body {
+  font-weight: 500;
+  color: #0F172A;
+}
+
+[data-theme="light"] p, .light p {
+  color: #1E293B;
+  font-weight: 500;
+}
+
+[data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3, [data-theme="light"] h4,
+.light h1, .light h2, .light h3, .light h4 {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+[data-theme="light"] table, .light table {
+  color: #0F172A;
+  font-weight: 500;
+}
+
+[data-theme="light"] th, .light th {
+  color: #0F172A;
+  font-weight: 700;
+}
+
+[data-theme="light"] td, .light td {
+  color: #1E293B;
+  font-weight: 500;
+}
+
+[data-theme="light"] input, 
+[data-theme="light"] select, 
+[data-theme="light"] textarea,
+.light input,
+.light select,
+.light textarea {
+  color: #0F172A;
+  font-weight: 500;
+  border-color: #CBD5E1;
+}
+
+/* Light mode specific high-contrast card and text visibility */
+[data-theme="light"] .text-slate-400,
+[data-theme="light"] .text-slate-500,
+.light .text-slate-400,
+.light .text-slate-500 {
+  color: #334155 !important;
+  font-weight: 600;
+}
+
+[data-theme="light"] .text-slate-600,
+.light .text-slate-600 {
+  color: #1E293B !important;
+  font-weight: 600;
+}
+
+[data-theme="light"] .text-slate-300,
+.light .text-slate-300 {
+  color: #0F172A !important;
+  font-weight: 600;
 }
 
 /* ============================================================

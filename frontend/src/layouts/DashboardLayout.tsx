@@ -141,28 +141,31 @@ export default function DashboardLayout() {
         />
       )}
 
-      {/* Sidebar - Stitch Design with Collapsible Desktop & Mobile Drawer */}
+      {/* Sidebar - Collapsible Desktop & Mobile Drawer */}
       <aside
         id="cg-main-sidebar"
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col backdrop-blur-md transition-all duration-300 ease-in-out lg:static shrink-0",
+          "fixed inset-y-0 left-0 z-50 flex flex-col backdrop-blur-md transition-all duration-300 ease-in-out lg:static shrink-0 shadow-lg lg:shadow-none",
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
           isCollapsed ? "lg:w-20" : "w-64 lg:w-64"
         )}
         style={{ backgroundColor: 'var(--cg-sidebar-bg)', borderRight: '1px solid var(--cg-sidebar-border)' }}
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between h-16 px-4" style={{ borderBottom: '1px solid var(--cg-sidebar-border)' }}>
-          <Link to="/" className="flex items-center gap-3 font-black text-xl text-slate-900 dark:text-white tracking-tight overflow-hidden">
-            <div className="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm shrink-0">
+        <div className="flex items-center justify-between h-16 px-4 shrink-0" style={{ borderBottom: '1px solid var(--cg-sidebar-border)' }}>
+          <Link to="/" className="flex items-center gap-3 font-black text-xl text-slate-950 dark:text-white tracking-tight overflow-hidden group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md shrink-0 border border-amber-300 dark:border-amber-400/30 group-hover:scale-105 transition-transform">
               <Pickaxe className="w-5 h-5 text-slate-950" />
             </div>
             {!isCollapsed && (
-              <span className="truncate font-bold tracking-tight">CoalGuard</span>
+              <div className="flex flex-col min-w-0">
+                <span className="truncate font-extrabold tracking-tight text-slate-950 dark:text-white text-lg leading-tight">CoalGuard</span>
+                <span className="text-[9px] font-mono font-bold tracking-widest text-amber-700 dark:text-amber-400 uppercase">CIL · DGMS PORTAL</span>
+              </div>
             )}
           </Link>
           <button 
-            className="lg:hidden p-1.5 rounded-lg text-slate-800 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors" 
+            className="lg:hidden p-1.5 rounded-lg text-slate-700 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors" 
             onClick={() => setSidebarOpen(false)}
             aria-label="Close menu"
           >
@@ -174,16 +177,16 @@ export default function DashboardLayout() {
         <nav className="p-3 flex-1 space-y-1 overflow-y-auto overflow-x-hidden">
           {!isCollapsed && (
             <div className="flex items-center justify-between mb-2.5 px-3">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-800 dark:text-slate-500">
+              <span className="text-[11px] font-mono font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-400">
                 Mission Command
               </span>
               {role && (
-                <span className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded font-bold border ${
+                <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded-md font-extrabold border shadow-xs ${
                   role === 'corporate' 
-                    ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-500/30' 
+                    ? 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40' 
                     : role === 'regulator' 
-                    ? 'bg-indigo-50 dark:bg-purple-500/15 text-indigo-800 dark:text-purple-400 border-indigo-300 dark:border-purple-500/30' 
-                    : 'bg-blue-50 dark:bg-blue-500/15 text-blue-800 dark:text-blue-400 border-blue-300 dark:border-blue-500/30'
+                    ? 'bg-indigo-100 text-indigo-950 border-indigo-300 dark:bg-purple-500/20 dark:text-purple-300 dark:border-purple-500/40' 
+                    : 'bg-blue-100 text-blue-950 border-blue-300 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/40'
                 }`}>
                   {role === 'corporate' ? 'HQ Admin' : role === 'regulator' ? 'Regulator' : 'Mine Official'}
                 </span>
@@ -203,19 +206,19 @@ export default function DashboardLayout() {
                 to={itemTarget}
                 title={t(`nav_${item.id}`)}
                 className={cn(
-                  "flex items-center rounded-lg text-sm font-semibold transition-all duration-200 group relative",
+                  "flex items-center rounded-lg text-sm transition-all duration-200 group relative",
                   isCollapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5",
                   isActive 
-                    ? "bg-amber-50 dark:bg-amber-500/15 text-amber-900 dark:text-amber-400 font-bold border border-amber-200 dark:border-amber-500/30 shadow-xs" 
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-100"
+                    ? "bg-amber-100 text-amber-950 font-extrabold border border-amber-300 shadow-xs dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40" 
+                    : "text-slate-800 font-bold hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:font-semibold dark:hover:bg-white/5 dark:hover:text-white"
                 )}
               >
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-amber-500 dark:bg-amber-400 rounded-r-full" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-amber-600 dark:bg-amber-400 rounded-r-full" />
                 )}
-                <item.icon className={cn("w-4 h-4 shrink-0 transition-colors", isActive ? "text-amber-700 dark:text-amber-400" : "text-slate-800 dark:text-slate-500 group-hover:text-slate-900 dark:group-hover:text-amber-300")} />
+                <item.icon className={cn("w-4.5 h-4.5 shrink-0 transition-colors", isActive ? "text-amber-700 dark:text-amber-400" : "text-slate-700 dark:text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-300")} />
                 {!isCollapsed && (
-                  <span className="truncate">{t(`nav_${item.id}`)}</span>
+                  <span className="truncate tracking-wide">{t(`nav_${item.id}`)}</span>
                 )}
               </Link>
             );
@@ -223,15 +226,15 @@ export default function DashboardLayout() {
         </nav>
 
         {/* Sidebar Footer Controls */}
-        <div className="p-3 border-t border-slate-200 dark:border-white/5 space-y-2">
+        <div className="p-3 border-t space-y-2" style={{ borderColor: 'var(--cg-sidebar-border)' }}>
           {/* Security status indicator */}
           {!isCollapsed ? (
-            <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-xs">
-              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 font-mono font-bold text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
+            <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 text-xs dark:bg-emerald-500/10 dark:border-emerald-500/20 shadow-xs">
+              <div className="flex items-center gap-2 text-emerald-950 dark:text-emerald-400 font-mono font-extrabold text-[11px]">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
                 SYSTEM SECURE
               </div>
-              <div className="text-emerald-700 dark:text-emerald-500/70 text-[9px] font-mono mt-0.5">DGMS Handshake Valid</div>
+              <div className="text-emerald-900 dark:text-emerald-500/80 text-[10px] font-mono font-bold mt-0.5">DGMS Handshake Valid</div>
             </div>
           ) : (
             <div className="flex justify-center p-2" title="SYSTEM SECURE — DGMS Handshake Valid">
@@ -248,7 +251,7 @@ export default function DashboardLayout() {
                 localStorage.setItem('coalguard_sidebar_collapsed', String(next));
               } catch {}
             }}
-            className="hidden lg:flex w-full items-center justify-center gap-2 p-2 rounded-lg text-xs font-mono text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-amber-700 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+            className="hidden lg:flex w-full items-center justify-center gap-2 p-2 rounded-lg text-xs font-mono font-bold text-slate-800 hover:text-slate-950 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-amber-400 dark:hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-white/10"
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -257,7 +260,7 @@ export default function DashboardLayout() {
             ) : (
               <>
                 <ChevronLeft className="w-4 h-4" />
-                <span className="text-[11px] uppercase tracking-wider">Collapse Menu</span>
+                <span className="text-[11px] uppercase tracking-wider font-extrabold">Collapse Menu</span>
               </>
             )}
           </button>
@@ -269,7 +272,7 @@ export default function DashboardLayout() {
               navigate('/login');
             }}
             className={cn(
-              "w-full flex items-center justify-center gap-2 rounded-lg text-xs font-bold text-red-700 dark:text-red-400 hover:bg-red-100 dark:bg-red-500/10 border border-transparent hover:border-red-300 dark:border-red-500/20 transition-all cursor-pointer",
+              "w-full flex items-center justify-center gap-2 rounded-lg text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 dark:text-red-400 dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:border-red-500/20 transition-all cursor-pointer",
               isCollapsed ? "p-2.5" : "px-3 py-2.5"
             )}
             title="Sign out"
@@ -291,16 +294,16 @@ export default function DashboardLayout() {
         </div>
 
         {/* Micro Gov Info Ribbon */}
-        <div className="text-[10px] font-mono py-1 px-4 lg:px-8 flex justify-between items-center tracking-widest w-full select-none" style={{ backgroundColor: 'var(--cg-ribbon-bg)', borderBottom: '1px solid var(--cg-border)', color: 'var(--cg-text-faint)' }}>
+        <div className="text-[11px] font-mono py-1.5 px-4 lg:px-8 flex justify-between items-center tracking-wider w-full select-none font-bold shadow-xs" style={{ backgroundColor: 'var(--cg-ribbon-bg)', borderBottom: '1px solid var(--cg-border)', color: 'var(--cg-text-secondary)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-amber-500 font-bold">सत्यमेव जयते | MINISTRY OF COAL</span>
+            <span className="text-amber-700 dark:text-amber-500 font-extrabold">सत्यमेव जयते | MINISTRY OF COAL</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-emerald-500 font-bold flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> DGMS STATUTORY NETWORK
+            <span className="text-emerald-700 dark:text-emerald-400 font-extrabold flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-500 animate-pulse"></span> DGMS STATUTORY NETWORK
             </span>
-            <span style={{ color: 'var(--cg-text-faint)' }}>|</span>
-            <span className="text-amber-700 dark:text-amber-400 font-bold">{time || 'SYNCING...'}</span>
+            <span className="text-slate-400 dark:text-slate-600">|</span>
+            <span className="text-slate-900 dark:text-amber-400 font-mono font-extrabold">{time || 'SYNCING...'}</span>
           </div>
         </div>
 
