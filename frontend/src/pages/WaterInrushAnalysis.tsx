@@ -370,7 +370,7 @@ export default function WaterInrushAnalysis() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mine Water Leakage &amp; Inrush Identification</h1>
+                <div className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white font-sans tracking-tight">Mine Water Leakage &amp; Inrush Identification</div>
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                   Auto-Inference Active
@@ -470,11 +470,11 @@ export default function WaterInrushAnalysis() {
         <div className="xl:col-span-1 space-y-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold flex items-center gap-2">
-                <FlaskConical className="w-4 h-4 text-cyan-400" />
+              <div className="text-lg font-bold flex items-center gap-2 font-sans text-slate-900 dark:text-white">
+                <FlaskConical className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                 Hydrochemical Input
-              </h2>
-              <span className="text-xs text-slate-500">8 discriminant features</span>
+              </div>
+              <span className="text-xs text-slate-500 font-medium">8 discriminant features</span>
             </div>
 
             {/* Demo samples */}
@@ -484,7 +484,7 @@ export default function WaterInrushAnalysis() {
                 {Object.keys(DEMO_SAMPLES).map(name => (
                   <button key={name}
                     onClick={() => loadDemo(name)}
-                    className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition"
+                    className="text-[11px] font-bold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition"
                   >{name}</button>
                 ))}
               </div>
@@ -494,9 +494,9 @@ export default function WaterInrushAnalysis() {
             <div className="space-y-3">
               {FEATURE_FIELDS.map(f => (
                 <div key={f.key}>
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                  <label className="text-[13px] font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
                     <span>{f.icon} {f.label} {f.unit && <span className="text-slate-500 font-medium">({f.unit})</span>}</span>
-                    <span className="text-slate-500 font-mono text-xs">{f.hint}</span>
+                    <span className="text-slate-500 font-mono text-[11px]">{f.hint}</span>
                   </label>
                   <input
                     type="number"
@@ -504,7 +504,7 @@ export default function WaterInrushAnalysis() {
                     value={form[f.key]}
                     onChange={e => handleChange(f.key, e.target.value)}
                     placeholder={f.hint}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2.5 text-base font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition shadow-sm"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md px-3 py-2 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition shadow-sm"
                   />
                 </div>
               ))}
@@ -589,9 +589,9 @@ export default function WaterInrushAnalysis() {
                         <Activity className="w-3 h-3" />
                         Predicted Source
                       </div>
-                      <h2 className="text-xl font-bold" style={{ color: meta.color }}>
+                      <div className="text-xl md:text-2xl font-bold font-sans" style={{ color: meta.color }}>
                         {result.predicted_class_short}
-                      </h2>
+                      </div>
                       <p className="text-white font-semibold">{meta.name}</p>
                       <p className="text-xs text-slate-400 mt-1">{meta.desc}</p>
                     </div>
@@ -704,10 +704,10 @@ export default function WaterInrushAnalysis() {
 
               {/* ── Key Features Summary ─── */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl p-5">
-                <h3 className="font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                <div className="text-base font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2 font-sans">
                   <TrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                   Key Feature Contributions (Top 4)
-                </h3>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   {result.key_features.slice(0, 4).map(kf => (
                     <div key={kf.feature}
@@ -734,10 +734,10 @@ export default function WaterInrushAnalysis() {
           {/* ── Global SHAP (no prediction yet) ─── */}
           {!result && shapSummary && (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl p-5">
-              <h3 className="font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+              <div className="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2 font-sans">
                 <BarChart3 className="w-5 h-5 text-purple-500 dark:text-purple-400" />
                 Global SHAP Feature Importance
-              </h3>
+              </div>
               <p className="text-xs text-slate-500 mb-4">Mean |SHAP| values — shows which features matter most across all samples</p>
               <div className="flex gap-2 mb-4 flex-wrap">
                 {(['overall', 'G1', 'G2', 'G3'] as const).map(c => (
