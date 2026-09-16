@@ -12,6 +12,7 @@ Complete Multi-Modal AI Engine integrating:
 7. openai/whisper-large-v3 (Voice Reporting / Speech-to-Text)
 8. XGBoost / Tabular Risk Index & Anomaly Detection
 9. Automated Pipeline Chaining Endpoints (Voice -> Text -> Translate -> Classify -> NER)
+10. CLSSA-XGBoost + TreeSHAP (Mine Water Leakage & Inrush Source Identification)
 """
 
 import os

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BarChart2, ClipboardList, AlertTriangle, Map as MapIcon, 
   Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, 
   Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, ChevronDown,
-  User, HelpCircle, IndianRupee, Camera, Building2, Activity, BookOpen
+  User, HelpCircle, IndianRupee, Camera, Building2, Activity, BookOpen, Droplets
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -71,6 +71,7 @@ const navGroups: NavGroup[] = [
     id: 'analytics',
     items: [
       { id: 'aiWorkbench',       href: '/ai-workbench',      icon: Cpu,      roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'waterInrush',       href: '/water-inrush',      icon: Droplets, roles: ['mine_official', 'regulator', 'corporate'] },
       { id: 'benchmarking',      href: '/benchmarking',      icon: BarChart2, roles: ['corporate', 'regulator'] },
       { id: 'financialOverview', href: '/financial-overview', icon: IndianRupee, roles: ['corporate'] },
     ]

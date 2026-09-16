@@ -91,6 +91,18 @@ try:
 except Exception as e:
     print(f"[WARN] Could not load ML model or explainer: {e}")
 
+# Load Water Inrush CLSSA-XGBoost Model
+wi_predictor = None
+try:
+    from water_inrush_model import WaterInrushPredictor, train_water_inrush_model, FEATURE_KEYS, FEATURE_NAMES
+    wi_predictor = WaterInrushPredictor(base_dir=BASE_DIR)
+    if wi_predictor.ready:
+        print("[INFO] Water Inrush Model (CLSSA-XGBoost) loaded successfully.")
+    else:
+        print("[INFO] Water Inrush Model not found — will auto-train on first /water-inrush/train call.")
+except Exception as e:
+    print(f"[WARN] Water inrush module import failed: {e}")
+
 
 # ─────────────────────────────────────────────────────────────
 # UTILITIES: Haversine & Hugging Face Inference Caller
@@ -2170,6 +2182,172 @@ def _demo_cameras(mine_id: str) -> dict:
         {"camera_id": "CAM-PIT2-01",  "zone": "Pit-2",     "location": "Southern bench entry",   "is_active": True},
     ]
     return {"mine_id": mine_id, "cameras": cameras}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WATER INRUSH SOURCE IDENTIFICATION  (CLSSA-XGBoost + SHAP)
+# Paper: Kou & Wen, Scientific Reports (2025) 15:140
+# ─────────────────────────────────────────────────────────────────────────────
+
+class WaterInrushInput(BaseModel):
+    ca:       float  # Ca2+  (mg/L)
+    mg:       float  # Mg2+  (mg/L)
+    k_na:     float  # K+ + Na+  (mg/L)
+    hco3:     float  # HCO3-  (mg/L)
+    cl:       float  # Cl-  (mg/L)
+    so4:      float  # SO42-  (mg/L)
+    hardness: float  # Hardness  (mg/L)
+    ph:       float  # pH value
+
+
+class WaterInrushTrainRequest(BaseModel):
+    run_clssa:  bool = True
+    clssa_pop:  int  = 30    # Population size (30=fast, 60=production)
+    clssa_iter: int  = 20    # Iterations (20=fast, 100=production)
+
+
+@app.post("/water-inrush/predict",
+    tags=["Water Inrush AI"],
+    summary="Predict mine water inrush source (CLSSA-XGBoost + SHAP)")
+async def predict_water_inrush(data: WaterInrushInput):
+    """
+    Identify mine water inrush source from 8 hydrochemical indicators.
+
+    Returns predicted class (G1/G2/G3), confidence, probability distribution,
+    and SHAP-based feature explanations (global + local waterfall data).
+
+    Classes:
+    - G1: Ordovician Limestone Water
+    - G2: Tai-grey Water (Carboniferous Taiyuan limestone)
+    - G3: Coal Series Sandstone Water
+    """
+    if wi_predictor is None or not wi_predictor.ready:
+        raise HTTPException(
+            status_code=503,
+            detail="Water inrush model not loaded. Call POST /water-inrush/train first."
+        )
+    try:
+        result = wi_predictor.predict(data.dict())
+        return {"status": "ok", **result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/water-inrush/shap-summary",
+    tags=["Water Inrush AI"],
+    summary="Global SHAP feature importance for water inrush model")
+async def water_inrush_shap_summary():
+    """
+    Returns ranked feature importances per water class (G1, G2, G3) and overall,
+    computed as mean |SHAP| values across the training dataset.
+    Useful for building the SHAP bar chart on the frontend.
+    """
+    if wi_predictor is None or not wi_predictor.ready:
+        raise HTTPException(
+            status_code=503,
+            detail="Water inrush model not loaded. Call POST /water-inrush/train first."
+        )
+    try:
+        importance = wi_predictor.global_shap_importance()
+        return {"status": "ok", "importance": importance}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/water-inrush/status",
+    tags=["Water Inrush AI"],
+    summary="Check water inrush model load status")
+async def water_inrush_status():
+    """Returns whether the CLSSA-XGBoost water inrush model is loaded and ready."""
+    ready = wi_predictor is not None and wi_predictor.ready
+    return {
+        "model_ready":    ready,
+        "model_type":     "CLSSA-XGBoost (Kou & Wen 2025)",
+        "features":       ["Ca2+", "Mg2+", "K+Na+", "HCO3-", "Cl-", "SO42-", "Hardness", "pH"],
+        "classes":        ["G1 (Ordovician Limestone)", "G2 (Tai-grey)", "G3 (Coal Series)"],
+        "algorithm":      "CLSSA (Tent Chaos + Levy Flight Sparrow Search) + XGBoost + SHAP",
+        "paper_accuracy": "97.78% precision, 97.59% recall, 97.61% F1",
+    }
+
+
+@app.post("/water-inrush/train",
+    tags=["Water Inrush AI"],
+    summary="Train/retrain the CLSSA-XGBoost water inrush model")
+async def train_water_inrush(req: WaterInrushTrainRequest):
+    """
+    Trains the CLSSA-XGBoost water inrush model.
+
+    - If no CSV data is uploaded, uses auto-generated synthetic data calibrated on
+      Xinzhuangzi Mine hydrochemical ranges (Kou & Wen 2025).
+    - CLSSA optimizes XGBoost hyperparameters: n_estimators, max_depth, learning_rate.
+    - Saves trained model, explainer, and scaler to the ai-service directory.
+
+    For production: upload a real CSV via POST /water-inrush/train-csv.
+    """
+    global wi_predictor
+    try:
+        result = train_water_inrush_model(
+            df=None,
+            run_clssa=req.run_clssa,
+            clssa_pop=req.clssa_pop,
+            clssa_iter=req.clssa_iter,
+            save_dir=BASE_DIR
+        )
+        # Reload the predictor with the fresh model
+        wi_predictor = WaterInrushPredictor(base_dir=BASE_DIR)
+        return {"status": "ok", "message": "Model trained and loaded successfully.", **result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
+
+
+@app.post("/water-inrush/train-csv",
+    tags=["Water Inrush AI"],
+    summary="Train CLSSA-XGBoost with real hydrochemical CSV data")
+async def train_water_inrush_csv(
+    file: UploadFile = File(...),
+    run_clssa: bool = Form(True),
+    clssa_pop: int  = Form(30),
+    clssa_iter: int = Form(20)
+):
+    """
+    Upload a real CSV file with hydrochemical data to train the water inrush model.
+
+    Required CSV columns: Ca2+, Mg2+, K+Na+, HCO3-, Cl-, SO42-, Hardness, pH, label
+    label values: 0 = G1 (Ordovician), 1 = G2 (Tai-grey), 2 = G3 (Coal Series)
+
+    The model will be retrained with CLSSA hyperparameter optimization.
+    """
+    global wi_predictor
+    try:
+        import io
+        contents = await file.read()
+        df = pd.read_csv(io.BytesIO(contents))
+
+        required_cols = FEATURE_NAMES + ["label"]
+        missing = [c for c in required_cols if c not in df.columns]
+        if missing:
+            raise HTTPException(
+                status_code=400,
+                detail=f"CSV missing columns: {missing}. Required: {required_cols}"
+            )
+
+        result = train_water_inrush_model(
+            df=df,
+            run_clssa=run_clssa,
+            clssa_pop=clssa_pop,
+            clssa_iter=clssa_iter,
+            save_dir=BASE_DIR
+        )
+        wi_predictor = WaterInrushPredictor(base_dir=BASE_DIR)
+        return {
+            "status":  "ok",
+            "message": f"Model retrained on {len(df)} real samples.",
+            **result
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CSV training failed: {str(e)}")
 
 
 if __name__ == "__main__":

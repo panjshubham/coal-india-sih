@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 700" width="100%" height="100%" style="background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="shadow-box" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#1e3a8a" flood-opacity="0.12" />
+    </filter>
+    <marker id="arrow-down" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7" />
+    </marker>
+    <marker id="arrow-right" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ea580c" />
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#16a34a" />
+    </marker>
+  </defs>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- TOP BATCH GEAR BADGE -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <g transform="translate(140, 20)">
+    <circle cx="90" cy="40" r="34" fill="#0284c7" />
+    <!-- Gear Teeth -->
+    <path d="M 90 16 L 90 22 M 90 58 L 90 64 M 66 40 L 72 40 M 108 40 L 114 40 M 73 23 L 77 27 M 103 53 L 107 57 M 73 57 L 77 53 M 103 27 L 107 23" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+    <circle cx="90" cy="40" r="14" fill="#0284c7" stroke="#ffffff" stroke-width="3.5" />
+    <circle cx="90" cy="40" r="6" fill="#ffffff" />
+
+    <!-- Labels next to gear -->
+    <text x="140" y="36" fill="#0f172a" font-size="16" font-weight="800">/analyze/all</text>
+    <text x="140" y="54" fill="#64748b" font-size="12" font-weight="600">(Automated Batch Job)</text>
+  </g>
+
+  <!-- Downward Arrow to Main Box -->
+  <line x1="230" y1="102" x2="230" y2="135" stroke="#0284c7" stroke-width="3" marker-end="url(#arrow-down)" />
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- MAIN FASTAPI AI MICROSERVICE CARD -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <g transform="translate(20, 145)">
+    <!-- Outer Card Frame -->
+    <rect width="420" height="490" rx="24" fill="#ffffff" stroke="#38bdf8" stroke-width="3" filter="url(#shadow-box)" />
+    
+    <!-- Top Header -->
+    <g transform="translate(30, 30)">
+      <circle cx="16" cy="16" r="14" fill="#059669" />
+      <path d="M 14 8 L 20 15 L 15 15 L 17 24 L 11 17 L 16 17 Z" fill="#ffffff" />
+      <text x="40" y="22" fill="#0f172a" font-size="19" font-weight="800">FastAPI AI Microservice</text>
+    </g>
+
+    <!-- Inside 1: XGBoost Box (Orange) -->
+    <g transform="translate(30, 80)">
+      <rect width="165" height="175" rx="16" fill="#fff7ed" stroke="#f97316" stroke-width="2.5" />
+      <circle cx="82" cy="55" r="24" fill="#ea580c" />
+      <!-- AI Chip Icon -->
+      <path d="M 72 55 Q 82 45 92 55 Q 82 65 72 55 Z" fill="#ffffff" />
+      <text x="82" y="59" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle">AI</text>
+      
+      <text x="82" y="118" fill="#9a3412" font-size="16" font-weight="800" text-anchor="middle">XGBoost</text>
+      <text x="82" y="138" fill="#c2410c" font-size="11.5" font-weight="700" text-anchor="middle">(ML Risk Predictor)</text>
+    </g>
+
+    <!-- Arrow from XGBoost to SHAP -->
+    <line x1="200" y1="168" x2="225" y2="168" stroke="#ea580c" stroke-width="3" marker-end="url(#arrow-right)" />
+
+    <!-- Inside 2: SHAP Box (Purple/Blue) -->
+    <g transform="translate(230, 80)">
+      <rect width="160" height="175" rx="16" fill="#faf5ff" stroke="#a855f7" stroke-width="2.5" />
+      <circle cx="80" cy="55" r="24" fill="#9333ea" />
+      <!-- Tree / Explain Lines -->
+      <circle cx="80" cy="45" r="3" fill="#ffffff" />
+      <circle cx="70" cy="62" r="3" fill="#ffffff" />
+      <circle cx="90" cy="62" r="3" fill="#ffffff" />
+      <line x1="80" y1="48" x2="70" y2="59" stroke="#ffffff" stroke-width="2" />
+      <line x1="80" y1="48" x2="90" y2="59" stroke="#ffffff" stroke-width="2" />
+      
+      <text x="80" y="118" fill="#581c87" font-size="16" font-weight="800" text-anchor="middle">SHAP</text>
+      <text x="80" y="138" fill="#7e22ce" font-size="11" font-weight="700" text-anchor="middle">(Explainable AI /</text>
+      <text x="80" y="154" fill="#7e22ce" font-size="11" font-weight="700" text-anchor="middle">Top Factors)</text>
+    </g>
+
+    <!-- Inside 3: DGMS Logistic Model (Green) -->
+    <g transform="translate(70, 290)">
+      <rect width="280" height="145" rx="16" fill="#f0fdf4" stroke="#22c55e" stroke-width="2.5" />
+      <circle cx="140" cy="42" r="22" fill="#16a34a" />
+      <circle cx="140" cy="42" r="9" fill="#ffffff" />
+      <text x="140" y="46" fill="#16a34a" font-size="10" font-weight="800" text-anchor="middle">AI</text>
+      
+      <text x="140" y="98" fill="#14532d" font-size="15" font-weight="800" text-anchor="middle">DGMS Logistic Model</text>
+      <text x="140" y="118" fill="#15803d" font-size="11.5" font-weight="700" text-anchor="middle">(Rule-based Fallback)</text>
+    </g>
+
+    <!-- Curved Connecting Lines between boxes -->
+    <!-- From XGBoost down to DGMS -->
+    <path d="M 85 260 C 85 280, 70 330, 65 350" fill="none" stroke="#ea580c" stroke-width="2.5" marker-end="url(#arrow-down)" />
+    <!-- From DGMS up to SHAP -->
+    <path d="M 355 350 C 375 330, 375 280, 360 260" fill="none" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arrow-green)" />
+  </g>
+
+  <!-- Bottom Label -->
+  <text x="230" y="670" fill="#0f172a" font-size="18" font-weight="800" text-anchor="middle">FastAPI AI Microservice</text>
+</svg>

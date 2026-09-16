@@ -1,0 +1,261 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1350 480" width="100%" height="100%" style="background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Soft shadow for cards on white background -->
+    <filter id="card-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.08" />
+    </filter>
+    <filter id="active-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#1d4ed8" flood-opacity="0.15" />
+    </filter>
+    <!-- Arrow marker -->
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb" />
+    </marker>
+    <!-- Risk Gauge Gradient -->
+    <linearGradient id="risk-gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+  </defs>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- 1. DATA INPUTS (LEFT) -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <g transform="translate(20, 30)">
+    <!-- Outer Card -->
+    <rect width="260" height="420" rx="16" fill="#ffffff" stroke="#bfdbfe" stroke-width="2" filter="url(#card-shadow)" />
+    
+    <!-- Header -->
+    <rect x="20" y="18" width="220" height="34" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" />
+    <text x="130" y="40" fill="#1e40af" font-size="14" font-weight="800" text-anchor="middle">Data Inputs</text>
+
+    <!-- Item 1: Violations & Incidents -->
+    <g transform="translate(18, 68)">
+      <rect width="224" height="70" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
+      <circle cx="32" cy="35" r="16" fill="#eff6ff" />
+      <rect x="24" y="25" width="16" height="20" rx="2" fill="#3b82f6" />
+      <text x="58" y="32" fill="#0f172a" font-size="12" font-weight="700">Violations &amp; Incidents</text>
+      <text x="58" y="48" fill="#64748b" font-size="10">Historical &amp; 30d/90d records</text>
+    </g>
+
+    <!-- Item 2: Spatial Hotspots (GPS) -->
+    <g transform="translate(18, 150)">
+      <rect width="224" height="70" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
+      <circle cx="32" cy="35" r="16" fill="#fffbeb" />
+      <path d="M 32 24 C 27 24 23 28 23 33 C 23 40 32 47 32 47 C 32 47 41 40 41 33 C 41 28 37 24 32 24 Z" fill="#d97706" />
+      <circle cx="32" cy="32" r="2.5" fill="#ffffff" />
+      <text x="58" y="32" fill="#0f172a" font-size="12" font-weight="700">Spatial Hotspots</text>
+      <text x="58" y="48" fill="#64748b" font-size="10">GPS Proof-of-Presence</text>
+    </g>
+
+    <!-- Item 3: Sensor Anomalies -->
+    <g transform="translate(18, 232)">
+      <rect width="224" height="70" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
+      <circle cx="32" cy="35" r="16" fill="#ecfdf5" />
+      <path d="M 32 24 A 11 11 0 0 1 32 46 M 28 28 A 6 6 0 0 1 28 42 M 32 35 L 32 35" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" />
+      <text x="58" y="32" fill="#0f172a" font-size="12" font-weight="700">Sensor Anomalies</text>
+      <text x="58" y="48" fill="#64748b" font-size="10">Ventilation O2 &amp; Ton Variance</text>
+    </g>
+
+    <!-- Item 4: Compliance Data -->
+    <g transform="translate(18, 314)">
+      <rect width="224" height="70" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" />
+      <circle cx="32" cy="35" r="16" fill="#faf5ff" />
+      <rect x="25" y="26" width="14" height="18" rx="2" fill="#9333ea" />
+      <path d="M 28 35 L 31 38 L 36 31" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+      <text x="58" y="32" fill="#0f172a" font-size="12" font-weight="700">Compliance Status</text>
+      <text x="58" y="48" fill="#64748b" font-size="10">DGMS Statutory Inspections</text>
+    </g>
+  </g>
+
+  <!-- Connectors from Data Inputs to FastAPI Core -->
+  <path d="M 280 130 C 315 130, 315 220, 345 220" fill="none" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow-blue)" />
+  <path d="M 280 215 C 315 215, 315 240, 345 240" fill="none" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow-blue)" />
+  <path d="M 280 295 C 315 295, 315 260, 345 260" fill="none" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow-blue)" />
+  <path d="M 280 375 C 315 375, 315 280, 345 280" fill="none" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow-blue)" />
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- 2. FASTAPI AI MICROSERVICE (CENTER) -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <g transform="translate(350, 30)">
+    <!-- Container Card -->
+    <rect width="420" height="420" rx="16" fill="#ffffff" stroke="#93c5fd" stroke-width="2.5" filter="url(#active-shadow)" />
+    
+    <!-- Top Batch Gear Badge -->
+    <g transform="translate(150, -18)">
+      <rect width="120" height="32" rx="16" fill="#1e3a8a" filter="url(#card-shadow)" />
+      <text x="60" y="20" fill="#ffffff" font-size="10" font-weight="800" text-anchor="middle">⚡ /analyze/all</text>
+      <text x="60" y="30" fill="#93c5fd" font-size="8" text-anchor="middle">Automated Batch Job</text>
+    </g>
+
+    <!-- Header -->
+    <g transform="translate(20, 24)">
+      <circle cx="18" cy="18" r="14" fill="#059669" />
+      <path d="M 16 10 L 21 16 L 17 16 L 19 24 L 14 18 L 18 18 Z" fill="#ffffff" />
+      <text x="40" y="23" fill="#0f172a" font-size="16" font-weight="800">FastAPI AI Microservice</text>
+      <rect x="280" y="4" width="95" height="26" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1" />
+      <text x="327" y="21" fill="#1d4ed8" font-size="11" font-weight="800" text-anchor="middle">PORT 8000</text>
+    </g>
+
+    <!-- Inside Model 1: XGBoost (Orange) -->
+    <g transform="translate(25, 75)">
+      <rect width="175" height="135" rx="12" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" />
+      <circle cx="30" cy="30" r="14" fill="#ea580c" />
+      <!-- AI Icon -->
+      <path d="M 25 30 Q 30 24 35 30 Q 30 36 25 30 Z" fill="#ffffff" />
+      <text x="50" y="28" fill="#9a3412" font-size="12.5" font-weight="800">XGBoost</text>
+      <text x="50" y="42" fill="#c2410c" font-size="9.5" font-weight="700">ML Risk Predictor</text>
+      <line x1="15" y1="58" x2="160" y2="58" stroke="#fed7aa" stroke-width="1" />
+      <text x="15" y="76" fill="#7c2d12" font-size="9.5" font-weight="600">• Calibrated Risk Index</text>
+      <text x="15" y="93" fill="#7c2d12" font-size="9.5" font-weight="600">• 8 DGMS Safety Features</text>
+      <text x="15" y="110" fill="#7c2d12" font-size="9.5" font-weight="600">• Probability (0–100%)</text>
+    </g>
+
+    <!-- Inside Model 2: SHAP (Purple) -->
+    <g transform="translate(220, 75)">
+      <rect width="175" height="135" rx="12" fill="#faf5ff" stroke="#d8b4fe" stroke-width="1.5" />
+      <circle cx="30" cy="30" r="14" fill="#9333ea" />
+      <!-- Tree/Explain icon -->
+      <circle cx="30" cy="24" r="3" fill="#ffffff" />
+      <line x1="30" y1="27" x2="24" y2="36" stroke="#ffffff" stroke-width="2" />
+      <line x1="30" y1="27" x2="36" y2="36" stroke="#ffffff" stroke-width="2" />
+      <text x="50" y="28" fill="#581c87" font-size="12.5" font-weight="800">SHAP AI</text>
+      <text x="50" y="42" fill="#7e22ce" font-size="9.5" font-weight="700">Explainability Engine</text>
+      <line x1="15" y1="58" x2="160" y2="58" stroke="#e9d5ff" stroke-width="1" />
+      <text x="15" y="76" fill="#4c1d95" font-size="9.5" font-weight="600">• Top-Factor Breakdown</text>
+      <text x="15" y="93" fill="#4c1d95" font-size="9.5" font-weight="600">• Root-Cause Insights</text>
+      <text x="15" y="110" fill="#4c1d95" font-size="9.5" font-weight="600">• Transparent Audits</text>
+    </g>
+
+    <!-- Inside Model 3: DGMS Logistic Fallback (Green) -->
+    <g transform="translate(25, 225)">
+      <rect width="370" height="85" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" />
+      <circle cx="30" cy="42" r="14" fill="#16a34a" />
+      <circle cx="30" cy="42" r="6" fill="#ffffff" />
+      <text x="52" y="36" fill="#14532d" font-size="13" font-weight="800">DGMS Calibrated Logistic Model</text>
+      <text x="52" y="52" fill="#15803d" font-size="10.5" font-weight="600">Deterministic Rule-based Fallback &amp; Statutory Thresholds</text>
+      <text x="52" y="68" fill="#166534" font-size="9.5">Guarantees 100% service uptime if ML models are cold-starting</text>
+    </g>
+
+    <!-- Result Banner: Final Risk Score -->
+    <g transform="translate(60, 325)">
+      <rect width="300" height="75" rx="12" fill="#1e3a8a" filter="url(#card-shadow)" />
+      <text x="150" y="32" fill="#ffffff" font-size="14" font-weight="800" text-anchor="middle">Calculated Mine Risk Index</text>
+      
+      <!-- Tier Pills -->
+      <rect x="25" y="44" width="55" height="20" rx="4" fill="#ef4444" />
+      <text x="52" y="58" fill="#ffffff" font-size="8.5" font-weight="800" text-anchor="middle">CRITICAL</text>
+
+      <rect x="88" y="44" width="55" height="20" rx="4" fill="#f59e0b" />
+      <text x="115" y="58" fill="#ffffff" font-size="8.5" font-weight="800" text-anchor="middle">HIGH</text>
+
+      <rect x="151" y="44" width="55" height="20" rx="4" fill="#eab308" />
+      <text x="178" y="58" fill="#ffffff" font-size="8.5" font-weight="800" text-anchor="middle">MEDIUM</text>
+
+      <rect x="214" y="44" width="60" height="20" rx="4" fill="#10b981" />
+      <text x="244" y="58" fill="#ffffff" font-size="8.5" font-weight="800" text-anchor="middle">COMPLIANT</text>
+    </g>
+  </g>
+
+  <!-- Connectors to Supabase & Frontend -->
+  <line x1="770" y1="240" x2="815" y2="240" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue)" />
+  <text x="792" y="230" fill="#2563eb" font-size="9.5" font-weight="800" text-anchor="middle">REST API</text>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- 3. CENTRAL DATABASE: SUPABASE (MIDDLE-RIGHT) -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <g transform="translate(820, 130)">
+    <rect width="150" height="220" rx="14" fill="#ffffff" stroke="#86efac" stroke-width="2" filter="url(#card-shadow)" />
+    
+    <!-- DB Cylinders -->
+    <g transform="translate(45, 20)">
+      <ellipse cx="30" cy="12" rx="25" ry="9" fill="#10b981" />
+      <path d="M 5 12 L 5 35 A 25 9 0 0 0 55 35 L 55 12 Z" fill="#059669" />
+      <ellipse cx="30" cy="35" rx="25" ry="9" fill="#10b981" />
+      <path d="M 5 35 L 5 58 A 25 9 0 0 0 55 58 L 55 35 Z" fill="#047857" />
+      <ellipse cx="30" cy="58" rx="25" ry="9" fill="#059669" />
+      <!-- Lock badge -->
+      <circle cx="48" cy="50" r="9" fill="#f59e0b" />
+      <rect x="45" y="47" width="6" height="6" fill="#ffffff" />
+    </g>
+
+    <text x="75" y="105" fill="#065f46" font-size="13" font-weight="800" text-anchor="middle">Supabase DB</text>
+    <text x="75" y="120" fill="#047857" font-size="9.5" font-weight="700" text-anchor="middle">PostgreSQL Cloud</text>
+    
+    <line x1="15" y1="132" x2="135" y2="132" stroke="#bbf7d0" stroke-width="1" />
+
+    <text x="15" y="148" fill="#14532d" font-size="9" font-weight="600">• risk_scores table</text>
+    <text x="15" y="165" fill="#14532d" font-size="9" font-weight="600">• SHA-256 Ledger</text>
+    <text x="15" y="182" fill="#14532d" font-size="9" font-weight="600">• Realtime WebSockets</text>
+    <text x="15" y="199" fill="#14532d" font-size="9" font-weight="600">• Escalation CRON</text>
+  </g>
+
+  <!-- Connector from Supabase to Frontend -->
+  <line x1="970" y1="240" x2="1010" y2="240" stroke="#2563eb" stroke-width="3" marker-end="url(#arrow-blue)" />
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- 4. REACT / TS DASHBOARD (RIGHT) -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <g transform="translate(1015, 30)">
+    <rect width="315" height="420" rx="16" fill="#0f172a" stroke="#334155" stroke-width="2" filter="url(#active-shadow)" />
+    
+    <!-- Top Browser Header -->
+    <circle cx="20" cy="18" r="4" fill="#ef4444" />
+    <circle cx="32" cy="18" r="4" fill="#f59e0b" />
+    <circle cx="44" cy="18" r="4" fill="#10b981" />
+    <text x="160" y="21" fill="#94a3b8" font-size="10" font-weight="600" text-anchor="middle">React/TS Dashboard</text>
+    <line x1="0" y1="32" x2="315" y2="32" stroke="#1e293b" stroke-width="1.5" />
+
+    <!-- Gauge Section -->
+    <g transform="translate(20, 45)">
+      <rect width="275" height="155" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1" />
+      <text x="137" y="22" fill="#cbd5e1" font-size="11" font-weight="700" text-anchor="middle">Mine Risk Score Meter</text>
+      
+      <!-- Semi-circle Gauge -->
+      <path d="M 60 100 A 55 55 0 0 1 215 100" fill="none" stroke="url(#risk-gauge-grad)" stroke-width="14" stroke-linecap="round" />
+      <!-- Needle -->
+      <line x1="137" y1="100" x2="175" y2="65" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" />
+      <circle cx="137" cy="100" r="6" fill="#ffffff" />
+      
+      <text x="137" y="126" fill="#ffffff" font-size="22" font-weight="800" text-anchor="middle">72<tspan font-size="12" fill="#64748b">/100</tspan></text>
+      <text x="137" y="144" fill="#f59e0b" font-size="11" font-weight="800" text-anchor="middle">HIGH RISK TIER</text>
+    </g>
+
+    <!-- SHAP Explainability Breakdown -->
+    <g transform="translate(20, 215)">
+      <rect width="275" height="185" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1" />
+      <text x="15" y="22" fill="#94a3b8" font-size="11" font-weight="700">SHAP Top-Factors &amp; Alerts</text>
+
+      <!-- Bar 1 -->
+      <g transform="translate(15, 36)">
+        <text x="0" y="10" fill="#e2e8f0" font-size="9.5" font-weight="600">Overdue DGMS Audit</text>
+        <text x="245" y="10" fill="#ef4444" font-size="9.5" font-weight="800" text-anchor="end">+37.5%</text>
+        <rect y="16" width="245" height="6" rx="3" fill="#334155" />
+        <rect y="16" width="180" height="6" rx="3" fill="#ef4444" />
+      </g>
+
+      <!-- Bar 2 -->
+      <g transform="translate(15, 72)">
+        <text x="0" y="10" fill="#e2e8f0" font-size="9.5" font-weight="600">Spatial Hotspot (3 Violations)</text>
+        <text x="245" y="10" fill="#f59e0b" font-size="9.5" font-weight="800" text-anchor="end">+25.0%</text>
+        <rect y="16" width="245" height="6" rx="3" fill="#334155" />
+        <rect y="16" width="120" height="6" rx="3" fill="#f59e0b" />
+      </g>
+
+      <!-- Bar 3 -->
+      <g transform="translate(15, 108)">
+        <text x="0" y="10" fill="#e2e8f0" font-size="9.5" font-weight="600">Ventilation O2 Drop (&lt;19%)</text>
+        <text x="245" y="10" fill="#3b82f6" font-size="9.5" font-weight="800" text-anchor="end">+15.0%</text>
+        <rect y="16" width="245" height="6" rx="3" fill="#334155" />
+        <rect y="16" width="75" height="6" rx="3" fill="#3b82f6" />
+      </g>
+
+      <!-- Bottom Status Pill -->
+      <g transform="translate(15, 145)">
+        <rect width="245" height="26" rx="6" fill="#2d1a22" stroke="#ef4444" stroke-width="1" />
+        <text x="122" y="17" fill="#ef4444" font-size="9.5" font-weight="800" text-anchor="middle">⚠️ GM Statutory Escalation Required</text>
+      </g>
+    </g>
+  </g>
+</svg>
