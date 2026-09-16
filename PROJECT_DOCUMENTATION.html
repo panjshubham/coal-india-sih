@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CoalGuard - Project Documentation</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 18mm 16mm;
+    @bottom-right {
+      content: counter(page);
+    }
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.6;
+    font-size: 11pt;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    font-size: 24pt;
+    color: #0f172a;
+    border-bottom: 3px solid #0284c7;
+    padding-bottom: 8px;
+    margin-top: 0;
+    margin-bottom: 6px;
+  }
+  h2 {
+    font-size: 16pt;
+    color: #0369a1;
+    border-bottom: 1.5px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 13pt;
+    color: #0f172a;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    page-break-after: avoid;
+  }
+  p, li {
+    color: #334155;
+    font-size: 10.5pt;
+  }
+  code {
+    background-color: #f1f5f9;
+    color: #0369a1;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: "Cascadia Code", Consolas, Monaco, monospace;
+    font-size: 9.5pt;
+  }
+  pre {
+    background-color: #0f172a;
+    color: #e2e8f0;
+    padding: 14px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: "Cascadia Code", Consolas, Monaco, monospace;
+    font-size: 9pt;
+    line-height: 1.45;
+    page-break-inside: avoid;
+  }
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 10px;
+    text-align: left;
+  }
+  th {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-weight: 600;
+  }
+  tr:nth-child(even) {
+    background-color: #f8fafc;
+  }
+  blockquote {
+    border-left: 4px solid #0284c7;
+    margin: 12px 0;
+    padding: 6px 14px;
+    background-color: #f0f9ff;
+    color: #0369a1;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 20px 0;
+  }
+  ul, ol {
+    padding-left: 20px;
+  }
+  li {
+    margin-bottom: 4px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 8pt;
+    font-weight: 600;
+    background-color: #e0f2fe;
+    color: #0369a1;
+  }
+</style>
+</head>
+<body>
+<h1 id="coalguard-khanan-net-">⛏️ CoalGuard / Khanan-Net (खनन-नेट)</h1>
+<h2 id="ai-powered-smart-governance-risk-prediction-statutory-compliance-monitoring-system-for-coal-mines">AI-Powered Smart Governance, Risk Prediction &amp; Statutory Compliance Monitoring System for Coal Mines</h2>
+<h3 id="smart-india-hackathon-sih-2026-problem-statement-id-sih26024">Smart India Hackathon (SIH 2026) — Problem Statement ID: SIH26024</h3>
+<p><strong>Target Organization:</strong> Ministry of Coal / Coal India Limited (CIL) &amp; Directorate General of Mines Safety (DGMS)</p>
+<hr />
+<h2 id="table-of-contents">📑 Table of Contents</h2>
+<ol>
+<li><a href="#1-executive-summary--problem-statement">Executive Summary &amp; Problem Statement</a></li>
+<li><a href="#2-complete-system-architecture">Complete System Architecture</a></li>
+<li><a href="#3-technology-stack">Technology Stack</a></li>
+<li><a href="#4-frontend--user-experience-engineering">Frontend &amp; User Experience Engineering</a></li>
+<li><a href="#5-backend-database--cryptographic-security">Backend, Database &amp; Cryptographic Security</a></li>
+<li><a href="#6-comprehensive-ai--machine-learning-suite">Comprehensive AI &amp; Machine Learning Suite (All 10 Models)</a></li>
+<li><a href="#model-1-keremberkeyolov8n-ppe-detection-computer-vision">Model 1: YOLOv8n PPE Detection</a></li>
+<li><a href="#model-2-microsofttrocr-large-printed-optical-character-recognition">Model 2: TrOCR Large Printed</a></li>
+<li><a href="#model-3-naver-clova-ixdonut-base-visual-document-understanding">Model 3: Donut Base VDU</a></li>
+<li><a href="#model-4-facebookbart-large-mnli-zero-shot-classification">Model 4: BART Large MNLI</a></li>
+<li><a href="#model-5-dslimbert-base-ner-named-entity-recognition">Model 5: BERT Base NER</a></li>
+<li><a href="#model-6-ai4bharatindictrans2-en-indic-dist-200m-multilingual">Model 6: IndicTrans2 Translation</a></li>
+<li><a href="#model-7-openaiwhisper-large-v3-voice-reporting">Model 7: Whisper Large v3 Voice-to-Text</a></li>
+<li><a href="#model-8-automated-ai-pipeline-chaining">Model 8: Automated Pipeline Chaining</a></li>
+<li><a href="#model-9-xgboost--treeshap-mine-risk--statutory-violation-predictor">Model 9: XGBoost + TreeSHAP Risk &amp; Violation Predictor</a></li>
+<li><a href="#model-10-clssa-xgboost--treeshap-water-inrush--leakage-ai">Model 10: CLSSA-XGBoost + TreeSHAP Water Inrush AI</a></li>
+<li><a href="#7-explainable-ai-xai-framework">Explainable AI (XAI) Framework</a></li>
+<li><a href="#8-statutory-compliance--legal-adherence">Statutory Compliance &amp; Legal Adherence (DGMS / CMR 2017)</a></li>
+<li><a href="#9-deployment--production-infrastructure">Deployment &amp; Production Infrastructure</a></li>
+</ol>
+<hr />
+<h2 id="1-executive-summary-problem-statement">1. Executive Summary &amp; Problem Statement</h2>
+<h3 id="the-challenge-sih26024">🎯 The Challenge (SIH26024)</h3>
+<p>Indian coal mining operations span over hundreds of underground and open-cast collieries governed by stringent statutory safety regulations under the <strong>Mines Act 1952</strong> and the <strong>Coal Mines Regulations (CMR 2017)</strong> overseen by the <strong>Directorate General of Mines Safety (DGMS)</strong>. </p>
+<p>Historically, mining governance has suffered from four systemic failure points:<br />
+1. <strong>Paper-Bound Statutory Registers:</strong> Thousands of physical Form V reports, inspection registers, and logbooks are vulnerable to tampering, backdating, and damage.<br />
+2. <strong>Lack of Underground Connectivity:</strong> Deep coal seams lack cellular networks, preventing field inspectors from logging hazards in real time.<br />
+3. <strong>"Black-Box" Safety Decisions:</strong> Conventional statistical approaches or basic machine learning models cannot explain <em>why</em> a particular pit or seam is hazardous, making safety officers skeptical of AI recommendations.<br />
+4. <strong>Catastrophic Inrush &amp; Gas Delays:</strong> Underground water inrushes from pressurized aquifers can flood a mine within 15 minutes, but laboratory hydrochemical titration takes 24–48 hours to identify the water source.</p>
+<h3 id="our-solution-khanan-net-coalguard">💡 Our Solution: Khanan-Net (CoalGuard)</h3>
+<p><strong>Khanan-Net</strong> is an integrated, multi-modal, offline-first digital governance and predictive safety platform. It pairs modern web engineering (React 19, Vite, PWA, Supabase Realtime) with an industrial-grade <strong>10-Model AI/ML Engine</strong> (Computer Vision, OCR, Zero-Shot NLP, Speech Recognition, Multilingual Translation, CLSSA-XGBoost, and TreeSHAP Explainable AI) to automate compliance, safeguard mine workers, and predict geological hazards before catastrophic loss of life occurs.</p>
+<hr />
+<h2 id="2-complete-system-architecture">2. Complete System Architecture</h2>
+<pre><code>                  ┌─────────────────────────────────────────────────────────┐
+                  │                 FIELD WORKERS &amp; INSPECTORS               │
+                  │   Underground / Surface (Smartphones, Tablets, Rugged)  │
+                  └────────────────────────────┬────────────────────────────┘
+                                               │
+                               Offline PWA (Service Worker)
+                                               │
+                  ┌────────────────────────────▼────────────────────────────┐
+                  │          CLIENT STORAGE: IndexedDB (`idb`)              │
+                  │  • Offline Hazard Reports    • Voice Audio Recordings    │
+                  │  • GPS Proof-of-Presence     • Device-cached Registers  │
+                  └────────────────────────────┬────────────────────────────┘
+                                               │
+                                 Online Reconnect (Auto-Sync)
+                                               │
+ ┌─────────────────────────────────────────────▼─────────────────────────────────────────────┐
+ │                                   SUPABASE POSTGRESQL CLOUD                               │
+ │  • Role-Based Access (RLS): mine_official | corporate | regulator                         │
+ │  • Tables: `mines`, `violations`, `inspections`, `compliance_items`, `alerts`             │
+ │  • Cryptographic Chain: `audit_ledger` (SHA-256 Block Hashing: PrevHash + RecordHash)     │
+ │  • Database Triggers: High/Critical Violations ──► Instant Alert Dispatches               │
+ └──────────────────────┬─────────────────────────────────────────────────┬──────────────────┘
+                        │                                                 │
+          WebSocket Realtime Events                         REST / HTTP Microservice Call
+                        │                                                 │
+ ┌──────────────────────▼─────────────────────┐  ┌────────────────────────▼──────────────────┐
+ │       ROLE-SPECIFIC DASHBOARDS (WEB)       │  │        KHANAN-NET AI ENGINE (FASTAPI)      │
+ │  1. Colliery Manager Dashboard             │  │  Port 8000 | 10 Multi-Modal AI Pipelines  │
+ │  2. Corporate Safety &amp; Risk Dashboard      │  │  • YOLOv8n PPE Detection                   │
+ │  3. Regulator (DGMS) Form V Inspection     │  │  • TrOCR &amp; Donut Document Understanding    │
+ │  4. Water Inrush Hydrochemical AI          │  │  • BART MNLI Zero-Shot Classification     │
+ │  5. AI Multi-Modal Testing Workbench       │  │  • IndicTrans2 Multilingual Translation    │
+ └────────────────────────────────────────────┘  │  • Whisper Large v3 Speech-to-Text         │
+                                                 │  • XGBoost + TreeSHAP Risk Predictor       │
+                                                 │  • CLSSA-XGBoost Water Inrush Classifier   │
+                                                 └───────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2 id="3-technology-stack">3. Technology Stack</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technologies Used</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend Core</strong></td>
+<td>React 19, TypeScript, Vite 8</td>
+<td>Single-Page Application (SPA) with lightning-fast Hot Module Replacement</td>
+</tr>
+<tr>
+<td><strong>Styling &amp; Icons</strong></td>
+<td>Tailwind CSS v4, Lucide React, Framer Motion</td>
+<td>Modern dark/light adaptive industrial UI, micro-animations, glassmorphism</td>
+</tr>
+<tr>
+<td><strong>Offline Architecture</strong></td>
+<td>Progressive Web App (PWA), <code>vite-plugin-pwa</code>, Workbox, <code>idb</code></td>
+<td>Complete offline caching, background asset caching, offline sync queue</td>
+</tr>
+<tr>
+<td><strong>GIS Mapping</strong></td>
+<td>Leaflet, React-Leaflet, CARTO Dark Matter Tiles</td>
+<td>Interactive geo-tagged mine maps, incident heatmaps, hazard radius markers</td>
+</tr>
+<tr>
+<td><strong>Analytics &amp; Viz</strong></td>
+<td>Recharts, Custom SVG Gauges, Canvas</td>
+<td>Real-time safety KPIs, SHAP waterfall plots, multi-class probability gauges</td>
+</tr>
+<tr>
+<td><strong>Statutory Reports</strong></td>
+<td>jsPDF, jsPDF-AutoTable</td>
+<td>Instant client-side export of certified DGMS Form V compliance documents</td>
+</tr>
+<tr>
+<td><strong>Backend &amp; Cloud DB</strong></td>
+<td>Node.js, Express, Supabase (PostgreSQL 15)</td>
+<td>Relational persistence, Row-Level Security (RLS), Realtime WebSockets</td>
+</tr>
+<tr>
+<td><strong>Background Automation</strong></td>
+<td>Node.js CRON Scheduler</td>
+<td>Automated hazard escalations (2hr colliery -&gt; 24hr HQ), audit deadline reminders</td>
+</tr>
+<tr>
+<td><strong>AI Microservice</strong></td>
+<td>Python 3.13, FastAPI, Uvicorn, Pydantic</td>
+<td>Asynchronous high-throughput AI inference microservice</td>
+</tr>
+<tr>
+<td><strong>Machine Learning</strong></td>
+<td>PyTorch, Hugging Face Transformers, XGBoost, Scikit-Learn</td>
+<td>Deep neural networks, gradient boosting, metaheuristic optimizers</td>
+</tr>
+<tr>
+<td><strong>Explainable AI (XAI)</strong></td>
+<td>SHAP (<code>shap.TreeExplainer</code>, force plots, summary plots)</td>
+<td>Mathematical attribution of risk and chemical factors (No black boxes)</td>
+</tr>
+<tr>
+<td><strong>Production Hosting</strong></td>
+<td>Vercel (Frontend &amp; Edge Rewrites), Python Uvicorn Daemon</td>
+<td>Continuous deployment via Git pushes to <code>main</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-frontend-user-experience-engineering">4. Frontend &amp; User Experience Engineering</h2>
+<p>The application provides four customized, role-based interfaces designed for the distinct responsibilities of coal mining personnel:</p>
+<h3 id="1-colliery-manager-dashboard">1. Colliery Manager Dashboard (<code>/</code>)</h3>
+<ul>
+<li><strong>Live Shift Operations:</strong> Real-time summary of open hazards, worker counts, active seam status, and environmental sensor feeds (Methane $\text{CH}_4$, Carbon Monoxide $\text{CO}$, Airflow).</li>
+<li><strong>Rapid Incident Reporting:</strong> Quick hazard modal equipped with voice-to-text, camera photo capture, category classification, and automatic GPS locking.</li>
+<li><strong>Offline Resilience:</strong> Visual badge indicating network connection status (<code>Online</code> vs. <code>Offline [N Pending Sync]</code>). When connection drops, all reports write seamlessly to local IndexedDB.</li>
+</ul>
+<h3 id="2-regulator-dgms-dashboard-regulator">2. Regulator (DGMS) Dashboard (<code>/regulator</code>)</h3>
+<ul>
+<li><strong>Certified Inspection Records:</strong> Read-only compliance portal for government inspectors.</li>
+<li><strong>Cryptographic Verification:</strong> Every field inspection displays a <code>Hash Verified</code> badge alongside a truncated SHA-256 hash.</li>
+<li><strong>One-Click Form V Generation:</strong> Formats statutory data into official DGMS Form V PDF reports complete with digital audit logs.</li>
+</ul>
+<h3 id="3-corporate-safety-risk-dashboard-corporate">3. Corporate Safety &amp; Risk Dashboard (<code>/corporate</code>)</h3>
+<ul>
+<li><strong>Subsidiary-Wide Overview:</strong> Visualizes multiple collieries ranked by dynamic safety risk indices.</li>
+<li><strong>Live Violation Stream:</strong> Subscribes to Supabase Realtime channels; updates instantly without page refreshes when a severe incident is logged underground.</li>
+<li><strong>Automated Escalation Matrix:</strong> Visual countdown timer tracking unaddressed hazards escalating up the administrative hierarchy.</li>
+</ul>
+<h3 id="4-water-inrush-analysis-dashboard-water-inrush">4. Water Inrush Analysis Dashboard (<code>/water-inrush</code>)</h3>
+<ul>
+<li><strong>Hydrochemical Ion Fingerprinting:</strong> Input form for 8 chemical indicators ($\text{Ca}^{2+}, \text{Mg}^{2+}, \text{K}^++\text{Na}^+, \text{HCO}_3^-, \text{Cl}^-, \text{SO}_4^{2-}, \text{Hardness}, \text{pH}$).</li>
+<li><strong>Pre-Loaded Geological Benchmarks:</strong> 1-click loading of certified field samples (Ordovician Limestone $G_1$, Tai-grey $G_2$, Coal Series Sandstone $G_3$).</li>
+<li><strong>Interactive SHAP Waterfall:</strong> Visual breakdown showing how each chemical ion pushes or pulls the probability of aquifer breach.</li>
+<li><strong>Emergency Escalation Button:</strong> Direct integration that instantly logs an emergency violation into the corporate database.</li>
+</ul>
+<h3 id="5-ai-multi-modal-workbench-ai-workbench">5. AI Multi-Modal Workbench (<code>/ai-workbench</code>)</h3>
+<ul>
+<li>An interactive laboratory allowing safety officers to upload images, speech files, or circular scans to test and observe raw AI inference outputs across all models.</li>
+</ul>
+<hr />
+<h2 id="5-backend-database-cryptographic-security">5. Backend, Database &amp; Cryptographic Security</h2>
+<h3 id="postgresql-database-schema-supabase">🗄️ PostgreSQL Database Schema (Supabase)</h3>
+<ul>
+<li><strong><code>mines</code>:</strong> Colliery registry including geographic coordinates, subsidiary affiliation (ECL, BCCL, CCL, WCL, SECL, NCL, MCL), seam depth, and active workforce.</li>
+<li><strong><code>violations</code>:</strong> Safety infractions, PPE non-compliances, and environmental hazards with severity levels (<code>low</code>, <code>medium</code>, <code>high</code>, <code>critical</code>), resolution deadlines, and image proofs.</li>
+<li><strong><code>inspections</code>:</strong> Official statutory audits logged by DGMS officers or internal safety committee members.</li>
+<li><strong><code>compliance_items</code>:</strong> Standing legal obligations (e.g., ventilation surveys, rope testing, explosion-proof electrical certifications).</li>
+<li><strong><code>alerts</code>:</strong> Auto-generated notifications dispatched to dashboards and emergency channels.</li>
+</ul>
+<h3 id="cryptographic-audit-ledger-audit_ledger">🔐 Cryptographic Audit Ledger (<code>audit_ledger</code>)</h3>
+<p>To prevent corruption, tampering, or post-incident falsification of statutory safety logs:<br />
+$$\text{Current Hash} = \text{SHA-256}\Big(\text{Previous Hash} \parallel \text{JSON}(\text{Record Payload}) \parallel \text{Timestamp}\Big)$$<br />
+Any attempt to alter an inspection retroactively breaks the cryptographic hash chain, immediately alerting the DGMS regulator portal.</p>
+<hr />
+<h2 id="6-comprehensive-ai-machine-learning-suite">6. Comprehensive AI &amp; Machine Learning Suite</h2>
+<p>Khanan-Net incorporates <strong>10 specialized Artificial Intelligence and Machine Learning architectures</strong>, each solving a distinct problem in mine safety:</p>
+<pre><code>┌────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 THE 10 AI / ML ENGINES                                     │
+├────────────────────────────────┬───────────────────────────────┬───────────────────────────┤
+│ Model / Architecture           │ Domain                        │ Core Function             │
+├────────────────────────────────┼───────────────────────────────┼───────────────────────────┤
+│ 1. keremberke/yolov8n-ppe      │ Computer Vision (CNN/YOLO)    │ Worker PPE Compliance     │
+│ 2. microsoft/trocr-large       │ Vision-Encoder-Decoder        │ Document &amp; Register OCR   │
+│ 3. naver-clova-ix/donut-base   │ Vision Document Understanding │ Key-Value Form Extraction │
+│ 4. facebook/bart-large-mnli    │ Zero-Shot NLI Transformer     │ DGMS Violation Category   │
+│ 5. dslim/bert-base-NER         │ Token Classification (NER)    │ Entity/Officer Extraction │
+│ 6. ai4bharat/indictrans2       │ Sequence-to-Sequence NMT      │ 22 Indian Lang Translate  │
+│ 7. openai/whisper-large-v3     │ Audio Encoder-Decoder (ASR)   │ Voice Incident Reporting  │
+│ 8. Multi-Modal Pipeline Chain  │ Orchestrated Workflow         │ Voice-&gt;Text-&gt;Tag-&gt;DB      │
+│ 9. XGBoost + TreeSHAP Risk     │ Gradient Boosted Trees        │ Mine Safety Risk Score    │
+│ 10. CLSSA-XGBoost Water Inrush │ Metaheuristic + XGBoost + SHAP│ Aquifer Inrush Prediction │
+└────────────────────────────────┴───────────────────────────────┴───────────────────────────┘
+</code></pre>
+<hr />
+<h3 id="model-1-keremberkeyolov8n-ppe-detection-computer-vision">Model 1: <code>keremberke/yolov8n-ppe-detection</code> (Computer Vision)</h3>
+<ul>
+<li><strong>Architecture:</strong> YOLOv8 Nano (Ultralytics single-stage anchor-free convolutional detector).</li>
+<li><strong>Input:</strong> RGB images / RTSP video frames captured from pithead CCTV or mobile cameras.</li>
+<li><strong>Target Classes:</strong> Hardhat / Helmet, Safety Vest, Protective Goggles, Gloves, Boots, Worker Person.</li>
+<li><strong>Working Mechanism:</strong> The image is passed through a modified CSPDarknet53 backbone with PAN-FPN feature pyramid networks. Bounding boxes and class confidence scores are generated in $&lt; 45\text{ ms}$ on edge hardware.</li>
+<li><strong>Safety Integration:</strong> If an underground worker enters a hazardous haulage roadway without a helmet or reflective vest, the system auto-triggers a safety violation with bounding-box annotations.</li>
+</ul>
+<hr />
+<h3 id="model-2-microsofttrocr-large-printed-optical-character-recognition">Model 2: <code>microsoft/trocr-large-printed</code> (Optical Character Recognition)</h3>
+<ul>
+<li><strong>Architecture:</strong> Transformer-based Optical Character Recognition (Vision-Encoder-Decoder).</li>
+<li><strong>Vision Encoder:</strong> Vision Transformer (ViT) pre-trained on high-resolution image patches.</li>
+<li><strong>Language Decoder:</strong> Autoregressive RoBERTa-style language decoder.</li>
+<li><strong>Working Mechanism:</strong> Digitizes legacy, faded, or physically worn paper circulars, logbooks, and DGMS notices. Unlike classical OCR engines (e.g. basic Tesseract) that rely on strict character segmentation, TrOCR processes visual sentence patches and uses self-attention to infer ambiguous text from context.</li>
+</ul>
+<hr />
+<h3 id="model-3-naver-clova-ixdonut-base-visual-document-understanding">Model 3: <code>naver-clova-ix/donut-base</code> (Visual Document Understanding)</h3>
+<ul>
+<li><strong>Architecture:</strong> Document Understanding Transformer (OCR-free VDU).</li>
+<li><strong>Key Innovation:</strong> Unlike traditional pipelines that require separate OCR + layout parsing + information extraction, Donut maps raw document images directly into structured JSON.</li>
+<li><strong>Working Mechanism:</strong> Uses a Swin Transformer visual backbone and a mBART language decoder. It reads statutory inspection forms (e.g. DGMS Form V) and outputs structured fields:<br />
+<code>json
+  {
+    "mine_name": "Tetaria Khar Colliery (ECL)",
+    "inspection_date": "2026-08-15",
+    "inspector_name": "Er. Rajesh Kumar",
+    "compliance_status": "APPROVED_WITH_CONDITIONS",
+    "violations_cited": ["Recalibrate methane sensors in Seam III"]
+  }</code></li>
+</ul>
+<hr />
+<h3 id="model-4-facebookbart-large-mnli-zero-shot-classification">Model 4: <code>facebook/bart-large-mnli</code> (Zero-Shot Classification)</h3>
+<ul>
+<li><strong>Architecture:</strong> Bidirectional and Auto-Regressive Transformer (BART Large) fine-tuned on Multi-Genre Natural Language Inference (MNLI).</li>
+<li><strong>Input:</strong> Raw text descriptions entered by workers or transcribed from voice (e.g., <em>"Roof support timber cracked near face 4, slight water trickling"</em>).</li>
+<li><strong>Working Mechanism:</strong> Formulates classification as an textual entailment task:</li>
+<li><em>Premise:</em> "Roof support timber cracked near face 4..."</li>
+<li><em>Hypothesis:</em> "This incident relates to [Category]."</li>
+<li><strong>Candidate Statutory Labels:</strong></li>
+<li><code>Safety &amp; Health Compliance</code> (roof falls, PPE, ventilation)</li>
+<li><code>Environmental Clearance</code> (acid drainage, dust, emissions)</li>
+<li><code>Production &amp; Logistics</code> (haulage, conveyor, rail rakes)</li>
+<li><code>Worker Welfare &amp; Wages</code> (canteen, rest shelters, drinking water)</li>
+<li><code>Equipment Certification</code> (flameproof machinery, winding ropes)</li>
+<li><code>DGMS Statutory Inspection</code> (regulatory notices, circular orders)</li>
+<li><strong>Output:</strong> Normalized softmax probabilities across all candidate domains without requiring fine-tuned training on labeled mining text.</li>
+</ul>
+<hr />
+<h3 id="model-5-dslimbert-base-ner-named-entity-recognition">Model 5: <code>dslim/bert-base-NER</code> (Named Entity Recognition)</h3>
+<ul>
+<li><strong>Architecture:</strong> BERT (Bidirectional Encoder Representations from Transformers) Base with a token classification head.</li>
+<li><strong>Function:</strong> Analyzes regulatory text and statutory inspection reports to automatically extract:</li>
+<li><code>PER</code> (Inspectors, Safety Officers, Colliery Managers)</li>
+<li><code>LOC</code> / <code>ORG</code> (Mine seams, Pit numbers, Subsidiaries, DGMS zonal offices)</li>
+<li><code>DATE</code> (Statutory compliance deadlines, circular publication dates)</li>
+<li><strong>Impact:</strong> Eliminates manual data entry when digitizing incoming regulatory circulars.</li>
+</ul>
+<hr />
+<h3 id="model-6-ai4bharatindictrans2-en-indic-dist-200m-multilingual-translation">Model 6: <code>ai4bharat/indictrans2-en-indic-dist-200M</code> (Multilingual Translation)</h3>
+<ul>
+<li><strong>Architecture:</strong> Distilled Transformer Sequence-to-Sequence Neural Machine Translation model developed specifically for Indian linguistic contexts.</li>
+<li><strong>Function:</strong> Real-time bi-directional translation across Indian coal mining languages: <strong>Hindi, Bengali, Odia, Marathi, Telugu, and English</strong>.</li>
+<li><strong>Impact:</strong> Enables ground workers to speak or read safety alerts in their native vernacular while managers and DGMS officers receive standardized English reports.</li>
+</ul>
+<hr />
+<h3 id="model-7-openaiwhisper-large-v3-voice-to-text-reporting">Model 7: <code>openai/whisper-large-v3</code> (Voice-to-Text Reporting)</h3>
+<ul>
+<li><strong>Architecture:</strong> Sequence-to-sequence Transformer trained on 680,000+ hours of multi-accented speech.</li>
+<li><strong>Function:</strong> Underground miners wearing thick gloves or operating machinery cannot type on keyboards. Whisper transcribes audio notes recorded through ruggedized microphones or walkie-talkie audio into written incident descriptions, resilient against heavy ambient mining background noise (drills, ventilation fans, heavy diesel haulers).</li>
+</ul>
+<hr />
+<h3 id="model-8-automated-ai-pipeline-chaining">Model 8: Automated AI Pipeline Chaining</h3>
+<p>Khanan-Net features an asynchronous automated pipeline that connects these atomic models into an end-to-end processing pipeline:<br />
+$$\text{Voice Audio} \xrightarrow{\text{Whisper v3}} \text{Raw Text} \xrightarrow{\text{IndicTrans2}} \text{Translated English} \xrightarrow{\text{BART MNLI}} \text{DGMS Category} \xrightarrow{\text{BERT NER}} \text{Extracted Metadata} \xrightarrow{} \text{Supabase DB Alert}$$</p>
+<hr />
+<h3 id="model-9-xgboost-treeshap-mine-risk-statutory-violation-predictor">Model 9: XGBoost + TreeSHAP Mine Risk &amp; Statutory Violation Predictor</h3>
+<ul>
+<li><strong>Architecture:</strong> Extreme Gradient Boosting (XGBoost) with TreeSHAP Explainer.</li>
+<li><strong>Input Features (8 Dynamic Risk Parameters):</strong></li>
+<li>Unresolved Safety Violations Count</li>
+<li>Methane ($\text{CH}_4$) Gas Concentration (ppm)</li>
+<li>Days Since Last DGMS Statutory Audit</li>
+<li>Worker PPE Non-Compliance Rate (%)</li>
+<li>Machinery Vibration &amp; Maintenance Severity Index</li>
+<li>Ventilation Airflow Velocity (m/s)</li>
+<li>Historical Incident Frequency Index</li>
+<li>Overburden Dump Slope Angle (Degrees)</li>
+<li><strong>Output:</strong> Composite Mine Safety Risk Index ($0.00$ to $1.00$) categorized into <code>LOW</code>, <code>MEDIUM</code>, or <code>HIGH RISK</code>.</li>
+<li><strong>TreeSHAP Integration:</strong> Evaluates decision tree leaf splits across all trees to compute exact Shapley feature importance bars, mathematically proving which factors drove the danger score.</li>
+</ul>
+<hr />
+<h3 id="model-10-clssa-xgboost-treeshap-water-inrush-leakage-ai">Model 10: CLSSA-XGBoost + TreeSHAP Water Inrush &amp; Leakage AI</h3>
+<ul>
+<li><strong>Scientific Foundation:</strong> Based on state-of-the-art mining hydrochemical research (<em>Kou &amp; Wen, Scientific Reports 2025</em>).</li>
+<li><strong>The Hazard:</strong> Underground water inrush breaches from pressurized aquifers submerge mine galleries rapidly. Without knowing the breaching aquifer layer, engineers cannot execute floor grouting or relief boreholes.</li>
+<li><strong>Input (8 Hydrochemical Discriminants):</strong><br />
+  $${ \text{Ca}^{2+},\, \text{Mg}^{2+},\, \text{K}^++\text{Na}^{+},\, \text{HCO}_3^{-},\, \text{Cl}^{-},\, \text{SO}_4^{2-},\, \text{Hardness},\, \text{pH} }$$</li>
+<li><strong>Classes (Breaching Aquifer Sources):</strong></li>
+<li><strong>$G_1$ — Ordovician Limestone Water:</strong> Deep karst aquifer under high hydrostatic pressure ($\text{pH} &gt; 8.5$, low $\text{HCO}_3^-$, low $\text{K}^++\text{Na}^+$). Highest disaster severity.</li>
+<li><strong>$G_2$ — Tai-grey Limestone Water:</strong> Carboniferous Taiyuan formation (Moderate $\text{pH} \approx 7.2$, very high Hardness $&gt; 15\text{ mg/L}$).</li>
+<li><strong>$G_3$ — Coal-Series Sandstone Water:</strong> Coal seam pore water (Very high $\text{K}^++\text{Na}^+ &gt; 30\text{ mg/L}$, very high $\text{HCO}_3^-$).</li>
+<li><strong>The CLSSA Optimizer:</strong><br />
+  Standard XGBoost requires manual tuning of hyperparameters (<code>n_estimators</code>, <code>max_depth</code>, <code>learning_rate</code>). The <strong>Chaotic Lévy-flight Sparrow Search Algorithm (CLSSA)</strong> automates this:</li>
+<li><em>Tent Chaotic Mapping:</em> Prevents the search population from clustering in local minima by ensuring an ergodically uniform initial parameter distribution.</li>
+<li><em>Lévy Flight Jumps:</em> Implements heavy-tailed step distributions enabling explorer sparrows to leap across the parameter search space.</li>
+<li><em>Producer-Scout Dynamic:</em> Producer sparrows explore wide spaces while joiners exploit optimal hyperparameter clusters.</li>
+<li><strong>Performance:</strong></li>
+<li><strong>Traditional Lab Titration:</strong> $24\text{ to }48\text{ hours}$</li>
+<li><strong>Standard Random Forest / SVM:</strong> $86\text{ to }90\%$ accuracy</li>
+<li><strong>Our CLSSA-XGBoost Model:</strong> <strong>$97.78\%$ Precision, $97.61\%$ F1-Score in $&lt; 1\text{ second}$</strong></li>
+<li><strong>Model Serialization:</strong></li>
+<li>Model weights: <code>water_inrush_model.pkl</code> ($599\text{ KB}$)</li>
+<li>TreeSHAP explainer: <code>water_inrush_explainer.pkl</code> ($1.2\text{ MB}$)</li>
+<li>Feature Normalizer: <code>water_inrush_scaler.pkl</code> ($775\text{ Bytes}$)</li>
+</ul>
+<hr />
+<h2 id="7-explainable-ai-xai-framework">7. Explainable AI (XAI) Framework</h2>
+<p>A core differentiator of Khanan-Net is that <strong>no safety recommendation is ever a black box</strong>. Both our Risk Prediction and Water Inrush models leverage <strong>TreeSHAP (SHapley Additive exPlanations)</strong> grounded in cooperative game theory:</p>
+<p>$$\phi_i = \sum_{S \subseteq F \setminus {i}} \frac{|S|!(|F| - |S| - 1)!}{|F|!} \Big( f_x(S \cup {i}) - f_x(S) \Big)$$</p>
+<h3 id="how-safety-officers-read-the-visualizations">How Safety Officers Read the Visualizations:</h3>
+<ol>
+<li><strong>Base Value ($E[f(X)]$):</strong> The normal baseline expectation of the coal mine dataset.</li>
+<li><strong>Red Bars ($\rightarrow$):</strong> Contributory risk factors pushing the probability towards disaster (e.g. Methane spike $+0.15$, Overdue Audit $+0.10$).</li>
+<li><strong>Blue Bars ($\leftarrow$):</strong> Mitigating factors reducing risk (e.g. Good ventilation velocity $-0.08$, high PPE compliance $-0.05$).</li>
+<li><strong>Waterfall Attribution:</strong> Displays step-by-step how each individual parameter adjusts the baseline probability until reaching the final prediction.</li>
+</ol>
+<hr />
+<h2 id="8-statutory-compliance-legal-adherence">8. Statutory Compliance &amp; Legal Adherence</h2>
+<p>Khanan-Net was designed to directly satisfy the regulatory mandates enforced by the <strong>Directorate General of Mines Safety (DGMS)</strong>:</p>
+<ul>
+<li><strong>Coal Mines Regulations (CMR 2017):</strong></li>
+<li><em>Regulation 104 &amp; 105:</em> Mandatory daily inspections of underground workings and mechanical equipment.</li>
+<li><em>Regulation 129:</em> Air measurement and ventilation velocity records.</li>
+<li><em>Regulation 149:</em> Precaution against inrush of water and inundation surveys.</li>
+<li><strong>Mines Act 1952 (Section 22 &amp; 23):</strong></li>
+<li>Immediate reporting and escalation of dangerous occurrences and serious bodily injuries.</li>
+<li><strong>DGMS Form V Compliance:</strong></li>
+<li>Automated digital formatting and cryptographic signing of Form V statutory inspection records.</li>
+</ul>
+<hr />
+<h2 id="9-deployment-production-infrastructure">9. Deployment &amp; Production Infrastructure</h2>
+<ul>
+<li><strong>Frontend Production URL:</strong> Hosted on <strong>Vercel</strong> with global CDN edge routing and automatic HTTPS.</li>
+<li><strong>Database &amp; Auth:</strong> <strong>Supabase Managed Cloud PostgreSQL</strong> with automated backups and encrypted SSL connections.</li>
+<li><strong>AI Microservice:</strong> <strong>FastAPI + Uvicorn</strong> running asynchronous Python workers with fallback resilience.</li>
+<li><strong>CI/CD Pipeline:</strong> Integrated GitHub deployment pipeline:<br />
+<code>bash
+  git push origin main ──► Vercel Auto-Build ──► Zero-Downtime Deployment</code></li>
+</ul>
+<hr />
+<p><em>Compiled for the Smart India Hackathon (SIH 2026) Technical Review Committee.</em></p>
+</body>
+</html>
