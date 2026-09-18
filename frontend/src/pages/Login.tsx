@@ -115,10 +115,10 @@ export default function Login() {
           <div className="w-full p-4 rounded-lg bg-slate-900/80 border border-slate-700/60 text-left text-xs text-slate-300 space-y-2">
             <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[10px]">
               <Lock className="w-3.5 h-3.5 text-amber-400" />
-              Role-Based Provisioned Access Only
+              Corporate & Regulator Registration Open
             </div>
             <p className="text-slate-400 leading-normal text-[11px]">
-              Public self-registration is permanently disabled. User accounts with statutory clearance are provisioned exclusively by Corporate HQ Administrators.
+              Corporate Officers and DGMS Regulatory Auditors can now self-register using their enterprise credentials. Mine Officials are provisioned by Corporate HQ.
             </p>
           </div>
         </div>
@@ -132,8 +132,14 @@ export default function Login() {
       {/* Right Panel - Form */}
       <div className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-12 relative" style={{ backgroundColor: 'var(--cg-surface)' }}>
         
-        {/* Theme Toggle — top right */}
-        <div className="absolute top-6 right-6">
+        {/* Theme Toggle & Sign Up — top right */}
+        <div className="absolute top-6 right-6 flex items-center gap-3">
+          <Link
+            to="/signup"
+            className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline transition-colors"
+          >
+            New User? Sign Up
+          </Link>
           <ThemeToggle variant="landing" />
         </div>
         
@@ -268,6 +274,14 @@ export default function Login() {
               </button>
             </div>
           </form>
+
+          {/* Registration Link */}
+          <div className="mt-6 pt-4 border-t border-[var(--cg-border)] text-center text-xs text-slate-600 dark:text-slate-400">
+            Need an official enterprise account?{' '}
+            <Link to="/signup" className="font-bold text-amber-600 dark:text-amber-400 hover:underline">
+              Sign Up as Corporate or Regulator
+            </Link>
+          </div>
 
         </div>
       </div>

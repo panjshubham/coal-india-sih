@@ -295,10 +295,16 @@ export default function Landing() {
                           </button>
                         </>
                       ) : (
-                        <Link to="/login" className="flex items-center gap-2 px-3 py-2 text-sm text-on-surface hover:bg-surface-container rounded-md">
-                          <span className="material-symbols-outlined text-[18px]">login</span>
-                          Sign In
-                        </Link>
+                        <>
+                          <Link to="/login" className="flex items-center gap-2 px-3 py-2 text-sm text-on-surface hover:bg-surface-container rounded-md">
+                            <span className="material-symbols-outlined text-[18px]">login</span>
+                            Sign In
+                          </Link>
+                          <Link to="/signup" className="flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-surface-container rounded-md font-semibold">
+                            <span className="material-symbols-outlined text-[18px]">person_add</span>
+                            Sign Up
+                          </Link>
+                        </>
                       )}
                     </div>
                   </div>

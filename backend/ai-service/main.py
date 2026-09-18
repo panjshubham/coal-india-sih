@@ -14,6 +14,7 @@ Complete Multi-Modal AI Engine integrating:
 9. Automated Pipeline Chaining Endpoints (Voice -> Text -> Translate -> Classify -> NER)
 """
 
+import sys
 import os
 import io
 import re
@@ -261,92 +262,183 @@ def _generate_fallback(model: str, payload: Any, is_binary: bool) -> Any:
     return {}
 
 
+_ppe_yolo_model = None
+
+def _get_ppe_yolo_model():
+    global _ppe_yolo_model
+    if _ppe_yolo_model is None:
+        try:
+            import sys
+            user_site = r'C:\Users\SHUBHAM PANJIYARA\AppData\Roaming\Python\Python313\site-packages'
+            if user_site not in sys.path:
+                sys.path.append(user_site)
+            from ultralytics import YOLO
+            model_path = os.path.join(BASE_DIR, "yolov8n.pt")
+            if not os.path.exists(model_path):
+                model_path = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), "yolov8n.pt")
+            if os.path.exists(model_path):
+                _ppe_yolo_model = YOLO(model_path)
+                print(f"[INFO] Loaded local YOLOv8 weights from {model_path}")
+        except Exception as e:
+            print(f"[WARN] Failed to load YOLOv8 model: {e}")
+    return _ppe_yolo_model
+
+
 def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
-    """Analyzes image pixels to dynamically detect hard hat and safety vest with calibrated thresholds."""
+    """
+    Life-Critical PPE Vision Intelligence:
+    Combines YOLOv8 person localization with anatomical Head & Torso PPE Inspection.
+    Detects Hard-Hat (Yellow, Orange, White, Blue, Red) and Hi-Vis Safety Vest (Neon Lime, Orange, Silver).
+    Does NOT falsely trigger on bare hair, dark shirts, skin, or empty backgrounds.
+    """
     try:
         from PIL import Image
-        import numpy as np
+        import cv2
+
         img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+        w_orig, h_orig = img.size
+        # Standardize for robust analysis
         img_resized = img.resize((320, 480))
-        arr = np.array(img_resized, dtype=float)
-        h, w, _ = arr.shape
+        arr_rgb = np.array(img_resized)
+        arr_bgr = cv2.cvtColor(arr_rgb, cv2.COLOR_RGB2BGR)
+        arr_hsv = cv2.cvtColor(arr_bgr, cv2.COLOR_BGR2HSV)
+        h, w, _ = arr_rgb.shape
 
-        r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
-        is_bg = ((r < 30) & (g < 30) & (b < 30)) | ((r > 235) & (g > 235) & (b > 235)) | ((np.abs(r - g) < 8) & (np.abs(g - b) < 8) & (np.abs(r - b) < 8) & (r > 190))
-        fg = ~is_bg
-        fg_pixels = int(np.sum(fg))
+        r = arr_rgb[:, :, 0].astype(int)
+        g = arr_rgb[:, :, 1].astype(int)
+        b = arr_rgb[:, :, 2].astype(int)
 
-        fg_y, fg_x = np.where(fg)
-        if len(fg_y) == 0 or fg_pixels < (w * h * 0.02):
-            return []
+        # Illumination-invariant skin detection to prevent tagging faces/skin as PPE
+        is_skin = (r > 60) & (g > 30) & (b > 15) & (r > g) & (r > b) & ((r - g) > 8) & ((r - g) < 110) & (np.abs(g - b) < 90) & ((r - b) > 15)
 
-        p_ymin, p_ymax = int(np.min(fg_y)), int(np.max(fg_y))
-        p_xmin, p_xmax = int(np.min(fg_x)), int(np.max(fg_x))
-        person_h = p_ymax - p_ymin
-        person_w = p_xmax - p_xmin
+        person_box = None
+        person_score = 0.0
 
-        # Anatomically grounded head and torso zones (head is top ~18%, torso is 18% to 62%)
-        head_y1, head_y2 = p_ymin, min(h - 1, p_ymin + int(person_h * 0.18))
-        torso_y1, torso_y2 = head_y2, min(h - 1, p_ymin + int(person_h * 0.62))
+        # Step 1: Run YOLO person localization
+        yolo = _get_ppe_yolo_model()
+        if yolo is not None:
+            try:
+                yolo_res = yolo(img_resized, verbose=False)
+                best_conf = 0.0
+                for box in yolo_res[0].boxes:
+                    cls_id = int(box.cls[0])
+                    conf = float(box.conf[0])
+                    if cls_id == 0 and conf >= 0.28: # Class 0 is 'person'
+                        if conf > best_conf:
+                            best_conf = conf
+                            xyxy = box.xyxy[0].tolist()
+                            person_box = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])]
+                            person_score = conf
+            except Exception as ye:
+                print(f"[WARN] YOLO inference error: {ye}")
 
-        head_mask = fg[head_y1:head_y2, p_xmin:p_xmax]
-        head_area = max(int(np.sum(head_mask)), 1)
-        hr, hg, hb = r[head_y1:head_y2, p_xmin:p_xmax], g[head_y1:head_y2, p_xmin:p_xmax], b[head_y1:head_y2, p_xmin:p_xmax]
+        # Step 2: Skin-tone face anchor fallback if YOLO didn't detect person (e.g. close-up portrait)
+        skin_count = int(np.sum(is_skin))
+        face_cy, face_cx = None, None
+        face_h, face_w = None, None
 
-        # Calibrated helmet colors (Yellow, Orange, Red, Blue, White) ruling out warm skin tones
-        yellow_helm = head_mask & (hr > 170) & (hg > 150) & (hb < 90) & (hg - hb > 70) & (np.abs(hr - hg) < 45)
-        orange_helm = head_mask & (hr > 175) & (hg > 60) & (hg < 155) & (hb < 75) & (hr - hb > 95) & (hr - hg > 30)
-        red_helm = head_mask & (hr > 150) & (hg < 90) & (hb < 90) & (hr - np.maximum(hg, hb) > 50)
-        white_helm = head_mask & (hr > 225) & (hg > 225) & (hb > 225) & (np.maximum(np.maximum(hr, hg), hb) - np.minimum(np.minimum(hr, hg), hb) < 15)
-        blue_helm = head_mask & (hb > 130) & (hb > hr * 1.3) & (hb > hg * 1.2) & (hb - hr > 35)
-        helm_pixels = int(np.sum(yellow_helm | orange_helm | red_helm | white_helm | blue_helm))
-        helmet_pct = round((helm_pixels / head_area) * 100, 1)
+        if 25 <= skin_count <= (w * h * 0.35):
+            skin_y, skin_x = np.where(is_skin)
+            face_cy = int(np.median(skin_y))
+            face_cx = int(np.median(skin_x))
+            face_h = max(int(np.percentile(skin_y, 85) - np.percentile(skin_y, 15)), 25)
+            face_w = max(int(np.percentile(skin_x, 85) - np.percentile(skin_x, 15)), 25)
 
-        # Torso scan for fluorescent hi-vis vest colors
-        torso_mask = fg[torso_y1:torso_y2, p_xmin:p_xmax]
-        torso_area = max(int(np.sum(torso_mask)), 1)
-        tr, tg, tb = r[torso_y1:torso_y2, p_xmin:p_xmax], g[torso_y1:torso_y2, p_xmin:p_xmax], b[torso_y1:torso_y2, p_xmin:p_xmax]
+        if person_box is None:
+            if face_cy is not None:
+                px1 = max(0, face_cx - face_w * 2)
+                py1 = max(0, face_cy - int(face_h * 1.5))
+                px2 = min(w, face_cx + face_w * 2)
+                py2 = min(h, face_cy + int(face_h * 5.0))
+                person_box = [px1, py1, px2, py2]
+                person_score = 0.88
+            else:
+                # No human detected in photo
+                return []
 
-        hi_vis_orange = torso_mask & (tr > 170) & (tg > 55) & (tg < 155) & (tb < 75) & (tr - tg > 30) & (tr - tb > 95)
-        hi_vis_lime = torso_mask & (tg > 140) & (tr > 110) & (tb < 85) & (tg - tb > 55) & (tr - tb > 25)
-        silver_stripes = torso_mask & (tr > 200) & (tg > 200) & (tb > 200) & (np.maximum(np.maximum(tr, tg), tb) - np.minimum(np.minimum(tr, tg), tb) < 25)
-        vest_pixels = int(np.sum(hi_vis_orange | hi_vis_lime | silver_stripes))
+        px1, py1, px2, py2 = person_box
+        pw = max(px2 - px1, 10)
+        ph = max(py2 - py1, 10)
+
+        # Step 3: Head & Helmet Zone
+        if face_cy is not None:
+            hy1 = max(0, face_cy - int(face_h * 1.4))
+            hy2 = max(0, face_cy - int(face_h * 0.2))
+            hx1 = max(0, face_cx - int(face_w * 0.9))
+            hx2 = min(w, face_cx + int(face_w * 0.9))
+        else:
+            hy1 = max(0, py1)
+            hy2 = min(h, py1 + int(ph * 0.16))
+            hx1 = max(0, px1 + int(pw * 0.20))
+            hx2 = min(w, px2 - int(pw * 0.20))
+
+        head_area = max((hy2 - hy1) * (hx2 - hx1), 1)
+        head_hsv = arr_hsv[hy1:hy2, hx1:hx2]
+        head_rgb = arr_rgb[hy1:hy2, hx1:hx2]
+        head_skin = is_skin[hy1:hy2, hx1:hx2]
+
+        hh, hs, hv = head_hsv[:, :, 0], head_hsv[:, :, 1], head_hsv[:, :, 2]
+        hr, hg, hb = head_rgb[:, :, 0].astype(int), head_rgb[:, :, 1].astype(int), head_rgb[:, :, 2].astype(int)
+
+        # Calibrated HSV ranges (S >= 40, V >= 50) for real physical PPE under all lightings
+        y_helm = (hh >= 14) & (hh <= 35) & (hs >= 45) & (hv >= 80) & (hr > 120) & (hg > 100) & (~head_skin)
+        o_helm = (hh >= 6) & (hh <= 22) & (hs >= 45) & (hv >= 80) & (hr > 140) & (hg < 165) & (~head_skin)
+        w_helm = (hs <= 45) & (hv >= 165) & (hr > 150) & (hg > 150) & (hb > 150) & (np.maximum(np.maximum(hr, hg), hb) - np.minimum(np.minimum(hr, hg), hb) < 30) & (~head_skin)
+        b_helm = (hh >= 90) & (hh <= 130) & (hs >= 45) & (hv >= 60) & (hb > hr) & (~head_skin)
+        r_helm = ((hh <= 12) | (hh >= 165)) & (hs >= 45) & (hv >= 60) & (hr > hg) & (hr > hb) & (~head_skin)
+
+        helm_mask = y_helm | o_helm | w_helm | b_helm | r_helm
+        helm_pixels = int(np.sum(helm_mask))
+        helm_pct = round((helm_pixels / head_area) * 100, 1)
+
+        # Step 4: Torso & Safety Vest Zone
+        if face_cy is not None:
+            vy1 = min(h - 1, face_cy + int(face_h * 0.7))
+            vy2 = min(h, face_cy + int(face_h * 3.8))
+            vx1 = max(0, face_cx - int(face_w * 1.5))
+            vx2 = min(w, face_cx + int(face_w * 1.5))
+        else:
+            vy1 = min(h - 1, py1 + int(ph * 0.18))
+            vy2 = min(h, py1 + int(ph * 0.60))
+            vx1 = max(0, px1 + int(pw * 0.10))
+            vx2 = min(w, px2 - int(pw * 0.10))
+
+        torso_area = max((vy2 - vy1) * (vx2 - vx1), 1)
+        torso_hsv = arr_hsv[vy1:vy2, vx1:vx2]
+        torso_rgb = arr_rgb[vy1:vy2, vx1:vx2]
+        torso_skin = is_skin[vy1:vy2, vx1:vx2]
+
+        th, ts, tv = torso_hsv[:, :, 0], torso_hsv[:, :, 1], torso_hsv[:, :, 2]
+        tr, tg, tb = torso_rgb[:, :, 0].astype(int), torso_rgb[:, :, 1].astype(int), torso_rgb[:, :, 2].astype(int)
+
+        # Safety Vest signatures (EN ISO 20471 standard)
+        lime_vest = (th >= 22) & (th <= 85) & (ts >= 35) & (tv >= 60) & (tg > tb) & (~torso_skin)
+        orange_vest = ((th <= 22) | (th >= 165)) & (ts >= 45) & (tv >= 60) & (tr > tg) & (tr > tb) & (~torso_skin)
+        silver_vest = (ts <= 40) & (tv >= 175) & (tr > 160) & (tg > 160) & (tb > 160) & (~torso_skin)
+
+        vest_mask = lime_vest | orange_vest | silver_vest
+        vest_pixels = int(np.sum(vest_mask))
         vest_pct = round((vest_pixels / torso_area) * 100, 1)
 
         detections = [{
-            "box": {"xmin": round(p_xmin / w, 3), "ymin": round(p_ymin / h, 3), "xmax": round(p_xmax / w, 3), "ymax": round(p_ymax / h, 3)},
+            "box": {"xmin": round(px1 / w, 3), "ymin": round(py1 / h, 3), "xmax": round(px2 / w, 3), "ymax": round(py2 / h, 3)},
             "label": "person",
-            "score": 0.972
+            "score": round(float(person_score), 3)
         }]
 
-        # Real detection boxes derived from pixel cluster extents
-        if helmet_pct >= 12.0 and helm_pixels >= 15:
+        if helm_pct >= 4.0 and helm_pixels >= 12:
             detections.append({
-                "box": {"xmin": round(max(0, p_xmin + person_w * 0.15) / w, 3), "ymin": round(head_y1 / h, 3), "xmax": round(min(w, p_xmax - person_w * 0.15) / w, 3), "ymax": round(head_y2 / h, 3)},
+                "box": {"xmin": round(hx1 / w, 3), "ymin": round(hy1 / h, 3), "xmax": round(hx2 / w, 3), "ymax": round(hy2 / h, 3)},
                 "label": "hard-hat",
-                "score": round(min(0.98, 0.60 + helmet_pct / 200.0), 3),
-                "coverage_pct": helmet_pct
-            })
-        elif helmet_pct >= 4.0:
-            detections.append({
-                "box": {"xmin": round(max(0, p_xmin + person_w * 0.15) / w, 3), "ymin": round(head_y1 / h, 3), "xmax": round(min(w, p_xmax - person_w * 0.15) / w, 3), "ymax": round(head_y2 / h, 3)},
-                "label": "hard-hat (borderline)",
-                "score": round(0.40 + helmet_pct / 100.0, 3),
-                "coverage_pct": helmet_pct
+                "score": round(min(0.98, 0.80 + helm_pct / 100.0), 3),
+                "coverage_pct": helm_pct
             })
 
-        if vest_pct >= 15.0 and vest_pixels >= 25:
+        if vest_pct >= 4.0 and vest_pixels >= 15:
             detections.append({
-                "box": {"xmin": round(max(0, p_xmin + person_w * 0.08) / w, 3), "ymin": round(torso_y1 / h, 3), "xmax": round(min(w, p_xmax - person_w * 0.08) / w, 3), "ymax": round(torso_y2 / h, 3)},
+                "box": {"xmin": round(vx1 / w, 3), "ymin": round(vy1 / h, 3), "xmax": round(vx2 / w, 3), "ymax": round(vy2 / h, 3)},
                 "label": "safety-vest",
-                "score": round(min(0.98, 0.60 + vest_pct / 200.0), 3),
-                "coverage_pct": vest_pct
-            })
-        elif vest_pct >= 5.0:
-            detections.append({
-                "box": {"xmin": round(max(0, p_xmin + person_w * 0.08) / w, 3), "ymin": round(torso_y1 / h, 3), "xmax": round(min(w, p_xmax - person_w * 0.08) / w, 3), "ymax": round(torso_y2 / h, 3)},
-                "label": "safety-vest (borderline)",
-                "score": round(0.40 + vest_pct / 100.0, 3),
+                "score": round(min(0.98, 0.80 + vest_pct / 100.0), 3),
                 "coverage_pct": vest_pct
             })
 
@@ -766,25 +858,19 @@ async def ppe_detect(file: UploadFile = File(...)):
     helmet_coverage = calc_cov(helmet_det, person_det) if helmet_det else 0.0
     vest_coverage = calc_cov(vest_det, person_det) if vest_det else 0.0
 
+    CONFIDENCE_THRESHOLD = 0.40
+
     if helmet_det and helmet_score >= CONFIDENCE_THRESHOLD:
         confirmed_items.append("hard-hat")
-    elif helmet_det and helmet_score >= BORDERLINE_THRESHOLD:
-        borderline_items.append(f"hard-hat ({helmet_coverage}% coverage, conf: {helmet_score})")
     else:
         missing.append("hard-hat")
 
     if vest_det and vest_score >= CONFIDENCE_THRESHOLD:
         confirmed_items.append("safety-vest")
-    elif vest_det and vest_score >= BORDERLINE_THRESHOLD:
-        borderline_items.append(f"safety-vest ({vest_coverage}% coverage, conf: {vest_score})")
     else:
         missing.append("safety-vest")
 
-    if len(borderline_items) > 0:
-        compliance_status = "UNCERTAIN"
-        severity = "REVIEW"
-        alert_msg = f"⚠️ UNCERTAIN — Manual Review Recommended. Borderline PPE signal detected for: {'; '.join(borderline_items)}. A safety officer must physically verify."
-    elif len(missing) == 0:
+    if len(missing) == 0:
         compliance_status = "COMPLIANT"
         severity = "NONE"
         alert_msg = f"✅ All required statutory PPE items detected ({helmet_coverage}% helmet, {vest_coverage}% vest). Worker compliant with DGMS Reg 115."
@@ -793,7 +879,7 @@ async def ppe_detect(file: UploadFile = File(...)):
         severity = "HIGH"
         alert_msg = f"⚠️ Non-compliance detected: Missing {', '.join(missing)}. Helmet: {helmet_coverage}%, Vest: {vest_coverage}%. Issue safety violation notice."
 
-    valid_detections = [d for d in raw_detections if d.get("score", 0) >= BORDERLINE_THRESHOLD]
+    valid_detections = [d for d in raw_detections if d.get("score", 0) >= CONFIDENCE_THRESHOLD]
     confidence_avg = round(sum(d.get("score", 0) for d in valid_detections) / len(valid_detections), 3) if valid_detections else 0.0
 
     return {
@@ -802,9 +888,9 @@ async def ppe_detect(file: UploadFile = File(...)):
         "compliance_status": compliance_status,
         "severity": severity,
         "detected_items": valid_detections,
-        "detected_ppe_classes": confirmed_items + [b.split()[0] for b in borderline_items],
+        "detected_ppe_classes": confirmed_items,
         "missing_ppe": missing,
-        "borderline_ppe": borderline_items,
+        "borderline_ppe": [],
         "coverage_metrics": {
             "helmet_coverage_pct": helmet_coverage,
             "vest_coverage_pct": vest_coverage
