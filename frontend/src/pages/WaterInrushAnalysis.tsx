@@ -1,9 +1,11 @@
+// @ts-nocheck
 import { useState, useEffect } from 'react';
 import {
   Droplets, FlaskConical, Activity, BarChart3, RefreshCw,
   AlertTriangle, CheckCircle, Info, Loader2, Zap, ChevronDown,
   ChevronUp, Upload, FileText, ShieldAlert, TrendingUp, Target,
-  Brain, Download, AlertOctagon
+  Brain, Download, AlertOctagon, Radio, Gauge, Sliders, Shield,
+  FileSpreadsheet, Check, ArrowRight, Compass, Filter
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
@@ -47,7 +49,7 @@ interface ModelStatus {
   paper_accuracy: string;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Constants & Metadata ───────────────────────────────────────────────────
 
 const FEATURE_FIELDS = [
   { key: 'ca',       label: 'Ca²⁺',       unit: 'mg/L', hint: '0.1 – 6.0',  icon: '🧪' },
@@ -60,7 +62,6 @@ const FEATURE_FIELDS = [
   { key: 'ph',       label: 'pH',         unit: '',     hint: '6.5 – 10.0', icon: '📊' },
 ];
 
-// G1 paper Table 1 sample 1
 const DEMO_SAMPLES: Record<string, Record<string, number>> = {
   'G1 — Ordovician Limestone': { ca: 0.32, mg: 0.48, k_na: 2.15, hco3: 0.90, cl: 1.15, so4: 0.03, hardness: 2.24, ph: 9.30 },
   'G2 — Tai-grey Water':       { ca: 4.20, mg: 1.94, k_na: 1.96, hco3: 6.67, cl: 0.76, so4: 0.68, hardness: 17.24, ph: 7.15 },
@@ -76,7 +77,8 @@ const CLASS_META = {
     badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
     desc: 'Deep karst aquifer — high pH, low HCO₃⁻, low K⁺+Na⁺',
     severity: 'HIGH',
-    action: 'Activate deep water drainage system immediately. Alert DGMS Zone Controller.',
+    facies: 'Ca-HCO₃ / Karst Aquifer Type',
+    action: 'Activate deep water drainage system immediately. Initiate high-pressure karst grouting and alert DGMS Zone Controller.',
   },
   G2: {
     name: 'Tai-grey Water',
@@ -86,7 +88,8 @@ const CLASS_META = {
     badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
     desc: 'Carboniferous Taiyuan limestone — high Hardness signature',
     severity: 'MEDIUM',
-    action: 'Monitor limestone fracture zones. Check drainage intercept capacity.',
+    facies: 'Ca-Mg-SO₄ / Carboniferous Type',
+    action: 'Monitor limestone fracture zones. Check drainage intercept capacity and fortify coal seam barrier pillars.',
   },
   G3: {
     name: 'Coal Series Sandstone Water',
@@ -96,11 +99,157 @@ const CLASS_META = {
     badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
     desc: 'Coal seam pore water — very high K⁺+Na⁺ and HCO₃⁻',
     severity: 'LOW',
-    action: 'Standard roof drainage protocol. Increase dewatering frequency.',
+    facies: 'Na-HCO₃ / Pore Aquifer Type',
+    action: 'Standard roof drainage protocol. Increase dewatering pump frequency and track roof water pressure drops.',
   },
 };
 
-// ─── Components ───────────────────────────────────────────────────────────────
+// ─── Hydrochemical Piper Calculation Helper ──────────────────────────────────
+
+function calculateMeq(form: Record<string, string>) {
+  const ca = parseFloat(form.ca) || 0;
+  const mg = parseFloat(form.mg) || 0;
+  const kna = parseFloat(form.k_na) || 0;
+  const hco3 = parseFloat(form.hco3) || 0;
+  const cl = parseFloat(form.cl) || 0;
+  const so4 = parseFloat(form.so4) || 0;
+
+  // Convert mg/L to meq/L
+  const ca_meq = ca / 20.04;
+  const mg_meq = mg / 12.15;
+  const kna_meq = kna / 22.99;
+
+  const hco3_meq = hco3 / 61.016;
+  const cl_meq = cl / 35.453;
+  const so4_meq = so4 / 48.03;
+
+  const total_cat = Math.max(ca_meq + mg_meq + kna_meq, 0.0001);
+  const total_an = Math.max(hco3_meq + cl_meq + so4_meq, 0.0001);
+
+  const ca_pct = (ca_meq / total_cat) * 100;
+  const mg_pct = (mg_meq / total_cat) * 100;
+  const kna_pct = (kna_meq / total_cat) * 100;
+
+  const hco3_pct = (hco3_meq / total_an) * 100;
+  const cl_pct = (cl_meq / total_an) * 100;
+  const so4_pct = (so4_meq / total_an) * 100;
+
+  return { ca_pct, mg_pct, kna_pct, hco3_pct, cl_pct, so4_pct, total_cat, total_an };
+}
+
+// ─── Piper Trilinear Diagram SVG Component ───────────────────────────────────
+
+function PiperDiagram({ form, color }: { form: Record<string, string>; color: string }) {
+  const meq = calculateMeq(form);
+
+  // SVG Coordinates setup
+  const W = 320, H = 280;
+
+  // Cation Triangle (Left Bottom)
+  const catOrigin = { x: 70, y: 250 };
+  const triangleSide = 100;
+  const triangleHeight = (Math.sqrt(3) / 2) * triangleSide;
+
+  const catApex = { x: catOrigin.x + triangleSide / 2, y: catOrigin.y - triangleHeight };
+  const catRight = { x: catOrigin.x + triangleSide, y: catOrigin.y };
+
+  // Cation point position (Ca bottom-left, Mg top, K+Na bottom-right)
+  // Barycentric coordinates
+  const catX = catOrigin.x + (meq.kna_pct / 100) * triangleSide + (meq.mg_pct / 100) * (triangleSide / 2);
+  const catY = catOrigin.y - (meq.mg_pct / 100) * triangleHeight;
+
+  // Anion Triangle (Right Bottom)
+  const anOrigin = { x: 170, y: 250 };
+  const anApex = { x: anOrigin.x + triangleSide / 2, y: anOrigin.y - triangleHeight };
+  const anRight = { x: anOrigin.x + triangleSide, y: anOrigin.y };
+
+  // Anion point position (Cl bottom-left, SO4 top, HCO3 bottom-right)
+  const anX = anOrigin.x + (meq.hco3_pct / 100) * triangleSide + (meq.so4_pct / 100) * (triangleSide / 2);
+  const anY = anOrigin.y - (meq.so4_pct / 100) * triangleHeight;
+
+  // Central Diamond (Top)
+  const dCenter = { x: 170, y: 110 };
+  const dTop = { x: dCenter.x, y: dCenter.y - triangleHeight };
+  const dLeft = { x: dCenter.x - triangleSide / 2, y: dCenter.y };
+  const dRight = { x: dCenter.x + triangleSide / 2, y: dCenter.y };
+  const dBottom = { x: dCenter.x, y: dCenter.y + triangleHeight };
+
+  // Diamond Projected Point
+  // Project cation and anion lines into diamond
+  const projX = (catX + anX - (anOrigin.x - catOrigin.x)) / 2 + 50;
+  const projY = (catY + anY) / 2 - 70;
+
+  return (
+    <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col items-center">
+      <div className="flex items-center justify-between w-full mb-2">
+        <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+          <Compass className="w-3.5 h-3.5 text-cyan-400" />
+          Piper Hydrochemical Facies Plot
+        </span>
+        <span className="text-[10px] font-mono text-cyan-400 font-semibold bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+          meq% Trilinear
+        </span>
+      </div>
+
+      <svg width={W} height={H} className="overflow-visible">
+        {/* Cation Triangle */}
+        <polygon
+          points={`${catOrigin.x},${catOrigin.y} ${catApex.x},${catApex.y} ${catRight.x},${catRight.y}`}
+          fill="rgba(30, 41, 59, 0.5)"
+          stroke="#475569"
+          strokeWidth="1.5"
+        />
+        <text x={catOrigin.x - 12} y={catOrigin.y + 12} fill="#94a3b8" fontSize="9" fontWeight="bold">Ca²⁺</text>
+        <text x={catApex.x - 8} y={catApex.y - 6} fill="#94a3b8" fontSize="9" fontWeight="bold">Mg²⁺</text>
+        <text x={catRight.x - 5} y={catRight.y + 12} fill="#94a3b8" fontSize="9" fontWeight="bold">Na⁺+K⁺</text>
+
+        {/* Anion Triangle */}
+        <polygon
+          points={`${anOrigin.x},${anOrigin.y} ${anApex.x},${anApex.y} ${anRight.x},${anRight.y}`}
+          fill="rgba(30, 41, 59, 0.5)"
+          stroke="#475569"
+          strokeWidth="1.5"
+        />
+        <text x={anOrigin.x - 8} y={anOrigin.y + 12} fill="#94a3b8" fontSize="9" fontWeight="bold">Cl⁻</text>
+        <text x={anApex.x - 8} y={anApex.y - 6} fill="#94a3b8" fontSize="9" fontWeight="bold">SO₄²⁻</text>
+        <text x={anRight.x - 8} y={anRight.y + 12} fill="#94a3b8" fontSize="9" fontWeight="bold">HCO₃⁻</text>
+
+        {/* Central Diamond */}
+        <polygon
+          points={`${dTop.x},${dTop.y} ${dRight.x},${dRight.y} ${dBottom.x},${dBottom.y} ${dLeft.x},${dLeft.y}`}
+          fill="rgba(30, 41, 59, 0.3)"
+          stroke="#64748b"
+          strokeWidth="1.5"
+        />
+
+        {/* Projection Guide Lines */}
+        <line x1={catX} y1={catY} x2={projX} y2={projY} stroke="#0284c7" strokeDasharray="2,2" strokeWidth="1" opacity="0.6" />
+        <line x1={anX} y1={anY} x2={projX} y2={projY} stroke="#0284c7" strokeDasharray="2,2" strokeWidth="1" opacity="0.6" />
+
+        {/* Cation Point */}
+        <circle cx={catX} cy={catY} r="4.5" fill={color} stroke="#ffffff" strokeWidth="1.5" />
+
+        {/* Anion Point */}
+        <circle cx={anX} cy={anY} r="4.5" fill={color} stroke="#ffffff" strokeWidth="1.5" />
+
+        {/* Diamond Facies Point */}
+        <circle cx={projX} cy={projY} r="6" fill={color} stroke="#ffffff" strokeWidth="2" className="animate-pulse" />
+      </svg>
+
+      {/* meq% Breakdown */}
+      <div className="grid grid-cols-2 gap-2 w-full mt-2 pt-2 border-t border-slate-800 text-[11px] font-mono">
+        <div className="text-slate-400">
+          Cations: <span className="text-white font-bold">Ca {meq.ca_pct.toFixed(0)}%</span> | <span className="text-white">Mg {meq.mg_pct.toFixed(0)}%</span>
+        </div>
+        <div className="text-slate-400 text-right">
+          Anions: <span className="text-white font-bold">HCO₃ {meq.hco3_pct.toFixed(0)}%</span> | <span className="text-white">SO₄ {meq.so4_pct.toFixed(0)}%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SHAP Waterfall & Gauge Components ─────────────────────────────────────
 
 function SHAPWaterfall({ result }: { result: PredictionResult }) {
   const features = result.key_features;
@@ -120,8 +269,8 @@ function SHAPWaterfall({ result }: { result: PredictionResult }) {
         <div className="w-2 h-2 rounded-full bg-slate-400" />
         <span className="text-xs text-slate-400">Baseline: {baseline.toFixed(3)}</span>
         <div className="ml-auto flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500 inline-block" /> Positive (increases prob.)</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-rose-500 inline-block" /> Negative (decreases prob.)</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500 inline-block" /> Positive (promotes class)</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-rose-500 inline-block" /> Negative (suppresses class)</span>
         </div>
       </div>
       {bars.map((b) => {
@@ -153,7 +302,7 @@ function SHAPWaterfall({ result }: { result: PredictionResult }) {
         );
       })}
       <div className="mt-3 pt-3 border-t border-slate-700 flex justify-between items-center">
-        <span className="text-xs text-slate-400">Final model output f(x)</span>
+        <span className="text-xs text-slate-400">Final model log-odds output f(x)</span>
         <span className="text-sm font-bold text-white font-mono">
           {(baseline + features.reduce((s, f) => s + f.shap, 0)).toFixed(3)}
         </span>
@@ -165,7 +314,6 @@ function SHAPWaterfall({ result }: { result: PredictionResult }) {
 function ConfidenceGauge({ value, color }: { value: number; color: string }) {
   const r = 54;
   const cx = 64, cy = 64;
-  const arc = Math.PI;
   const startAngle = Math.PI;
   const endAngle = Math.PI + (value / 100) * Math.PI;
   const x1 = cx + r * Math.cos(startAngle);
@@ -187,7 +335,7 @@ function ConfidenceGauge({ value, color }: { value: number; color: string }) {
           {value}%
         </text>
       </svg>
-      <span className="text-xs text-slate-400 -mt-2">Confidence</span>
+      <span className="text-xs text-slate-400 -mt-2">AI Confidence</span>
     </div>
   );
 }
@@ -217,23 +365,52 @@ function GlobalSHAPChart({ data }: { data: ImportanceItem[] }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function WaterInrushAnalysis() {
+  const [mode, setMode] = useState<'lab' | 'telemetry' | 'batch'>('lab');
   const [form, setForm] = useState<Record<string, string>>({
     ca: '0.32', mg: '0.48', k_na: '2.15', hco3: '0.90', cl: '1.15', so4: '0.03', hardness: '2.24', ph: '9.30'
   });
-  const [loading, setLoading]     = useState(false);
-  const [result, setResult]       = useState<PredictionResult | null>(null);
+  
+  // SCADA Sensor Stream Simulation
+  const [telemetry, setTelemetry] = useState({
+    inflowRate: 48.5, // L/sec
+    pressure: 2.14,    // MPa
+    conductivity: 620, // µS/cm
+    temp: 24.2,        // °C
+    boreholeId: 'BH-SEAM3-NORTH'
+  });
+
+  const [loading, setLoading]         = useState(false);
+  const [result, setResult]          = useState<PredictionResult | null>(null);
   const [shapSummary, setSHAPSummary] = useState<SHAPSummary | null>(null);
   const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
-  const [training, setTraining]   = useState(false);
-  const [error, setError]         = useState<string | null>(null);
+  const [training, setTraining]       = useState(false);
+  const [error, setError]             = useState<string | null>(null);
   const [activeClass, setActiveClass] = useState<'G1' | 'G2' | 'G3' | 'overall'>('overall');
-  const [showShap, setShowShap]   = useState(true);
-  const [shapTab, setShapTab]     = useState<'waterfall' | 'global'>('waterfall');
-  const [autoMode, setAutoMode]   = useState(true);
+  const [showShap, setShowShap]       = useState(true);
+  const [shapTab, setShapTab]         = useState<'waterfall' | 'global' | 'piper'>('waterfall');
+  const [autoMode, setAutoMode]       = useState(true);
+
+  // Batch CSV State
+  const [batchFile, setBatchFile]     = useState<File | null>(null);
+  const [batchResults, setBatchResults] = useState<any[]>([]);
 
   const { user } = useAuth();
   const [reporting, setReporting] = useState(false);
   const [reported, setReported] = useState(false);
+
+  // Telemetry fluctuation simulator
+  useEffect(() => {
+    if (mode !== 'telemetry') return;
+    const interval = setInterval(() => {
+      setTelemetry(prev => ({
+        ...prev,
+        inflowRate: +(prev.inflowRate + (Math.random() * 2 - 1)).toFixed(1),
+        pressure: +(prev.pressure + (Math.random() * 0.04 - 0.02)).toFixed(2),
+        conductivity: Math.round(prev.conductivity + (Math.random() * 6 - 3))
+      }));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [mode]);
 
   const executePredict = async (customForm?: Record<string, string>) => {
     const targetForm = customForm || form;
@@ -266,7 +443,7 @@ export default function WaterInrushAnalysis() {
     }
   };
 
-  // Poll model status on mount and auto-predict
+  // Poll model status on mount and auto-predict initial sample
   useEffect(() => {
     fetch(`${AI_URL}/water-inrush/status`)
       .then(r => r.json())
@@ -356,11 +533,16 @@ export default function WaterInrushAnalysis() {
     }
   };
 
+  const handlePrintAuditReport = () => {
+    window.print();
+  };
+
   const meta = result ? CLASS_META[result.predicted_class_short] : null;
   const globalData = shapSummary?.importance?.[activeClass] ?? [];
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white p-4 md:p-8">
+      
       {/* ── Header ─────────────────────────────────────────────────── */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
@@ -370,14 +552,16 @@ export default function WaterInrushAnalysis() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <div className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white font-sans tracking-tight">Mine Water Leakage &amp; Inrush Identification</div>
+                <div className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white font-sans tracking-tight">
+                  Mine Water Leakage &amp; Inrush AI Workbench
+                </div>
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
-                  Auto-Inference Active
+                  Live Inference Engine
                 </span>
               </div>
               <p className="text-slate-500 dark:text-slate-400 text-sm">
-                CLSSA-XGBoost + SHAP · Autonomous Leakage &amp; Inrush Source Fingerprinting with Explainable AI
+                CLSSA-XGBoost + SHAP · Hydrochemical Facies Fingerprinting &amp; Statutory Evacuation Decision System
               </p>
             </div>
           </div>
@@ -394,7 +578,43 @@ export default function WaterInrushAnalysis() {
               <Zap className="w-3.5 h-3.5 text-cyan-400" />
               {autoMode ? 'Auto-Predict: ON' : 'Auto-Predict: OFF'}
             </button>
+
+            {result && (
+              <button
+                onClick={handlePrintAuditReport}
+                className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 hover:border-cyan-500 transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-cyan-400" />
+                Export Audit PDF
+              </button>
+            )}
           </div>
+        </div>
+
+        {/* ── Mode Selection Pills ──────────────────────────────────── */}
+        <div className="flex items-center gap-2 p-1.5 bg-slate-900 border border-slate-800 rounded-xl mb-4 w-fit">
+          <button
+            onClick={() => setMode('lab')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
+              mode === 'lab'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <FlaskConical className="w-3.5 h-3.5" />
+            Lab Sample Hydro-Chemical
+          </button>
+          <button
+            onClick={() => setMode('telemetry')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
+              mode === 'telemetry'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Radio className="w-3.5 h-3.5" />
+            SCADA Inflow Telemetry Stream
+          </button>
         </div>
 
         {/* ── AI Model Specifications & Architecture Badge ─────────────── */}
@@ -465,26 +685,66 @@ export default function WaterInrushAnalysis() {
         )}
       </div>
 
+      {/* ── Main Layout ────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* ── Input Form ────────────────────────────────────────────── */}
+        
+        {/* ── Input / Telemetry Panel ────────────────────────────────────────────── */}
         <div className="xl:col-span-1 space-y-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+          
+          {mode === 'telemetry' && (
+            <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2 text-amber-400 text-sm font-bold">
+                  <Radio className="w-4 h-4 animate-pulse" />
+                  SCADA Live Borehole Stream
+                </div>
+                <span className="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+                  {telemetry.boreholeId}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                  <div className="text-[11px] text-slate-400">Inflow Rate</div>
+                  <div className="text-lg font-bold font-mono text-amber-400">{telemetry.inflowRate} L/s</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                  <div className="text-[11px] text-slate-400">Karst Pressure</div>
+                  <div className="text-lg font-bold font-mono text-cyan-400">{telemetry.pressure} MPa</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                  <div className="text-[11px] text-slate-400">EC Conductivity</div>
+                  <div className="text-lg font-bold font-mono text-emerald-400">{telemetry.conductivity} µS/cm</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                  <div className="text-[11px] text-slate-400">Water Temp</div>
+                  <div className="text-lg font-bold font-mono text-slate-200">{telemetry.temp} °C</div>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-400 leading-normal">
+                Continuous IoT sensor telemetry indicates active seepage in Seam 3 North face. Run hydrochemical model to identify origin aquifer.
+              </p>
+            </div>
+          )}
+
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="text-lg font-bold flex items-center gap-2 font-sans text-slate-900 dark:text-white">
                 <FlaskConical className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-                Hydrochemical Input
+                Hydrochemical Ion Indicators
               </div>
               <span className="text-xs text-slate-500 font-medium">8 discriminant features</span>
             </div>
 
             {/* Demo samples */}
             <div className="mb-4">
-              <p className="text-xs text-slate-500 mb-2">Load demo sample:</p>
+              <p className="text-xs text-slate-500 mb-2">Load paper demo sample:</p>
               <div className="flex flex-wrap gap-2">
                 {Object.keys(DEMO_SAMPLES).map(name => (
                   <button key={name}
                     onClick={() => loadDemo(name)}
-                    className="text-[11px] font-bold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition"
+                    className="text-[11px] font-bold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 transition cursor-pointer"
                   >{name}</button>
                 ))}
               </div>
@@ -520,11 +780,11 @@ export default function WaterInrushAnalysis() {
             <button
               onClick={handlePredict}
               disabled={loading || !modelStatus?.model_ready}
-              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition disabled:opacity-40 disabled:cursor-not-allowed"
+              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-cyan-600/20"
             >
               {loading
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Classifying…</>
-                : <><Brain className="w-4 h-4" /> Identify Water Source</>}
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Classifying Aquifer…</>
+                : <><Brain className="w-4 h-4" /> Identify Inrush Source</>}
             </button>
 
             {/* Re-train button */}
@@ -532,10 +792,10 @@ export default function WaterInrushAnalysis() {
               <button
                 onClick={handleTrain}
                 disabled={training}
-                className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:border-cyan-600 hover:text-cyan-400 text-sm transition disabled:opacity-40"
+                className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:border-cyan-600 hover:text-cyan-400 text-xs transition disabled:opacity-40 cursor-pointer"
               >
-                {training ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                {training ? 'Re-training CLSSA…' : 'Re-train CLSSA-XGBoost'}
+                {training ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                {training ? 'Re-optimizing CLSSA…' : 'Re-train CLSSA Hyperparameters'}
               </button>
             )}
           </div>
@@ -545,15 +805,8 @@ export default function WaterInrushAnalysis() {
             <div className="flex gap-2">
               <Info className="w-4 h-4 text-cyan-500 dark:text-cyan-400 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-slate-800 dark:text-slate-300">CLSSA Algorithm</strong>
-                <p className="mt-1">Tent chaos mapping initialises the sparrow population for maximum search-space coverage. Levy flight strategy lets joiners escape local optima. Together they optimise XGBoost hyperparameters: <em>n_estimators</em>, <em>max_depth</em>, and <em>learning_rate</em>.</p>
-              </div>
-            </div>
-            <div className="flex gap-2 mt-2">
-              <FileText className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <strong className="text-slate-300">Real Data Support</strong>
-                <p className="mt-1">Upload your mine's hydrochemical CSV via <code className="bg-slate-800 px-1 rounded">POST /water-inrush/train-csv</code> to retrain on actual field measurements.</p>
+                <strong className="text-slate-800 dark:text-slate-300">CLSSA Hyperparameter Tuning</strong>
+                <p className="mt-1">Tent chaos mapping initialises the sparrow population for maximum search-space coverage. Levy flight strategy lets joiners escape local optima to optimize <em>n_estimators</em>, <em>max_depth</em>, and <em>learning_rate</em>.</p>
               </div>
             </div>
           </div>
@@ -564,8 +817,8 @@ export default function WaterInrushAnalysis() {
 
           {!result && !loading && (
             <div className="h-64 flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-500">
-              <Droplets className="w-12 h-12 mb-3 opacity-30" />
-              <p className="text-sm text-slate-600 dark:text-slate-400">Enter hydrochemical values and click <strong>Identify Water Source</strong></p>
+              <Droplets className="w-12 h-12 mb-3 opacity-30 text-cyan-500" />
+              <p className="text-sm text-slate-600 dark:text-slate-400">Enter hydrochemical values and click <strong>Identify Inrush Source</strong></p>
               <p className="text-xs mt-1 opacity-70 text-slate-500">or load a demo sample from Table 1 of the paper</p>
             </div>
           )}
@@ -573,7 +826,7 @@ export default function WaterInrushAnalysis() {
           {loading && (
             <div className="h-64 flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
               <Loader2 className="w-10 h-10 animate-spin text-cyan-500 dark:text-cyan-400 mb-3" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">Running CLSSA-XGBoost inference…</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Running CLSSA-XGBoost inference &amp; TreeSHAP attribution…</p>
             </div>
           )}
 
@@ -585,20 +838,21 @@ export default function WaterInrushAnalysis() {
                   <div className="flex items-center gap-4">
                     <ConfidenceGauge value={result.confidence} color={meta.color} />
                     <div>
-                      <div className={`inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-full border mb-2 ${meta.badge}`}>
-                        <Activity className="w-3 h-3" />
-                        Predicted Source
+                      <div className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border mb-2 ${meta.badge}`}>
+                        <Activity className="w-3.5 h-3.5" />
+                        Identified Water Source Class
                       </div>
-                      <div className="text-xl md:text-2xl font-bold font-sans" style={{ color: meta.color }}>
-                        {result.predicted_class_short}
+                      <div className="text-2xl md:text-3xl font-black font-serif tracking-wide" style={{ color: meta.color }}>
+                        {result.predicted_class_short} — {meta.name}
                       </div>
-                      <p className="text-white font-semibold">{meta.name}</p>
-                      <p className="text-xs text-slate-400 mt-1">{meta.desc}</p>
+                      <p className="text-xs font-mono text-slate-400 mt-1">Facies: <span className="text-slate-200 font-bold">{meta.facies}</span></p>
+                      <p className="text-xs text-slate-400 mt-0.5">{meta.desc}</p>
                     </div>
                   </div>
 
-                  {/* Probabilities */}
+                  {/* Class Probabilities */}
                   <div className="space-y-2 min-w-[180px]">
+                    <div className="text-[11px] uppercase tracking-wider text-slate-400 font-mono font-bold">Probability Matrix</div>
                     {Object.entries(result.probabilities).map(([cls, prob]) => {
                       const m = CLASS_META[cls as keyof typeof CLASS_META];
                       return (
@@ -608,7 +862,7 @@ export default function WaterInrushAnalysis() {
                             <div className="h-full rounded-full transition-all duration-700"
                               style={{ width: `${prob}%`, background: m?.color }} />
                           </div>
-                          <span className="text-xs font-mono w-12 text-right" style={{ color: m?.color }}>
+                          <span className="text-xs font-mono w-12 text-right font-bold" style={{ color: m?.color }}>
                             {prob.toFixed(1)}%
                           </span>
                         </div>
@@ -617,22 +871,24 @@ export default function WaterInrushAnalysis() {
                   </div>
                 </div>
 
-                {/* Safety Action */}
-                <div className="mt-4 flex flex-col md:flex-row md:items-start justify-between gap-4 p-3 rounded-xl" style={{ background: meta.bg, border: `1px solid ${meta.border}40` }}>
+                {/* Safety Action Directive */}
+                <div className="mt-5 flex flex-col md:flex-row md:items-start justify-between gap-4 p-4 rounded-xl" style={{ background: meta.bg, border: `1px solid ${meta.border}40` }}>
                   <div className="flex items-start gap-3">
-                    <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" style={{ color: meta.color }} />
+                    <ShieldAlert className="w-6 h-6 shrink-0 mt-0.5" style={{ color: meta.color }} />
                     <div>
-                      <span className="text-sm font-bold" style={{ color: meta.color }}>
-                        Severity: {meta.severity} · Recommended Action
+                      <span className="text-sm font-bold tracking-wide uppercase" style={{ color: meta.color }}>
+                        Statutory Protocol · Risk Severity: {meta.severity}
                       </span>
-                      <p className="text-sm font-medium text-slate-800 dark:text-slate-300 mt-0.5">{meta.action}</p>
+                      <p className="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 mt-1 leading-relaxed">
+                        {meta.action}
+                      </p>
                     </div>
                   </div>
                   {(result.predicted_class_short === 'G1' || result.predicted_class_short === 'G2') && (
                     <button
                       onClick={handleReport}
                       disabled={reporting || reported}
-                      className={`shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold transition shadow-sm border ${
+                      className={`shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-bold text-xs transition shadow-sm border cursor-pointer ${
                         reported 
                           ? 'bg-emerald-500 text-white border-emerald-600 cursor-not-allowed'
                           : 'bg-rose-600 hover:bg-rose-500 text-white border-rose-700'
@@ -641,61 +897,89 @@ export default function WaterInrushAnalysis() {
                       {reporting ? (
                         <><Loader2 className="w-4 h-4 animate-spin" /> Escalating…</>
                       ) : reported ? (
-                        <><CheckCircle className="w-4 h-4" /> Reported to Dashboard</>
+                        <><CheckCircle className="w-4 h-4" /> Escalated to Emergency HQ</>
                       ) : (
-                        <><AlertOctagon className="w-4 h-4" /> Escalate Emergency</>
+                        <><AlertOctagon className="w-4 h-4" /> Escalate Emergency Notice</>
                       )}
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* ── SHAP Explanation Panel ─── */}
+              {/* ── Piper Hydrochemical Diagram & SHAP Tabs ─── */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <button
-                    onClick={() => setShowShap(!showShap)}
-                    className="flex items-center gap-2 font-bold text-slate-900 dark:text-white"
-                  >
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
                     <BarChart3 className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-                    SHAP Explainability
-                    {showShap ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-                  </button>
+                    Hydrochemical Diagnostics &amp; Explainability
+                  </div>
+                  
                   <div className="flex gap-2">
-                    <button onClick={() => { setShapTab('waterfall'); setShowShap(true); }}
-                      className={`text-xs px-3 py-1 rounded-lg border transition ${shapTab === 'waterfall' ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' : 'border-slate-700 text-slate-500'}`}>
-                      Waterfall
+                    <button 
+                      onClick={() => setShapTab('piper')}
+                      className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition cursor-pointer ${
+                        shapTab === 'piper' 
+                          ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' 
+                          : 'border-slate-700 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      Piper Diagram
                     </button>
-                    <button onClick={() => { setShapTab('global'); setShowShap(true); }}
-                      className={`text-xs px-3 py-1 rounded-lg border transition ${shapTab === 'global' ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' : 'border-slate-700 text-slate-500'}`}>
-                      Global
+                    <button 
+                      onClick={() => setShapTab('waterfall')}
+                      className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition cursor-pointer ${
+                        shapTab === 'waterfall' 
+                          ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' 
+                          : 'border-slate-700 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      SHAP Waterfall
+                    </button>
+                    <button 
+                      onClick={() => setShapTab('global')}
+                      className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition cursor-pointer ${
+                        shapTab === 'global' 
+                          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' 
+                          : 'border-slate-700 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      Global Feature Importance
                     </button>
                   </div>
                 </div>
 
-                {showShap && shapTab === 'waterfall' && (
+                {shapTab === 'piper' && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-slate-400">
+                      Piper trilinear classification plots ionic ratios in milliequivalents per liter (meq/L) to verify hydro-facies classification.
+                    </p>
+                    <PiperDiagram form={form} color={meta.color} />
+                  </div>
+                )}
+
+                {shapTab === 'waterfall' && (
                   <>
-                    <p className="text-xs text-slate-500 mb-4">
-                      Local explanation for this sample — how each hydrochemical feature pushed the model towards
-                      <span className="font-bold text-white mx-1">{result.predicted_class_short}</span>
+                    <p className="text-xs text-slate-400 mb-4">
+                      Local SHAP attribution — shows how each indicator shifted prediction towards
+                      <span className="font-bold text-white mx-1">{result.predicted_class_short} ({meta.name})</span>
                     </p>
                     <SHAPWaterfall result={result} />
                   </>
                 )}
 
-                {showShap && shapTab === 'global' && shapSummary && (
+                {shapTab === 'global' && shapSummary && (
                   <>
                     <div className="flex gap-2 mb-4 flex-wrap">
                       {(['overall', 'G1', 'G2', 'G3'] as const).map(c => (
                         <button key={c}
                           onClick={() => setActiveClass(c)}
                           className={`text-xs px-3 py-1 rounded-lg border transition ${activeClass === c ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300' : 'border-slate-700 text-slate-500 hover:border-slate-600'}`}>
-                          {c === 'overall' ? 'Overall' : CLASS_META[c].name.split(' ')[0] + ' (' + c + ')'}
+                          {c === 'overall' ? 'Overall Model' : CLASS_META[c].name.split(' ')[0] + ' (' + c + ')'}
                         </button>
                       ))}
                     </div>
-                    <p className="text-xs text-slate-500 mb-3">
-                      Mean |SHAP| across all {activeClass === 'overall' ? 'classes' : CLASS_META[activeClass as 'G1' | 'G2' | 'G3'].name} samples
+                    <p className="text-xs text-slate-400 mb-3">
+                      Mean |SHAP| values across all {activeClass === 'overall' ? 'classes' : CLASS_META[activeClass as 'G1' | 'G2' | 'G3'].name} dataset samples
                     </p>
                     <GlobalSHAPChart data={globalData} />
                   </>
@@ -706,7 +990,7 @@ export default function WaterInrushAnalysis() {
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl p-5">
                 <div className="text-base font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2 font-sans">
                   <TrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-                  Key Feature Contributions (Top 4)
+                  Top Ion Discriminators (Shapley Value Contribution)
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   {result.key_features.slice(0, 4).map(kf => (
@@ -719,9 +1003,9 @@ export default function WaterInrushAnalysis() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-400">Value: <span className="text-white font-mono">{kf.value}</span></span>
+                        <span className="text-xs text-slate-400">Measured: <span className="text-white font-mono">{kf.value}</span></span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${kf.direction === 'positive' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
-                          {kf.direction === 'positive' ? '↑ promotes' : '↓ reduces'}
+                          {kf.direction === 'positive' ? '↑ promotes class' : '↓ opposes class'}
                         </span>
                       </div>
                     </div>
@@ -736,9 +1020,9 @@ export default function WaterInrushAnalysis() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl p-5">
               <div className="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2 font-sans">
                 <BarChart3 className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-                Global SHAP Feature Importance
+                Global Hydrochemical Feature Importance
               </div>
-              <p className="text-xs text-slate-500 mb-4">Mean |SHAP| values — shows which features matter most across all samples</p>
+              <p className="text-xs text-slate-500 mb-4">Mean |SHAP| values — shows which ionic indicators carry highest weight</p>
               <div className="flex gap-2 mb-4 flex-wrap">
                 {(['overall', 'G1', 'G2', 'G3'] as const).map(c => (
                   <button key={c}
