@@ -1788,16 +1788,16 @@ function PPEPanel() {
 
     // Hard Hat color detector — safety-saturated colors (calibrated for daylight outdoor & indoor safety gear)
     const isHelmetColor = (r: number, g: number, b: number): boolean => {
-      // Safety Orange (Hard Hat): R dominant over G & B
-      if (r > 160 && g > 40 && g < 170 && b < 125 && (r - g) > 25 && (r - b) > 50) return true;
-      // Safety Yellow: vibrant yellow with high green, low blue
-      if (r > 160 && g > 140 && b < 110 && (g - b) > 40 && Math.abs(r - g) < 45) return true;
-      // Safety Red: deep safety red
-      if (r > 150 && g < 90 && b < 90 && (r - Math.max(g, b)) > 50) return true;
+      // Safety Orange (Hard Hat): R dominant over G & B, low blue channel (B < 90) to exclude warm indoor lighting/walls
+      if (r > 175 && g > 40 && g < 160 && b < 90 && (r - g) > 30 && (r - b) > 75) return true;
+      // Safety Yellow (Hard Hat): vibrant neon yellow with low blue channel (B < 80) to exclude warm yellow/beige indoor walls
+      if (r > 175 && g > 155 && b < 80 && (g - b) > 75 && (r - b) > 85 && Math.abs(r - g) < 40) return true;
+      // Safety Red (Hard Hat): vibrant safety red
+      if (r > 160 && g < 80 && b < 80 && (r - Math.max(g, b)) > 60) return true;
       // Electric Blue hard hat
-      if (b > 130 && b > r * 1.25 && b > g * 1.15 && (b - r) > 35) return true;
+      if (b > 140 && b > r * 1.35 && b > g * 1.25 && (b - r) > 45) return true;
       // Safety Green hard hat
-      if (g > 130 && g > r * 1.20 && g > b * 1.20 && (g - r) > 25) return true;
+      if (g > 140 && g > r * 1.25 && g > b * 1.25 && (g - r) > 35) return true;
       return false;
     };
 
@@ -2076,20 +2076,24 @@ function PPEPanel() {
 
       let status: string, severity: string, alertMsg: string;
 
-      if (a.hasHardHat) {
+      if (missing.length === 0) {
         status = 'COMPLIANT';
         severity = 'NONE';
-        alertMsg = a.hasVest
-          ? `✅ COMPLIANT: All required PPE detected. Hard-hat (${a.helmetPct}% head coverage) and safety-vest (${a.vestPct}% torso coverage) confirmed — DGMS Regulation 115 satisfied.`
-          : `✅ COMPLIANT: Safety hard-hat confirmed (${a.helmetPct}% head coverage) — DGMS Regulation 115 satisfied.`;
-      } else if (a.uncertain && a.helmetPct >= 4) {
+        alertMsg = `✅ COMPLIANT: All required PPE detected. Hard-hat (${a.helmetPct}% head coverage) and safety-vest (${a.vestPct}% torso coverage) confirmed — DGMS Regulation 115 satisfied.`;
+      } else if (a.uncertain && !a.hasHardHat && a.helmetPct >= 3.5) {
         status = 'UNCERTAIN';
         severity = 'REVIEW';
         alertMsg = `⚠️ UNCERTAIN — Manual Review Required. Borderline hard-hat signal detected (${a.helmetPct}% coverage — need ≥8%). Safety officer inspection required.`;
       } else {
         status = 'NON_COMPLIANT';
         severity = 'HIGH';
-        alertMsg = `⚠️ STATUTORY VIOLATION: Hard-Hat Missing! Personnel is not wearing mandatory safety helmet (${a.helmetPct}% detected). Breach of DGMS Regulation 115.`;
+        if (missing.length === 2) {
+          alertMsg = `⚠️ STATUTORY VIOLATION: Both HARD-HAT and SAFETY-VEST are missing! Personnel has no safety gear. Breach of DGMS Regulation 115.`;
+        } else if (!a.hasHardHat) {
+          alertMsg = `⚠️ STATUTORY VIOLATION: HARD-HAT Missing! Personnel is not wearing mandatory safety helmet (${a.helmetPct}% detected). Breach of DGMS Regulation 115.`;
+        } else {
+          alertMsg = `⚠️ STATUTORY VIOLATION: SAFETY-VEST Missing! Personnel is not wearing high-visibility safety vest (${a.vestPct}% detected). Breach of DGMS Regulation 115.`;
+        }
       }
 
       const detectedItems: any[] = [{ label: 'person', score: a.confidence, box: { ...a.personBox } }];
