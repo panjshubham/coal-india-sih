@@ -1788,33 +1788,25 @@ function PPEPanel() {
 
     // Hard Hat color detector — safety-saturated colors (calibrated for daylight outdoor & indoor safety gear)
     const isHelmetColor = (r: number, g: number, b: number): boolean => {
-      // Safety Orange (Hard Hat): R dominant over G & B, calibrated for outdoor sunlight (B up to 135)
-      if (r > 155 && g > 45 && g < 170 && b < 135 && (r - g) > 20 && (r - b) > 50) return true;
+      // Safety Orange (Hard Hat): R dominant over G & B
+      if (r > 160 && g > 40 && g < 170 && b < 125 && (r - g) > 25 && (r - b) > 50) return true;
       // Safety Yellow: vibrant yellow with high green, low blue
-      if (r > 150 && g > 130 && b < 115 && (g - b) > 40 && Math.abs(r - g) < 55) return true;
+      if (r > 160 && g > 140 && b < 110 && (g - b) > 40 && Math.abs(r - g) < 45) return true;
       // Safety Red: deep safety red
-      if (r > 140 && g < 100 && b < 100 && (r - Math.max(g, b)) > 45) return true;
+      if (r > 150 && g < 90 && b < 90 && (r - Math.max(g, b)) > 50) return true;
       // Electric Blue hard hat
-      if (b > 120 && b > r * 1.2 && b > g * 1.1 && (b - r) > 30) return true;
+      if (b > 130 && b > r * 1.25 && b > g * 1.15 && (b - r) > 35) return true;
       // Safety Green hard hat
-      if (g > 120 && g > r * 1.15 && g > b * 1.15 && (g - r) > 20) return true;
-      // Glossy White hard hat (very high luminance, low saturation)
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      if (r > 215 && g > 215 && b > 215 && (max - min) < 20) return true;
+      if (g > 130 && g > r * 1.20 && g > b * 1.20 && (g - r) > 25) return true;
       return false;
     };
 
-    // Safety Vest color detector — fluorescent hi-vis orange/lime + retroreflective silver stripes
+    // Safety Vest color detector — fluorescent hi-vis orange & lime-yellow safety gear
     const isVestColor = (r: number, g: number, b: number): boolean => {
-      // Fluorescent Safety Orange Vest (R dominant, works in daylight with B up to 145)
-      if (r > 140 && g > 30 && g < 185 && b < 145 && (r - g) > 15 && (r - b) > 35) return true;
+      // Fluorescent Safety Orange Vest (R dominant, safety orange)
+      if (r > 155 && g > 40 && g < 170 && b < 125 && (r - g) > 20 && (r - b) > 45) return true;
       // Fluorescent Lime-Yellow Vest (high green dominance, low blue)
-      if (g > 120 && r > 90 && b < 130 && (g - b) > 35 && (r - b) > 15) return true;
-      // Retroreflective silver/white safety tape stripes
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      if (r > 180 && g > 180 && b > 180 && (max - min) < 35) return true;
+      if (g > 135 && r > 110 && b < 110 && (g - b) > 45 && (r - b) > 20) return true;
       return false;
     };
 
@@ -1898,9 +1890,9 @@ function PPEPanel() {
       : 0;
 
     // Step 6: Accurate compliance thresholds
-    const hasHardHat = helmetPct >= 5.0 || helmCount >= 15;
-    const hasVest    = vestPct  >= 4.5 || vestCount >= 15;
-    const uncertain  = (!hasHardHat && (helmetPct >= 2.0 || helmCount >= 6)) || (!hasVest && (vestPct >= 2.0 || vestCount >= 6));
+    const hasHardHat = helmetPct >= 10.0 && helmCount >= 30;
+    const hasVest    = vestPct  >= 15.0 && vestCount >= 45;
+    const uncertain  = (!hasHardHat && helmetPct >= 4.0 && helmCount >= 12) || (!hasVest && vestPct >= 5.0 && vestCount >= 15);
     const personDetected = fgPixels >= (width * height * 0.05) || hasHardHat || hasVest;
 
     // Step 7: Bounding boxes from real pixel clusters
@@ -2087,15 +2079,15 @@ function PPEPanel() {
       if (a.uncertain && missing.length > 0) {
         status = 'UNCERTAIN'; severity = 'REVIEW';
         const borderline: string[] = [];
-        if (!a.hasHardHat && a.helmetPct >= 2) borderline.push(`hard-hat (${a.helmetPct}% — need ≥5%)`);
-        if (!a.hasVest   && a.vestPct   >= 2) borderline.push(`safety-vest (${a.vestPct}% — need ≥5%)`);
+        if (!a.hasHardHat && a.helmetPct >= 4) borderline.push(`hard-hat (${a.helmetPct}% — need ≥10%)`);
+        if (!a.hasVest   && a.vestPct   >= 5) borderline.push(`safety-vest (${a.vestPct}% — need ≥15%)`);
         alertMsg = `⚠️ UNCERTAIN — Manual Review Required. Borderline PPE signal for: ${borderline.join('; ')}. A safety officer must physically verify.`;
       } else if (missing.length === 0) {
         status = 'COMPLIANT'; severity = 'NONE';
         alertMsg = `✅ All required PPE detected. Hard-hat (${a.helmetPct}% head coverage) and safety-vest (${a.vestPct}% torso coverage) confirmed — DGMS Regulation 115 satisfied.`;
       } else {
         status = 'NON_COMPLIANT'; severity = 'HIGH';
-        alertMsg = `⚠️ STATUTORY VIOLATION: Missing ${missing.map(m => m.toUpperCase()).join(' and ')}. Helmet: ${a.helmetPct}% (need ≥5%). Vest: ${a.vestPct}% (need ≥5%). Breach of DGMS Safety Regulation 115.`;
+        alertMsg = `⚠️ STATUTORY VIOLATION: Missing ${missing.map(m => m.toUpperCase()).join(' and ')}. Helmet: ${a.helmetPct}% (need ≥10%). Vest: ${a.vestPct}% (need ≥15%). Breach of DGMS Safety Regulation 115.`;
       }
 
       const detectedItems: any[] = [{ label: 'person', score: a.confidence, box: { ...a.personBox } }];
@@ -2425,8 +2417,8 @@ function PPEPanel() {
           {/* Action Row */}
           <div className="flex items-center justify-between pt-3 border-t border-white/10 flex-wrap gap-3">
             <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 flex items-center gap-3">
-              <span>Helmet Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.helmet_color_coverage_pct}%</strong> (min 5%)</span>
-              <span>Vest Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.vest_color_coverage_pct}%</strong> (min 5%)</span>
+              <span>Helmet Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.helmet_color_coverage_pct}%</strong> (min 10%)</span>
+              <span>Vest Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.vest_color_coverage_pct}%</strong> (min 15%)</span>
             </div>
 
             {result.compliance_status !== 'COMPLIANT' && (
