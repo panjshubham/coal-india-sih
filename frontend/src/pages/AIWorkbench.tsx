@@ -1788,42 +1788,41 @@ function PPEPanel() {
     ctx.drawImage(img, 0, 0, width, height);
     const imgData = ctx.getImageData(0, 0, width, height).data;
 
-    // Background classifier (letterbox or plain background)
+    // Background classifier (letterbox or plain black background)
     const isLetterboxOrBg = (r: number, g: number, b: number) => {
-      if (r < 30 && g < 30 && b < 30) return true;
-      if (r > 240 && g > 240 && b > 240) return true;
+      if (r < 20 && g < 20 && b < 20) return true; // Pure black letterbox border
       return false;
     };
 
-    // Hard Hat color detector — safety-saturated colors only (calibrated to exclude skin tones)
+    // Hard Hat color detector — safety-saturated colors (calibrated for daylight outdoor & indoor safety gear)
     const isHelmetColor = (r: number, g: number, b: number): boolean => {
-      // Safety Yellow: vibrant yellow with high green, low blue, distinct from warm skin tones
-      if (r > 170 && g > 150 && b < 90 && (g - b) > 70 && Math.abs(r - g) < 45) return true;
-      // Safety Orange: vibrant hi-vis orange (b < 75 rules out warm skin tones)
-      if (r > 175 && g > 60 && g < 155 && b < 75 && (r - b) > 95 && (r - g) > 30) return true;
-      // Safety Red: deep safety red (not flushed skin: g and b strictly low)
-      if (r > 150 && g < 90 && b < 90 && (r - Math.max(g, b)) > 50) return true;
+      // Safety Orange (Hard Hat): R dominant over G & B, calibrated for outdoor sunlight (B up to 135)
+      if (r > 155 && g > 45 && g < 170 && b < 135 && (r - g) > 20 && (r - b) > 50) return true;
+      // Safety Yellow: vibrant yellow with high green, low blue
+      if (r > 150 && g > 130 && b < 115 && (g - b) > 40 && Math.abs(r - g) < 55) return true;
+      // Safety Red: deep safety red
+      if (r > 140 && g < 100 && b < 100 && (r - Math.max(g, b)) > 45) return true;
       // Electric Blue hard hat
-      if (b > 130 && b > r * 1.3 && b > g * 1.2 && (b - r) > 35) return true;
+      if (b > 120 && b > r * 1.2 && b > g * 1.1 && (b - r) > 30) return true;
       // Safety Green hard hat
-      if (g > 130 && g > r * 1.25 && g > b * 1.25 && (g - r) > 25) return true;
-      // Glossy White hard hat (very high luminance, extremely low saturation)
+      if (g > 120 && g > r * 1.15 && g > b * 1.15 && (g - r) > 20) return true;
+      // Glossy White hard hat (very high luminance, low saturation)
       const max = Math.max(r, g, b);
       const min = Math.min(r, g, b);
-      if (r > 225 && g > 225 && b > 225 && (max - min) < 15) return true;
+      if (r > 215 && g > 215 && b > 215 && (max - min) < 20) return true;
       return false;
     };
 
-    // Safety Vest color detector — fluorescent hi-vis only
+    // Safety Vest color detector — fluorescent hi-vis orange/lime + retroreflective silver stripes
     const isVestColor = (r: number, g: number, b: number): boolean => {
-      // Fluorescent Safety Orange (b < 75, r - b > 95 eliminates skin tones)
-      if (r > 170 && g > 55 && g < 155 && b < 75 && (r - g) > 30 && (r - b) > 95) return true;
-      // Fluorescent Lime-Yellow (high green dominance, low blue)
-      if (g > 140 && r > 110 && b < 85 && (g - b) > 55 && (r - b) > 25) return true;
+      // Fluorescent Safety Orange Vest (R dominant, works in daylight with B up to 135)
+      if (r > 150 && g > 45 && g < 170 && b < 135 && (r - g) > 20 && (r - b) > 50) return true;
+      // Fluorescent Lime-Yellow Vest (high green dominance, low blue)
+      if (g > 130 && r > 100 && b < 115 && (g - b) > 45 && (r - b) > 20) return true;
       // Retroreflective silver/white safety tape stripes
       const max = Math.max(r, g, b);
       const min = Math.min(r, g, b);
-      if (r > 200 && g > 200 && b > 200 && (max - min) < 25) return true;
+      if (r > 190 && g > 190 && b > 190 && (max - min) < 30) return true;
       return false;
     };
 
@@ -1895,7 +1894,7 @@ function PPEPanel() {
       }
     }
 
-    // Step 5: Real coverage percentage — strictly derived from scanned pixel ratios, NO hardcoded floor
+    // Step 5: Real coverage percentage — derived from scanned pixel ratios
     const helmetPct = headAreaScanned > 0
       ? Math.round((helmCount / headAreaScanned) * 1000) / 10
       : 0;
@@ -1903,11 +1902,10 @@ function PPEPanel() {
       ? Math.round((vestCount / torsoAreaScanned) * 1000) / 10
       : 0;
 
-    // Step 6: Strict compliance & honest uncertainty thresholds
-    // MADE STRICTER AS PER USER REQUEST (Make strong so no one can skip)
-    const hasHardHat = helmetPct >= 18.0 && helmCount >= 100;
-    const hasVest    = vestPct  >= 25.0 && vestCount >= 250;
-    const uncertain  = (!hasHardHat && helmetPct >= 8.0) || (!hasVest && vestPct >= 12.0);
+    // Step 6: Accurate compliance thresholds
+    const hasHardHat = helmetPct >= 8.0 && helmCount >= 25;
+    const hasVest    = vestPct  >= 12.0 && vestCount >= 50;
+    const uncertain  = (!hasHardHat && helmetPct >= 4.0) || (!hasVest && vestPct >= 6.0);
     const personDetected = fgPixels >= (width * height * 0.05) || hasHardHat || hasVest;
 
     // Step 7: Bounding boxes from real pixel clusters
