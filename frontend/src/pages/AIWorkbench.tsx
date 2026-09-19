@@ -1815,14 +1815,14 @@ function PPEPanel() {
 
     // Safety Vest color detector — fluorescent hi-vis orange/lime + retroreflective silver stripes
     const isVestColor = (r: number, g: number, b: number): boolean => {
-      // Fluorescent Safety Orange Vest (R dominant, works in daylight with B up to 135)
-      if (r > 150 && g > 45 && g < 170 && b < 135 && (r - g) > 20 && (r - b) > 50) return true;
+      // Fluorescent Safety Orange Vest (R dominant, works in daylight with B up to 145)
+      if (r > 140 && g > 30 && g < 185 && b < 145 && (r - g) > 15 && (r - b) > 35) return true;
       // Fluorescent Lime-Yellow Vest (high green dominance, low blue)
-      if (g > 130 && r > 100 && b < 115 && (g - b) > 45 && (r - b) > 20) return true;
+      if (g > 120 && r > 90 && b < 130 && (g - b) > 35 && (r - b) > 15) return true;
       // Retroreflective silver/white safety tape stripes
       const max = Math.max(r, g, b);
       const min = Math.min(r, g, b);
-      if (r > 190 && g > 190 && b > 190 && (max - min) < 30) return true;
+      if (r > 180 && g > 180 && b > 180 && (max - min) < 35) return true;
       return false;
     };
 
@@ -1846,13 +1846,16 @@ function PPEPanel() {
       personYMin = Math.round(height * 0.05); personYMax = Math.round(height * 0.95);
     }
     const personH = personYMax - personYMin;
+    const personW = personXMax - personXMin;
 
     // Step 2: Anatomically grounded scan regions within person bounds
-    // True human proportions: head is top ~18% of height, torso spans from 18% to 62%
+    // Focus torso scan on center chest/upper body area (excluding background margins)
     const headY1 = personYMin;
     const headY2 = Math.min(height - 1, personYMin + Math.round(personH * 0.18));
+    const torsoX1 = Math.max(0, personXMin + Math.round(personW * 0.08));
+    const torsoX2 = Math.min(width - 1, personXMax - Math.round(personW * 0.08));
     const torsoY1 = headY2;
-    const torsoY2 = Math.min(height - 1, personYMin + Math.round(personH * 0.62));
+    const torsoY2 = Math.min(height - 1, personYMin + Math.round(personH * 0.58));
 
     // Step 3: Scan head region for helmet color pixels
     let helmCount = 0, headAreaScanned = 0;
@@ -1878,7 +1881,7 @@ function PPEPanel() {
     let vestCount = 0, torsoAreaScanned = 0;
     let vestXMin = width, vestXMax = 0, vestYMin = height, vestYMax = 0;
     for (let y = torsoY1; y <= torsoY2; y++) {
-      for (let x = personXMin; x <= personXMax; x++) {
+      for (let x = torsoX1; x <= torsoX2; x++) {
         const i = (y * width + x) * 4;
         const r = imgData[i], g = imgData[i+1], b = imgData[i+2];
         if (!isLetterboxOrBg(r, g, b)) {
@@ -1903,9 +1906,9 @@ function PPEPanel() {
       : 0;
 
     // Step 6: Accurate compliance thresholds
-    const hasHardHat = helmetPct >= 8.0 && helmCount >= 25;
-    const hasVest    = vestPct  >= 12.0 && vestCount >= 50;
-    const uncertain  = (!hasHardHat && helmetPct >= 4.0) || (!hasVest && vestPct >= 6.0);
+    const hasHardHat = helmetPct >= 5.0 || helmCount >= 15;
+    const hasVest    = vestPct  >= 4.5 || vestCount >= 15;
+    const uncertain  = (!hasHardHat && (helmetPct >= 2.0 || helmCount >= 6)) || (!hasVest && (vestPct >= 2.0 || vestCount >= 6));
     const personDetected = fgPixels >= (width * height * 0.05) || hasHardHat || hasVest;
 
     // Step 7: Bounding boxes from real pixel clusters
@@ -2092,15 +2095,15 @@ function PPEPanel() {
       if (a.uncertain && missing.length > 0) {
         status = 'UNCERTAIN'; severity = 'REVIEW';
         const borderline: string[] = [];
-        if (!a.hasHardHat && a.helmetPct >= 8) borderline.push(`hard-hat (${a.helmetPct}% — need ≥18%)`);
-        if (!a.hasVest   && a.vestPct   >= 12) borderline.push(`safety-vest (${a.vestPct}% — need ≥25%)`);
+        if (!a.hasHardHat && a.helmetPct >= 2) borderline.push(`hard-hat (${a.helmetPct}% — need ≥5%)`);
+        if (!a.hasVest   && a.vestPct   >= 2) borderline.push(`safety-vest (${a.vestPct}% — need ≥5%)`);
         alertMsg = `⚠️ UNCERTAIN — Manual Review Required. Borderline PPE signal for: ${borderline.join('; ')}. A safety officer must physically verify.`;
       } else if (missing.length === 0) {
         status = 'COMPLIANT'; severity = 'NONE';
         alertMsg = `✅ All required PPE detected. Hard-hat (${a.helmetPct}% head coverage) and safety-vest (${a.vestPct}% torso coverage) confirmed — DGMS Regulation 115 satisfied.`;
       } else {
         status = 'NON_COMPLIANT'; severity = 'HIGH';
-        alertMsg = `⚠️ STATUTORY VIOLATION: Missing ${missing.map(m => m.toUpperCase()).join(' and ')}. Helmet: ${a.helmetPct}% (need ≥18%). Vest: ${a.vestPct}% (need ≥25%). Breach of DGMS Safety Regulation 115.`;
+        alertMsg = `⚠️ STATUTORY VIOLATION: Missing ${missing.map(m => m.toUpperCase()).join(' and ')}. Helmet: ${a.helmetPct}% (need ≥5%). Vest: ${a.vestPct}% (need ≥5%). Breach of DGMS Safety Regulation 115.`;
       }
 
       const detectedItems: any[] = [{ label: 'person', score: a.confidence, box: { ...a.personBox } }];
@@ -2420,8 +2423,8 @@ function PPEPanel() {
           {/* Action Row */}
           <div className="flex items-center justify-between pt-3 border-t border-white/10 flex-wrap gap-3">
             <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 flex items-center gap-3">
-              <span>Helmet Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.helmet_color_coverage_pct}%</strong> (min 12%)</span>
-              <span>Vest Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.vest_color_coverage_pct}%</strong> (min 15%)</span>
+              <span>Helmet Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.helmet_color_coverage_pct}%</strong> (min 5%)</span>
+              <span>Vest Coverage: <strong className="text-slate-800 dark:text-slate-200">{result.pixel_metrics?.vest_color_coverage_pct}%</strong> (min 5%)</span>
             </div>
 
             {result.compliance_status !== 'COMPLIANT' && (
