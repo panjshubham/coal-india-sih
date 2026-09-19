@@ -232,6 +232,7 @@ function DocumentCameraScanner({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mobileInputRef = useRef<HTMLInputElement | null>(null);
+  const isStartingRef = useRef(false);
 
   useEffect(() => {
     if (sourceMode === 'camera') {
@@ -245,20 +246,44 @@ function DocumentCameraScanner({
   }, [sourceMode]);
 
   const startCamera = async (facing: 'user' | 'environment' = facingMode) => {
+    if (isStartingRef.current) return;
+    isStartingRef.current = true;
+
     stopCamera();
     setCameraError('');
 
     if (!navigator?.mediaDevices?.getUserMedia) {
       setCameraError('Camera API is not supported in this browser. Please use Snap with Device Camera or Upload File.');
+      isStartingRef.current = false;
       return;
     }
 
     let stream: MediaStream | null = null;
     try {
-      // Direct basic request first (works natively across all desktop webcams without overconstraints)
+      // Attempt 1: Native direct video request (works seamlessly across desktop webcams)
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     } catch (err1: any) {
-      console.warn('Basic webcam request failed, trying facingMode option...', err1);
+      console.warn('Basic webcam request failed, checking error type...', err1);
+      const name1 = err1?.name || '';
+      const msg1 = err1?.message || '';
+
+      if (name1 === 'NotAllowedError' || name1 === 'PermissionDeniedError' || msg1.toLowerCase().includes('denied')) {
+        setCameraError('PERMISSION_DENIED');
+        isStartingRef.current = false;
+        return;
+      }
+      if (name1 === 'NotReadableError' || name1 === 'TrackStartError') {
+        setCameraError('CAMERA_IN_USE');
+        isStartingRef.current = false;
+        return;
+      }
+      if (name1 === 'NotFoundError' || name1 === 'DevicesNotFoundError') {
+        setCameraError('NO_CAMERA_FOUND');
+        isStartingRef.current = false;
+        return;
+      }
+
+      // Attempt 2: Try facingMode constraint fallback if Attempt 1 failed due to constraint reasons
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: facing } },
@@ -266,17 +291,20 @@ function DocumentCameraScanner({
         });
       } catch (err2: any) {
         console.error('All camera attempts failed:', err2);
-        const name = err2?.name || err1?.name || '';
-        const msg = err2?.message || err1?.message || '';
-        if (name === 'NotReadableError' || name === 'TrackStartError') {
+        const name2 = err2?.name || '';
+        const msg2 = err2?.message || '';
+        if (name2 === 'NotReadableError' || name2 === 'TrackStartError') {
           setCameraError('CAMERA_IN_USE');
-        } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        } else if (name2 === 'NotFoundError' || name2 === 'DevicesNotFoundError') {
           setCameraError('NO_CAMERA_FOUND');
-        } else if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || msg.toLowerCase().includes('denied')) {
+        } else if (name2 === 'NotAllowedError' || name2 === 'PermissionDeniedError' || msg2.toLowerCase().includes('denied')) {
           setCameraError('PERMISSION_DENIED');
+        } else if (name2 === 'AbortError') {
+          console.warn('Camera request aborted');
         } else {
-          setCameraError(`CAMERA_ERROR: ${msg || 'Unable to access camera.'}`);
+          setCameraError(`CAMERA_ERROR: ${msg2 || 'Unable to access camera.'}`);
         }
+        isStartingRef.current = false;
         return;
       }
     }
@@ -296,9 +324,11 @@ function DocumentCameraScanner({
       setTimeout(bindStream, 50);
       setTimeout(bindStream, 200);
     }
+    isStartingRef.current = false;
   };
 
   const stopCamera = () => {
+    isStartingRef.current = false;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -438,7 +468,6 @@ function DocumentCameraScanner({
             type="button"
             onClick={() => {
               setSourceMode('camera');
-              startCamera(facingMode);
             }}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
               sourceMode === 'camera'
@@ -1572,6 +1601,7 @@ function PPEPanel() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mobileCameraInputRef = useRef<HTMLInputElement | null>(null);
+  const isStartingRef = useRef(false);
 
   useEffect(() => {
     if (sourceMode === 'camera') {
@@ -1585,20 +1615,44 @@ function PPEPanel() {
   }, [sourceMode]);
 
   const startCamera = async (mode: 'user' | 'environment' = facingMode) => {
+    if (isStartingRef.current) return;
+    isStartingRef.current = true;
+
     stopCamera();
     setCameraError('');
 
     if (!navigator?.mediaDevices?.getUserMedia) {
       setCameraError('Camera API is not supported in this browser. Please use Snap with Device Camera or Upload File.');
+      isStartingRef.current = false;
       return;
     }
 
     let stream: MediaStream | null = null;
     try {
-      // Direct basic request first (works natively across all desktop webcams without overconstraints)
+      // Attempt 1: Direct video request (works natively across all desktop webcams)
       stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     } catch (err1: any) {
-      console.warn('Basic PPE webcam request failed, trying facingMode option...', err1);
+      console.warn('Basic PPE webcam request failed, checking error type...', err1);
+      const name1 = err1?.name || '';
+      const msg1 = err1?.message || '';
+
+      if (name1 === 'NotAllowedError' || name1 === 'PermissionDeniedError' || msg1.toLowerCase().includes('denied')) {
+        setCameraError('PERMISSION_DENIED');
+        isStartingRef.current = false;
+        return;
+      }
+      if (name1 === 'NotReadableError' || name1 === 'TrackStartError') {
+        setCameraError('CAMERA_IN_USE');
+        isStartingRef.current = false;
+        return;
+      }
+      if (name1 === 'NotFoundError' || name1 === 'DevicesNotFoundError') {
+        setCameraError('NO_CAMERA_FOUND');
+        isStartingRef.current = false;
+        return;
+      }
+
+      // Attempt 2: Try facingMode constraint fallback
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: mode } },
@@ -1606,17 +1660,20 @@ function PPEPanel() {
         });
       } catch (err2: any) {
         console.error('All PPE camera attempts failed:', err2);
-        const name = err2?.name || err1?.name || '';
-        const msg = err2?.message || err1?.message || '';
-        if (name === 'NotReadableError' || name === 'TrackStartError') {
+        const name2 = err2?.name || '';
+        const msg2 = err2?.message || '';
+        if (name2 === 'NotReadableError' || name2 === 'TrackStartError') {
           setCameraError('CAMERA_IN_USE');
-        } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        } else if (name2 === 'NotFoundError' || name2 === 'DevicesNotFoundError') {
           setCameraError('NO_CAMERA_FOUND');
-        } else if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || msg.toLowerCase().includes('denied')) {
+        } else if (name2 === 'NotAllowedError' || name2 === 'PermissionDeniedError' || msg2.toLowerCase().includes('denied')) {
           setCameraError('PERMISSION_DENIED');
+        } else if (name2 === 'AbortError') {
+          console.warn('Camera request aborted');
         } else {
-          setCameraError(msg || 'Unable to access camera.');
+          setCameraError(msg2 || 'Unable to access camera.');
         }
+        isStartingRef.current = false;
         return;
       }
     }
@@ -1636,9 +1693,11 @@ function PPEPanel() {
       setTimeout(bindStream, 50);
       setTimeout(bindStream, 200);
     }
+    isStartingRef.current = false;
   };
 
   const stopCamera = () => {
+    isStartingRef.current = false;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -2106,7 +2165,6 @@ function PPEPanel() {
             type="button"
             onClick={() => {
               setSourceMode('camera');
-              startCamera(facingMode);
             }}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
               sourceMode === 'camera'
