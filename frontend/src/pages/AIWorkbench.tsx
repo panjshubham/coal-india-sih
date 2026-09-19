@@ -1729,20 +1729,22 @@ function PPEPanel() {
             handleFile(file);
         }
     };
-
     const analyzeImagePixels = (img: HTMLImageElement): {
         hasHardHat: boolean;
         hasVest: boolean;
         uncertain: boolean;
         personDetected: boolean;
+        exposedHairDetected: boolean;
         confidence: number;
         headBox: { xmin: number; ymin: number; xmax: number; ymax: number };
         torsoBox: { xmin: number; ymin: number; xmax: number; ymax: number };
         personBox: { xmin: number; ymin: number; xmax: number; ymax: number };
         helmetPct: number;
         vestPct: number;
+        hairPct: number;
         helmCount: number;
         vestCount: number;
+        hairCount: number;
         headAreaScanned: number;
         torsoAreaScanned: number;
     } => {
@@ -1750,11 +1752,11 @@ function PPEPanel() {
         const ctx = canvas.getContext('2d');
         if (!ctx) {
             return {
-                hasHardHat: false, hasVest: false, uncertain: false, personDetected: false, confidence: 0,
+                hasHardHat: false, hasVest: false, uncertain: false, personDetected: false, exposedHairDetected: false, confidence: 0,
                 headBox: { xmin: 0.25, ymin: 0.05, xmax: 0.75, ymax: 0.30 },
                 torsoBox: { xmin: 0.15, ymin: 0.30, xmax: 0.85, ymax: 0.85 },
                 personBox: { xmin: 0.10, ymin: 0.05, xmax: 0.90, ymax: 0.95 },
-                helmetPct: 0, vestPct: 0, helmCount: 0, vestCount: 0,
+                helmetPct: 0, vestPct: 0, hairPct: 0, helmCount: 0, vestCount: 0, hairCount: 0,
                 headAreaScanned: 0, torsoAreaScanned: 0
             };
         }
@@ -1768,54 +1770,58 @@ function PPEPanel() {
 
         // Background classifier (pure black letterbox border or transparent canvas)
         const isLetterboxOrBg = (r: number, g: number, b: number) => {
-            if (r < 20 && g < 20 && b < 20) return true;
+            return r < 20 && g < 20 && b < 20;
+        };
+
+        // 1. Human Hair Detector (dark, black, brown hair texture)
+        const isHairPixel = (r: number, g: number, b: number): boolean => {
+            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+            // Dark / black hair:
+            if (lum < 75 && r < 85 && g < 80 && b < 80) return true;
+            // Brown / chestnut hair:
+            if (lum < 110 && r < 120 && g < 95 && b < 85 && r >= g && g >= b && (r - b) >= 6) return true;
             return false;
         };
 
-        // Hard Hat color detector — yellow, white, red, and orange (plus blue and green)
+        // 2. Human Skin Detector (face / forehead anchor)
+        const isSkinPixel = (r: number, g: number, b: number): boolean => {
+            return r > 70 && g > 38 && b > 20 && r > g && r > b && (r - g) > 8 && (r - g) < 110 && Math.abs(g - b) < 85 && (r - b) > 15;
+        };
+
+        // 3. Genuine Safety Hard Hat Colors (DGMS Safety Pigments - strictly non-white to eliminate walls/ceilings)
         const isHelmetColor = (r: number, g: number, b: number): boolean => {
-            // 1. Safety Orange Hard Hat: Dominant Red, moderate Green, low Blue
-            if (r > 155 && g > 40 && g < 175 && b < 120 && (r - g) > 20 && (r - b) > 45) return true;
+            // Safety Yellow Hard Hat (High R & G, low B - saturated yellow, NOT beige/wall):
+            if (r > 165 && g > 140 && b < 100 && (r + g) > 320 && (g - b) > 50 && (r - b) > 75 && Math.abs(r - g) < 45) return true;
 
-            // 2. Safety Yellow Hard Hat: High Red & Green, low Blue
-            if (r > 155 && g > 130 && b < 110 && (g - b) > 35 && (r - b) > 50 && Math.abs(r - g) < 55) return true;
+            // Safety Fluorescent Orange Hard Hat (High R, moderate G, low B):
+            if (r > 185 && g > 55 && g < 155 && b < 70 && (r - g) > 40 && (r - b) > 115) return true;
 
-            // 3. Safety Red Hard Hat: High Red, low Green & Blue
-            if (r > 145 && g < 95 && b < 95 && (r - Math.max(g, b)) > 45) return true;
+            // Safety Red Hard Hat:
+            if (r > 165 && g < 75 && b < 75 && (r - Math.max(g, b)) > 70) return true;
 
-            // 4. White Hard Hat (Supervisors/Engineers): High luminance across channels, low saturation
-            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-            if (lum > 180 && r > 175 && g > 175 && b > 175 &&
-                Math.abs(r - g) < 25 && Math.abs(r - b) < 25 && Math.abs(g - b) < 25) return true;
+            // Safety Electric Blue Hard Hat:
+            if (b > 145 && b > r * 1.35 && b > g * 1.25 && (b - r) > 45) return true;
 
-            // 5. Electric Blue hard hat
-            if (b > 130 && b > r * 1.25 && b > g * 1.15 && (b - r) > 35) return true;
-
-            // 6. Safety Green hard hat
-            if (g > 130 && g > r * 1.15 && g > b * 1.15 && (g - r) > 25) return true;
+            // Safety High-Vis Green Hard Hat:
+            if (g > 145 && g > r * 1.25 && g > b * 1.25 && (g - r) > 30) return true;
 
             return false;
         };
 
-        // Safety Vest color detector — fluorescent hi-vis orange, neon yellow/safety green, and bright retroreflective stripes
-        const isVestColor = (r: number, g: number, b: number): boolean => {
-            // 1. Hi-vis Safety Orange / Fluorescent Orange Vest
-            if (r > 140 && g > 35 && g < 185 && b < 140 && (r - g) > 15 && (r - b) > 30) return true;
-            if (r > 165 && g > 55 && g < 190 && b < 155 && (r > g) && (r - b) > 20) return true;
+        // 4. Safety Vest Color Detector (Fluorescent Dayglo Safety Fabric):
+        const isFluorescentVestColor = (r: number, g: number, b: number): boolean => {
+            // Fluorescent Safety Orange:
+            if (r > 185 && g > 55 && g < 155 && b < 80 && (r - g) > 35 && (r - b) > 105) return true;
 
-            // 2. Hi-vis Neon Yellow / Safety Green Vest
-            if (g > 120 && r > 95 && b < 130 && (g - b) > 30 && (r - b) > 15) return true;
-            if (g > 130 && g > r * 1.05 && g > b * 1.15) return true;
-            if (r > 145 && g > 140 && b < 110 && (r + g) > 300 && (g - b) > 40) return true;
-
-            // 3. Bright Retroreflective Stripes (high luminance silver/white tape across chest/midriff)
-            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-            if (lum > 185 && (
-                (r > 175 && g > 175 && b > 175 && Math.abs(r - g) < 30 && Math.abs(r - b) < 30 && Math.abs(g - b) < 30) ||
-                (lum > 210 && Math.min(r, g, b) > 160)
-            )) return true;
+            // Fluorescent Lime-Yellow / Neon Safety Green:
+            if (g > 160 && r > 125 && b < 85 && (g - b) > 75 && (r - b) > 45) return true;
 
             return false;
+        };
+
+        const isReflectiveStripe = (r: number, g: number, b: number): boolean => {
+            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+            return lum > 190 && r > 180 && g > 180 && b > 180 && Math.abs(r - g) < 20 && Math.abs(r - b) < 20 && Math.abs(g - b) < 20;
         };
 
         // Step 1: Find person bounding box via foreground detection
@@ -1850,19 +1856,31 @@ function PPEPanel() {
         // Torso region: covers upper and mid-body (30% to 85% height, center 70% width)
         const torsoY1 = Math.min(height - 1, personYMin + Math.round(personH * 0.30));
         const torsoY2 = Math.min(height - 1, personYMin + Math.round(personH * 0.85));
-        const torsoMarginW = Math.round(personW * 0.15); // 15% margin on each side = center 70% width
+        const torsoMarginW = Math.round(personW * 0.15);
         const torsoX1 = Math.max(0, personXMin + torsoMarginW);
         const torsoX2 = Math.min(width - 1, personXMax - torsoMarginW);
 
-        // Step 3: Scan head region for helmet color pixels
-        let helmCount = 0, headAreaScanned = 0;
+        // Step 3: Scan head region for helmet AND hair pixels
+        let helmCount = 0, hairCount = 0, headSkinCount = 0, headAreaScanned = 0;
         let helmXMin = width, helmXMax = 0, helmYMin = height, helmYMax = 0;
+        let hairXMin = width, hairXMax = 0, hairYMin = height, hairYMax = 0;
+
         for (let y = headY1; y <= headY2; y++) {
             for (let x = headX1; x <= headX2; x++) {
                 const i = (y * width + x) * 4;
                 const r = imgData[i], g = imgData[i + 1], b = imgData[i + 2];
                 if (!isLetterboxOrBg(r, g, b)) {
                     headAreaScanned++;
+                    if (isHairPixel(r, g, b)) {
+                        hairCount++;
+                        if (x < hairXMin) hairXMin = x;
+                        if (x > hairXMax) hairXMax = x;
+                        if (y < hairYMin) hairYMin = y;
+                        if (y > hairYMax) hairYMax = y;
+                    }
+                    if (isSkinPixel(r, g, b)) {
+                        headSkinCount++;
+                    }
                     if (isHelmetColor(r, g, b)) {
                         helmCount++;
                         if (x < helmXMin) helmXMin = x;
@@ -1875,45 +1893,66 @@ function PPEPanel() {
         }
 
         // Step 4: Scan torso region for vest color pixels
-        let vestCount = 0, torsoAreaScanned = 0;
+        let fluorescentCount = 0, stripeCount = 0, torsoAreaScanned = 0;
         let vestXMin = width, vestXMax = 0, vestYMin = height, vestYMax = 0;
+
         for (let y = torsoY1; y <= torsoY2; y++) {
             for (let x = torsoX1; x <= torsoX2; x++) {
                 const i = (y * width + x) * 4;
                 const r = imgData[i], g = imgData[i + 1], b = imgData[i + 2];
                 if (!isLetterboxOrBg(r, g, b)) {
                     torsoAreaScanned++;
-                    if (isVestColor(r, g, b)) {
-                        vestCount++;
+                    if (isFluorescentVestColor(r, g, b)) {
+                        fluorescentCount++;
                         if (x < vestXMin) vestXMin = x;
                         if (x > vestXMax) vestXMax = x;
                         if (y < vestYMin) vestYMin = y;
                         if (y > vestYMax) vestYMax = y;
+                    } else if (isReflectiveStripe(r, g, b)) {
+                        stripeCount++;
                     }
                 }
             }
         }
 
-        // Step 5: Real coverage percentage — derived from scanned pixel ratios
+        // Step 5: Real metrics
         const helmetPct = headAreaScanned > 0
             ? Math.round((helmCount / headAreaScanned) * 1000) / 10
             : 0;
-        const vestPct = torsoAreaScanned > 0
-            ? Math.round((vestCount / torsoAreaScanned) * 1000) / 10
+        const hairPct = headAreaScanned > 0
+            ? Math.round((hairCount / headAreaScanned) * 1000) / 10
             : 0;
 
-        // Step 6: Accurate compliance thresholds
-        // Calibrated so compliant personnel with orange/yellow vests + hard hats pass reliably
-        const hasHardHat = (helmetPct >= 6.0 && helmCount >= 15) || (helmetPct >= 4.0 && helmCount >= 30);
-        const hasVest = (vestPct >= 8.0 && vestCount >= 25) || (vestPct >= 5.5 && vestCount >= 45);
-        const uncertain = (!hasHardHat && helmetPct >= 3.0 && helmCount >= 8) || (!hasVest && vestPct >= 3.5 && vestCount >= 15);
-        const personDetected = fgPixels >= (width * height * 0.05) || hasHardHat || hasVest;
+        // Valid vest pixels: reflective stripes only count if actual fluorescent vest body is present!
+        const totalVestPixels = fluorescentCount >= 25 ? (fluorescentCount + stripeCount) : 0;
+        const vestPct = torsoAreaScanned > 0
+            ? Math.round((totalVestPixels / torsoAreaScanned) * 1000) / 10
+            : 0;
 
-        // Step 7: Bounding boxes from real pixel clusters
+        // Step 6: Accurate compliance thresholds with HAIR vs HELMET discrimination
+        // If exposed hair is detected on the head (hairCount >= 18 and hairPct >= 4.0%),
+        // the person is unequivocally NOT wearing a hard hat!
+        const exposedHairDetected = (hairCount >= 18 && hairPct >= 4.0) || hairPct >= 8.0;
+
+        // Hard hat is ONLY true if genuine safety helmet color is present AND NO exposed hair
+        const hasHardHat = !exposedHairDetected && ((helmetPct >= 6.0 && helmCount >= 15) || (helmetPct >= 4.0 && helmCount >= 30));
+
+        // Vest is true ONLY if fluorescent orange or lime-yellow safety vest fabric is worn
+        const hasVest = fluorescentCount >= 25 && ((vestPct >= 8.0 && totalVestPixels >= 25) || (vestPct >= 5.5 && totalVestPixels >= 45));
+
+        const uncertain = !hasHardHat && !exposedHairDetected && (helmetPct >= 3.0 && helmCount >= 8);
+        const personDetected = fgPixels >= (width * height * 0.05) || hasHardHat || hasVest || exposedHairDetected;
+
+        // Step 7: Bounding boxes
         const finalHeadBox = (hasHardHat && helmXMax > helmXMin)
             ? {
                 xmin: Math.max(0, helmXMin - 6) / width, ymin: Math.max(0, helmYMin - 6) / height,
                 xmax: Math.min(width, helmXMax + 6) / width, ymax: Math.min(height, helmYMax + 6) / height
+            }
+            : (exposedHairDetected && hairXMax > hairXMin)
+            ? {
+                xmin: Math.max(0, hairXMin - 6) / width, ymin: Math.max(0, hairYMin - 6) / height,
+                xmax: Math.min(width, hairXMax + 6) / width, ymax: Math.min(height, hairYMax + 6) / height
             }
             : {
                 xmin: headX1 / width, ymin: headY1 / height,
@@ -1931,14 +1970,14 @@ function PPEPanel() {
             };
 
         return {
-            hasHardHat, hasVest, uncertain, personDetected,
+            hasHardHat, hasVest, uncertain, personDetected, exposedHairDetected,
             confidence: personDetected ? 0.97 : 0.0,
             headBox: finalHeadBox, torsoBox: finalTorsoBox,
             personBox: {
                 xmin: Math.max(0, personXMin - 4) / width, ymin: Math.max(0, personYMin - 4) / height,
                 xmax: Math.min(width, personXMax + 4) / width, ymax: Math.min(height, personYMax + 4) / height
             },
-            helmetPct, vestPct, helmCount, vestCount, headAreaScanned, torsoAreaScanned
+            helmetPct, vestPct, hairPct, helmCount, vestCount: totalVestPixels, hairCount, headAreaScanned, torsoAreaScanned
         };
     };
 
@@ -1992,6 +2031,17 @@ function PPEPanel() {
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 11px monospace';
             ctx.fillText(`✅ HARD-HAT: ${analysis.helmetPct}%`, hBox.x + 5, Math.max(16, hBox.y - 7));
+        } else if (analysis.exposedHairDetected) {
+            ctx.strokeStyle = '#ef4444'; // Red
+            ctx.lineWidth = 3.5;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeRect(hBox.x, hBox.y, hBox.w, hBox.h);
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(hBox.x, Math.max(0, hBox.y - 24), 260, 24);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px monospace';
+            ctx.fillText(`❌ NO HELMET: BARE HAIR (${analysis.hairPct}%)`, hBox.x + 5, Math.max(16, hBox.y - 7));
         } else if (analysis.helmetPct >= 4.0) {
             ctx.strokeStyle = '#f59e0b'; // Amber / Borderline
             ctx.lineWidth = 3.5;
@@ -2028,17 +2078,6 @@ function PPEPanel() {
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 11px monospace';
             ctx.fillText(`✅ SAFETY-VEST: ${analysis.vestPct}%`, tBox.x + 5, Math.max(16, tBox.y - 7));
-        } else if (analysis.vestPct >= 5.0) {
-            ctx.strokeStyle = '#f59e0b'; // Amber / Borderline
-            ctx.lineWidth = 3.5;
-            ctx.setLineDash([6, 4]);
-            ctx.strokeRect(tBox.x, tBox.y, tBox.w, tBox.h);
-            ctx.setLineDash([]);
-            ctx.fillStyle = '#f59e0b';
-            ctx.fillRect(tBox.x, Math.max(0, tBox.y - 24), 215, 24);
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 11px monospace';
-            ctx.fillText(`⚠️ UNCERTAIN VEST: ${analysis.vestPct}%`, tBox.x + 5, Math.max(16, tBox.y - 7));
         } else {
             ctx.strokeStyle = '#ef4444'; // Red
             ctx.lineWidth = 3.5;
@@ -2062,6 +2101,32 @@ function PPEPanel() {
         const objectUrl = URL.createObjectURL(file);
         setPreview(objectUrl);
 
+        // 1. First attempt inference via trained backend YOLO PPE model if online
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+            const res = await fetch(`${AI_URL}/api/ppe-detect`, {
+                method: 'POST',
+                body: formData,
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.compliance_status) {
+                    setResult(data);
+                    setLoading(false);
+                    return;
+                }
+            }
+        } catch {
+            // Backend offline or running in standalone static Vercel SPA mode - proceed to calibrated client-side engine
+        }
+
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.src = objectUrl;
@@ -2069,9 +2134,9 @@ function PPEPanel() {
         img.onload = () => {
             const a = analyzeImagePixels(img);
 
-            if (!a.personDetected && !a.hasHardHat && !a.hasVest) {
+            if (!a.personDetected && !a.hasHardHat && !a.hasVest && !a.exposedHairDetected) {
                 setResult({
-                    model: 'pixel-color-compliance-engine v4.0 (client-side)',
+                    model: 'pixel-color-compliance-engine v4.1 (client-side)',
                     filename: file.name,
                     compliance_status: 'NO_PERSON',
                     severity: 'NONE',
@@ -2102,17 +2167,21 @@ function PPEPanel() {
                 status = 'COMPLIANT';
                 severity = 'NONE';
                 alertMsg = `✅ COMPLIANT: All required PPE detected. Hard-hat (${a.helmetPct}% head coverage) and safety-vest (${a.vestPct}% torso coverage) confirmed — DGMS Regulation 115 satisfied.`;
-            } else if (a.uncertain && !a.hasHardHat && a.helmetPct >= 3.5) {
+            } else if (a.uncertain) {
                 status = 'UNCERTAIN';
                 severity = 'REVIEW';
-                alertMsg = `⚠️ UNCERTAIN — Manual Review Required. Borderline hard-hat signal detected (${a.helmetPct}% coverage — need ≥8%). Safety officer inspection required.`;
+                alertMsg = `⚠️ UNCERTAIN — Manual Review Required. Borderline safety signal detected. Safety officer physical inspection required.`;
             } else {
                 status = 'NON_COMPLIANT';
                 severity = 'HIGH';
                 if (missing.length === 2) {
-                    alertMsg = `⚠️ STATUTORY VIOLATION: Both HARD-HAT and SAFETY-VEST are missing! Personnel has no safety gear. Breach of DGMS Regulation 115.`;
+                    alertMsg = a.exposedHairDetected
+                        ? `⚠️ STATUTORY VIOLATION: Both HARD-HAT and SAFETY-VEST are missing! Exposed hair detected on head (${a.hairPct}%) with no protective helmet, and no high-visibility safety vest. Breach of DGMS Regulation 115.`
+                        : `⚠️ STATUTORY VIOLATION: Both HARD-HAT and SAFETY-VEST are missing! Personnel has no safety gear. Breach of DGMS Regulation 115.`;
                 } else if (!a.hasHardHat) {
-                    alertMsg = `⚠️ STATUTORY VIOLATION: HARD-HAT Missing! Personnel is not wearing mandatory safety helmet (${a.helmetPct}% detected). Breach of DGMS Regulation 115.`;
+                    alertMsg = a.exposedHairDetected
+                        ? `⚠️ STATUTORY VIOLATION: HARD-HAT Missing! Exposed hair detected on head (${a.hairPct}%) with no protective helmet. Breach of DGMS Regulation 115.`
+                        : `⚠️ STATUTORY VIOLATION: HARD-HAT Missing! Personnel is not wearing mandatory safety helmet (${a.helmetPct}% detected). Breach of DGMS Regulation 115.`;
                 } else {
                     alertMsg = `⚠️ STATUTORY VIOLATION: SAFETY-VEST Missing! Personnel is not wearing high-visibility safety vest (${a.vestPct}% detected). Breach of DGMS Regulation 115.`;
                 }
@@ -2121,13 +2190,13 @@ function PPEPanel() {
             const detectedItems: any[] = [{ label: 'person', score: a.confidence, box: { ...a.personBox } }];
             detectedItems.push(a.hasHardHat
                 ? { label: 'hard-hat', score: Number((0.60 + a.helmetPct / 200).toFixed(3)), box: a.headBox }
-                : { label: 'missing_ppe: hard-hat', score: 0, box: a.headBox });
+                : { label: a.exposedHairDetected ? 'missing_ppe: hard-hat (exposed-hair)' : 'missing_ppe: hard-hat', score: 0, box: a.headBox });
             detectedItems.push(a.hasVest
                 ? { label: 'safety-vest', score: Number((0.60 + a.vestPct / 200).toFixed(3)), box: a.torsoBox }
                 : { label: 'missing_ppe: safety-vest', score: 0, box: a.torsoBox });
 
             setResult({
-                model: 'pixel-color-compliance-engine v4.0 (client-side)',
+                model: 'pixel-color-compliance-engine v4.1 (client-side)',
                 filename: file.name,
                 compliance_status: status, severity,
                 detected_items: detectedItems,
@@ -2136,10 +2205,11 @@ function PPEPanel() {
                 pixel_metrics: {
                     helmet_color_coverage_pct: a.helmetPct, vest_color_coverage_pct: a.vestPct,
                     helmet_pixels_matched: a.helmCount, vest_pixels_matched: a.vestCount,
+                    hair_pixels_matched: a.hairCount, hair_coverage_pct: a.hairPct,
                     head_area_scanned_px: a.headAreaScanned, torso_area_scanned_px: a.torsoAreaScanned,
                     verdict: status === 'COMPLIANT' ? 'Compliant PPE Attire Confirmed'
-                        : status === 'UNCERTAIN' ? 'Borderline — Manual Safety Officer Review Required'
-                            : 'NON-COMPLIANT: Insufficient PPE Coverage Detected'
+                        : a.exposedHairDetected ? 'NON-COMPLIANT: Exposed hair detected without hard-hat'
+                        : 'NON-COMPLIANT: Insufficient PPE Coverage Detected'
                 },
                 total_detections: detectedItems.length, avg_confidence: a.confidence,
                 alert: alertMsg,

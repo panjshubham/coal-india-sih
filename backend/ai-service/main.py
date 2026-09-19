@@ -273,12 +273,17 @@ def _get_ppe_yolo_model():
             if user_site not in sys.path:
                 sys.path.append(user_site)
             from ultralytics import YOLO  # type: ignore
-            model_path = os.path.join(BASE_DIR, "yolov8n.pt")
-            if not os.path.exists(model_path):
-                model_path = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), "yolov8n.pt")
-            if os.path.exists(model_path):
-                _ppe_yolo_model = YOLO(model_path)
-                print(f"[INFO] Loaded local YOLOv8 weights from {model_path}")
+            candidate_paths = [
+                os.path.join(BASE_DIR, "yolov8n-ppe.pt"),
+                os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), "ai-service", "yolov8n-ppe.pt"),
+                os.path.join(BASE_DIR, "yolov8n.pt"),
+                os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), "yolov8n.pt"),
+            ]
+            for p in candidate_paths:
+                if os.path.exists(p):
+                    _ppe_yolo_model = YOLO(p)
+                    print(f"[INFO] Loaded local YOLOv8 weights from {p}")
+                    break
         except Exception as e:
             print(f"[WARN] Failed to load YOLOv8 model: {e}")
     return _ppe_yolo_model
@@ -287,9 +292,9 @@ def _get_ppe_yolo_model():
 def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
     """
     Life-Critical PPE Vision Intelligence:
-    Combines YOLOv8 person localization with anatomical Head & Torso PPE Inspection.
-    Detects Hard-Hat (Yellow, Orange, White, Blue, Red) and Hi-Vis Safety Vest (Neon Lime, Orange, Silver).
-    Does NOT falsely trigger on bare hair, dark shirts, skin, or empty backgrounds.
+    Uses fine-tuned YOLOv8 PPE model (trained on web instances for Hardhat, NO-Hardhat, Safety Vest, NO-Safety Vest, Person).
+    Accurately distinguishes human hair from hard-hats and plain shirts from safety vests.
+    Falls back to skin/hair-anchored anatomical verification when needed.
     """
     try:
         from PIL import Image
@@ -297,7 +302,48 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
 
         img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
         w_orig, h_orig = img.size
-        # Standardize for robust analysis
+
+        # Step 1: Run trained YOLO PPE model if available
+        yolo = _get_ppe_yolo_model()
+        if yolo is not None:
+            try:
+                yolo_res = yolo(img, conf=0.25, verbose=False)
+                detected_items = []
+                for box in yolo_res[0].boxes:
+                    cls_id = int(box.cls[0])
+                    conf = round(float(box.conf[0]), 3)
+                    cls_name = yolo.names.get(cls_id, "").lower()
+                    xyxy = box.xyxy[0].tolist()
+                    norm_box = {
+                        "xmin": round(max(0.0, xyxy[0] / w_orig), 3),
+                        "ymin": round(max(0.0, xyxy[1] / h_orig), 3),
+                        "xmax": round(min(1.0, xyxy[2] / w_orig), 3),
+                        "ymax": round(min(1.0, xyxy[3] / h_orig), 3),
+                    }
+                    if "no-" in cls_name or "no_" in cls_name or "without" in cls_name:
+                        if "hardhat" in cls_name or "helmet" in cls_name:
+                            detected_items.append({"box": norm_box, "label": "no-hard-hat", "score": conf})
+                        elif "vest" in cls_name:
+                            detected_items.append({"box": norm_box, "label": "no-safety-vest", "score": conf})
+                        elif "mask" in cls_name:
+                            detected_items.append({"box": norm_box, "label": "no-mask", "score": conf})
+                    else:
+                        if "hardhat" in cls_name or "helmet" in cls_name:
+                            detected_items.append({"box": norm_box, "label": "hard-hat", "score": conf})
+                        elif "vest" in cls_name:
+                            detected_items.append({"box": norm_box, "label": "safety-vest", "score": conf})
+                        elif "person" in cls_name:
+                            detected_items.append({"box": norm_box, "label": "person", "score": conf})
+                        elif "mask" in cls_name:
+                            detected_items.append({"box": norm_box, "label": "mask", "score": conf})
+
+                # If YOLO identified persons or negative/positive PPE instances, return results
+                if detected_items:
+                    return detected_items
+            except Exception as ye:
+                print(f"[WARN] YOLO PPE inference error: {ye}")
+
+        # Step 2: Fallback to anatomical Head & Torso Inspection with strict hair rejection
         img_resized = img.resize((320, 480))
         arr_rgb = np.array(img_resized)
         arr_bgr = cv2.cvtColor(arr_rgb, cv2.COLOR_RGB2BGR)
@@ -308,31 +354,8 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
         g = arr_rgb[:, :, 1].astype(int)
         b = arr_rgb[:, :, 2].astype(int)
 
-        # Illumination-invariant skin detection to prevent tagging faces/skin as PPE
         is_skin = (r > 60) & (g > 30) & (b > 15) & (r > g) & (r > b) & ((r - g) > 8) & ((r - g) < 110) & (np.abs(g - b) < 90) & ((r - b) > 15)
 
-        person_box = None
-        person_score = 0.0
-
-        # Step 1: Run YOLO person localization
-        yolo = _get_ppe_yolo_model()
-        if yolo is not None:
-            try:
-                yolo_res = yolo(img_resized, verbose=False)
-                best_conf = 0.0
-                for box in yolo_res[0].boxes:
-                    cls_id = int(box.cls[0])
-                    conf = float(box.conf[0])
-                    if cls_id == 0 and conf >= 0.28: # Class 0 is 'person'
-                        if conf > best_conf:
-                            best_conf = conf
-                            xyxy = box.xyxy[0].tolist()
-                            person_box = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])]
-                            person_score = conf
-            except Exception as ye:
-                print(f"[WARN] YOLO inference error: {ye}")
-
-        # Step 2: Skin-tone face anchor fallback if YOLO didn't detect person (e.g. close-up portrait)
         skin_count = int(np.sum(is_skin))
         face_cy, face_cx = None, None
         face_h, face_w = None, None
@@ -344,33 +367,20 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
             face_h = max(int(np.percentile(skin_y, 85) - np.percentile(skin_y, 15)), 25)
             face_w = max(int(np.percentile(skin_x, 85) - np.percentile(skin_x, 15)), 25)
 
-        if person_box is None:
-            if face_cy is not None:
-                px1 = max(0, face_cx - face_w * 2)
-                py1 = max(0, face_cy - int(face_h * 1.5))
-                px2 = min(w, face_cx + face_w * 2)
-                py2 = min(h, face_cy + int(face_h * 5.0))
-                person_box = [px1, py1, px2, py2]
-                person_score = 0.88
-            else:
-                # No human detected in photo
-                return []
+        if face_cy is None:
+            return []
 
-        px1, py1, px2, py2 = person_box
-        pw = max(px2 - px1, 10)
-        ph = max(py2 - py1, 10)
+        px1 = max(0, face_cx - face_w * 2)
+        py1 = max(0, face_cy - int(face_h * 1.5))
+        px2 = min(w, face_cx + face_w * 2)
+        py2 = min(h, face_cy + int(face_h * 5.0))
+        person_score = 0.88
 
-        # Step 3: Head & Helmet Zone
-        if face_cy is not None:
-            hy1 = max(0, face_cy - int(face_h * 1.4))
-            hy2 = max(0, face_cy - int(face_h * 0.2))
-            hx1 = max(0, face_cx - int(face_w * 0.9))
-            hx2 = min(w, face_cx + int(face_w * 0.9))
-        else:
-            hy1 = max(0, py1)
-            hy2 = min(h, py1 + int(ph * 0.16))
-            hx1 = max(0, px1 + int(pw * 0.20))
-            hx2 = min(w, px2 - int(pw * 0.20))
+        # Head zone
+        hy1 = max(0, face_cy - int(face_h * 1.4))
+        hy2 = max(0, face_cy - int(face_h * 0.2))
+        hx1 = max(0, face_cx - int(face_w * 0.9))
+        hx2 = min(w, face_cx + int(face_w * 0.9))
 
         head_area = max((hy2 - hy1) * (hx2 - hx1), 1)
         head_hsv = arr_hsv[hy1:hy2, hx1:hx2]
@@ -380,28 +390,30 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
         hh, hs, hv = head_hsv[:, :, 0], head_hsv[:, :, 1], head_hsv[:, :, 2]
         hr, hg, hb = head_rgb[:, :, 0].astype(int), head_rgb[:, :, 1].astype(int), head_rgb[:, :, 2].astype(int)
 
-        # Calibrated HSV ranges (S >= 40, V >= 50) for real physical PPE under all lightings
-        y_helm = (hh >= 14) & (hh <= 35) & (hs >= 45) & (hv >= 80) & (hr > 120) & (hg > 100) & (~head_skin)
-        o_helm = (hh >= 6) & (hh <= 22) & (hs >= 45) & (hv >= 80) & (hr > 140) & (hg < 165) & (~head_skin)
-        w_helm = (hs <= 45) & (hv >= 165) & (hr > 150) & (hg > 150) & (hb > 150) & (np.maximum(np.maximum(hr, hg), hb) - np.minimum(np.minimum(hr, hg), hb) < 30) & (~head_skin)
-        b_helm = (hh >= 90) & (hh <= 130) & (hs >= 45) & (hv >= 60) & (hb > hr) & (~head_skin)
-        r_helm = ((hh <= 12) | (hh >= 165)) & (hs >= 45) & (hv >= 60) & (hr > hg) & (hr > hb) & (~head_skin)
+        # Hair detection: human hair is dark/brown (low value or low sat brown)
+        is_hair = ((hv < 60) & (hs < 80) & (~head_skin)) | ((hh >= 5) & (hh <= 25) & (hs >= 30) & (hv < 70) & (~head_skin))
+        hair_pixels = int(np.sum(is_hair))
+        hair_pct = round((hair_pixels / head_area) * 100, 1)
 
-        helm_mask = y_helm | o_helm | w_helm | b_helm | r_helm
+        # Hard-hat signatures: high-chroma safety colors (NO plain white wall/ceiling matching)
+        y_helm = (hh >= 14) & (hh <= 35) & (hs >= 55) & (hv >= 90) & (hr > 130) & (hg > 110) & (~head_skin)
+        o_helm = (hh >= 6) & (hh <= 22) & (hs >= 60) & (hv >= 90) & (hr > 150) & (hg < 165) & (~head_skin)
+        b_helm = (hh >= 90) & (hh <= 130) & (hs >= 55) & (hv >= 70) & (hb > hr) & (~head_skin)
+        r_helm = ((hh <= 12) | (hh >= 165)) & (hs >= 55) & (hv >= 70) & (hr > hg) & (hr > hb) & (~head_skin)
+
+        helm_mask = y_helm | o_helm | b_helm | r_helm
         helm_pixels = int(np.sum(helm_mask))
         helm_pct = round((helm_pixels / head_area) * 100, 1)
 
-        # Step 4: Torso & Safety Vest Zone
-        if face_cy is not None:
-            vy1 = min(h - 1, face_cy + int(face_h * 0.7))
-            vy2 = min(h, face_cy + int(face_h * 3.8))
-            vx1 = max(0, face_cx - int(face_w * 1.5))
-            vx2 = min(w, face_cx + int(face_w * 1.5))
-        else:
-            vy1 = min(h - 1, py1 + int(ph * 0.18))
-            vy2 = min(h, py1 + int(ph * 0.60))
-            vx1 = max(0, px1 + int(pw * 0.10))
-            vx2 = min(w, px2 - int(pw * 0.10))
+        # If bare human hair is detected, helmet is strictly FALSE
+        if hair_pct >= 4.0 or hair_pixels >= 15:
+            helm_pct = 0.0
+
+        # Torso zone
+        vy1 = min(h - 1, face_cy + int(face_h * 0.7))
+        vy2 = min(h, face_cy + int(face_h * 3.8))
+        vx1 = max(0, face_cx - int(face_w * 1.5))
+        vx2 = min(w, face_cx + int(face_w * 1.5))
 
         torso_area = max((vy2 - vy1) * (vx2 - vx1), 1)
         torso_hsv = arr_hsv[vy1:vy2, vx1:vx2]
@@ -411,12 +423,11 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
         th, ts, tv = torso_hsv[:, :, 0], torso_hsv[:, :, 1], torso_hsv[:, :, 2]
         tr, tg, tb = torso_rgb[:, :, 0].astype(int), torso_rgb[:, :, 1].astype(int), torso_rgb[:, :, 2].astype(int)
 
-        # Safety Vest signatures (EN ISO 20471 standard)
-        lime_vest = (th >= 22) & (th <= 85) & (ts >= 35) & (tv >= 60) & (tg > tb) & (~torso_skin)
-        orange_vest = ((th <= 22) | (th >= 165)) & (ts >= 45) & (tv >= 60) & (tr > tg) & (tr > tb) & (~torso_skin)
-        silver_vest = (ts <= 40) & (tv >= 175) & (tr > 160) & (tg > 160) & (tb > 160) & (~torso_skin)
+        # Safety Vest: fluorescent dayglo only (NOT plain white shirts)
+        lime_vest = (th >= 22) & (th <= 85) & (ts >= 50) & (tv >= 70) & (tg > tb) & (~torso_skin)
+        orange_vest = ((th <= 22) | (th >= 165)) & (ts >= 55) & (tv >= 70) & (tr > tg) & (tr > tb) & (~torso_skin)
 
-        vest_mask = lime_vest | orange_vest | silver_vest
+        vest_mask = lime_vest | orange_vest
         vest_pixels = int(np.sum(vest_mask))
         vest_pct = round((vest_pixels / torso_area) * 100, 1)
 
@@ -426,7 +437,13 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
             "score": round(float(person_score), 3)
         }]
 
-        if helm_pct >= 4.0 and helm_pixels >= 12:
+        if hair_pct >= 4.0 or hair_pixels >= 15:
+            detections.append({
+                "box": {"xmin": round(hx1 / w, 3), "ymin": round(hy1 / h, 3), "xmax": round(hx2 / w, 3), "ymax": round(hy2 / h, 3)},
+                "label": "no-hard-hat",
+                "score": round(min(0.95, 0.70 + hair_pct / 100.0), 3),
+            })
+        elif helm_pct >= 6.0 and helm_pixels >= 15:
             detections.append({
                 "box": {"xmin": round(hx1 / w, 3), "ymin": round(hy1 / h, 3), "xmax": round(hx2 / w, 3), "ymax": round(hy2 / h, 3)},
                 "label": "hard-hat",
@@ -434,12 +451,18 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
                 "coverage_pct": helm_pct
             })
 
-        if vest_pct >= 4.0 and vest_pixels >= 15:
+        if vest_pct >= 6.0 and vest_pixels >= 20:
             detections.append({
                 "box": {"xmin": round(vx1 / w, 3), "ymin": round(vy1 / h, 3), "xmax": round(vx2 / w, 3), "ymax": round(vy2 / h, 3)},
                 "label": "safety-vest",
                 "score": round(min(0.98, 0.80 + vest_pct / 100.0), 3),
                 "coverage_pct": vest_pct
+            })
+        else:
+            detections.append({
+                "box": {"xmin": round(vx1 / w, 3), "ymin": round(vy1 / h, 3), "xmax": round(vx2 / w, 3), "ymax": round(vy2 / h, 3)},
+                "label": "no-safety-vest",
+                "score": 0.85
             })
 
         return detections
@@ -812,11 +835,17 @@ async def ppe_detect(file: UploadFile = File(...)):
     result = await hf_post("keremberke/yolov8n-ppe-detection", content, is_binary=True, timeout=90)
     raw_detections: List[Dict] = result if isinstance(result, list) else []
 
-    # Check if person was detected
-    has_person = any("person" in d.get("label", "").lower() and d.get("score", 0) >= 0.50 for d in raw_detections)
-    if not has_person and not any("hard-hat" in d.get("label", "").lower() or "vest" in d.get("label", "").lower() for d in raw_detections):
+    # Check if person or personnel indicator was detected
+    has_person = any(
+        "person" in d.get("label", "").lower() or
+        "no-" in d.get("label", "").lower() or
+        "hard-hat" in d.get("label", "").lower() or
+        "vest" in d.get("label", "").lower()
+        for d in raw_detections
+    )
+    if not has_person:
         return {
-            "model": "keremberke/yolov8n-ppe-detection",
+            "model": "yolov8n-ppe-detection",
             "filename": file.filename,
             "compliance_status": "NO_PERSON",
             "severity": "NONE",
@@ -830,21 +859,27 @@ async def ppe_detect(file: UploadFile = File(...)):
             "timestamp": dt_cls.now(timezone.utc).isoformat()
         }
 
-    # High-confidence threshold (>= 0.60) and borderline band (0.45 - 0.59)
-    CONFIDENCE_THRESHOLD = 0.60
-    BORDERLINE_THRESHOLD = 0.45
+    CONFIDENCE_THRESHOLD = 0.35
 
     confirmed_items = []
     borderline_items = []
     missing = []
 
-    helmet_det = next((d for d in raw_detections if "hard-hat" in d.get("label", "").lower() or "helmet" in d.get("label", "").lower()), None)
-    vest_det = next((d for d in raw_detections if "vest" in d.get("label", "").lower()), None)
+    def is_positive_helmet(label: str) -> bool:
+        lbl = label.lower()
+        return any(k in lbl for k in ["hard-hat", "hardhat", "helmet"]) and "no-" not in lbl and "no_" not in lbl and "without" not in lbl
+
+    def is_positive_vest(label: str) -> bool:
+        lbl = label.lower()
+        return any(k in lbl for k in ["safety-vest", "safety vest", "vest"]) and "no-" not in lbl and "no_" not in lbl and "without" not in lbl
+
+    helmet_det = next((d for d in raw_detections if is_positive_helmet(d.get("label", ""))), None)
+    vest_det = next((d for d in raw_detections if is_positive_vest(d.get("label", ""))), None)
 
     helmet_score = helmet_det.get("score", 0.0) if helmet_det else 0.0
     vest_score = vest_det.get("score", 0.0) if vest_det else 0.0
 
-    person_det = next((d for d in raw_detections if "person" in d.get("label", "").lower() and d.get("score", 0) >= 0.50), None)
+    person_det = next((d for d in raw_detections if "person" in d.get("label", "").lower() and d.get("score", 0) >= 0.40), None)
 
     def calc_cov(item, person):
         if not item or "box" not in item or not person or "box" not in person:
@@ -857,8 +892,6 @@ async def ppe_detect(file: UploadFile = File(...)):
 
     helmet_coverage = calc_cov(helmet_det, person_det) if helmet_det else 0.0
     vest_coverage = calc_cov(vest_det, person_det) if vest_det else 0.0
-
-    CONFIDENCE_THRESHOLD = 0.40
 
     if helmet_det and helmet_score >= CONFIDENCE_THRESHOLD:
         confirmed_items.append("hard-hat")
@@ -877,13 +910,13 @@ async def ppe_detect(file: UploadFile = File(...)):
     else:
         compliance_status = "NON_COMPLIANT"
         severity = "HIGH"
-        alert_msg = f"⚠️ Non-compliance detected: Missing {', '.join(missing)}. Helmet: {helmet_coverage}%, Vest: {vest_coverage}%. Issue safety violation notice."
+        alert_msg = f"⚠️ Non-compliance detected: Missing {', '.join(missing)}. Worker not wearing required safety gear — DGMS Reg 115 violation."
 
-    valid_detections = [d for d in raw_detections if d.get("score", 0) >= CONFIDENCE_THRESHOLD]
+    valid_detections = [d for d in raw_detections if d.get("score", 0) >= 0.25]
     confidence_avg = round(sum(d.get("score", 0) for d in valid_detections) / len(valid_detections), 3) if valid_detections else 0.0
 
     return {
-        "model": "keremberke/yolov8n-ppe-detection",
+        "model": "yolov8n-ppe-detection",
         "filename": file.filename,
         "compliance_status": compliance_status,
         "severity": severity,
