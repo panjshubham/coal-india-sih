@@ -143,7 +143,7 @@ const TABS: Tab[] = [
   { id: 'ner', label: 'Extract Entities', model: 'dslim/bert-base-NER', icon: FileSearch, color: 'blue', description: 'Extract officer names, dates, mine names and deadlines from documents', task: 'Named Entity Recognition' },
   { id: 'translate', label: 'Translate', model: 'ai4bharat/indictrans2-en-indic-dist-200M', icon: Languages, color: 'blue', description: 'Translate safety notices & compliance text dynamically into Indian languages', task: 'Multilingual Translation' },
   { id: 'transcribe', label: 'Voice Report', model: 'openai/whisper-large-v3', icon: FileAudio, color: 'blue', description: 'Real-time speech recognition and text-to-speech for field safety reports', task: 'Speech-to-Text' },
-  { id: 'ppe', label: 'PPE Check', model: 'keremberke/yolov8n-ppe-detection', icon: FileImage, color: 'blue', description: 'Detect hard hats, safety vests & violation detection for site personnel/students', task: 'Safety Gear Detection' },
+  { id: 'ppe', label: 'PPE Check', model: 'client-side/color-ppe-heuristic-v4', icon: FileImage, color: 'blue', description: 'Detect hard hats, safety vests & violation detection for site personnel/students', task: 'Safety Gear Detection' },
   { id: 'berm', label: 'Berm Vision', model: 'DGMS-CMR83/berm-safety-vision', icon: FileVideo, color: 'blue', description: 'Inspect opencast bench haul road berms, erosion defects & rollover hazard under CMR Reg 83', task: 'Haul Road Berm Safety' },
 ];
 

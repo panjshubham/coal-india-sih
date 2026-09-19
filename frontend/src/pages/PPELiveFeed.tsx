@@ -270,7 +270,7 @@ function EventRow({ event, onResolve }: { event: PPEEvent; onResolve: (id: strin
               { label: 'Persons Detected', value: event.person_count },
               { label: 'Violations', value: event.violation_count },
               { label: 'AI Confidence', value: `${(event.confidence * 100).toFixed(1)}%` },
-              { label: 'Vision Model', value: 'YOLOv8n-PPE' },
+              { label: 'Vision Model', value: 'PPE-Heuristic-v4.0' },
             ].map(({ label, value }) => (
               <div key={label} className="bg-slate-100/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/40 rounded-lg p-2.5">
                 <p className="text-[11px] font-medium text-slate-800 dark:text-slate-500">{label}</p>
@@ -438,7 +438,7 @@ export default function PPELiveFeed() {
             PPE Live Safety Monitor
           </h1>
           <p className="text-slate-600 dark:text-slate-400 mt-1 text-xs sm:text-sm flex items-center gap-2 flex-wrap">
-            <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">YOLOv8-Edge Vision</span>
+            <span className="font-mono text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">PPE Heuristic Engine v4</span>
             <span>·</span>
             <span className="font-semibold text-slate-800 dark:text-slate-200">{cameras.filter(c => c.is_active).length} of {cameras.length} CCTV Feeds Active</span>
             <span>·</span>
@@ -671,7 +671,7 @@ export default function PPELiveFeed() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { step: '01', icon: Camera,       title: 'CCTV Stream Ingestion', desc: 'Captures high-resolution RTSP camera frames at 10-second intervals from underground & open-cast zones.' },
-            { step: '02', icon: HardHat,      title: 'YOLOv8 PPE Inference',  desc: 'Runs local neural network detection for mandatory ISI-marked hard hats and high-visibility vests.' },
+            { step: '02', icon: HardHat,      title: 'PPE Color Heuristic Engine',  desc: 'Runs local client-side color & spatial detection for mandatory ISI-marked hard hats and high-visibility vests.' },
             { step: '03', icon: ShieldAlert,  title: 'Severity Escalation',   desc: 'Missing PPE triggers instant severity classification (Critical, High, Medium) with audit timestamps.' },
             { step: '04', icon: TrendingUp,   title: 'Regulatory Audit Feed', desc: 'Securely batches scan logs into Supabase for DGMS safety registers and shift manager inspection.' },
           ].map(({ step, icon: Icon, title, desc }) => (
