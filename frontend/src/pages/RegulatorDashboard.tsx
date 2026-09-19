@@ -11,10 +11,12 @@ import {
   Search,
   Filter,
   Activity,
-  Download
+  Download,
+  Brain
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import RiskExplanationModal from '../components/RiskExplanationModal';
 
 interface MineRecord {
   id: string;
@@ -80,6 +82,8 @@ export default function RegulatorDashboard() {
   const [selectedSubsidiary, setSelectedSubsidiary] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [verifiedHash, setVerifiedHash] = useState<string | null>(null);
+  const [showRiskModal, setShowRiskModal] = useState<boolean>(false);
+  const [selectedMineId, setSelectedMineId] = useState<string>('M-CCL-102');
 
   const filteredMines = mockMines.filter(m => {
     const matchesSub = selectedSubsidiary === 'ALL' || m.subsidiary === selectedSubsidiary;
@@ -337,7 +341,7 @@ export default function RegulatorDashboard() {
                         }`}>
                           {mine.riskScore}
                         </span>
-                        <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="w-14 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                           <div 
                             className={`h-full rounded-full ${
                               mine.riskScore > 70 ? 'bg-red-600' :
@@ -346,6 +350,18 @@ export default function RegulatorDashboard() {
                             style={{ width: `${mine.riskScore}%` }}
                           />
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMineId(mine.id);
+                            setShowRiskModal(true);
+                          }}
+                          className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 transition cursor-pointer flex items-center gap-1"
+                          title="Click to view AI SHAP feature explainability breakdown"
+                        >
+                          <Brain className="w-3 h-3" />
+                          <span>Explain</span>
+                        </button>
                       </div>
                     </td>
 
@@ -441,6 +457,13 @@ export default function RegulatorDashboard() {
           <span>[10:14:02 IST] Karo Spl Bench #4 inspection report uploaded</span>
         </div>
       </div>
+
+      {/* Interactive AI Risk SHAP Explainability Modal */}
+      <RiskExplanationModal
+        isOpen={showRiskModal}
+        onClose={() => setShowRiskModal(false)}
+        defaultMineId={selectedMineId}
+      />
 
     </div>
   );
