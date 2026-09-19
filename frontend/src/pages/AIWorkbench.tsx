@@ -2269,19 +2269,6 @@ function PPEPanel() {
                   </div>
                 </div>
               </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      stopCamera();
-                      setSourceMode('upload');
-                    }}
-                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white transition cursor-pointer"
-                    title="Close Camera"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </>
             )}
           </div>
         )}
