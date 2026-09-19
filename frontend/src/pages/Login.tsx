@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, CheckCircle2, Eye, EyeOff, Fingerprint, ScanFace, Sparkles } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSelector from '../components/LanguageSelector';
-import BiometricLoginModal, { HQPersonnel } from '../components/BiometricLoginModal';
+import BiometricLoginModal, { type HQPersonnel } from '../components/BiometricLoginModal';
 
 export default function Login() {
   const [email, setEmail] = useState('corporate@coalguard.demo');
