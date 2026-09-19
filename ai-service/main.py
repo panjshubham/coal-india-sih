@@ -32,8 +32,8 @@ import httpx
 import pandas as pd
 import numpy as np
 import joblib
-import shap
-from supabase import create_client, Client
+import shap  # type: ignore
+from supabase import create_client, Client  # type: ignore
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 env_file = os.path.join(BASE_DIR, ".env")

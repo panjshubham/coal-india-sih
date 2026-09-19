@@ -272,7 +272,7 @@ def _get_ppe_yolo_model():
             user_site = r'C:\Users\SHUBHAM PANJIYARA\AppData\Roaming\Python\Python313\site-packages'
             if user_site not in sys.path:
                 sys.path.append(user_site)
-            from ultralytics import YOLO
+            from ultralytics import YOLO  # type: ignore
             model_path = os.path.join(BASE_DIR, "yolov8n.pt")
             if not os.path.exists(model_path):
                 model_path = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), "yolov8n.pt")
@@ -293,7 +293,7 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
     """
     try:
         from PIL import Image
-        import cv2
+        import cv2  # type: ignore
 
         img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
         w_orig, h_orig = img.size
