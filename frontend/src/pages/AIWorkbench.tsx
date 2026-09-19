@@ -8,8 +8,9 @@ import {
   ChevronRight, Cpu, ExternalLink, StopCircle, Key, Eye, EyeOff, Copy, Check,
   Volume2, VolumeX, Sparkles, RefreshCw, AlertCircle, Play, FileText, ArrowRight,
   Gauge, Truck, ShieldAlert, Zap, Camera, CameraOff, FlipHorizontal, X,
-  FileJson, FileCheck, FileAudio, FileImage, FileVideo
+  FileJson, FileCheck, FileAudio, FileImage, FileVideo, Fingerprint, ScanFace
 } from 'lucide-react';
+import BiometricLoginModal from '../components/BiometricLoginModal';
 
 const AI_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:8000';
 
@@ -2752,6 +2753,7 @@ export default function AIWorkbench() {
   const [showTokenSecret, setShowTokenSecret] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [showBiometricModal, setShowBiometricModal] = useState<boolean>(false);
 
   const checkHfStatus = async () => {
     const localToken = getActiveHfToken();
@@ -2819,6 +2821,17 @@ export default function AIWorkbench() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowBiometricModal(true)}
+            title="Coal India HQ Biometric Authentication Pass"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/40 transition-all hover:scale-105 cursor-pointer shadow-sm"
+          >
+            <Fingerprint className="w-3.5 h-3.5 text-amber-400" />
+            <ScanFace className="w-3.5 h-3.5 text-amber-400" />
+            <span>HQ Biometric Pass</span>
+          </button>
+
           {hfStatus.checked && (
             <button
               onClick={() => {
@@ -2993,6 +3006,12 @@ export default function AIWorkbench() {
           );
         })}
       </div>
+
+      {/* HQ Biometric Auth Modal */}
+      <BiometricLoginModal
+        isOpen={showBiometricModal}
+        onClose={() => setShowBiometricModal(false)}
+      />
     </div>
   );
 }

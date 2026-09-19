@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
-import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, CheckCircle2, Eye, EyeOff, Fingerprint, ScanFace, Sparkles } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSelector from '../components/LanguageSelector';
+import BiometricLoginModal, { HQPersonnel } from '../components/BiometricLoginModal';
 
 export default function Login() {
   const [email, setEmail] = useState('corporate@coalguard.demo');
@@ -13,6 +14,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showBiometricModal, setShowBiometricModal] = useState(false);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -274,6 +276,17 @@ export default function Login() {
                   </>
                 )}
               </button>
+
+              {/* Biometric Login (HQ Pass / WebAuthn) Button */}
+              <button
+                type="button"
+                onClick={() => setShowBiometricModal(true)}
+                className="w-full h-11 flex items-center justify-center gap-2 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 border border-amber-500/40 text-amber-400 font-bold tracking-wide rounded-lg transition-all duration-150 ease-in-out cursor-pointer shadow-md text-xs uppercase"
+              >
+                <Fingerprint className="w-4 h-4 text-amber-400" />
+                <ScanFace className="w-4 h-4 text-amber-400" />
+                <span>HQ Biometric Access Pass (Fingerprint / Face ID)</span>
+              </button>
             </div>
           </form>
 
@@ -287,6 +300,16 @@ export default function Login() {
 
         </div>
       </div>
+
+      {/* HQ Biometric Login Modal */}
+      <BiometricLoginModal
+        isOpen={showBiometricModal}
+        onClose={() => setShowBiometricModal(false)}
+        onSuccessLogin={(personnel: HQPersonnel) => {
+          setEmail(personnel.email);
+          setPassword('Demo@2026');
+        }}
+      />
 
     </div>
   );
