@@ -1628,55 +1628,47 @@ function PPEPanel() {
       return;
     }
 
+    const constraintOptions: MediaStreamConstraints[] = [
+      { video: { facingMode: mode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+      { video: { facingMode: { ideal: mode } }, audio: false },
+      { video: true, audio: false }
+    ];
+
     let stream: MediaStream | null = null;
-    try {
-      // Attempt 1: Direct video request (works natively across all desktop webcams)
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    } catch (err1: any) {
-      console.warn('Basic PPE webcam request failed, checking error type...', err1);
-      const name1 = err1?.name || '';
-      const msg1 = err1?.message || '';
+    let lastErr: any = null;
 
-      if (name1 === 'NotAllowedError' || name1 === 'PermissionDeniedError' || msg1.toLowerCase().includes('denied')) {
-        setCameraError('PERMISSION_DENIED');
-        isStartingRef.current = false;
-        return;
-      }
-      if (name1 === 'NotReadableError' || name1 === 'TrackStartError') {
-        setCameraError('CAMERA_IN_USE');
-        isStartingRef.current = false;
-        return;
-      }
-      if (name1 === 'NotFoundError' || name1 === 'DevicesNotFoundError') {
-        setCameraError('NO_CAMERA_FOUND');
-        isStartingRef.current = false;
-        return;
-      }
-
-      // Attempt 2: Try facingMode constraint fallback
+    for (const option of constraintOptions) {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: mode } },
-          audio: false
-        });
-      } catch (err2: any) {
-        console.error('All PPE camera attempts failed:', err2);
-        const name2 = err2?.name || '';
-        const msg2 = err2?.message || '';
-        if (name2 === 'NotReadableError' || name2 === 'TrackStartError') {
-          setCameraError('CAMERA_IN_USE');
-        } else if (name2 === 'NotFoundError' || name2 === 'DevicesNotFoundError') {
-          setCameraError('NO_CAMERA_FOUND');
-        } else if (name2 === 'NotAllowedError' || name2 === 'PermissionDeniedError' || msg2.toLowerCase().includes('denied')) {
+        stream = await navigator.mediaDevices.getUserMedia(option);
+        if (stream) break;
+      } catch (err: any) {
+        lastErr = err;
+        const name = err?.name || '';
+        const msg = err?.message || '';
+
+        if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || msg.toLowerCase().includes('denied')) {
           setCameraError('PERMISSION_DENIED');
-        } else if (name2 === 'AbortError') {
-          console.warn('Camera request aborted');
-        } else {
-          setCameraError(msg2 || 'Unable to access camera.');
+          isStartingRef.current = false;
+          return;
         }
-        isStartingRef.current = false;
-        return;
+        if (name === 'NotReadableError' || name === 'TrackStartError') {
+          setCameraError('CAMERA_IN_USE');
+          isStartingRef.current = false;
+          return;
+        }
       }
+    }
+
+    if (!stream) {
+      const name = lastErr?.name || '';
+      const msg = lastErr?.message || '';
+      if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        setCameraError('NO_CAMERA_FOUND');
+      } else {
+        setCameraError(msg || 'Unable to access camera device.');
+      }
+      isStartingRef.current = false;
+      return;
     }
 
     if (stream) {
@@ -2279,10 +2271,20 @@ function PPEPanel() {
                       ? 'Camera Permission Blocked in Browser'
                       : cameraError === 'NO_CAMERA_FOUND'
                       ? 'No Camera Device Detected'
+                      : cameraError === 'CAMERA_IN_USE'
+                      ? 'Webcam Locked by Another App'
                       : 'Camera Access Denied or Unavailable'}
                   </h4>
                   <div className="text-xs text-slate-700 dark:text-slate-300 mt-2 leading-relaxed">
-                    {cameraError === 'PERMISSION_DENIED' ? (
+                    {cameraError === 'CAMERA_IN_USE' ? (
+                      <div className="space-y-2">
+                        <p className="text-amber-400 font-semibold">Webcam hardware is currently locked by another application (Zoom, Teams, Discord, or another browser tab).</p>
+                        <div className="font-mono text-[11px] text-amber-200 bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-lg text-left space-y-1">
+                          <div>1. Close any video calls or background browser tabs accessing the camera.</div>
+                          <div>2. Click <strong>Retry Device Access</strong> below.</div>
+                        </div>
+                      </div>
+                    ) : cameraError === 'PERMISSION_DENIED' ? (
                       <div className="space-y-2">
                         <p className="text-slate-700 dark:text-slate-300">Your browser is blocking camera access for this tab. To unblock:</p>
                         <div className="font-mono text-[11px] text-amber-200 bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 p-2.5 rounded-lg text-left space-y-1">
