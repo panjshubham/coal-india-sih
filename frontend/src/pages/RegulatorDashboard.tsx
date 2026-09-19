@@ -185,10 +185,10 @@ export default function RegulatorDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 dark:border-slate-800 gap-4">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-            Regulator Oversight Portal
+            {t('reg_dashboard_title', 'Regulator Oversight Portal')}
           </h1>
           <p className="text-xs text-slate-800 dark:text-slate-500 mt-1">
-            Real-time compliance monitoring across all subsidiary operations.
+            {t('reg_dashboard_desc', 'Real-time compliance monitoring across all subsidiary operations.')}
           </p>
         </div>
 
@@ -196,14 +196,14 @@ export default function RegulatorDashboard() {
           {/* Status Badge */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-400 text-xs font-mono">
             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-            <span>LIVE MONITORING ACTIVE</span>
+            <span>{t('reg_dgms_audit_ready', 'LIVE MONITORING ACTIVE')}</span>
           </div>
 
           <button 
             onClick={exportFormVPDF}
             className="px-4 py-2 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-xs rounded-lg transition flex items-center gap-1.5 shadow-sm border border-slate-300 dark:border-slate-700 cursor-pointer"
           >
-            <FileText className="w-3.5 h-3.5" /> EXPORT REPORT (PDF)
+            <FileText className="w-3.5 h-3.5" /> {t('btn_export_form_v', 'EXPORT REPORT (PDF)')}
           </button>
         </div>
       </div>
@@ -211,36 +211,36 @@ export default function RegulatorDashboard() {
       {/* 2. Top-Level Operational Metrics Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">Monitored Mines</p>
+          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('reg_metric_monitored_mines', 'Monitored Mines')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-slate-900 dark:text-white">18</h3>
-            <span className="text-xs text-emerald-700 dark:text-emerald-400 font-mono font-medium">100% Active</span>
+            <span className="text-xs text-emerald-700 dark:text-emerald-400 font-mono font-medium">{t('reg_metric_active_100', '100% Active')}</span>
           </div>
         </div>
 
         <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">Active Violations</p>
+          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('metric_violations', 'Active Violations')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-amber-600 dark:text-amber-400">11</h3>
             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-50 dark:bg-red-950/80 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 font-medium">
-              3 Needs Action
+              {t('reg_metric_sla', '3 Needs Action')}
             </span>
           </div>
         </div>
 
         <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">Overdue Compliance</p>
+          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-red-600 dark:text-red-400">5</h3>
-            <span className="text-xs text-slate-800 dark:text-slate-500 font-mono">Action Flagged</span>
+            <span className="text-xs text-slate-800 dark:text-slate-500 font-mono">{t('reg_metric_action_flagged', 'Action Flagged')}</span>
           </div>
         </div>
 
         <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">AI Risk Score</p>
+          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('reg_metric_risk_score', 'AI Risk Score')}</p>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-indigo-700 dark:text-cyan-400">29 <span className="text-sm font-normal text-slate-700 dark:text-slate-500">/ 100</span></h3>
-            <span className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">AI Predicted</span>
+            <span className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">{t('reg_metric_xgboost', 'AI Predicted')}</span>
           </div>
         </div>
       </div>

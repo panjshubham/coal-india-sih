@@ -5,6 +5,7 @@ import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
+import LanguageSelector from '../components/LanguageSelector';
 
 export default function Login() {
   const [email, setEmail] = useState('corporate@coalguard.demo');
@@ -140,6 +141,7 @@ export default function Login() {
           >
             New User? Sign Up
           </Link>
+          <LanguageSelector variant="topbar" />
           <ThemeToggle variant="landing" />
         </div>
         

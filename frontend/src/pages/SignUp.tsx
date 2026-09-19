@@ -21,6 +21,7 @@ import {
   Globe
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
+import LanguageSelector from '../components/LanguageSelector';
 
 const SUBSIDIARY_OPTIONS = [
   'Coal India Limited (CIL HQ)',
@@ -293,12 +294,13 @@ export default function SignUp() {
         
         {/* Theme Toggle & Login Link */}
         <div className="absolute top-6 right-6 flex items-center gap-3">
-          <Link 
+          <Link
             to="/login"
-            className="text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+            className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline transition-colors"
           >
-            Existing User? <span className="underline">Sign In</span>
+            Already have an account? Sign In
           </Link>
+          <LanguageSelector variant="topbar" />
           <ThemeToggle variant="landing" />
         </div>
         

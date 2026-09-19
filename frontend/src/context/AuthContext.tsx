@@ -1,18 +1,19 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import type { ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "../supabase";
-import { getProfile, saveProfile } from "../services/profileService";
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../supabase';
+import type { Session, User } from '@supabase/supabase-js';
+import { getProfile, saveProfile } from '../services/profileService';
+
+type Role = 'mine_official' | 'corporate' | 'regulator';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
-  role: "mine_official" | "corporate" | "regulator" | null;
+  role: Role | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType>({
+const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   role: null,
@@ -20,10 +21,10 @@ export const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<"mine_official" | "corporate" | "regulator" | null>(null);
+  const [role, setRole] = useState<Role | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,17 +46,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // Start background simulation loop for hackathon demo
-    const ambientTimer = setInterval(() => {
-      // 40% chance every 15s to fire an ambient background alert
-      if (Math.random() > 0.6) {
-        generateHackathonAmbientAlert();
-      }
-    }, 15000);
-
     return () => {
       subscription.unsubscribe();
-      clearInterval(ambientTimer);
     };
   }, []);
 
@@ -81,83 +73,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: userEmail || currentProfile.email,
         role: userRole
       });
-
-      // Fire and forget alert generation
-      generateAutomatedAlerts();
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const generateAutomatedAlerts = async () => {
-    try {
-      // 1. Compliance (deadline)
-      const { data: overdues } = await supabase.from('compliance_items').select('id, title').eq('status', 'overdue');
-      if (overdues && overdues.length > 0) {
-        for (const item of overdues) {
-          const { data: existing } = await supabase.from('alerts').select('id').eq('related_entity_id', item.id).eq('type', 'deadline').maybeSingle();
-          if (!existing) {
-            await supabase.from('alerts').insert({
-              type: 'deadline',
-              related_entity_id: item.id,
-              message: `Overdue compliance item: ${item.title}`,
-              severity: 'high',
-              is_read: false
-            });
-          }
-        }
-      }
-
-      // 2. Violations (escalation)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      
-      const { data: staleViolations } = await supabase.from('violations')
-        .select('id, category')
-        .eq('status', 'open')
-        .is('corrective_action', null)
-        .lt('created_at', sevenDaysAgo.toISOString());
-      
-      if (staleViolations && staleViolations.length > 0) {
-        for (const v of staleViolations) {
-          const { data: existing } = await supabase.from('alerts').select('id').eq('related_entity_id', v.id).eq('type', 'escalation').maybeSingle();
-          if (!existing) {
-            await supabase.from('alerts').insert({
-              type: 'escalation',
-              related_entity_id: v.id,
-              message: `Stale open violation (${v.category}) requires immediate corrective action.`,
-              severity: 'critical',
-              is_read: false
-            });
-          }
-        }
-      }
-    } catch (e) {
-      console.error('Failed to generate alerts', e);
-    }
-  };
-
-  const generateHackathonAmbientAlert = async () => {
-    try {
-      const alertTypes = [
-        { type: 'SCADA_TELEMETRY', msg: 'SCADA Alert: CH4 levels exceeding 1.25% in Seam 3. Ventilation fans auto-adjusted.', sev: 'critical' },
-        { type: 'VISION_AI', msg: 'AI Vision Alert: Missing safety berm detected near Pit B haul road.', sev: 'high' },
-        { type: 'ACCESS_CONTROL', msg: 'Gate Pass Alert: Entry attempt blocked (VTC Expired).', sev: 'high' },
-        { type: 'CORPORATE_WATCHDOG', msg: 'EC Compliance Alert: Production Cap reaching 95% threshold for ECL.', sev: 'high' },
-        { type: 'SCADA_TELEMETRY', msg: 'SCADA Alert: Vibration anomaly detected near Highwall C.', sev: 'critical' }
-      ];
-      const rand = alertTypes[Math.floor(Math.random() * alertTypes.length)];
-      
-      await supabase.from('alerts').insert({
-        type: rand.type,
-        message: rand.msg,
-        severity: rand.sev,
-        is_read: false
-      });
-    } catch (e) {
-      console.error('Ambient alert fail:', e);
     }
   };
 

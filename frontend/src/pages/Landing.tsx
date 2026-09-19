@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from '../components/ThemeToggle';
+import LanguageSelector from '../components/LanguageSelector';
 import { supabase } from '../supabase';
 
 const HERO_IMAGES = [
@@ -254,6 +255,7 @@ export default function Landing() {
               </nav>
             </div>
             <div className="flex items-center gap-space-md">
+              <LanguageSelector variant="landing" />
               <ThemeToggle variant="landing" />
               <button type="button" onClick={handleDashboardClick} className="inline-flex items-center justify-center h-8 px-space-md rounded bg-secondary text-on-secondary font-headline-sm text-[13px] font-medium tracking-tight hover:bg-secondary-container shadow-[0_0_12px_rgba(255,185,95,0.2)] transition-all">
                 Access Portal

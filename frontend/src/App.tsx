@@ -34,6 +34,7 @@ import PitInspector from './pages/PitInspector';
 import StatutoryRegisters from './pages/StatutoryRegisters';
 
 import PublicTracking from './pages/PublicTracking';
+import AutoTranslator from './components/AutoTranslator';
 
 // ── Sync Toast ──────────────────────────────────────────────────────────────
 interface SyncToast {
@@ -121,6 +122,7 @@ function App() {
 
   return (
     <>
+      <AutoTranslator />
       <SyncToastContainer />
       <Router>
         <Routes>

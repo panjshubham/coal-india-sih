@@ -17,7 +17,6 @@ export default function AlertBell() {
       if (!AudioContext) return;
       const audioCtx = new AudioContext();
       
-      // Quick, pleasant double-ding notification sound
       const playTone = (freq: number, startTime: number, duration: number) => {
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
@@ -37,22 +36,41 @@ export default function AlertBell() {
       };
 
       const now = audioCtx.currentTime;
-      playTone(880, now, 0.2); // First ding (A5)
-      playTone(1760, now + 0.15, 0.4); // Second higher ding (A6)
+      playTone(880, now, 0.2); // First ding
+      playTone(1760, now + 0.15, 0.4); // Second ding
     } catch(e) {
       console.warn("Audio notification failed", e);
     }
   }
+
+  const deduplicate = (items: any[]) => {
+    const seen = new Set<string>();
+    const result: any[] = [];
+    for (const item of items) {
+      const key = `${item.message}_${item.related_entity_id || ''}_${item.type || ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(item);
+      }
+    }
+    return result;
+  };
 
   useEffect(() => {
     fetchAlerts();
 
     const channel = supabase.channel('alerts-feed')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'alerts' }, (payload) => {
-        setAlerts(prev => [payload.new, ...prev]);
-        setUnreadCount(prev => prev + 1);
-        
-        playNotificationSound();
+        const newAlert = payload.new;
+        setAlerts(prev => {
+          const key = `${newAlert.message}_${newAlert.related_entity_id || ''}_${newAlert.type || ''}`;
+          const exists = prev.some(a => `${a.message}_${a.related_entity_id || ''}_${a.type || ''}` === key);
+          if (exists) return prev; // Ignore duplicate payload
+
+          playNotificationSound();
+          setUnreadCount(count => count + 1);
+          return [newAlert, ...prev];
+        });
       })
       .subscribe();
 
@@ -80,11 +98,12 @@ export default function AlertBell() {
         .from('alerts')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(12);
+        .limit(20);
         
       if (!error && data) {
-        setAlerts(data);
-        setUnreadCount(data.filter(a => !a.is_read).length);
+        const clean = deduplicate(data);
+        setAlerts(clean);
+        setUnreadCount(clean.filter(a => !a.is_read).length);
       }
     } catch (err) {
       console.warn('Error fetching alerts:', err);
@@ -96,12 +115,13 @@ export default function AlertBell() {
   }
 
   async function markAllAsRead() {
-    const unreadIds = alerts.filter(a => !a.is_read).map(a => a.id);
-    if (unreadIds.length > 0) {
-      await supabase.from('alerts').update({ is_read: true }).in('id', unreadIds);
-      setUnreadCount(0);
-      setAlerts(prev => prev.map(a => ({ ...a, is_read: true })));
+    try {
+      await supabase.from('alerts').update({ is_read: true }).neq('is_read', true);
+    } catch (e) {
+      console.warn('Mark all read error:', e);
     }
+    setUnreadCount(0);
+    setAlerts(prev => prev.map(a => ({ ...a, is_read: true })));
   }
 
   function getAlertTarget(alert: any): string {
@@ -118,7 +138,6 @@ export default function AlertBell() {
       return '/inspections';
     }
 
-    // Inspect message text for intelligent routing
     const msg = (alert.message || '').toLowerCase();
     if (msg.includes('violation') || msg.includes('hazard') || msg.includes('safety') || msg.includes('corrective')) {
       return entityId ? `/violations/${entityId}` : '/violations';
@@ -137,7 +156,6 @@ export default function AlertBell() {
     e.preventDefault();
     e.stopPropagation();
 
-    // Mark this specific alert as read if not already read
     if (!alert.is_read) {
       try {
         await supabase.from('alerts').update({ is_read: true }).eq('id', alert.id);
@@ -171,7 +189,7 @@ export default function AlertBell() {
         <Bell className="w-4 h-4 hover:text-amber-700 dark:text-amber-400 transition-colors" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 border-2 border-[var(--cg-bg)] rounded-full flex items-center justify-center text-[9px] font-bold text-slate-900 dark:text-white shadow-sm animate-pulse">
-            {unreadCount}
+            {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
@@ -223,7 +241,6 @@ export default function AlertBell() {
               </div>
             ) : (
               alerts.map(alert => {
-                const target = getAlertTarget(alert);
                 const isCritical = alert.severity === 'critical' || alert.type === 'escalation';
                 const isHigh = alert.severity === 'high';
 

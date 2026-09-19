@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import AlertBell from '../components/AlertBell';
 import ThemeToggle from '../components/ThemeToggle';
 import ConnectivityBadge from '../components/ConnectivityBadge';
+import LanguageSelector from '../components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
 
 function cn(...inputs: ClassValue[]) {
@@ -399,16 +400,7 @@ export default function DashboardLayout() {
             <div className="w-px h-5 mx-2 shrink-0" style={{ background: 'var(--cg-border)' }} />
 
             {/* Group 2: Language + Theme */}
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-              style={{ background: 'var(--cg-surface-elevated)', border: '1px solid var(--cg-border)', color: 'var(--cg-text-secondary)' }}
-              title="Switch language (English / हिन्दी)"
-              aria-label="Change language"
-            >
-              <Languages className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>{i18n.language.startsWith('hi') ? 'HI' : 'EN'}</span>
-            </button>
+            <LanguageSelector variant="topbar" />
             <ThemeToggle variant="topbar" />
 
             {/* Divider */}
