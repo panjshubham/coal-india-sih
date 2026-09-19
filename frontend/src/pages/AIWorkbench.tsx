@@ -1890,9 +1890,9 @@ function PPEPanel() {
       : 0;
 
     // Step 6: Accurate compliance thresholds
-    const hasHardHat = helmetPct >= 10.0 && helmCount >= 30;
-    const hasVest    = vestPct  >= 15.0 && vestCount >= 45;
-    const uncertain  = (!hasHardHat && helmetPct >= 4.0 && helmCount >= 12) || (!hasVest && vestPct >= 5.0 && vestCount >= 15);
+    const hasHardHat = helmetPct >= 8.0 && helmCount >= 20;
+    const hasVest    = vestPct  >= 12.0 && vestCount >= 35;
+    const uncertain  = !hasHardHat && helmetPct >= 3.5 && helmCount >= 10;
     const personDetected = fgPixels >= (width * height * 0.05) || hasHardHat || hasVest;
 
     // Step 7: Bounding boxes from real pixel clusters
@@ -2076,18 +2076,20 @@ function PPEPanel() {
 
       let status: string, severity: string, alertMsg: string;
 
-      if (a.uncertain && missing.length > 0) {
-        status = 'UNCERTAIN'; severity = 'REVIEW';
-        const borderline: string[] = [];
-        if (!a.hasHardHat && a.helmetPct >= 4) borderline.push(`hard-hat (${a.helmetPct}% — need ≥10%)`);
-        if (!a.hasVest   && a.vestPct   >= 5) borderline.push(`safety-vest (${a.vestPct}% — need ≥15%)`);
-        alertMsg = `⚠️ UNCERTAIN — Manual Review Required. Borderline PPE signal for: ${borderline.join('; ')}. A safety officer must physically verify.`;
-      } else if (missing.length === 0) {
-        status = 'COMPLIANT'; severity = 'NONE';
-        alertMsg = `✅ All required PPE detected. Hard-hat (${a.helmetPct}% head coverage) and safety-vest (${a.vestPct}% torso coverage) confirmed — DGMS Regulation 115 satisfied.`;
+      if (a.hasHardHat) {
+        status = 'COMPLIANT';
+        severity = 'NONE';
+        alertMsg = a.hasVest
+          ? `✅ COMPLIANT: All required PPE detected. Hard-hat (${a.helmetPct}% head coverage) and safety-vest (${a.vestPct}% torso coverage) confirmed — DGMS Regulation 115 satisfied.`
+          : `✅ COMPLIANT: Safety hard-hat confirmed (${a.helmetPct}% head coverage) — DGMS Regulation 115 satisfied.`;
+      } else if (a.uncertain && a.helmetPct >= 4) {
+        status = 'UNCERTAIN';
+        severity = 'REVIEW';
+        alertMsg = `⚠️ UNCERTAIN — Manual Review Required. Borderline hard-hat signal detected (${a.helmetPct}% coverage — need ≥8%). Safety officer inspection required.`;
       } else {
-        status = 'NON_COMPLIANT'; severity = 'HIGH';
-        alertMsg = `⚠️ STATUTORY VIOLATION: Missing ${missing.map(m => m.toUpperCase()).join(' and ')}. Helmet: ${a.helmetPct}% (need ≥10%). Vest: ${a.vestPct}% (need ≥15%). Breach of DGMS Safety Regulation 115.`;
+        status = 'NON_COMPLIANT';
+        severity = 'HIGH';
+        alertMsg = `⚠️ STATUTORY VIOLATION: Hard-Hat Missing! Personnel is not wearing mandatory safety helmet (${a.helmetPct}% detected). Breach of DGMS Regulation 115.`;
       }
 
       const detectedItems: any[] = [{ label: 'person', score: a.confidence, box: { ...a.personBox } }];
