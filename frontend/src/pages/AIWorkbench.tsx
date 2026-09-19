@@ -233,6 +233,17 @@ function DocumentCameraScanner({
   const streamRef = useRef<MediaStream | null>(null);
   const mobileInputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    if (sourceMode === 'camera') {
+      startCamera(facingMode);
+    } else {
+      stopCamera();
+    }
+    return () => {
+      stopCamera();
+    };
+  }, [sourceMode]);
+
   const startCamera = async (facing: 'user' | 'environment' = facingMode) => {
     stopCamera();
     setCameraError('');
@@ -243,29 +254,20 @@ function DocumentCameraScanner({
     }
 
     let stream: MediaStream | null = null;
-    const constraintList: MediaStreamConstraints[] = [
-      { video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-      { video: { facingMode: facing }, audio: false },
-      { video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-      { video: true, audio: false }
-    ];
-
-    for (const constraint of constraintList) {
+    try {
+      // Direct basic request first (works natively across all desktop webcams without overconstraints)
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    } catch (err1: any) {
+      console.warn('Basic webcam request failed, trying facingMode option...', err1);
       try {
-        stream = await navigator.mediaDevices.getUserMedia(constraint);
-        if (stream) break;
-      } catch (err) {
-        console.warn('Camera constraint attempt failed:', constraint, err);
-      }
-    }
-
-    if (!stream) {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      } catch (err: any) {
-        console.error('All camera attempts failed:', err);
-        const name = err?.name || '';
-        const msg = err?.message || '';
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facing } },
+          audio: false
+        });
+      } catch (err2: any) {
+        console.error('All camera attempts failed:', err2);
+        const name = err2?.name || err1?.name || '';
+        const msg = err2?.message || err1?.message || '';
         if (name === 'NotReadableError' || name === 'TrackStartError') {
           setCameraError('CAMERA_IN_USE');
         } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
@@ -291,8 +293,8 @@ function DocumentCameraScanner({
         }
       };
       bindStream();
-      setTimeout(bindStream, 100);
-      setTimeout(bindStream, 300);
+      setTimeout(bindStream, 50);
+      setTimeout(bindStream, 200);
     }
   };
 
@@ -1571,6 +1573,17 @@ function PPEPanel() {
   const streamRef = useRef<MediaStream | null>(null);
   const mobileCameraInputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    if (sourceMode === 'camera') {
+      startCamera(facingMode);
+    } else {
+      stopCamera();
+    }
+    return () => {
+      stopCamera();
+    };
+  }, [sourceMode]);
+
   const startCamera = async (mode: 'user' | 'environment' = facingMode) => {
     stopCamera();
     setCameraError('');
@@ -1581,29 +1594,20 @@ function PPEPanel() {
     }
 
     let stream: MediaStream | null = null;
-    const constraintList: MediaStreamConstraints[] = [
-      { video: { facingMode: { ideal: mode }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-      { video: { facingMode: mode }, audio: false },
-      { video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
-      { video: true, audio: false }
-    ];
-
-    for (const constraint of constraintList) {
+    try {
+      // Direct basic request first (works natively across all desktop webcams without overconstraints)
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    } catch (err1: any) {
+      console.warn('Basic PPE webcam request failed, trying facingMode option...', err1);
       try {
-        stream = await navigator.mediaDevices.getUserMedia(constraint);
-        if (stream) break;
-      } catch (err) {
-        console.warn('PPE Camera constraint attempt failed:', constraint, err);
-      }
-    }
-
-    if (!stream) {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      } catch (err: any) {
-        console.error('All PPE camera attempts failed:', err);
-        const name = err?.name || '';
-        const msg = err?.message || '';
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: mode } },
+          audio: false
+        });
+      } catch (err2: any) {
+        console.error('All PPE camera attempts failed:', err2);
+        const name = err2?.name || err1?.name || '';
+        const msg = err2?.message || err1?.message || '';
         if (name === 'NotReadableError' || name === 'TrackStartError') {
           setCameraError('CAMERA_IN_USE');
         } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
@@ -1629,8 +1633,8 @@ function PPEPanel() {
         }
       };
       bindStream();
-      setTimeout(bindStream, 100);
-      setTimeout(bindStream, 300);
+      setTimeout(bindStream, 50);
+      setTimeout(bindStream, 200);
     }
   };
 
