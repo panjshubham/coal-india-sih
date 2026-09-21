@@ -376,15 +376,18 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
         py2 = min(h, face_cy + int(face_h * 5.0))
         person_score = 0.88
 
-        # Head zone
-        hy1 = max(0, face_cy - int(face_h * 1.4))
-        hy2 = max(0, face_cy - int(face_h * 0.2))
-        hx1 = max(0, face_cx - int(face_w * 0.9))
-        hx2 = min(w, face_cx + int(face_w * 0.9))
+        personH = py2 - py1
+        personW = px2 - px1
+
+        # 2. Anatomical Head Region (Top 18% of person height)
+        hy1 = py1
+        hy2 = min(h, py1 + int(personH * 0.18))
+        hx1 = max(0, px1)
+        hx2 = min(w, px2)
 
         head_area = max((hy2 - hy1) * (hx2 - hx1), 1)
-        head_hsv = arr_hsv[hy1:hy2, hx1:hx2]
         head_rgb = arr_rgb[hy1:hy2, hx1:hx2]
+        head_hsv = arr_hsv[hy1:hy2, hx1:hx2]
         head_skin = is_skin[hy1:hy2, hx1:hx2]
 
         hh, hs, hv = head_hsv[:, :, 0], head_hsv[:, :, 1], head_hsv[:, :, 2]
@@ -395,10 +398,14 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
         hair_pixels = int(np.sum(is_hair))
         hair_pct = round((hair_pixels / head_area) * 100, 1)
 
-        # Hard-hat signatures: high-chroma safety colors (NO plain white wall/ceiling matching)
-        y_helm = (hh >= 14) & (hh <= 35) & (hs >= 55) & (hv >= 90) & (hr > 130) & (hg > 110) & (~head_skin)
-        o_helm = (hh >= 6) & (hh <= 22) & (hs >= 60) & (hv >= 90) & (hr > 150) & (hg < 165) & (~head_skin)
+        # 1. Strict Safety Color Matching for Hard Hats
+        # Yellow Hard Hat (hb < 80 excludes indoor yellow/beige walls with high blue channel)
+        y_helm = (hr > 175) & (hg > 155) & (hb < 80) & ((hg - hb) > 75) & ((hr - hb) > 85) & (np.abs(hr - hg) < 40) & (~head_skin)
+        # Orange Hard Hat
+        o_helm = (hr > 175) & (hg > 40) & (hg < 160) & (hb < 90) & ((hr - hg) > 30) & ((hr - hb) > 75) & (~head_skin)
+        # Blue Hard Hat
         b_helm = (hh >= 90) & (hh <= 130) & (hs >= 55) & (hv >= 70) & (hb > hr) & (~head_skin)
+        # Red Hard Hat
         r_helm = ((hh <= 12) | (hh >= 165)) & (hs >= 55) & (hv >= 70) & (hr > hg) & (hr > hb) & (~head_skin)
 
         helm_mask = y_helm | o_helm | b_helm | r_helm
@@ -409,25 +416,31 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
         if hair_pct >= 4.0 or hair_pixels >= 15:
             helm_pct = 0.0
 
-        # Torso zone
-        vy1 = min(h - 1, face_cy + int(face_h * 0.7))
-        vy2 = min(h, face_cy + int(face_h * 3.8))
-        vx1 = max(0, face_cx - int(face_w * 1.5))
-        vx2 = min(w, face_cx + int(face_w * 1.5))
+        # 2. Anatomical Torso/Chest Region (headBottom to 58% of person height, inset 8% on sides)
+        vy1 = hy2
+        vy2 = min(h, py1 + int(personH * 0.58))
+        vx1 = max(0, px1 + int(personW * 0.08))
+        vx2 = min(w, px2 - int(personW * 0.08))
 
         torso_area = max((vy2 - vy1) * (vx2 - vx1), 1)
-        torso_hsv = arr_hsv[vy1:vy2, vx1:vx2]
         torso_rgb = arr_rgb[vy1:vy2, vx1:vx2]
+        torso_hsv = arr_hsv[vy1:vy2, vx1:vx2]
         torso_skin = is_skin[vy1:vy2, vx1:vx2]
 
         th, ts, tv = torso_hsv[:, :, 0], torso_hsv[:, :, 1], torso_hsv[:, :, 2]
         tr, tg, tb = torso_rgb[:, :, 0].astype(int), torso_rgb[:, :, 1].astype(int), torso_rgb[:, :, 2].astype(int)
 
-        # Safety Vest: fluorescent dayglo only (NOT plain white shirts)
-        lime_vest = (th >= 22) & (th <= 85) & (ts >= 50) & (tv >= 70) & (tg > tb) & (~torso_skin)
-        orange_vest = ((th <= 22) | (th >= 165)) & (ts >= 55) & (tv >= 70) & (tr > tg) & (tr > tb) & (~torso_skin)
+        # 1. Strict Safety Color Matching for Safety Vest
+        # Hi-Vis Lime Vest
+        lime_vest = (tg > 120) & (tr > 90) & (tb < 130) & ((tg - tb) > 35) & ((tr - tb) > 15) & (~torso_skin)
+        # Orange Safety Vest
+        orange_vest = (tr > 175) & (tg > 40) & (tg < 160) & (tb < 90) & ((tr - tg) > 30) & ((tr - tb) > 75) & (~torso_skin)
+        # Retroreflective Silver Stripes
+        max_rgb = np.maximum(np.maximum(tr, tg), tb)
+        min_rgb = np.minimum(np.minimum(tr, tg), tb)
+        silver_stripe = (tr > 180) & (tg > 180) & (tb > 180) & ((max_rgb - min_rgb) < 35) & (~torso_skin)
 
-        vest_mask = lime_vest | orange_vest
+        vest_mask = lime_vest | orange_vest | silver_stripe
         vest_pixels = int(np.sum(vest_mask))
         vest_pct = round((vest_pixels / torso_area) * 100, 1)
 
@@ -437,21 +450,25 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
             "score": round(float(person_score), 3)
         }]
 
-        if hair_pct >= 4.0 or hair_pixels >= 15:
-            detections.append({
-                "box": {"xmin": round(hx1 / w, 3), "ymin": round(hy1 / h, 3), "xmax": round(hx2 / w, 3), "ymax": round(hy2 / h, 3)},
-                "label": "no-hard-hat",
-                "score": round(min(0.95, 0.70 + hair_pct / 100.0), 3),
-            })
-        elif helm_pct >= 6.0 and helm_pixels >= 15:
+        # 3. Realistic Coverage Thresholds
+        has_helmet = helm_pct >= 5.0 or helm_pixels >= 15
+        has_vest = vest_pct >= 4.5 or vest_pixels >= 15
+
+        if has_helmet:
             detections.append({
                 "box": {"xmin": round(hx1 / w, 3), "ymin": round(hy1 / h, 3), "xmax": round(hx2 / w, 3), "ymax": round(hy2 / h, 3)},
                 "label": "hard-hat",
                 "score": round(min(0.98, 0.80 + helm_pct / 100.0), 3),
                 "coverage_pct": helm_pct
             })
+        else:
+            detections.append({
+                "box": {"xmin": round(hx1 / w, 3), "ymin": round(hy1 / h, 3), "xmax": round(hx2 / w, 3), "ymax": round(hy2 / h, 3)},
+                "label": "no-hard-hat",
+                "score": round(min(0.95, 0.70 + hair_pct / 100.0), 3),
+            })
 
-        if vest_pct >= 6.0 and vest_pixels >= 20:
+        if has_vest:
             detections.append({
                 "box": {"xmin": round(vx1 / w, 3), "ymin": round(vy1 / h, 3), "xmax": round(vx2 / w, 3), "ymax": round(vy2 / h, 3)},
                 "label": "safety-vest",
@@ -903,14 +920,22 @@ async def ppe_detect(file: UploadFile = File(...)):
     else:
         missing.append("safety-vest")
 
-    if len(missing) == 0:
-        compliance_status = "COMPLIANT"
-        severity = "NONE"
-        alert_msg = f"✅ All required statutory PPE items detected ({helmet_coverage}% helmet, {vest_coverage}% vest). Worker compliant with DGMS Reg 115."
-    else:
+    if "hard-hat" in missing and "safety-vest" in missing:
+        compliance_status = "NON_COMPLIANT"
+        severity = "CRITICAL"
+        alert_msg = "⚠️ STATUTORY VIOLATION: Both HARD-HAT and SAFETY-VEST are missing! Breach of DGMS Regulation 115."
+    elif "hard-hat" in missing:
         compliance_status = "NON_COMPLIANT"
         severity = "HIGH"
-        alert_msg = f"⚠️ Non-compliance detected: Missing {', '.join(missing)}. Worker not wearing required safety gear — DGMS Reg 115 violation."
+        alert_msg = "⚠️ STATUTORY VIOLATION: HARD-HAT Missing! Breach of DGMS Regulation 115."
+    elif "safety-vest" in missing:
+        compliance_status = "NON_COMPLIANT"
+        severity = "HIGH"
+        alert_msg = "⚠️ STATUTORY VIOLATION: SAFETY-VEST Missing! Breach of DGMS Regulation 115."
+    else:
+        compliance_status = "COMPLIANT"
+        severity = "NONE"
+        alert_msg = "✅ COMPLIANT: All required PPE detected (DGMS Regulation 115 satisfied)."
 
     valid_detections = [d for d in raw_detections if d.get("score", 0) >= 0.25]
     confidence_avg = round(sum(d.get("score", 0) for d in valid_detections) / len(valid_detections), 3) if valid_detections else 0.0

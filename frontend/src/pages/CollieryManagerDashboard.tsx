@@ -276,12 +276,118 @@ export default function CollieryManagerDashboard() {
         </Link>
         <Link
           to="/statutory-registers"
-          className="flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
+          className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg border hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
           style={{ borderColor: 'var(--cg-border)', color: 'var(--cg-text-secondary)' }}
         >
           <ShieldCheck className="w-4 h-4" />
           CMR Registers
         </Link>
+      </div>
+
+      {/* ── BLAST ZONE LOCKDOWN & RESTRICTED ZONES WIDGETS ──────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Card 1: Active Restricted Zones */}
+        <div className="rounded-xl border p-4 flex flex-col justify-between shadow-sm relative overflow-hidden" style={{ background: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-xs uppercase tracking-wider flex items-center gap-2 text-red-600 dark:text-red-400">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+              🚨 Active Restricted Zones
+            </h3>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-700 dark:text-red-300 font-mono">
+              LOCKDOWN ENGAGED
+            </span>
+          </div>
+
+          <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-sm text-red-900 dark:text-red-200">
+                🔴 BLAST ZONE — PIT 3
+              </span>
+              <span className="text-xs font-mono font-bold text-red-700 dark:text-red-400">
+                Blast: 14:30 IST
+              </span>
+            </div>
+            <div className="text-xs text-red-700/80 dark:text-red-300/80 mt-1">
+              Clearance: <strong className="text-red-800 dark:text-red-200">Pending Field Sweep</strong> · Exclusion: 400m
+            </div>
+            <div className="mt-2 text-xs font-bold text-red-700 dark:text-red-400 flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              Workers Detected Nearby: 3 (2 Inside Geofence!)
+            </div>
+          </div>
+
+          <div className="mt-3.5 flex items-center gap-2">
+            <Link
+              to="/blast-lockdown"
+              className="flex-1 py-1.5 px-3 text-center text-xs font-bold rounded-lg bg-red-600 hover:bg-red-700 text-white shadow transition-all"
+            >
+              View Blast Geofence
+            </Link>
+            <Link
+              to="/blast-lockdown"
+              className="flex-1 py-1.5 px-3 text-center text-xs font-bold rounded-lg border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+            >
+              View Workers
+            </Link>
+          </div>
+        </div>
+
+        {/* Card 2: Blasting Schedule */}
+        <div className="rounded-xl border p-4 flex flex-col justify-between shadow-sm" style={{ background: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-xs uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--cg-text-faint)' }}>
+              <Flame className="w-4 h-4 text-amber-500" />
+              Blasting Schedule
+            </h3>
+            <Link to="/blast-lockdown" className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline">
+              Full Schedule →
+            </Link>
+          </div>
+
+          <div className="mt-2.5 divide-y text-xs" style={{ borderColor: 'var(--cg-border)' }}>
+            <div className="py-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold" style={{ color: 'var(--cg-text-primary)' }}>BL-014</span>
+                <span className="text-slate-500">Pit-3</span>
+                <span className="text-[10px] text-slate-400 font-mono">Today 14:30</span>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-600 dark:text-red-400">
+                🔴 Active
+              </span>
+            </div>
+
+            <div className="py-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold" style={{ color: 'var(--cg-text-primary)' }}>BL-015</span>
+                <span className="text-slate-500">Pit-5</span>
+                <span className="text-[10px] text-slate-400 font-mono">22 Sep 15:45</span>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                🟡 Planned
+              </span>
+            </div>
+
+            <div className="py-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold" style={{ color: 'var(--cg-text-primary)' }}>BL-016</span>
+                <span className="text-slate-500">Pit-2</span>
+                <span className="text-[10px] text-slate-400 font-mono">23 Sep 13:00</span>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                🟡 Planned
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-2 text-right">
+            <Link
+              to="/blast-lockdown"
+              className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1"
+            >
+              Configure DGMS Exclusion Geofences →
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* ── OPEN VIOLATIONS: primary detail ────────────────────────── */}

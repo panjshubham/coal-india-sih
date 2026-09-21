@@ -8,7 +8,7 @@ import {
     ChevronRight, Cpu, ExternalLink, StopCircle, Key, Eye, EyeOff, Copy, Check,
     Volume2, VolumeX, Sparkles, RefreshCw, AlertCircle, Play, FileText, ArrowRight,
     Gauge, Truck, ShieldAlert, Zap, Camera, CameraOff, FlipHorizontal, X,
-    FileJson, FileCheck, FileAudio, FileImage, FileVideo, Fingerprint, ScanFace
+    FileJson, FileCheck, FileAudio, FileImage, FileVideo, Fingerprint, ScanFace, Info
 } from 'lucide-react';
 import BiometricLoginModal from '../components/BiometricLoginModal';
 
@@ -2558,8 +2558,9 @@ function BermPanel() {
     const [error, setError] = useState('');
     const [ticketCreated, setTicketCreated] = useState(false);
     const [dumperWheelDia, setDumperWheelDia] = useState<number>(2.2);
+    const [observedBermHeight, setObservedBermHeight] = useState<number>(1.8);
 
-    const runBermAnalysis = async (imgFile: File | Blob, wheelDia: number) => {
+    const runBermAnalysis = async (imgFile: File | Blob, wheelDia: number, heightOverride?: number) => {
         setLoading(true);
         setError('');
         setResult(null);
@@ -2582,33 +2583,36 @@ function BermPanel() {
                 return;
             }
         } catch {
-            // Offline fallback
+            // Backend offline or endpoint not deployed
         }
 
-        const isDefect = (imgFile as File).name?.toLowerCase().includes('defect') || (imgFile as File).name?.toLowerCase().includes('washout') || (imgFile as File).name?.toLowerCase().includes('erosion');
-        const measuredBerm = isDefect ? 1.15 : 2.35;
+        // Offline Statutory Verification Mode
+        // Metric 3D measurement from 2D uncalibrated images requires photogrammetry or backend CV.
+        // In offline mode, evaluate statutory compliance using calibrated benchmark/observed height.
+        const height = heightOverride !== undefined ? heightOverride : observedBermHeight;
         const reqBerm = parseFloat((wheelDia * 0.75).toFixed(2));
-        const isCompliant = measuredBerm >= reqBerm;
+        const isCompliant = height >= reqBerm;
 
         setResult({
-            model: 'Khanan-Net Opencast CV (CMR Reg 83 Haul Road Berm)',
+            model: 'CMR Reg 83 Haul Road Berm Statutory Model (DGMS Benchmark)',
             filename: (imgFile as File).name || 'haul_road_sample.jpg',
             dumper_reference_wheel_dia_m: wheelDia,
-            measured_berm_height_m: measuredBerm,
+            measured_berm_height_m: height,
             statutory_required_height_m: reqBerm,
             compliance_status: isCompliant ? 'COMPLIANT' : 'NON_COMPLIANT',
             defect_type: isCompliant ? 'NONE' : 'BERM_EROSION_UNDER_HEIGHT',
             statutory_regulation: 'CMR 2017 Regulation 83 & DGMS Circular 09/2019',
             severity: isCompliant ? 'low' : 'high',
+            is_offline_simulation: true,
             findings: isCompliant
-                ? [`COMPLIANT: Berm height at ${measuredBerm}m meets statutory standard (>= ${reqBerm}m).`, 'Continuous safety bund intact along bench crest with sound 1:1.5 repose.']
-                : [`CRITICAL DEFECT: Berm height measured at ${measuredBerm}m is below statutory ${reqBerm}m requirement.`, 'Severe erosion / crest breach observed. High dump truck rollover hazard.'],
+                ? [`COMPLIANT: Berm height at ${height}m meets statutory standard (>= ${reqBerm}m).`, 'Continuous safety bund intact along bench crest with sound 1:1.5 repose.']
+                : [`CRITICAL DEFECT: Berm height measured at ${height}m is below statutory ${reqBerm}m requirement.`, 'Severe erosion / crest breach observed. High dump truck rollover hazard.'],
             recommended_action: isCompliant
                 ? 'Haul road safe for continuous heavy dumper transport.'
                 : 'Halt dump truck haulage along this bench section. Deploy dozer to build berm to >= 1.65m.',
             auto_violation_ticket: !isCompliant ? {
                 title: 'Berm Height Statutory Deficiency (CMR Reg 83)',
-                description: `Opencast Haul Road berm height (${measuredBerm}m) deficient against dumper tyre diameter (${wheelDia}m). Rollover hazard flagged.`,
+                description: `Opencast Haul Road berm height (${height}m) deficient against dumper tyre diameter (${wheelDia}m). Rollover hazard flagged.`,
                 category: 'safety',
                 severity: 'high',
                 regulation_ref: 'CMR-2017-REG-83',
@@ -2622,10 +2626,12 @@ function BermPanel() {
     const handleFile = (f: File) => {
         setFile(f);
         setPreview(URL.createObjectURL(f));
-        runBermAnalysis(f, dumperWheelDia);
+        runBermAnalysis(f, dumperWheelDia, observedBermHeight);
     };
 
     const loadPreset = (presetName: string, isDefect: boolean) => {
+        const presetHeight = isDefect ? 1.15 : 2.35;
+        setObservedBermHeight(presetHeight);
         const canvas = document.createElement('canvas');
         canvas.width = 600;
         canvas.height = 360;
@@ -2661,10 +2667,11 @@ function BermPanel() {
                 const mockFile = new File([blob], isDefect ? 'berm_erosion_defect.jpg' : 'compliant_berm_ridge.jpg', { type: 'image/jpeg' });
                 setFile(mockFile);
                 setPreview(canvas.toDataURL());
-                runBermAnalysis(mockFile, dumperWheelDia);
+                runBermAnalysis(mockFile, dumperWheelDia, presetHeight);
             }
         }, 'image/jpeg');
     };
+
 
     const createViolationTicket = async () => {
         if (!result?.auto_violation_ticket) return;
@@ -2713,7 +2720,7 @@ function BermPanel() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <div className="md:col-span-2">
                     <FileDropZone
                         onFile={handleFile}
@@ -2724,24 +2731,51 @@ function BermPanel() {
 
                 <div className="p-4 bg-white dark:bg-slate-900/60 border border-white/10 rounded-xl space-y-2">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                        Reference Dumper Tyre Diameter (m)
+                        Reference Dumper Tyre (m)
                     </label>
                     <select
                         value={dumperWheelDia}
                         onChange={(e) => {
                             const d = parseFloat(e.target.value);
                             setDumperWheelDia(d);
-                            if (file) runBermAnalysis(file, d);
+                            if (file) runBermAnalysis(file, d, observedBermHeight);
                         }}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-white/15 rounded-lg px-3 py-2 text-xs text-amber-300 font-mono focus:outline-none"
                     >
-                        <option value={2.2}>CAT 777D (100T Dumper) — 2.2m Tyre</option>
-                        <option value={2.7}>Komatsu HD785 (100T Dumper) — 2.7m Tyre</option>
-                        <option value={3.2}>BEML BH205E (200T Dumper) — 3.2m Tyre</option>
-                        <option value={1.8}>Ashok Leyland Tipper (35T) — 1.8m Tyre</option>
+                        <option value={2.2}>CAT 777D (100T) — 2.2m</option>
+                        <option value={2.7}>Komatsu HD785 — 2.7m</option>
+                        <option value={3.2}>BEML BH205E — 3.2m</option>
+                        <option value={1.8}>Ashok Leyland — 1.8m</option>
                     </select>
                     <span className="text-[10px] text-slate-600 dark:text-slate-400 block font-mono">
-                        Mandatory min berm: {(dumperWheelDia * 0.75).toFixed(2)}m (CMR Reg 83)
+                        Min statutory: {(dumperWheelDia * 0.75).toFixed(2)}m (CMR 83)
+                    </span>
+                </div>
+
+                <div className="p-4 bg-white dark:bg-slate-900/60 border border-white/10 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                            Observed Berm Height (m)
+                        </label>
+                        <span className="text-xs font-mono font-bold text-amber-400">
+                            {observedBermHeight.toFixed(2)}m
+                        </span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0.5"
+                        max="3.5"
+                        step="0.05"
+                        value={observedBermHeight}
+                        onChange={(e) => {
+                            const h = parseFloat(e.target.value);
+                            setObservedBermHeight(h);
+                            if (file) runBermAnalysis(file, dumperWheelDia, h);
+                        }}
+                        className="w-full accent-amber-500 cursor-pointer"
+                    />
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400 block font-mono">
+                        Field laser / photogrammetry input
                     </span>
                 </div>
             </div>
@@ -2751,7 +2785,7 @@ function BermPanel() {
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                             <Eye className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
-                            Computer Vision Bench Crest Inspection
+                            Haul Road Berm Statutory Verification (CMR Reg 83)
                         </span>
                         {result && (
                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${result.compliance_status === 'COMPLIANT'
@@ -2762,6 +2796,15 @@ function BermPanel() {
                             </span>
                         )}
                     </div>
+
+                    {result?.is_offline_simulation && (
+                        <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs flex items-center gap-2">
+                            <Info className="w-4 h-4 shrink-0 text-blue-400" />
+                            <span>
+                                <strong>Statutory Verification Mode:</strong> Single-frame 2D imagery cannot measure 3D metric height without photogrammetry calibration. Use the presets or observed height slider above to benchmark against DGMS CMR Reg 83.
+                            </span>
+                        </div>
+                    )}
 
                     <div className="relative rounded-lg overflow-hidden border border-white/10 max-h-72 flex justify-center bg-black">
                         <img src={preview} alt="Haul road preview" className="object-contain max-h-72 w-full" />

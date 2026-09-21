@@ -210,7 +210,7 @@ export default function CorporateDashboard() {
           const highSev = mViols.filter(v => (v.severity || '').toLowerCase() === 'critical' || (v.severity || '').toLowerCase() === 'high').length;
           const openCount = mViols.filter(v => (v.status || '').toLowerCase() !== 'resolved' && (v.status || '').toLowerCase() !== 'closed').length;
           const calculatedScore = Math.min(Math.round(25 + highSev * 14 + openCount * 5.5), 98);
-          await supabase.from('mine_risk_scores').upsert({
+          await supabase.from('risk_scores').upsert({
             mine_id: m.id,
             score: calculatedScore,
             explanation: `Automated DGMS Risk Index: ${highSev} critical violations, ${openCount} open compliance items.`,

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BarChart2, ClipboardList, AlertTriangle, Map as MapIcon, 
   Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, 
   Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, ChevronDown,
-  User, HelpCircle, IndianRupee, Camera, Building2, Activity, BookOpen, Droplets
+  User, HelpCircle, IndianRupee, Camera, Building2, Activity, BookOpen, Droplets, Flame
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -51,11 +51,12 @@ const navGroups: NavGroup[] = [
     label: 'Operations',
     id: 'operations',
     items: [
-      { id: 'map',         href: '/mines-map',   icon: MapIcon,       roles: ['regulator', 'corporate'] },
-      { id: 'compliance',  href: '/compliance',  icon: ClipboardList, roles: ['mine_official', 'corporate'] },
-      { id: 'inspections', href: '/inspections', icon: Activity,      roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'violations',  href: '/violations',  icon: AlertTriangle, roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'contractors', href: '/contractors', icon: Users,         roles: ['mine_official', 'corporate'] },
+      { id: 'map',           href: '/mines-map',     icon: MapIcon,       roles: ['regulator', 'corporate'] },
+      { id: 'blastLockdown', href: '/blast-lockdown', icon: Flame,        roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'compliance',    href: '/compliance',    icon: ClipboardList, roles: ['mine_official', 'corporate'] },
+      { id: 'inspections',   href: '/inspections',   icon: Activity,      roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'violations',    href: '/violations',    icon: AlertTriangle, roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'contractors',   href: '/contractors',   icon: Users,         roles: ['mine_official', 'corporate'] },
     ]
   },
   {
@@ -397,20 +398,22 @@ export default function DashboardLayout() {
             <ConnectivityBadge />
 
             {/* Divider */}
-            <div className="w-px h-5 mx-2 shrink-0" style={{ background: 'var(--cg-border)' }} />
+            <div className="hidden sm:block w-px h-5 mx-1.5 shrink-0" style={{ background: 'var(--cg-border)' }} />
 
             {/* Group 2: Language + Theme */}
-            <LanguageSelector variant="topbar" />
+            <div className="hidden sm:flex items-center gap-1">
+              <LanguageSelector variant="topbar" />
+            </div>
             <ThemeToggle variant="topbar" />
 
             {/* Divider */}
-            <div className="w-px h-5 mx-2 shrink-0" style={{ background: 'var(--cg-border)' }} />
+            <div className="w-px h-5 mx-1 sm:mx-2 shrink-0" style={{ background: 'var(--cg-border)' }} />
 
             {/* Group 3: Alerts bell */}
             <AlertBell />
 
             {/* Divider */}
-            <div className="w-px h-5 mx-2 shrink-0" style={{ background: 'var(--cg-border)' }} />
+            <div className="w-px h-5 mx-1 sm:mx-2 shrink-0" style={{ background: 'var(--cg-border)' }} />
 
             {/* Group 4: User profile */}
             <div className="relative" ref={profileMenuRef}>

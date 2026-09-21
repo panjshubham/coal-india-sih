@@ -5,7 +5,7 @@ import {
   AlertTriangle, CheckCircle, Info, Loader2, Zap, ChevronDown,
   ChevronUp, Upload, FileText, ShieldAlert, TrendingUp, Target,
   Brain, Download, AlertOctagon, Radio, Gauge, Sliders, Shield,
-  FileSpreadsheet, Check, ArrowRight, Compass, Filter
+  FileSpreadsheet, Check, ArrowRight, Compass, Filter, Building2, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
@@ -398,6 +398,34 @@ export default function WaterInrushAnalysis() {
   const [reporting, setReporting] = useState(false);
   const [reported, setReported] = useState(false);
 
+  // Mine attribution state for emergency notice
+  const [mines, setMines] = useState<{ id: number; name: string }[]>([]);
+  const [selectedMineId, setSelectedMineId] = useState<number | null>(null);
+  const [userAssignedMineId, setUserAssignedMineId] = useState<number | null>(null);
+  const [assignedMineName, setAssignedMineName] = useState<string>('');
+  const [reportError, setReportError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadMineInfo() {
+      if (!user) return;
+      try {
+        const { data: uData } = await supabase.from('users').select('assigned_mine_id').eq('id', user.id).single();
+        if (uData?.assigned_mine_id) {
+          setUserAssignedMineId(uData.assigned_mine_id);
+          setSelectedMineId(uData.assigned_mine_id);
+          const { data: mData } = await supabase.from('mines').select('name').eq('id', uData.assigned_mine_id).single();
+          if (mData?.name) setAssignedMineName(mData.name);
+        } else {
+          const { data: mineList } = await supabase.from('mines').select('id, name').order('name');
+          if (mineList) setMines(mineList);
+        }
+      } catch (err) {
+        console.error('Error fetching mine context:', err);
+      }
+    }
+    loadMineInfo();
+  }, [user]);
+
   // Telemetry fluctuation simulator
   useEffect(() => {
     if (mode !== 'telemetry') return;
@@ -491,23 +519,31 @@ export default function WaterInrushAnalysis() {
 
   const handleReport = async () => {
     if (!result || !user) return;
+    setReportError(null);
+    const targetMineId = userAssignedMineId || selectedMineId;
+    if (!targetMineId) {
+      setReportError('Please select the affected mine from the dropdown before escalating the emergency notice.');
+      return;
+    }
     setReporting(true);
     try {
-      const { data: uData } = await supabase.from('users').select('assigned_mine_id').eq('id', user.id).single();
-      if (uData?.assigned_mine_id) {
-        await supabase.from('violations').insert({
-          mine_id: uData.assigned_mine_id,
-          category: 'safety',
-          severity: 'high',
-          description: `EMERGENCY WATER INRUSH RISK DETECTED: ${CLASS_META[result.predicted_class_short].name} (${result.predicted_class_short}). AI Confidence: ${result.confidence.toFixed(1)}%. Immediate evacuation and drainage protocols must be initiated.`,
-          status: 'open'
-        });
-        setReported(true);
+      const { error: insertErr } = await supabase.from('violations').insert({
+        mine_id: targetMineId,
+        category: 'safety',
+        severity: 'high',
+        description: `EMERGENCY WATER INRUSH RISK DETECTED: ${CLASS_META[result.predicted_class_short].name} (${result.predicted_class_short}). AI Confidence: ${result.confidence.toFixed(1)}%. Immediate evacuation and drainage protocols must be initiated.`,
+        status: 'open'
+      });
+      if (insertErr) {
+        throw new Error(insertErr.message);
       }
-    } catch (e) {
+      setReported(true);
+    } catch (e: any) {
       console.error('Failed to escalate risk to dashboard', e);
+      setReportError(e.message || 'Failed to submit emergency notice to database');
+    } finally {
+      setReporting(false);
     }
-    setReporting(false);
   };
 
   const handleTrain = async () => {
@@ -592,13 +628,13 @@ export default function WaterInrushAnalysis() {
         </div>
 
         {/* ── Mode Selection Pills ──────────────────────────────────── */}
-        <div className="flex items-center gap-2 p-1.5 bg-slate-900 border border-slate-800 rounded-xl mb-4 w-fit">
+        <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl mb-4 w-fit">
           <button
             onClick={() => setMode('lab')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
               mode === 'lab'
                 ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <FlaskConical className="w-3.5 h-3.5" />
@@ -609,7 +645,7 @@ export default function WaterInrushAnalysis() {
             className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
               mode === 'telemetry'
                 ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Radio className="w-3.5 h-3.5" />
@@ -692,37 +728,37 @@ export default function WaterInrushAnalysis() {
         <div className="xl:col-span-1 space-y-4">
           
           {mode === 'telemetry' && (
-            <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2 text-amber-400 text-sm font-bold">
+            <div className="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl p-5 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-sm font-bold">
                   <Radio className="w-4 h-4 animate-pulse" />
                   SCADA Live Borehole Stream
                 </div>
-                <span className="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+                <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded">
                   {telemetry.boreholeId}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                  <div className="text-[11px] text-slate-400">Inflow Rate</div>
-                  <div className="text-lg font-bold font-mono text-amber-400">{telemetry.inflowRate} L/s</div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">Inflow Rate</div>
+                  <div className="text-lg font-bold font-mono text-amber-600 dark:text-amber-400">{telemetry.inflowRate} L/s</div>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                  <div className="text-[11px] text-slate-400">Karst Pressure</div>
-                  <div className="text-lg font-bold font-mono text-cyan-400">{telemetry.pressure} MPa</div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">Karst Pressure</div>
+                  <div className="text-lg font-bold font-mono text-cyan-600 dark:text-cyan-400">{telemetry.pressure} MPa</div>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                  <div className="text-[11px] text-slate-400">EC Conductivity</div>
-                  <div className="text-lg font-bold font-mono text-emerald-400">{telemetry.conductivity} µS/cm</div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">EC Conductivity</div>
+                  <div className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400">{telemetry.conductivity} µS/cm</div>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                  <div className="text-[11px] text-slate-400">Water Temp</div>
-                  <div className="text-lg font-bold font-mono text-slate-200">{telemetry.temp} °C</div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">Water Temp</div>
+                  <div className="text-lg font-bold font-mono text-slate-800 dark:text-slate-200">{telemetry.temp} °C</div>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-400 leading-normal">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
                 Continuous IoT sensor telemetry indicates active seepage in Seam 3 North face. Run hydrochemical model to identify origin aquifer.
               </p>
             </div>
@@ -872,7 +908,7 @@ export default function WaterInrushAnalysis() {
                 </div>
 
                 {/* Safety Action Directive */}
-                <div className="mt-5 flex flex-col md:flex-row md:items-start justify-between gap-4 p-4 rounded-xl" style={{ background: meta.bg, border: `1px solid ${meta.border}40` }}>
+                <div className="mt-5 flex flex-col gap-4 p-4 rounded-xl" style={{ background: meta.bg, border: `1px solid ${meta.border}40` }}>
                   <div className="flex items-start gap-3">
                     <ShieldAlert className="w-6 h-6 shrink-0 mt-0.5" style={{ color: meta.color }} />
                     <div>
@@ -884,24 +920,68 @@ export default function WaterInrushAnalysis() {
                       </p>
                     </div>
                   </div>
+
                   {(result.predicted_class_short === 'G1' || result.predicted_class_short === 'G2') && (
-                    <button
-                      onClick={handleReport}
-                      disabled={reporting || reported}
-                      className={`shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-bold text-xs transition shadow-sm border cursor-pointer ${
-                        reported 
-                          ? 'bg-emerald-500 text-white border-emerald-600 cursor-not-allowed'
-                          : 'bg-rose-600 hover:bg-rose-500 text-white border-rose-700'
-                      }`}
-                    >
-                      {reporting ? (
-                        <><Loader2 className="w-4 h-4 animate-spin" /> Escalating…</>
-                      ) : reported ? (
-                        <><CheckCircle className="w-4 h-4" /> Escalated to Emergency HQ</>
+                    <div className="pt-3 border-t border-slate-700/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      {/* Mine attribution: Fixed badge for mine official, or explicit dropdown for corporate/regulator */}
+                      {userAssignedMineId ? (
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-slate-400">Attributed Mine:</span>
+                          <span className="font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-2.5 py-1 rounded-md">
+                            {assignedMineName || `Mine #${userAssignedMineId}`}
+                          </span>
+                        </div>
                       ) : (
-                        <><AlertOctagon className="w-4 h-4" /> Escalate Emergency Notice</>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                          <label className="text-xs font-bold text-slate-300 shrink-0 flex items-center gap-1.5">
+                            <Building2 className="w-3.5 h-3.5 text-rose-400" />
+                            Select Affected Mine <span className="text-rose-400">*</span>:
+                          </label>
+                          <select
+                            value={selectedMineId || ''}
+                            onChange={(e) => {
+                              setSelectedMineId(e.target.value ? Number(e.target.value) : null);
+                              setReportError(null);
+                            }}
+                            className="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-rose-500 focus:border-rose-500 outline-none"
+                          >
+                            <option value="">-- Choose Colliery --</option>
+                            {mines.map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.name} (ID: {m.id})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       )}
-                    </button>
+
+                      <button
+                        onClick={handleReport}
+                        disabled={reporting || reported || (!userAssignedMineId && !selectedMineId)}
+                        className={`shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-bold text-xs transition shadow-sm border cursor-pointer ${
+                          reported 
+                            ? 'bg-emerald-500 text-white border-emerald-600 cursor-not-allowed'
+                            : (!userAssignedMineId && !selectedMineId)
+                              ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed'
+                              : 'bg-rose-600 hover:bg-rose-500 text-white border-rose-700'
+                        }`}
+                      >
+                        {reporting ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> Escalating…</>
+                        ) : reported ? (
+                          <><CheckCircle className="w-4 h-4" /> Escalated to Emergency HQ</>
+                        ) : (
+                          <><AlertOctagon className="w-4 h-4" /> Escalate Emergency Notice</>
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {reportError && (
+                    <div className="p-2.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{reportError}</span>
+                    </div>
                   )}
                 </div>
               </div>

@@ -363,17 +363,17 @@ export default function StatutoryRegisters() {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900/90 to-slate-950 border border-amber-400 dark:border-amber-500/30 p-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-50/90 via-slate-50 to-amber-100/50 dark:from-amber-950/40 dark:via-slate-900/90 dark:to-slate-950 border border-amber-300/60 dark:border-amber-500/30 p-6 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-amber-400" />
               <span>Smart Document Digitization</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               OCR Statutory Registers
             </h1>
-            <p className="text-sm text-slate-400 max-w-2xl">
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl">
               Upload physical logbooks to instantly digitize, translate, and extract compliance data using our advanced AI-OCR engine.
             </p>
           </div>
@@ -381,7 +381,7 @@ export default function StatutoryRegisters() {
           <div className="flex items-center gap-3">
             <button
               onClick={exportPDF}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-sm font-semibold transition shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-sm font-semibold transition shadow-sm cursor-pointer"
             >
               <Download className="w-4 h-4 text-slate-700 dark:text-slate-300" />
               <span>Export Records</span>
@@ -389,7 +389,7 @@ export default function StatutoryRegisters() {
 
             <button
               onClick={() => { setShowModal(true); setAiVerdict(null); }}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-base transition shadow-[0_0_20px_rgba(245,158,11,0.4)] animate-pulse"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-base transition shadow-[0_0_20px_rgba(245,158,11,0.4)] animate-pulse cursor-pointer"
             >
               <span className="material-symbols-outlined text-[24px]">document_scanner</span>
               <span>Upload & Scan Document (OCR)</span>
@@ -398,24 +398,24 @@ export default function StatutoryRegisters() {
         </div>
 
         {/* Quick Statutory Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-          <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-amber-200/60 dark:border-slate-800">
+          <div className="bg-white/90 dark:bg-slate-900/60 p-3 rounded-xl border border-amber-200/50 dark:border-slate-800 shadow-sm">
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">Active Statutory Records</p>
             <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">{records.length}</p>
           </div>
-          <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="bg-white/90 dark:bg-slate-900/60 p-3 rounded-xl border border-amber-200/50 dark:border-slate-800 shadow-sm">
             <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Fully Compliant Logs</p>
             <p className="text-xl font-bold text-emerald-700 dark:text-emerald-400 mt-1">
               {records.filter(r => r.compliance_status === 'COMPLIANT').length}
             </p>
           </div>
-          <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="bg-white/90 dark:bg-slate-900/60 p-3 rounded-xl border border-amber-200/50 dark:border-slate-800 shadow-sm">
             <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">Statutory Warnings</p>
             <p className="text-xl font-bold text-amber-700 dark:text-amber-400 mt-1">
               {records.filter(r => r.compliance_status === 'WARNING').length}
             </p>
           </div>
-          <div className="bg-white dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="bg-white/90 dark:bg-slate-900/60 p-3 rounded-xl border border-amber-200/50 dark:border-slate-800 shadow-sm">
             <p className="text-xs text-red-700 dark:text-red-400 font-medium">Critical Breaches</p>
             <p className="text-xl font-bold text-red-700 dark:text-red-400 mt-1">
               {records.filter(r => r.compliance_status === 'STATUTORY_BREACH').length}
@@ -431,9 +431,9 @@ export default function StatutoryRegisters() {
             <button
               key={tab.id}
               onClick={() => setActiveFilter(tab.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-2 border ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-2 border cursor-pointer ${
                 activeFilter === tab.id
-                  ? 'bg-amber-200 dark:bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                  ? 'bg-amber-100 text-amber-900 border-amber-400 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/50 shadow-sm'
                   : 'bg-white dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-800'
               }`}
             >

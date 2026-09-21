@@ -4,7 +4,7 @@ import {
   Search, Users, ShieldAlert, AlertTriangle, Fingerprint, X, ShieldCheck,
   QrCode, CheckCircle2, XCircle, Zap, UserCheck, HardHat, Check
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface Contractor {
   id: number;
@@ -25,6 +25,7 @@ interface AuditLog {
 }
 
 export default function Contractors() {
+  const navigate = useNavigate();
   const [contractors, setContractors] = useState<Contractor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -333,7 +334,7 @@ export default function Contractors() {
                   const { safetyScore, openViolations } = getMetrics(c.contractor_incidents || []);
                   
                   return (
-                    <tr key={c.id} className="hover:bg-white/5 transition-colors group cursor-pointer relative" onClick={() => window.location.href = `/contractors/${c.id}`}>
+                    <tr key={c.id} className="hover:bg-white/5 transition-colors group cursor-pointer relative" onClick={() => navigate(`/contractors/${c.id}`)}>
                       <td className="px-5 py-4">
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">

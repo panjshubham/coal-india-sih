@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase';
 import {
   Fingerprint, ScanFace, ShieldCheck, UserCheck, Camera, CameraOff,
   Lock, Unlock, CheckCircle2, AlertCircle, Loader2, Building2, HardHat,
@@ -264,7 +265,18 @@ export default function BiometricLoginModal({ isOpen, onClose, onSuccessLogin }:
   };
 
   // Perform Final Authentication & Redirect
-  const handleConfirmLogin = () => {
+  const handleConfirmLogin = async () => {
+    try {
+      if (selectedPersonnel.email) {
+        await supabase.auth.signInWithPassword({
+          email: selectedPersonnel.email,
+          password: 'Demo@2026'
+        });
+      }
+    } catch (err) {
+      console.warn('Biometric session sign-in error:', err);
+    }
+
     if (onSuccessLogin) {
       onSuccessLogin(selectedPersonnel);
     }

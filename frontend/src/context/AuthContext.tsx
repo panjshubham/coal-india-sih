@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq("id", userId)
         .single();
       
-      const userRole = (!error && data?.role) ? data.role : "corporate";
+      const userRole = (!error && data?.role) ? data.role : "mine_official";
       const userName = data?.name || "Unknown Officer";
       const userEmail = data?.email || "";
 

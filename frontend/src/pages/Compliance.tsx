@@ -394,13 +394,15 @@ export default function Compliance() {
     });
 
     try {
+      // assigned_to in DB is UUID referencing public.users(id). Use user?.id if valid UUID, else null
+      const validAssignedToUuid = user?.id || null;
       await supabase.from('compliance_items').insert({
         mine_id: createdItem.mine_id,
-        title: createdItem.title,
+        title: `${createdItem.title} (Assigned: ${createdItem.assigned_to})`,
         category: createdItem.category,
         due_date: createdItem.due_date,
         status: createdItem.status,
-        assigned_to: createdItem.assigned_to
+        assigned_to: validAssignedToUuid
       });
     } catch (err) {
       console.warn('Persisted locally:', err);
@@ -409,8 +411,18 @@ export default function Compliance() {
     showToast('New Statutory Directive issued successfully');
   };
 
+  const isItemOverdue = (status: string, dueDate: string) => {
+    if (status === 'completed') return false;
+    if (status === 'overdue') return true;
+    if (!dueDate) return false;
+    // Set due date to end of the day in local/IST time before checking if past
+    const due = new Date(dueDate);
+    due.setHours(23, 59, 59, 999);
+    return isPast(due);
+  };
+
   const getStatusBadge = (status: string, dueDate: string) => {
-    const overdue = status === 'overdue' || (status !== 'completed' && isPast(new Date(dueDate)));
+    const overdue = isItemOverdue(status, dueDate);
     
     if (status === 'completed') {
       return (

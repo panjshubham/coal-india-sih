@@ -35,11 +35,16 @@ async function setupAdminRpc() {
       v_new_id UUID;
       v_result JSON;
     BEGIN
-      -- Check caller authorization if authenticated context exists
+      -- Check caller authorization
       IF auth.uid() IS NOT NULL THEN
         SELECT role INTO v_caller_role FROM public.users WHERE id = auth.uid();
         IF v_caller_role IS DISTINCT FROM 'corporate' THEN
           RAISE EXCEPTION 'Access denied: Only corporate administrators can provision users';
+        END IF;
+      ELSE
+        -- Anonymous registration: prevent privilege escalation to corporate or regulator
+        IF p_role IN ('corporate', 'regulator') THEN
+          RAISE EXCEPTION 'Access denied: Corporate and Regulator accounts cannot be created via public sign-up';
         END IF;
       END IF;
 

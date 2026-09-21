@@ -266,7 +266,7 @@ export default function AuditLog() {
           <span className="text-[10px] uppercase font-bold text-slate-800 dark:text-slate-500 flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" /> Access Control
           </span>
-          <div className="text-sm font-bold text-amber-300 mt-2">ACTIVE</div>
+          <div className="text-sm font-bold text-amber-600 dark:text-amber-300 mt-2">ACTIVE</div>
           <span className="text-[9px] text-slate-700 dark:text-slate-500">Role Based Validation</span>
         </div>
 
@@ -274,7 +274,7 @@ export default function AuditLog() {
           <span className="text-[10px] uppercase font-bold text-slate-800 dark:text-slate-500 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" /> Data Security
           </span>
-          <div className="text-sm font-bold text-purple-300 mt-2">ENCRYPTED</div>
+          <div className="text-sm font-bold text-purple-600 dark:text-purple-300 mt-2">ENCRYPTED</div>
           <span className="text-[9px] text-slate-700 dark:text-slate-500">Standard Encryption Applied</span>
         </div>
       </div>
@@ -350,30 +350,30 @@ export default function AuditLog() {
       </div>
 
       {/* 4. Ledger Data Table */}
-      <div className="bg-[#0E172A] border border-slate-300 dark:border-slate-700/50 rounded-xl overflow-hidden shadow-2xl">
+      <div className="bg-white dark:bg-[#0E172A] border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#15223A] border-b border-slate-300 dark:border-slate-700/50">
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Timestamp</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">User</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest">Action</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Target</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Security Hash</th>
-                <th className="px-5 py-3 text-[10px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap text-right">Verification</th>
+              <tr className="bg-slate-50 dark:bg-[#15223A] border-b border-slate-200 dark:border-slate-700/50">
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Timestamp</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">User</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">Action</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Target</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Security Hash</th>
+                <th className="px-5 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap text-right">Verification</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/50">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-xs text-slate-700 dark:text-slate-500">
-                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-700 dark:text-amber-400" />
+                  <td colSpan={6} className="px-5 py-12 text-center text-xs text-slate-500 dark:text-slate-400">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-600 dark:text-amber-400" />
                     Retrieving immutable ledger blocks...
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-xs text-slate-700 dark:text-slate-500">
+                  <td colSpan={6} className="px-5 py-12 text-center text-xs text-slate-500 dark:text-slate-400">
                     No audit records found matching criteria.
                   </td>
                 </tr>
@@ -385,16 +385,16 @@ export default function AuditLog() {
                     <tr 
                       key={log.id} 
                       onClick={() => setSelectedLog(log)}
-                      className={`hover:bg-slate-100 dark:bg-[#162032] transition-colors cursor-pointer ${
+                      className={`hover:bg-slate-50 dark:hover:bg-[#162032] transition-colors cursor-pointer ${
                         isIncoming ? 'bg-amber-500/15 border-l-4 border-amber-400 animate-pulse' : ''
                       }`}
                     >
                       {/* Timestamp */}
                       <td className="px-5 py-4 align-top whitespace-nowrap">
-                        <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        <div className="text-xs font-bold text-slate-900 dark:text-slate-200">
                           {logTime ? formatISTShort(logTime) : 'N/A'}
                         </div>
-                        <div className="text-[10px] text-slate-700 dark:text-slate-500 mt-1 flex items-center gap-1.5">
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
                           <Clock className="w-3 h-3" />
                           {logTime ? formatDistanceToNow(parseTimestamp(logTime) ?? new Date(), { addSuffix: true }) : ''}
                         </div>
@@ -402,14 +402,14 @@ export default function AuditLog() {
                       
                       {/* Actor */}
                       <td className="px-5 py-4 align-top whitespace-nowrap">
-                        <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        <div className="text-xs font-bold text-slate-900 dark:text-slate-200">
                           {log.users?.name || (log.user_id ? `User ${log.user_id.substring(0, 8)}` : 'System Core')}
                         </div>
-                        <div className="text-[10px] text-slate-700 dark:text-slate-500 mt-1">
-                          auth: <span className="text-slate-800 dark:text-slate-500">{log.users?.email || 'system_service'}</span>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                          auth: <span className="text-slate-600 dark:text-slate-400">{log.users?.email || 'system_service'}</span>
                         </div>
                         {log.users?.role && (
-                          <span className="inline-block mt-1 text-[9px] font-mono uppercase px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-500 border border-slate-300 dark:border-slate-700">
+                          <span className="inline-block mt-1 text-[9px] font-mono uppercase px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             {log.users.role}
                           </span>
                         )}
@@ -417,17 +417,17 @@ export default function AuditLog() {
                       
                       {/* Action */}
                       <td className="px-5 py-4 align-top">
-                        <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        <div className="text-xs font-bold text-slate-900 dark:text-slate-200">
                           {log.action || 'UNKNOWN_ACTION'}
                         </div>
-                        <div className="text-[10px] text-slate-700 dark:text-slate-500 mt-1">
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                           block_id: #{log.id}
                         </div>
                       </td>
                       
                       {/* Entity */}
                       <td className="px-5 py-4 align-top whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-amber-300 border border-slate-300 dark:border-slate-700">
+                        <span className="inline-flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded bg-amber-50 dark:bg-slate-800 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-slate-700 font-semibold">
                           {log.table_name} #{log.record_id}
                         </span>
                       </td>
@@ -436,14 +436,14 @@ export default function AuditLog() {
                       <td className="px-5 py-4 align-top whitespace-nowrap">
                         <div className="text-[11px] font-mono space-y-1">
                           <div className="flex gap-2">
-                            <span className="text-slate-700 dark:text-slate-500 w-16">data_hash:</span>
+                            <span className="text-slate-500 dark:text-slate-400 w-16">data_hash:</span>
                             <span className="text-cyan-700 dark:text-cyan-400 font-bold hover:underline" title={log.data_hash}>
                               {formatHash(log.data_hash)}
                             </span>
                           </div>
                           <div className="flex gap-2">
-                            <span className="text-slate-600 w-16">prev_hash:</span>
-                            <span className="text-slate-700 dark:text-slate-500" title={log.prev_hash}>
+                            <span className="text-slate-500 dark:text-slate-400 w-16">prev_hash:</span>
+                            <span className="text-slate-600 dark:text-slate-400" title={log.prev_hash}>
                               {formatHash(log.prev_hash)}
                             </span>
                           </div>
@@ -452,7 +452,7 @@ export default function AuditLog() {
                       
                       {/* Result */}
                       <td className="px-5 py-4 align-top whitespace-nowrap text-right">
-                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded">
+                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded">
                           <CheckCircle2 className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
                           <span>VERIFIED SEAL</span>
                         </div>
@@ -466,25 +466,25 @@ export default function AuditLog() {
         </div>
         
         {/* Pagination */}
-        <div className="px-5 py-3 border-t border-slate-300 dark:border-slate-700/50 bg-[#121A2F] flex items-center justify-between">
-          <p className="text-[10px] text-slate-700 dark:text-slate-500 uppercase tracking-widest">
+        <div className="px-5 py-3 border-t border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-[#121A2F] flex items-center justify-between">
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest">
             Showing blocks <span className="text-slate-700 dark:text-slate-300 font-bold">{Math.min((page - 1) * itemsPerPage + 1, totalCount)}</span> to <span className="text-slate-700 dark:text-slate-300 font-bold">{Math.min(page * itemsPerPage, totalCount)}</span> of <span className="text-slate-700 dark:text-slate-300 font-bold">{totalCount}</span> total entries
           </p>
           <div className="flex gap-2">
             <button 
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1 bg-slate-100 dark:bg-[#162032] border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-800 dark:text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:border-slate-500 disabled:opacity-50 transition-colors uppercase tracking-wider font-bold cursor-pointer"
+              className="px-3 py-1 bg-white dark:bg-[#162032] border border-slate-200 dark:border-slate-700 rounded text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-400 disabled:opacity-50 transition-colors uppercase tracking-wider font-bold cursor-pointer"
             >
               Prev
             </button>
-            <span className="text-xs text-slate-800 dark:text-slate-500 px-2 py-1">
+            <span className="text-xs text-slate-600 dark:text-slate-400 px-2 py-1">
               Page {page} of {totalPages}
             </span>
             <button 
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages || totalPages === 0}
-              className="px-3 py-1 bg-slate-100 dark:bg-[#162032] border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-800 dark:text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:border-slate-500 disabled:opacity-50 transition-colors uppercase tracking-wider font-bold cursor-pointer"
+              className="px-3 py-1 bg-white dark:bg-[#162032] border border-slate-200 dark:border-slate-700 rounded text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-400 disabled:opacity-50 transition-colors uppercase tracking-wider font-bold cursor-pointer"
             >
               Next
             </button>
