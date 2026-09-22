@@ -367,7 +367,7 @@ export default function BlastZoneLockdown() {
     
     const blastObj: BlastOperation = {
       id: newId,
-      mine_id: 1,
+      mine_id: Number(import.meta.env.VITE_DEFAULT_MINE_ID) || 1,
       mine_name: newBlastData.mine_name,
       pit_section: newBlastData.pit_section,
       blast_location: [Number(newBlastData.lat), Number(newBlastData.lng)],

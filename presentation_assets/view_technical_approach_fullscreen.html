@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoalGuard - System Architecture (Offline + In-Mine LAN)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #070d19;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            color: #f8fafc;
+        }
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 12px;
+        }
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85);
+            border-radius: 10px;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            transition: transform 0.2s ease;
+        }
+        .controls {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.88);
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        .btn {
+            background: #0369a1;
+            color: #f0f9ff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #0284c7;
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+        }
+        .btn-outline:hover {
+            background: rgba(56, 189, 248, 0.15);
+            color: #7dd3fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img id="slideImg" src="system_architecture_with_lan_hd.jpg" alt="CoalGuard Architecture (Offline + LAN)">
+    </div>
+    <div class="controls">
+        <button class="btn btn-outline" onclick="switchSlide()">🔄 Switch Diagram Style</button>
+        <button class="btn" onclick="toggleFullScreen()">⛶ Present Fullscreen (F11)</button>
+    </div>
+
+    <script>
+        const images = [
+            'system_architecture_with_lan_hd.jpg',
+            'system_architecture_two_tier_hd.jpg',
+            'technical_approach_with_xgboost_shap_hd.jpg'
+        ];
+        let currentIdx = 0;
+
+        function switchSlide() {
+            currentIdx = (currentIdx + 1) % images.length;
+            document.getElementById('slideImg').src = images[currentIdx];
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

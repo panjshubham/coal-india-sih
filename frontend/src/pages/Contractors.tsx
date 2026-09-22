@@ -86,7 +86,7 @@ export default function Contractors() {
     setIsVerifyingGate(true);
     setIncidentLogged(false);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/contractor/verify-gate-pass', {
+      const res = await fetch(`${import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:8000'}/api/contractor/verify-gate-pass`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(gatePassWorker)
@@ -98,53 +98,56 @@ export default function Contractors() {
         return;
       }
     } catch {
-      // Local fallback
+      if (import.meta.env.VITE_ALLOW_SIMULATION === 'true') {
+        // Dev/demo fallback — browser-side rule check
+        const today = new Date();
+        const vtcDate = new Date(gatePassWorker.vtc_cert_date);
+        const vtcExpiry = new Date(vtcDate.getTime() + 365 * 24 * 3600 * 1000);
+        const vtcDays = Math.ceil((vtcExpiry.getTime() - today.getTime()) / (24 * 3600 * 1000));
+
+        const pmeDate = new Date(gatePassWorker.pme_medical_date);
+        const pmeExpiry = new Date(pmeDate.getTime() + 5 * 365 * 24 * 3600 * 1000);
+        const pmeDays = Math.ceil((pmeExpiry.getTime() - today.getTime()) / (24 * 3600 * 1000));
+
+        const isAllowed = vtcDays >= 0 && pmeDays >= 0;
+        const reasons: string[] = [];
+        if (vtcDays < 0) reasons.push(`MANDATORY VTC LAPSED: Vocational training expired ${Math.abs(vtcDays)} days ago under Mines Vocational Training Rules 1966.`);
+        if (pmeDays < 0) reasons.push(`PME EXPIRED: Periodical Medical Examination overdue by ${Math.abs(pmeDays)} days under CMR 2017 Reg 11.`);
+
+        setVerificationResult({
+          worker_id: gatePassWorker.worker_id,
+          worker_name: gatePassWorker.worker_name,
+          contractor_name: gatePassWorker.contractor_name,
+          designation: gatePassWorker.role,
+          access_status: isAllowed ? 'ACCESS_GRANTED' : 'ACCESS_DENIED',
+          is_allowed_pit_entry: isAllowed,
+          gate_interlock: isAllowed ? 'BARRIER_OPEN' : 'BARRIER_LOCKED',
+          vtc_compliance: { last_training: gatePassWorker.vtc_cert_date, days_until_refresher: vtcDays, status: vtcDays >= 0 ? 'VALID' : 'EXPIRED' },
+          pme_compliance: { last_medical: gatePassWorker.pme_medical_date, days_until_renewal: pmeDays, status: pmeDays >= 0 ? 'FIT' : 'EXPIRED_UNFIT' },
+          findings: reasons.length ? reasons : ['Worker possesses certified VTC qualification, current medical fitness, and biometric clearance.'],
+          statutory_citations: ['Mines Vocational Training Rules, 1966 (Rule 6 & 9)', 'Coal Mines Regulations, 2017 (Reg 11 - Medical Fitness)'],
+          qr_token: `CG-VTC-${gatePassWorker.worker_id}-${gatePassWorker.vtc_cert_date.replace(/-/g, '')}`,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        // Production: show honest offline banner
+        setVerificationResult({
+          worker_id: gatePassWorker.worker_id,
+          worker_name: gatePassWorker.worker_name,
+          contractor_name: gatePassWorker.contractor_name,
+          designation: gatePassWorker.role,
+          access_status: 'SERVICE_OFFLINE',
+          is_allowed_pit_entry: false,
+          gate_interlock: 'MANUAL_CHECK_REQUIRED',
+          vtc_compliance: { last_training: '', days_until_refresher: 0, status: 'UNKNOWN' },
+          pme_compliance: { last_medical: '', days_until_renewal: 0, status: 'UNKNOWN' },
+          findings: ['Gate-pass verification service is offline. Configure VITE_AI_SERVICE_URL to enable.'],
+          statutory_citations: [],
+          qr_token: '',
+          timestamp: new Date().toISOString()
+        });
+      }
     }
-
-    const today = new Date();
-    const vtcDate = new Date(gatePassWorker.vtc_cert_date);
-    const vtcExpiry = new Date(vtcDate.getTime() + 365 * 24 * 3600 * 1000);
-    const vtcDays = Math.ceil((vtcExpiry.getTime() - today.getTime()) / (24 * 3600 * 1000));
-
-    const pmeDate = new Date(gatePassWorker.pme_medical_date);
-    const pmeExpiry = new Date(pmeDate.getTime() + 5 * 365 * 24 * 3600 * 1000);
-    const pmeDays = Math.ceil((pmeExpiry.getTime() - today.getTime()) / (24 * 3600 * 1000));
-
-    const isAllowed = vtcDays >= 0 && pmeDays >= 0;
-    const reasons = [];
-    if (vtcDays < 0) {
-      reasons.push(`MANDATORY VTC LAPSED: Vocational training expired ${Math.abs(vtcDays)} days ago under Mines Vocational Training Rules 1966.`);
-    }
-    if (pmeDays < 0) {
-      reasons.push(`PME EXPIRED: Periodical Medical Examination overdue by ${Math.abs(pmeDays)} days under CMR 2017 Reg 11.`);
-    }
-
-    setVerificationResult({
-      worker_id: gatePassWorker.worker_id,
-      worker_name: gatePassWorker.worker_name,
-      contractor_name: gatePassWorker.contractor_name,
-      designation: gatePassWorker.role,
-      access_status: isAllowed ? 'ACCESS_GRANTED' : 'ACCESS_DENIED',
-      is_allowed_pit_entry: isAllowed,
-      gate_interlock: isAllowed ? 'BARRIER_OPEN' : 'BARRIER_LOCKED',
-      vtc_compliance: {
-        last_training: gatePassWorker.vtc_cert_date,
-        days_until_refresher: vtcDays,
-        status: vtcDays >= 0 ? 'VALID' : 'EXPIRED'
-      },
-      pme_compliance: {
-        last_medical: gatePassWorker.pme_medical_date,
-        days_until_renewal: pmeDays,
-        status: pmeDays >= 0 ? 'FIT' : 'EXPIRED_UNFIT'
-      },
-      findings: reasons.length ? reasons : ['Worker possesses certified VTC qualification, current medical fitness, and biometric clearance.'],
-      statutory_citations: [
-        'Mines Vocational Training Rules, 1966 (Rule 6 & 9)',
-        'Coal Mines Regulations, 2017 (Reg 11 - Medical Fitness)'
-      ],
-      qr_token: `CG-VTC-${gatePassWorker.worker_id}-${gatePassWorker.vtc_cert_date.replace(/-/g, '')}`,
-      timestamp: new Date().toISOString()
-    });
     setIsVerifyingGate(false);
   };
 
@@ -152,7 +155,7 @@ export default function Contractors() {
     if (!verificationResult) return;
     try {
       await supabase.from('violations').insert([{
-        mine_id: 1,
+        mine_id: Number(import.meta.env.VITE_DEFAULT_MINE_ID) || 1,
         category: 'labour',
         severity: 'high',
         status: 'open',

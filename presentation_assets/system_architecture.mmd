@@ -1,0 +1,104 @@
+flowchart LR
+    %% ─────────────────────────────────────────────────────────────
+    %% LEFT COLUMN: UNDERGROUND & OFFLINE DATA EXTRACTION
+    %% ─────────────────────────────────────────────────────────────
+    subgraph LEFT["1. DATA EXTRACTION (OFFLINE & IN-MINE LAN)"]
+        direction TB
+        Sensors["⛏️ Underground Sensors<br/>• Stationary Gas Nodes (CH4, CO, Temp)<br/>• Wearable Trackers (SpO2, Pulse, Fall)"]
+        LoRa["📡 Sub-GHz LoRa 865 MHz Mesh<br/>(Rock Strata Penetration)"]
+        Buffer["💾 72-Hour Ring Buffer Node<br/>(SQLite Store-and-Forward)"]
+        PitBottom["🔌 Pit-Bottom Transceiver<br/>(RS485 Shielded Bus)"]
+        LanCable["🖧 Armoured In-Mine LAN / Fiber<br/>(Intrinsically Safe Shaft Uplink)"]
+        
+        OfflineApp["📱 OFFLINE & LAN PWA APP<br/>• Real-Time Shift & Inspection Logs<br/>• GPS Proof-of-Presence Lock<br/>• Multilingual Voice (Hindi/Odia/Bengali)<br/>• IndexedDB Zero-Data-Loss Buffer"]
+        SyncDaemon["🔄 Auto-Sync Background Daemon<br/>(In-Mine LAN / WiFi Heartbeat)"]
+
+        Sensors --> LoRa --> Buffer --> PitBottom --> LanCable
+        OfflineApp -->|"Local Offline Cache / LAN Sync"| SyncDaemon
+    end
+
+    %% ─────────────────────────────────────────────────────────────
+    %% CENTER COLUMN: BACKEND ARCHITECTURE
+    %% ─────────────────────────────────────────────────────────────
+    subgraph CENTER["2. BACKEND ARCHITECTURE (LOCAL EDGE / CLOUD)"]
+        direction TB
+        MQTT["🛰️ In-Premises MQTT Broker<br/>(Mosquitto Local Telemetry Core)"]
+        PostgreSQL["🗄️ Supabase PostgreSQL 16<br/>• Multi-Tenant Schema with RLS<br/>• Air-Gapped Local Edge Mirror<br/>• Real-Time WebSocket Engine"]
+        AuditChain["🔒 Cryptographic Audit Ledger<br/>• SHA-256 Chained Hash Sequence<br/>• Tamper-Proof Statutory Ledger"]
+        Escalation["⏰ Escalation CRON Matrix<br/>• 2h → Colliery Manager<br/>• 24h → Subsidiary HQ"]
+
+        LanCable -->|"Direct High-Speed LAN Feed"| MQTT --> PostgreSQL
+        SyncDaemon -->|"Instant LAN / Reconnect Sync"| PostgreSQL
+        PostgreSQL --> AuditChain
+        PostgreSQL -.-> Escalation
+    end
+
+    %% ─────────────────────────────────────────────────────────────
+    %% TOP-RIGHT: FRONTEND WEB APPLICATIONS (CORE COCKPITS)
+    %% ─────────────────────────────────────────────────────────────
+    subgraph TOP_RIGHT["3. FRONTEND / WEB APPLICATION (REACT 19 PWA)"]
+        direction TB
+        
+        subgraph COCKPITS ["Operational Dashboards & Command Centers"]
+            direction LR
+            Cockpit["🗺️ Spatial GIS Web Cockpit<br/>(React-Leaflet + CARTO Dark Engine)"]
+            BlastLock["🚨 Blast Zone Lockdown<br/>(Geofenced Evacuation Siren)"]
+            CorpDash["📊 Corporate HQ Dashboard<br/>(Live Violations & GIS Heatmap)"]
+            RegulatorPortal["🏛️ DGMS Regulator Portal<br/>(Hash-Verified Audit & Forms I–V)"]
+        end
+
+        subgraph ANALYTICS_UI ["Specialized AI & Statutory Analytics"]
+            direction LR
+            WaterUI["💧 Water Inrush UI<br/>(Interactive TreeSHAP Waterfall)"]
+            AIWorkbench["🔬 Multi-Modal AI Workbench<br/>(Live PPE Stream & Audio Lab)"]
+            FormVReport["📑 1-Click Form V PDF Export<br/>(Cryptographic Audit Report)"]
+        end
+
+        COCKPITS ~~~ ANALYTICS_UI
+    end
+
+    %% ─────────────────────────────────────────────────────────────
+    %% BOTTOM-RIGHT: AI / ML ENGINES & STATUTORY REPORT
+    %% ─────────────────────────────────────────────────────────────
+    subgraph BOTTOM_RIGHT["4. 10-MODEL AI & PREDICTIVE INTELLIGENCE (FastAPI)"]
+        direction LR
+        PPEMonitor["👁️ PPE Safety Vision<br/>(YOLOv8n &lt;45ms)"]
+        WaterInrush["💧 CLSSA-XGBoost Water Inrush<br/>(Hydrochemical Model &lt;1s)"]
+        RiskModel["📈 Predictive Risk Regressor<br/>(XGBoost + TreeSHAP 0-100)"]
+        VoiceNLP["🎙️ Multilingual Voice & NLP<br/>(Whisper-v3 + IndicTrans2 + BART)"]
+        DocOCR["📄 Document Digitization<br/>(TrOCR-large + Donut-base)"]
+
+        PPEMonitor ~~~ WaterInrush ~~~ RiskModel ~~~ VoiceNLP ~~~ DocOCR
+    end
+
+    %% ─────────────────────────────────────────────────────────────
+    %% CROSS-SYSTEM FLOW ARROWS
+    %% ─────────────────────────────────────────────────────────────
+    PostgreSQL -->|"Realtime WebSocket Stream"| CorpDash
+    PostgreSQL -->|"Live Telemetry"| Cockpit
+    PostgreSQL -->|"Geofence Alerts"| BlastLock
+    AuditChain -->|"Verified Hash Feed"| RegulatorPortal
+
+    PostgreSQL <-->|"Feature Vectors"| RiskModel
+    PostgreSQL <-->|"Hydrochemical Ions"| WaterInrush
+    WaterInrush -->|"SHAP Feature Attribution"| WaterUI
+
+    OfflineApp -.->|"RTSP / Snapshot Feed"| PPEMonitor
+    OfflineApp -.->|"Vernacular Voice Audio"| VoiceNLP
+    OfflineApp -.->|"Paper Register Scans"| DocOCR
+
+    RegulatorPortal --> FormVReport
+    OfflineApp -->|"GPS & Inspection Evidence"| FormVReport
+
+    %% ─────────────────────────────────────────────────────────────
+    %% STYLING
+    %% ─────────────────────────────────────────────────────────────
+    classDef offlineStyle fill:#0f2942,stroke:#38bdf8,stroke-width:2px,color:#f0f9ff;
+    classDef backendStyle fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f0fdf4;
+    classDef frontendStyle fill:#312e81,stroke:#818cf8,stroke-width:2px,color:#eef2ff;
+    classDef aiStyle fill:#451a03,stroke:#fbbf24,stroke-width:2px,color:#fffbeb;
+
+    class Sensors,LoRa,Buffer,PitBottom,LanCable,OfflineApp,SyncDaemon offlineStyle;
+    class MQTT,PostgreSQL,AuditChain,Escalation backendStyle;
+    class Cockpit,BlastLock,CorpDash,RegulatorPortal,WaterUI,AIWorkbench,FormVReport frontendStyle;
+    class PPEMonitor,WaterInrush,RiskModel,VoiceNLP,DocOCR aiStyle;

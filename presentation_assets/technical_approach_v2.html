@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CoalGuard / Khanan-Net — Technical Approach</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0b1220;--mut:#475569;--line:#c2ccd9;--line2:#94a3b8;
+  --band:#efe9d6;--bandbd:#cbc19d;
+  --blue:#1d4ed8;--bluebg:#eff4ff;--bluebd:#9db8f5;
+  --teal:#0f766e;--tealbg:#edfaf6;--tealbd:#7ccbbd;
+  --amber:#b45309;--amberbg:#fff8ee;--amberbd:#e8b878;
+  --rose:#be123c;--rosebg:#fff1f4;--rosebd:#eda3b5;
+  --violet:#6d28d9;--violetbg:#f5f2ff;--violetbd:#b9a5f2;
+  --slate:#334155;--slatebg:#f1f5f9;--slatebd:#b6c2d1;
+}
+body{background:#0f172a;font-family:'Segoe UI',Roboto,Arial,sans-serif;color:var(--ink);
+  -webkit-font-smoothing:antialiased;display:flex;justify-content:center}
+#slide{width:1920px;height:1080px;background:#fff;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;padding:8px 12px 6px;
+  background-image:linear-gradient(#f4f7fb 1px,transparent 1px),
+                   linear-gradient(90deg,#f4f7fb 1px,transparent 1px);
+  background-size:24px 24px}
+/* ── title ─────────────────────────────────────────────── */
+.titlebar{display:flex;align-items:center;gap:12px;padding:0 4px 6px}
+.titlebar h1{flex:1;text-align:center;font-size:38px;font-weight:800;letter-spacing:6px;
+  text-transform:uppercase;color:#0b1220}
+.sih{display:flex;flex-direction:column;align-items:flex-end;font-size:9px;font-weight:700;
+  letter-spacing:.8px;text-transform:uppercase;color:var(--slate);border-left:3px solid #f59e0b;
+  padding-left:8px;line-height:1.4;min-width:170px}
+.sih b{color:#b45309;font-size:10.5px}
+.chakra{width:38px;height:38px;border-radius:50%;border:3px solid #1d4ed8;position:relative;flex:none}
+.chakra::after{content:'';position:absolute;inset:6px;border-radius:50%;border:2px dashed #f59e0b}
+/* ── 3-column canvas ───────────────────────────────────── */
+.cols{flex:1;display:grid;grid-template-columns:344px 1fr 588px;gap:9px;min-height:0}
+.col{display:flex;flex-direction:column;gap:5px;min-height:0}
+.split{display:grid;grid-template-columns:1.04fr 26px 1fr;gap:8px;min-height:0}
+/* ── bands (khaki section headers) ─────────────────────── */
+.band{background:var(--band);border:1.5px solid var(--bandbd);border-radius:3px;text-align:center;
+  font-weight:800;font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase;padding:3px 6px}
+.band.sm{font-size:10.5px;letter-spacing:1px;padding:2px 5px}
+/* ── cards ─────────────────────────────────────────────── */
+.card{background:#fff;border:1.5px solid var(--line);border-radius:5px;padding:4px 6px;
+  font-size:9.4px;line-height:1.32}
+.card.tight{padding:3px 5px}
+.card h4{font-size:9.8px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+.card ul{list-style:none;display:flex;flex-direction:column;gap:1.5px}
+.card li::before{content:'▸ ';color:#64748b}
+.card.center{text-align:center}
+.blue{border-color:var(--bluebd);background:var(--bluebg)}.blue h4{color:var(--blue)}
+.teal{border-color:var(--tealbd);background:var(--tealbg)}.teal h4{color:var(--teal)}
+.amber{border-color:var(--amberbd);background:var(--amberbg)}.amber h4{color:var(--amber)}
+.rose{border-color:var(--rosebd);background:var(--rosebg)}.rose h4{color:var(--rose)}
+.violet{border-color:var(--violetbd);background:var(--violetbg)}.violet h4{color:var(--violet)}
+.slate{border-color:var(--slatebd);background:var(--slatebg)}.slate h4{color:var(--slate)}
+.dark{background:#0b1220;border-color:#0b1220;color:#f8fafc}.dark h4{color:#fbbf24}
+/* ── chips / pills ─────────────────────────────────────── */
+.chip{border:1.2px solid var(--line2);border-radius:20px;padding:1px 7px;font-size:8.6px;
+  font-weight:700;background:#fff;color:#0b1220;white-space:nowrap}
+.chiprow{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
+/* ── connectors ────────────────────────────────────────── */
+.ad{width:2px;height:11px;background:var(--line2);margin:2px auto;position:relative}
+.ad::after{content:'';position:absolute;left:-3.5px;bottom:-6px;border-left:4.5px solid transparent;
+  border-right:4.5px solid transparent;border-top:6px solid var(--line2)}
+.ad.tall{height:16px}
+.arh{height:2px;background:var(--line2);position:relative;flex:1;min-width:10px}
+.arh::after{content:'';position:absolute;right:-6px;top:-3.5px;border-top:4.5px solid transparent;
+  border-bottom:4.5px solid transparent;border-left:6px solid var(--line2)}
+.row{display:flex;align-items:center;gap:5px}
+.row.top{align-items:flex-start}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:4px}
+/* ── images ────────────────────────────────────────────── */
+.shot{width:100%;border:1.5px solid #94a3b8;border-radius:5px;object-fit:cover;display:block}
+.cap{text-align:center;font-size:9px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+  margin-top:2px}
+.tiny{font-size:8.4px;color:var(--mut);line-height:1.3}
+.note{background:#fef9c3;border:1.3px solid #eab308;border-radius:4px;padding:3px 6px;font-size:9px;
+  font-weight:600;text-align:center}
+.rule{height:1.5px;background:var(--line);margin:2px 0}
+.narrow{width:26px;text-align:center}
+.vert{writing-mode:vertical-rl;text-orientation:mixed;text-align:center;font-weight:800;
+  font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#fff;background:#0b1220;
+  border-radius:4px;padding:6px 1px}
+</style>
+</head>
+<body>
+<div id="slide">
+
+  <div class="titlebar">
+    <div class="chakra"></div>
+    <h1>Technical Approach</h1>
+    <div class="sih"><span>Smart India Hackathon</span><b>PS ID · SIH26024</b><span>Ministry of Coal · DGMS</span></div>
+  </div>
+
+  <div class="cols">
+
+    <!-- ═══════════ LEFT · UNDERGROUND DATA EXTRACTION + OFFLINE APP ═══════════ -->
+    <div class="col">
+      <div class="band sm">Stakeholders · Mine Workers</div>
+      <img class="shot" src="../frontend/src/assets/coal_mine_1.png" alt="Underground coal mine" style="height:92px">
+      <div class="card slate center"><b>⛏️ UNDERGROUND MINING</b><br><span class="tiny">Longwall · Bord &amp; pillar · Continuous miner</span></div>
+      <div class="ad"></div>
+      <div class="band">Data Extraction (Offline)</div>
+      <div class="band sm">Data Sources</div>
+      <div class="grid3">
+        <div class="card amber tight center"><b>MEMBRANE GAS SENSORS</b><br>CH₄ · CO · O₂ · NH₃</div>
+        <div class="card amber tight center"><b>STATIONARY GAS SENSORS</b><br>CO₂ · CO · O₂ · CH₄</div>
+        <div class="card amber tight center"><b>WEARABLE SENSORS</b><br>SpO₂ · HR · temp · fall · CO · H₂S</div>
+      </div>
+      <div class="ad"></div>
+      <div class="card blue center"><h4>Signal Conditioning</h4>RS485 · MODBUS · intrinsic-safety barrier</div>
+      <div class="ad"></div>
+      <div class="card blue center"><h4>Sub-GHz LoRa 865 MHz</h4>Rock-strata-penetrating telemetry — works with no SIM</div>
+      <div class="ad"></div>
+      <div class="card violet center"><h4>Battery-Powered Node</h4>72-hour ring buffer · <b>local node storage (SQLite)</b><br><span class="tiny">store-and-forward survives link loss</span></div>
+      <div class="ad"></div>
+      <div class="card slate center"><h4>Pit-Bottom Transceiver</h4>RS485 shielded bus → <b>Pit Head / Control Room (LAN)</b></div>
+      <div class="ad"></div>
+      <div class="card teal center"><h4>Ethernet Backbone</h4>Armoured fibre ring topology · spine switch →<br><b>Underground Edge Server</b></div>
+      <div style="flex:1"></div>
+      <div class="card dark">
+        <h4>📱 Offline App — PWA, zero data loss</h4>
+        <ul>
+          <li>Real-time updates, shift logs, risk analytics from backend</li>
+          <li>Create, flag or approve inspection logs inside the pit</li>
+          <li>GPS + timestamp captured as tamper-proof evidence</li>
+          <li>Queues to IndexedDB offline, auto-syncs on LAN heartbeat</li>
+        </ul>
+      </div>
+      <div class="ad"></div>
+      <div class="note">📄 AUTOMATIC PDF REPORT · Form IV / Form V, hash-stamped</div>
+    </div>
+
+    <!-- ═══════════ CENTER · BACKEND ARCHITECTURE + FRONTEND / WEB APP ═══════════ -->
+    <div class="col">
+      <div class="split">
+
+        <!-- ── backend ── -->
+        <div class="col">
+          <div class="band">Backend Architecture</div>
+          <div class="card teal center"><h4>Underground Edge Server</h4>aggregates every LoRa node · local buffering, never lost</div>
+          <div class="ad"></div>
+          <div class="band sm">Mine · Head Office · Cloud Infrastructure</div>
+          <div class="card blue"><h4>Head Office / Cloud Infrastructure</h4>
+            <ul>
+              <li>Redundant power (UPS + DG set) · dual-WAN failover</li>
+              <li>Sensor data logged in multiple local nodes first</li>
+              <li><b>Sensor data cannot be tampered with centrally</b></li>
+            </ul>
+          </div>
+          <div class="card violet center"><h4>VM Hosting Supabase</h4>managed PostgreSQL 16 + generated REST API<br><span class="tiny">RLS · realtime WebSockets · storage bucket</span></div>
+          <div class="card slate center"><h4>Backup Server (DR Site)</h4>read replica · cloud-hosted · encrypted nightly dump</div>
+          <div class="ad"></div>
+          <div class="band sm">Central Application Server</div>
+          <div class="card dark"><h4>Central Application Server</h4>
+            <div class="chiprow" style="justify-content:flex-start">
+              <span class="chip">REST API module</span>
+              <span class="chip">WebSocket gateway</span>
+              <span class="chip">Event processing engine</span>
+              <span class="chip">Inspection logging</span>
+              <span class="chip">AI analytics engine</span>
+              <span class="chip">Auth &amp; RBAC</span>
+              <span class="chip">Real-time alert service</span>
+            </div>
+          </div>
+          <div class="card center">Admin dashboard · local UI at the pit head</div>
+          <div class="ad"></div>
+          <div class="card teal center"><h4>MQTT Broker (SSL/TLS)</h4>EMQX / Mosquitto · QoS-1 telemetry fan-in</div>
+          <div class="card teal center"><h4>Edge Analytics Preprocessor</h4>rolling-window stats · threshold and anomaly trigger</div>
+          <div style="flex:1"></div>
+          <div class="band sm">CLSSA-XGBoost + SHAP Model</div>
+          <div class="card amber center"><h4>Supabase PostgreSQL</h4>mines · violations · inspections · ppe_events · risk_scores<br><span class="tiny">every write hash-chained into audit_ledger</span></div>
+        </div>
+
+        <div class="vert">REST API</div>
+
+        <!-- ── frontend ── -->
+        <div class="col">
+          <div class="band">Frontend / Web App</div>
+          <div class="band sm">Parallel Operational Interfaces</div>
+          <div class="card blue"><h4>Flutter Mobile / Tablet <span class="tiny">· Android · iOS · Web</span></h4>
+            <ul>
+              <li>Sirdar app — works offline, syncs on in-mine LAN</li>
+              <li>Notifications &amp; SOS · BLE distress beacons</li>
+              <li>Signal relay over mine Wi-Fi mesh</li>
+            </ul>
+          </div>
+          <div class="ad"></div>
+          <div class="band sm">Web Desktop Dual Cockpit</div>
+          <div class="card slate"><h4>Cockpits by role</h4>
+            <ul>
+              <li>Colliery dashboard · shift in-charge cockpit</li>
+              <li>Mine control centre dashboard</li>
+              <li>Corporate HQ dashboard + web access</li>
+            </ul>
+          </div>
+          <div class="card slate"><h4>Platform layer</h4>
+            <ul>
+              <li>Auth &amp; RBAC — mine_official · corporate · regulator</li>
+              <li>Multilingual — Hindi · Odia · Bengali · English</li>
+              <li>PWA — offline cache, auto-sync, GPS timestamp</li>
+            </ul>
+          </div>
+          <div class="card rose"><h4>Live operations</h4>
+            <ul>
+              <li>Notifications &amp; alerts · attendance · geo-fence breach</li>
+              <li>Dual-channel alerting — push + e-mail / SMS escalation</li>
+              <li>Auto report generation, export and print by role</li>
+            </ul>
+          </div>
+          <div class="card violet"><h4>Trust layer</h4>
+            <ul>
+              <li>Digital signature &amp; immutable audit log (SHA-256 chain)</li>
+              <li>Quick-action control — GPS + geo-fencing, no equipment entry without clearance</li>
+            </ul>
+          </div>
+          <div style="flex:1"></div>
+          <div class="card dark center"><h4>Data Flow</h4>request / response over REST API<br>+ live push over WebSocket</div>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:5px">
+        <div><img class="shot" src="../frontend/public/water_inrush_solution_pipeline.jpg" alt="mine water inrush" style="height:84px"><div class="cap">Mine Water Inrush · CLSSA-XGBoost + SHAP</div></div>
+        <div><img class="shot" src="../test_assets/worker_with_ppe.png" alt="PPE safety monitor" style="height:84px"><div class="cap">PPE Safety Monitor · YOLOv8n edge vision</div></div>
+      </div>
+    </div>
+
+    <!-- ═══════════ RIGHT · AI / ML ENGINES · RISK · SHAP · DGMS ═══════════ -->
+    <div class="col">
+      <div class="band">AI &amp; ML Engines</div>
+      <div class="card slate">
+        <ul>
+          <li><b>Edge Vision (PPE &amp; Safety) — YOLOv8n:</b> detects hardhats and high-vis vests in real time from camera frames.</li>
+          <li><b>Voice &amp; Translation — Whisper-large-v3 + IndicTrans2:</b> multilingual voice logs in Hindi, Odia and Bengali.</li>
+          <li><b>Document OCR — TrOCR-large + Donut-base:</b> tabular data extraction from Form V registers and circulars.</li>
+          <li><b>Predictive Risk &amp; Fraud — XGBoost (SHAP) + Isolation Forest:</b> mine risk scoring 0–100 and weighbridge-mismatch detection.</li>
+        </ul>
+      </div>
+      <div class="note" style="text-align:left">🧪 <b>CLSSA-XGBoost + TreeSHAP</b> — analyses water chemistry instantly to pinpoint the exact leakage / inrush source (8 hydrochemical ions: aquifer vs limestone vs sandstone water).</div>
+
+      <div class="grid2" style="align-items:start">
+        <div>
+          <div class="band sm">Risk Prediction</div>
+          <img class="shot" src="live_prototype_judge_slide_hd.jpg" alt="risk prediction gauge" style="height:100px">
+          <div class="cap">Mine risk score 0–100</div>
+        </div>
+        <div>
+          <div class="band sm">SHAP Explainability</div>
+          <img class="shot" src="shap_risk_prediction.jpg" alt="SHAP feature importance" style="height:100px">
+          <div class="cap">Feature attribution</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="card amber center" style="flex:1"><b>SUPABASE PostgreSQL</b><br><span class="tiny">managed Postgres + REST + realtime</span></div>
+        <span class="arh"></span>
+        <div class="card violet center narrow" style="padding:4px 2px">REST<br>API</div>
+        <span class="arh"></span>
+        <div class="card blue center" style="flex:1"><b>🏛️ DGMS</b><br><span class="tiny">regulator portal · read-only</span></div>
+      </div>
+
+      <div class="band sm">Risk Prediction Using XGBoost + SHAP Explainability</div>
+      <div class="card slate">
+        <h4>The Workflow of the XGBoost Algorithm</h4>
+        <div class="row">
+          <div class="card tight center" style="min-width:56px">Features<br><b>X</b></div>
+          <span class="arh"></span>
+          <div class="col" style="gap:2px;flex:1">
+            <div class="card tight center">Tree 1 · f₁(x)</div>
+            <div class="card tight center">Tree 2 · f₂(x)</div>
+            <div class="card tight center">⋮ Tree K · f_K(x)</div>
+          </div>
+          <span class="arh"></span>
+          <div class="card tight center" style="min-width:58px">Scale<br>&amp; Sum</div>
+          <span class="arh"></span>
+          <div class="card tight center" style="min-width:52px">Objective<br><b>Σ</b></div>
+        </div>
+        <div class="tiny" style="text-align:center;margin-top:3px">ŷ = Σ f_k(x) — each new tree corrects the residual error of the previous ensemble</div>
+      </div>
+
+      <div style="flex:1"></div>
+      <div class="note">🔒 No black box: TreeSHAP shows which factor pushed a mine's risk score up or down</div>
+    </div>
+
+  </div><!-- /cols -->
+</div><!-- /slide -->
+</body>
+</html>

@@ -113,8 +113,8 @@ const DEMO_CAMERAS: Camera[] = [
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const AI_BASE  = 'http://127.0.0.1:8000';
-const MINE_ID  = '1'; // Replace with actual mine ID from auth context
+const AI_BASE  = import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:8000';
+const MINE_ID  = import.meta.env.VITE_DEFAULT_MINE_ID || '1';
 
 // High-contrast, sober official government badges
 const SEVERITY_CFG = {

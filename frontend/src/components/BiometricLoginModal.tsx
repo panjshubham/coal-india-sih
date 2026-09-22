@@ -266,17 +266,30 @@ export default function BiometricLoginModal({ isOpen, onClose, onSuccessLogin }:
 
   // Perform Final Authentication & Redirect
   const handleConfirmLogin = async () => {
+    setScanning(true);
     try {
       if (selectedPersonnel.email) {
-        await supabase.auth.signInWithPassword({
+        const demoPass = import.meta.env.VITE_DEMO_PASSWORD || 'Demo@2026';
+        const { error } = await supabase.auth.signInWithPassword({
           email: selectedPersonnel.email,
-          password: 'Demo@2026'
+          password: demoPass
         });
+        if (error) {
+          // Auth failed — do NOT navigate; show error
+          setScanStatus('failed');
+          setScanning(false);
+          console.warn('Biometric auth failed:', error.message);
+          return;
+        }
       }
     } catch (err) {
-      console.warn('Biometric session sign-in error:', err);
+      setScanStatus('failed');
+      setScanning(false);
+      console.warn('Biometric session sign-in exception:', err);
+      return;
     }
 
+    setScanning(false);
     if (onSuccessLogin) {
       onSuccessLogin(selectedPersonnel);
     }

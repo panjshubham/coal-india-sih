@@ -1,0 +1,130 @@
+%% =============================================================================
+%%  CoalGuard / Khanan-Net  —  SOLUTION ARCHITECTURE
+%%  "The problem  ->  what we use to solve it  ->  the output we deliver"
+%%  SIH 2026 | Problem Statement ID: SIH26024 | Ministry of Coal + DGMS
+%%  Paste this whole file at https://mermaid.live   (diagram type: flowchart LR)
+%% =============================================================================
+flowchart LR
+
+  %% ───────────────────────────────────────────────────────────────────────────
+  %% 1. THE PROBLEM
+  %% ───────────────────────────────────────────────────────────────────────────
+  subgraph PROB["① THE PROBLEM — 4 systemic failure points"]
+    direction TB
+    PB1["🗂️ Paper-bound statutory registers<br/>Form IV / Form V + daily logbooks<br/>tampering, back-dating, loss"]
+    PB2["🚫 Zero underground connectivity<br/>sirdar / inspector cannot log a<br/>live hazard from the coal face"]
+    PB3["🕶️ Black-box safety decisions<br/>unexplainable ML wins zero trust<br/>from statutory officers"]
+    PB4["🌊 Inrush and gas latency<br/>lab hydro-titration needs 24-48 h<br/>but a mine can flood in 15 min"]
+  end
+
+  %% ───────────────────────────────────────────────────────────────────────────
+  %% 2. TIER 1 — OFFLINE-FIRST CAPTURE  (works with no signal)
+  %% ───────────────────────────────────────────────────────────────────────────
+  subgraph CAP["② WHAT WE USE · TIER 1 — OFFLINE-FIRST CAPTURE"]
+    direction TB
+    PWA["📱 React 19 + Vite 8 PWA<br/>installable, runs inside the pit<br/>vite-plugin-pwa + Workbox"]
+    IDB["💾 IndexedDB zero-data-loss buffer<br/>Dexie CoalGuardOfflineDB + idb<br/>voice / photo / form payloads"]
+    GPSN["📍 GPS proof-of-presence<br/>+ per-mine geofence radius_m"]
+    LANS["🖧 Store-and-forward sync<br/>flushes on LAN / WiFi heartbeat<br/>with retry_count backoff"]
+  end
+
+  %% ───────────────────────────────────────────────────────────────────────────
+  %% 3. TIER 2 — SINGLE SOURCE OF TRUTH  (Supabase cloud)
+  %% ───────────────────────────────────────────────────────────────────────────
+  subgraph DATA["③ WHAT WE USE · TIER 2 — SUPABASE SINGLE SOURCE OF TRUTH"]
+    direction TB
+    AUTH["🔐 Auth + RBAC<br/>enum user_role:<br/>mine_official | corporate | regulator"]
+    PG["🗄️ PostgreSQL 16 schema<br/>mines · violations · inspections<br/>compliance_items · alerts · risk_scores<br/>contractors · contractor_incidents · users"]
+    PPEV["👁️ PPE vision tables<br/>ppe_cameras · ppe_events<br/>per-zone compliance %"]
+    SREG["📑 statutory_registers<br/>CMR-2017 shift log<br/>with hash + prev_hash"]
+    LED["🔒 audit_ledger hash chain<br/>SHA-256 of record + prev_hash<br/>= tamper-evident proof"]
+    RTW["📡 Realtime WebSockets<br/>push new hazards to every cockpit"]
+    BUCK["🖼️ Storage bucket: photos<br/>violation + PPE snapshot evidence"]
+    TICK["🎫 support_tickets<br/>grievance to resolution trail"]
+  end
+
+  %% ───────────────────────────────────────────────────────────────────────────
+  %% 4. TIER 3 — 10-MODEL AI ENGINE  (FastAPI :8000)
+  %% ───────────────────────────────────────────────────────────────────────────
+  subgraph AIE["④ WHAT WE USE · TIER 3 — 10-MODEL AI ENGINE (FastAPI)"]
+    direction TB
+    MVI["👁️ YOLOv8n PPE vision<br/>helmet / vest / boots per frame<br/>/api/pipeline/photo-inspection"]
+    MWI["💧 CLSSA-XGBoost water inrush<br/>8 hydrochemical ion features<br/>+ TreeSHAP attribution"]
+    MRK["📈 XGBoost risk 0-100<br/>/api/predict-risk · /analyze/mine/{id}<br/>/analyze/all batch"]
+    MVO["🎙️ Whisper-v3 → IndicTrans2<br/>→ BART-MNLI → BERT-NER<br/>/api/pipeline/voice-report"]
+    MDO["📄 TrOCR + Donut<br/>paper register to structured JSON<br/>/api/pipeline/document-process"]
+    MNE["📰 Mining news intelligence<br/>/api/news/mining-intelligence"]
+  end
+
+  %% ───────────────────────────────────────────────────────────────────────────
+  %% 5. THE OUTPUT  (what each stakeholder actually receives)
+  %% ───────────────────────────────────────────────────────────────────────────
+  subgraph OUT["⑤ THE OUTPUT — WHAT THE STAKEHOLDER GETS"]
+    direction TB
+    O1["🗺️ Corporate HQ cockpit<br/>GIS heatmap of subsidiary risk<br/>+ risk SHAP explanation modal"]
+    O2["⛏️ Colliery manager cockpit<br/>live hazards, methane, manpower<br/>+ PPE zone compliance"]
+    O3["🏛️ DGMS regulator portal<br/>read-only, hash-verified<br/>Forms I-V + audit ledger"]
+    O4["🚨 Automated alerts<br/>AlertBell 8-domain + escalation mail<br/>2 h manager → 24 h subsidiary HQ"]
+    O5["🚧 Blast zone lockdown<br/>geofenced evacuation + siren"]
+    O6["📑 1-click Form V PDF / XLSX<br/>jsPDF + autotable export"]
+    O7["🌐 Public tracking page<br/>citizen / RTI transparency"]
+    O8["🎫 Tickets and registers<br/>statutory book in digital form"]
+  end
+
+  %% ───────────────────────────────────────────────────────────────────────────
+  %% PROBLEM → SOLUTION   (the causal mapping that wins the pitch)
+  %% ───────────────────────────────────────────────────────────────────────────
+  PB1 -->|"paper → hash-chained digital register"| SREG
+  PB2 -->|"capture with zero connectivity"| PWA
+  PB3 -->|"SHAP explains every score"| MRK
+  PB4 -->|"hydrochemistry answer in under 1 s"| MWI
+
+  %% CAPTURE spine
+  GPSN --> PWA --> IDB --> LANS
+  LANS -->|"voice note"| MVO
+  LANS -->|"site photo"| MVI
+  LANS -->|"register scan"| MDO
+
+  %% AI ↔ DATA
+  LANS -->|"sync queue flush"| PG
+  MVO -->|"hazard ticket + translated text"| PG
+  MDO -->|"extracted statutory record"| PG
+  MVI -->|"violation + snapshot"| PPEV
+  MRK <-->|"feature vector / risk_scores"| PG
+  MWI <-->|"ion sample / SHAP values"| PG
+  MNE -->|"curated advisories"| PG
+  PG --> BUCK
+  PG --> TICK
+  PG --> LED
+  PG --> RTW
+
+  %% DATA → OUTPUT
+  RTW -->|"realtime"| O2
+  RTW -->|"realtime"| O4
+  PG -->|"aggregates"| O1
+  PG -->|"read-only feed"| O3
+  PG -->|"open statistics"| O7
+  PPEV -->|"zone % + resolution"| O2
+  PPEV -->|"critical breach"| O4
+  LED -->|"immutable proof"| O3
+  LED -->|"audit stamp"| O6
+  SREG -->|"CMR-2017 records"| O3
+  SREG -->|"statutory book"| O8
+  GPSN -->|"geofence breach"| O5
+
+  %% ───────────────────────────────────────────────────────────────────────────
+  %% STYLING
+  %% ───────────────────────────────────────────────────────────────────────────
+  classDef probStyle fill:#3f1d1d,stroke:#f87171,stroke-width:2px,color:#fef2f2;
+  classDef capStyle fill:#0f2942,stroke:#38bdf8,stroke-width:2px,color:#f0f9ff;
+  classDef dataStyle fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f0fdf4;
+  classDef aiStyle fill:#451a03,stroke:#fbbf24,stroke-width:2px,color:#fffbeb;
+  classDef outStyle fill:#312e81,stroke:#818cf8,stroke-width:2px,color:#eef2ff;
+
+  class PB1,PB2,PB3,PB4 probStyle;
+  class PWA,IDB,GPSN,LANS capStyle;
+  class AUTH,PG,PPEV,SREG,LED,RTW,BUCK,TICK dataStyle;
+  class MVI,MWI,MRK,MVO,MDO,MNE aiStyle;
+  class O1,O2,O3,O4,O5,O6,O7,O8 outStyle;
+
+

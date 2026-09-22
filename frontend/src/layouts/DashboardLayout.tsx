@@ -4,7 +4,8 @@ import {
   LayoutDashboard, BarChart2, ClipboardList, AlertTriangle, Map as MapIcon, 
   Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, 
   Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, ChevronDown,
-  User, HelpCircle, IndianRupee, Camera, Building2, Activity, BookOpen, Droplets, Flame
+  User, HelpCircle, IndianRupee, Camera, Building2, Activity, BookOpen, Droplets, Flame,
+  HardHat, Ticket, ClipboardCheck
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -51,12 +52,14 @@ const navGroups: NavGroup[] = [
     label: 'Operations',
     id: 'operations',
     items: [
-      { id: 'map',           href: '/mines-map',     icon: MapIcon,       roles: ['regulator', 'corporate'] },
-      { id: 'blastLockdown', href: '/blast-lockdown', icon: Flame,        roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'compliance',    href: '/compliance',    icon: ClipboardList, roles: ['mine_official', 'corporate'] },
-      { id: 'inspections',   href: '/inspections',   icon: Activity,      roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'violations',    href: '/violations',    icon: AlertTriangle, roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'contractors',   href: '/contractors',   icon: Users,         roles: ['mine_official', 'corporate'] },
+      { id: 'map',           href: '/mines-map',     icon: MapIcon,        roles: ['regulator', 'corporate'] },
+      { id: 'blastLockdown', href: '/blast-lockdown', icon: Flame,          roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'compliance',    href: '/compliance',    icon: ClipboardList,   roles: ['mine_official', 'corporate'] },
+      { id: 'inspections',   href: '/inspections',   icon: Activity,        roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'pitInspector',  href: '/pit-inspector', icon: HardHat,         roles: ['mine_official'] },
+      { id: 'mySubmissions', href: '/submissions',    icon: ClipboardCheck,  roles: ['mine_official'] },
+      { id: 'violations',    href: '/violations',    icon: AlertTriangle,   roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'contractors',   href: '/contractors',   icon: Users,           roles: ['mine_official', 'corporate'] },
     ]
   },
   {
@@ -83,8 +86,9 @@ const navGroups: NavGroup[] = [
     id: 'admin',
     roles: ['corporate'],
     items: [
-      { id: 'manageUsers', href: '/manage-users', icon: ShieldAlert, roles: ['corporate'] },
-      { id: 'dataImport',  href: '/data-import',  icon: Database,    roles: ['corporate'] },
+      { id: 'adminTickets', href: '/admin-tickets', icon: Ticket,      roles: ['corporate'] },
+      { id: 'manageUsers',  href: '/manage-users',  icon: ShieldAlert,  roles: ['corporate'] },
+      { id: 'dataImport',   href: '/data-import',   icon: Database,     roles: ['corporate'] },
     ]
   },
   {

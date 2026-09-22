@@ -62,9 +62,9 @@ app.add_middleware(
 
 HF_API_TOKEN = os.getenv("HF_API_TOKEN", "").strip()
 HF_BASE = "https://api-inference.huggingface.co/models"
-HF_NAMESPACE = os.getenv("HF_NAMESPACE", "93shubhampanjiyara").strip()
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "93shubhampanjiyara").strip()
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "S3HFAKyzkX7ZsbCkqQPj5F7c5qM8M3XRD").strip()
+HF_NAMESPACE = os.getenv("HF_NAMESPACE", "").strip()
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "").strip()
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "").strip()
 HF_S3_ENDPOINT_URL = os.getenv("HF_S3_ENDPOINT_URL", "https://hub-ci.huggingface.co/s3").strip()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
@@ -2469,6 +2469,200 @@ async def train_water_inrush_csv(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"CSV training failed: {str(e)}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CMR STATUTORY REGISTER COMPLIANCE VALIDATION
+# ─────────────────────────────────────────────────────────────────────────────
+
+class CmrValidateRequest(BaseModel):
+    register_type: str  # e.g. "CMR_153_GAS_TESTING"
+    parameters: Dict[str, Any] = {}
+    seam_or_pit: str = ""
+    mine_id: int = 1
+
+@app.post("/api/cmr/validate-entry", summary="CMR Statutory Register Compliance Validator")
+async def cmr_validate_entry(req: CmrValidateRequest):
+    """
+    Server-side statutory compliance engine for Coal Mines Regulations 2017.
+    Validates register entries and returns compliance verdict with mandatory actions.
+    """
+    params = req.parameters
+    status: str = "COMPLIANT"
+    findings: list[str] = []
+    actions: list[str] = []
+    reg_ref = "CMR 2017 General"
+
+    if req.register_type == "CMR_153_GAS_TESTING":
+        reg_ref = "CMR 2017 Reg 153 & 155"
+        ch4 = float(params.get("ch4_pct", 0) or 0)
+        co  = float(params.get("co_ppm",  0) or 0)
+        o2  = float(params.get("o2_pct",  21) or 21)
+
+        if ch4 >= 1.25:
+            status = "STATUTORY_BREACH"
+            findings.append(f"CRITICAL: CH4 at {ch4}% exceeds statutory 1.25% limit (CMR Reg 155).")
+            actions.append("Mandatory personnel withdrawal under Section 22 Mines Act 1952.")
+        elif ch4 >= 0.75:
+            status = "WARNING"
+            findings.append(f"WARNING: CH4 at {ch4}% exceeds 0.75% working limit (CMR Reg 155).")
+            actions.append("Isolate non-flameproof electrical equipment and course fresh air.")
+
+        if co > 25:
+            status = "STATUTORY_BREACH"
+            findings.append(f"CRITICAL: CO at {co} ppm exceeds 25 ppm statutory limit.")
+            actions.append("Immediate evacuation and investigation under CMR Reg 153.")
+        elif co > 10:
+            if status == "COMPLIANT":
+                status = "WARNING"
+            findings.append(f"WARNING: CO at {co} ppm above 10 ppm watch threshold.")
+            actions.append("Increase ventilation and monitor continuously.")
+
+        if o2 < 19.0:
+            status = "STATUTORY_BREACH"
+            findings.append(f"CRITICAL: O2 at {o2}% below 19.0% minimum statutory level.")
+            actions.append("Personnel evacuation and ventilation rectification required immediately.")
+        elif o2 < 19.5:
+            if status == "COMPLIANT":
+                status = "WARNING"
+            findings.append(f"WARNING: O2 at {o2}% approaching minimum threshold.")
+            actions.append("Increase fresh air coursing and retest in 30 minutes.")
+
+    elif req.register_type == "CMR_83_HAUL_ROAD":
+        reg_ref = "CMR 2017 Reg 83"
+        berm = float(params.get("berm_height_m", 0) or 0)
+        tyre = float(params.get("dumper_tyre_dia_m", 2) or 2)
+        speed_limit = float(params.get("posted_speed_kmh", 25) or 25)
+        actual_speed = float(params.get("actual_speed_kmh", 0) or 0)
+
+        if berm < tyre * 0.75:
+            status = "STATUTORY_BREACH"
+            findings.append(f"DEFECT: Berm height ({berm}m) < 0.75× tyre diameter (required: {round(tyre*0.75,2)}m).")
+            actions.append("Suspend haulage until berm is dozed to statutory height.")
+
+        if actual_speed > speed_limit:
+            if status == "COMPLIANT":
+                status = "WARNING"
+            findings.append(f"SPEED: Actual {actual_speed} km/h exceeds posted limit {speed_limit} km/h.")
+            actions.append("Issue speed violation notice to operator and review under CMR Reg 84.")
+
+    elif req.register_type == "CMR_129_OVERMAN_DAILY":
+        reg_ref = "CMR 2017 Reg 129"
+        workers = int(params.get("workers_deployed", 0) or 0)
+        permitted = int(params.get("permitted_strength", 0) or 0)
+        support_ratio = float(params.get("support_resistance_ratio", 1.0) or 1.0)
+
+        if permitted > 0 and workers > permitted:
+            status = "STATUTORY_BREACH"
+            findings.append(f"OVERDEPLOYMENT: {workers} workers exceed permitted {permitted} under Reg 129.")
+            actions.append("Withdraw excess personnel immediately and update deployment register.")
+
+        if support_ratio < 0.9:
+            if status == "COMPLIANT":
+                status = "WARNING"
+            findings.append(f"SUPPORT: Resistance ratio {support_ratio} below 0.9 safety threshold.")
+            actions.append("Halt face advance until support resistance is restored.")
+
+    if not findings:
+        findings.append("All parameters compliant with Coal Mines Regulations 2017.")
+    if not actions:
+        actions.append("Normal shift operations approved by AI compliance engine.")
+
+    return {
+        "is_compliant": status == "COMPLIANT",
+        "compliance_status": status,
+        "statutory_regulation": reg_ref,
+        "findings": findings,
+        "mandatory_statutory_actions": actions,
+        "verified_under_act": "The Mines Act, 1952 & Coal Mines Regulations 2017",
+        "mine_id": req.mine_id,
+        "seam_or_pit": req.seam_or_pit,
+        "register_type": req.register_type,
+        "engine": "server-side-rule-engine-v1"
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONTRACTOR GATE-PASS VERIFICATION
+# ─────────────────────────────────────────────────────────────────────────────
+
+class GatePassRequest(BaseModel):
+    contractor_name: str = ""
+    company: str = ""
+    dgms_cert_no: str = ""
+    cert_expiry: str = ""   # ISO date string e.g. "2026-12-31"
+    mine_id: int = 1
+    work_area: str = ""
+    is_blacklisted: bool = False
+
+@app.post("/api/contractor/verify-gate-pass", summary="Contractor Gate-Pass Verification Engine")
+async def verify_gate_pass(req: GatePassRequest):
+    """
+    Verifies contractor eligibility for mine site entry.
+    Checks DGMS certification validity, expiry date, and blacklist status.
+    """
+    from datetime import date
+    issues: list[str] = []
+    actions: list[str] = []
+    status: str = "APPROVED"
+
+    # Blacklist check
+    if req.is_blacklisted:
+        status = "DENIED"
+        issues.append(f"Contractor '{req.contractor_name}' is on the DGMS blacklist for this mine.")
+        actions.append("Entry refused. Escalate to Colliery Manager under DGMS Circular 2019.")
+
+    # DGMS cert number presence
+    if not req.dgms_cert_no or req.dgms_cert_no.strip() == "":
+        if status == "APPROVED":
+            status = "DENIED"
+        issues.append("No valid DGMS certification number provided.")
+        actions.append("Contractor must produce DGMS certificate before entry is permitted.")
+
+    # Expiry date check
+    if req.cert_expiry:
+        try:
+            expiry = date.fromisoformat(req.cert_expiry[:10])
+            today = date.today()
+            days_until_expiry = (expiry - today).days
+            if days_until_expiry < 0:
+                status = "DENIED"
+                issues.append(f"DGMS certificate expired {abs(days_until_expiry)} days ago (on {expiry}).")
+                actions.append("Entry denied. Renewal mandatory before site access under Mines Rules 1955.")
+            elif days_until_expiry <= 30:
+                if status == "APPROVED":
+                    status = "CONDITIONAL"
+                issues.append(f"Certificate expires in {days_until_expiry} days. Renewal imminent.")
+                actions.append("Permitted entry today. Contractor must submit renewal proof within 7 days.")
+        except ValueError:
+            if status == "APPROVED":
+                status = "CONDITIONAL"
+            issues.append("Certificate expiry date could not be parsed. Manual verification required.")
+            actions.append("Security to manually inspect original DGMS certificate before entry.")
+
+    # Work area validation
+    if not req.work_area or req.work_area.strip() == "":
+        if status == "APPROVED":
+            status = "CONDITIONAL"
+        issues.append("Work area not specified in gate pass.")
+        actions.append("Contractor must declare work zone before entering mine premises.")
+
+    if not issues:
+        issues.append(f"All DGMS checks passed for {req.contractor_name} ({req.company}).")
+    if not actions:
+        actions.append("Gate pass approved. Issue visitor ID badge and log entry time.")
+
+    return {
+        "status": status,
+        "is_approved": status == "APPROVED",
+        "contractor_name": req.contractor_name,
+        "company": req.company,
+        "mine_id": req.mine_id,
+        "issues": issues,
+        "required_actions": actions,
+        "dgms_cert_no": req.dgms_cert_no,
+        "engine": "gate-pass-verifier-v1"
+    }
 
 
 if __name__ == "__main__":

@@ -280,7 +280,7 @@ export default function MiningNewsIntelligence() {
     setLoading(true);
     try {
       const resp = await fetch(
-        `http://127.0.0.1:8000/api/news/mining-intelligence?limit=6&topic_filter=${topic}`,
+        `${import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:8000'}/api/news/mining-intelligence?limit=6&topic_filter=${topic}`,
         { signal: AbortSignal.timeout(10000) }
       );
       if (resp.ok) {

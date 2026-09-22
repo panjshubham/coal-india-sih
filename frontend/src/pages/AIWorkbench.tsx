@@ -2677,7 +2677,7 @@ function BermPanel() {
         if (!result?.auto_violation_ticket) return;
         try {
             await supabase.from('violations').insert([{
-                mine_id: 1,
+                mine_id: Number(import.meta.env.VITE_DEFAULT_MINE_ID) || 1,
                 category: 'safety',
                 severity: 'high',
                 status: 'open',

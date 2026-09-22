@@ -33,6 +33,7 @@ import { syncOfflineQueue } from './lib/offlineQueue';
 import { getPendingCount } from './services/db';
 import PitInspector from './pages/PitInspector';
 import StatutoryRegisters from './pages/StatutoryRegisters';
+import AdminTickets from './pages/AdminTickets';
 
 import PublicTracking from './pages/PublicTracking';
 import AutoTranslator from './components/AutoTranslator';
@@ -135,7 +136,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/mines-map" element={<GeospatialMap />} />
             
-            <Route path="/" element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<DashboardLayout />}>
               <Route path="dashboard/mine" element={<Navigate to="/dashboard/colliery" replace />} />
               <Route path="dashboard/colliery" element={
                 <ProtectedRoute allowedRoles={['mine_official', 'corporate', 'regulator']}>
@@ -187,6 +188,11 @@ function App() {
               <Route path="water-inrush" element={<WaterInrushAnalysis />} />
               <Route path="blast-lockdown" element={<BlastZoneLockdown />} />
               <Route path="help" element={<HelpSupport />} />
+              <Route path="admin-tickets" element={
+                <ProtectedRoute allowedRoles={['corporate']}>
+                  <AdminTickets />
+                </ProtectedRoute>
+              } />
             </Route>
           </Route>
 

@@ -151,11 +151,12 @@ export default function StatutoryRegisters() {
       register_type: registerType,
       parameters: getActiveParameters(),
       seam_or_pit: seamOrPit,
-      mine_id: 1
+      mine_id: Number(import.meta.env.VITE_DEFAULT_MINE_ID) || 1
     };
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/cmr/validate-entry', {
+      const AI_URL_LOCAL = import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:8000';
+      const res = await fetch(`${AI_URL_LOCAL}/api/cmr/validate-entry`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -167,41 +168,53 @@ export default function StatutoryRegisters() {
         throw new Error('AI Service offline');
       }
     } catch {
-      // Offline fallback rule simulation
-      const params = getActiveParameters();
-      let status: 'COMPLIANT' | 'WARNING' | 'STATUTORY_BREACH' = 'COMPLIANT';
-      const findings: string[] = [];
-      const actions: string[] = [];
+      if (import.meta.env.VITE_ALLOW_SIMULATION === 'true') {
+        // Offline fallback rule simulation (dev/demo only)
+        const params = getActiveParameters();
+        let status: 'COMPLIANT' | 'WARNING' | 'STATUTORY_BREACH' = 'COMPLIANT';
+        const findings: string[] = [];
+        const actions: string[] = [];
 
-      if (registerType === 'CMR_153_GAS_TESTING') {
-        const ch4 = Number(params.ch4_pct || 0);
-        if (ch4 >= 1.25) {
-          status = 'STATUTORY_BREACH';
-          findings.push(`CRITICAL: CH4 at ${ch4}% exceeds statutory 1.25% limit (CMR Reg 155).`);
-          actions.push('Mandatory personnel withdrawal under Section 22 Mines Act 1952.');
-        } else if (ch4 >= 0.75) {
-          status = 'WARNING';
-          findings.push(`WARNING: CH4 at ${ch4}% exceeds 0.75% working limit (CMR Reg 155).`);
-          actions.push('Isolate non-flameproof electrical equipment and coursing fresh air.');
+        if (registerType === 'CMR_153_GAS_TESTING') {
+          const ch4 = Number(params.ch4_pct || 0);
+          if (ch4 >= 1.25) {
+            status = 'STATUTORY_BREACH';
+            findings.push(`CRITICAL: CH4 at ${ch4}% exceeds statutory 1.25% limit (CMR Reg 155).`);
+            actions.push('Mandatory personnel withdrawal under Section 22 Mines Act 1952.');
+          } else if (ch4 >= 0.75) {
+            status = 'WARNING';
+            findings.push(`WARNING: CH4 at ${ch4}% exceeds 0.75% working limit (CMR Reg 155).`);
+            actions.push('Isolate non-flameproof electrical equipment and coursing fresh air.');
+          }
+        } else if (registerType === 'CMR_83_HAUL_ROAD') {
+          const berm = Number(params.berm_height_m || 0);
+          const tyre = Number(params.dumper_tyre_dia_m || 2);
+          if (berm < tyre * 0.75) {
+            status = 'STATUTORY_BREACH';
+            findings.push(`DEFECT: Berm height (${berm}m) < 0.75x tyre diameter (${tyre * 0.75}m).`);
+            actions.push('Suspend haulage until berm is dozed to statutory height.');
+          }
         }
-      } else if (registerType === 'CMR_83_HAUL_ROAD') {
-        const berm = Number(params.berm_height_m || 0);
-        const tyre = Number(params.dumper_tyre_dia_m || 2);
-        if (berm < tyre * 0.75) {
-          status = 'STATUTORY_BREACH';
-          findings.push(`DEFECT: Berm height (${berm}m) < 0.75x tyre diameter (${tyre * 0.75}m).`);
-          actions.push('Suspend haulage until berm is dozed to statutory height.');
-        }
+
+        setAiVerdict({
+          is_compliant: status === 'COMPLIANT',
+          compliance_status: status,
+          statutory_regulation: registerType === 'CMR_153_GAS_TESTING' ? 'CMR 2017 Reg 153/155' : 'CMR 2017 Reg 83',
+          findings: findings.length ? findings : ['All parameters compliant with Coal Mines Regulations 2017.'],
+          mandatory_statutory_actions: actions.length ? actions : ['Normal shift operations approved.'],
+          verified_under_act: 'The Mines Act, 1952 & CMR 2017 (Offline Simulation)'
+        });
+      } else {
+        // Production: show a clear offline indicator instead of faking results
+        setAiVerdict({
+          is_compliant: false,
+          compliance_status: 'WARNING',
+          statutory_regulation: 'N/A',
+          findings: ['AI compliance service is offline. Configure VITE_AI_SERVICE_URL to enable real-time statutory validation.'],
+          mandatory_statutory_actions: ['Manual verification by a certified Overman or Mining Engineer is required.'],
+          verified_under_act: 'Manual Review Required'
+        });
       }
-
-      setAiVerdict({
-        is_compliant: status === 'COMPLIANT',
-        compliance_status: status,
-        statutory_regulation: registerType === 'CMR_153_GAS_TESTING' ? 'CMR 2017 Reg 153/155' : 'CMR 2017 Reg 83',
-        findings: findings.length ? findings : ['All parameters compliant with Coal Mines Regulations 2017.'],
-        mandatory_statutory_actions: actions.length ? actions : ['Normal shift operations approved.'],
-        verified_under_act: 'The Mines Act, 1952 & CMR 2017 (Offline Rule Engine)'
-      });
     } finally {
       setIsCheckingAi(false);
     }
@@ -246,7 +259,7 @@ export default function StatutoryRegisters() {
       // Hash generation
       const lastHash = records[0]?.hash || '0000000000000000000000000000000000000000000000000000000000000000';
       const recordPayload = JSON.stringify({
-        mine_id: 1,
+        mine_id: Number(import.meta.env.VITE_DEFAULT_MINE_ID) || 1,
         register_type: registerType,
         shift,
         seam_or_pit: seamOrPit,
@@ -261,7 +274,7 @@ export default function StatutoryRegisters() {
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
       const insertData = {
-        mine_id: 1,
+        mine_id: Number(import.meta.env.VITE_DEFAULT_MINE_ID) || 1,
         register_type: registerType,
         shift,
         seam_or_pit: seamOrPit,
