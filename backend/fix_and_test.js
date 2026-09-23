@@ -1,20 +1,14 @@
 import { Client } from 'pg';
 import { createClient } from '@supabase/supabase-js';
+import { createPgClient } from './dbClient.js';
 
 const supabase = createClient(
-  'https://pkynukxdzwlywrxcwtay.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBreW51a3hkendseXdyeGN3dGF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDA3NjMsImV4cCI6MjEwNDAxNjc2M30.luGy7zinkS9I7m1AXw3MwANXYA759MOtP2aj6JnifDE'
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
 );
 
 async function fixAndTest() {
-  const client = new Client({
-    host: 'aws-0-ap-southeast-1.pooler.supabase.com',
-    port: 6543,
-    database: 'postgres',
-    user: 'postgres.pkynukxdzwlywrxcwtay',
-    password: 'Shubham@123',
-    ssl: { rejectUnauthorized: false }
-  });
+  const client = createPgClient();
 
   await client.connect();
 

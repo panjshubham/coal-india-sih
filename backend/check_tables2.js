@@ -1,6 +1,7 @@
 import pg from 'pg';
+import { createPgClient } from './dbClient.js';
 const { Client } = pg;
-const client = new Client({ connectionString: 'postgresql://postgres:Shubham%40123@db.pkynukxdzwlywrxcwtay.supabase.co:5432/postgres' });
+const client = createPgClient();
 async function run() {
   await client.connect();
   const res = await client.query("SELECT table_name, table_type FROM information_schema.tables WHERE table_schema = 'public'");

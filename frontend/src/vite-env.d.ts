@@ -5,7 +5,9 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY: string;
   readonly VITE_AI_SERVICE_URL: string;
   readonly VITE_CARTO_API_KEY?: string;
-  readonly VITE_HF_API_TOKEN?: string;
+  // NOTE: never add a build-time Hugging Face token here. Vite inlines VITE_*
+  // into the public bundle; use the runtime/localStorage token or ai-service's
+  // server-side HF_API_TOKEN instead.
   // Mine configuration
   readonly VITE_DEFAULT_MINE_ID?: string;
   // Feature flags

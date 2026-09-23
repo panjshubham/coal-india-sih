@@ -1,7 +1,8 @@
 import { Client } from 'pg';
 import crypto from 'crypto';
+import { createPgClient } from './dbClient.js';
 
-const client = new Client({ connectionString: 'postgresql://postgres:Shubham%40123@db.pkynukxdzwlywrxcwtay.supabase.co:5432/postgres' });
+const client = createPgClient();
 
 const minesData = [
   // 12 specific mines

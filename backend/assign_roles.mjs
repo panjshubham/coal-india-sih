@@ -1,8 +1,7 @@
 import pg from 'pg';
+import { createPgClient } from './dbClient.js';
 const { Client } = pg;
-const client = new Client({
-  connectionString: 'postgresql://postgres:Shubham%40123@db.pkynukxdzwlywrxcwtay.supabase.co:5432/postgres'
-});
+const client = createPgClient();
 await client.connect();
 
 const users = [

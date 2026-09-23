@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // Use service role key to create auth users
 const supabase = createClient(
-  'https://pkynukxdzwlywrxcwtay.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBreW51a3hkendseXdyeGN3dGF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDA3NjMsImV4cCI6MjEwNDAxNjc2M30.luGy7zinkS9I7m1AXw3MwANXYA759MOtP2aj6JnifDE',
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
@@ -11,9 +11,9 @@ const supabase = createClient(
 // Let's try signing up instead
 async function seedUsers() {
   const users = [
-    { email: 'corporate@coalguard.in', password: 'Admin@123', name: 'Director General', role: 'corporate', mine_id: null },
-    { email: 'mine@coalguard.in', password: 'Admin@123', name: 'Mine Safety Officer', role: 'mine_official', mine_id: 1 },
-    { email: 'regulator@coalguard.in', password: 'Admin@123', name: 'DGMS Inspector', role: 'regulator', mine_id: null },
+    { email: 'corporate@coalguard.in', password: process.env.SEED_USER_PASSWORD, name: 'Director General', role: 'corporate', mine_id: null },
+    { email: 'mine@coalguard.in', password: process.env.SEED_USER_PASSWORD, name: 'Mine Safety Officer', role: 'mine_official', mine_id: 1 },
+    { email: 'regulator@coalguard.in', password: process.env.SEED_USER_PASSWORD, name: 'DGMS Inspector', role: 'regulator', mine_id: null },
   ];
 
   for (const u of users) {

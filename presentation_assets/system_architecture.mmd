@@ -27,7 +27,8 @@ flowchart LR
         AuditChain["🔒 Cryptographic Audit Ledger<br/>• SHA-256 Chained Hash Sequence<br/>• Tamper-Proof Statutory Ledger"]
         Escalation["⏰ Escalation CRON Matrix<br/>• 2h → Colliery Manager<br/>• 24h → Subsidiary HQ"]
 
-        LanCable -->|"Direct High-Speed LAN Feed"| MQTT --> PostgreSQL
+        LanCable -->|"Direct High-Speed LAN Feed"| MQTT
+        MQTT --> PostgreSQL
         SyncDaemon -->|"Instant LAN / Reconnect Sync"| PostgreSQL
         PostgreSQL --> AuditChain
         PostgreSQL -.-> Escalation
@@ -44,7 +45,7 @@ flowchart LR
             Cockpit["🗺️ Spatial GIS Web Cockpit<br/>(React-Leaflet + CARTO Dark Engine)"]
             BlastLock["🚨 Blast Zone Lockdown<br/>(Geofenced Evacuation Siren)"]
             CorpDash["📊 Corporate HQ Dashboard<br/>(Live Violations & GIS Heatmap)"]
-            RegulatorPortal["🏛️ DGMS Regulator Portal<br/>(Hash-Verified Audit & Forms I–V)"]
+            RegulatorPortal["🏛️ DGMS Regulator Portal<br/>(Hash-Verified Audit & Forms I-V)"]
         end
 
         subgraph ANALYTICS_UI ["Specialized AI & Statutory Analytics"]
@@ -54,7 +55,7 @@ flowchart LR
             FormVReport["📑 1-Click Form V PDF Export<br/>(Cryptographic Audit Report)"]
         end
 
-        COCKPITS ~~~ ANALYTICS_UI
+        Cockpit ~~~ WaterUI
     end
 
     %% ─────────────────────────────────────────────────────────────
@@ -62,8 +63,8 @@ flowchart LR
     %% ─────────────────────────────────────────────────────────────
     subgraph BOTTOM_RIGHT["4. 10-MODEL AI & PREDICTIVE INTELLIGENCE (FastAPI)"]
         direction LR
-        PPEMonitor["👁️ PPE Safety Vision<br/>(YOLOv8n &lt;45ms)"]
-        WaterInrush["💧 CLSSA-XGBoost Water Inrush<br/>(Hydrochemical Model &lt;1s)"]
+        PPEMonitor["👁️ PPE Safety Vision<br/>(YOLOv8n under 45ms)"]
+        WaterInrush["💧 CLSSA-XGBoost Water Inrush<br/>(Hydrochemical Model under 1s)"]
         RiskModel["📈 Predictive Risk Regressor<br/>(XGBoost + TreeSHAP 0-100)"]
         VoiceNLP["🎙️ Multilingual Voice & NLP<br/>(Whisper-v3 + IndicTrans2 + BART)"]
         DocOCR["📄 Document Digitization<br/>(TrOCR-large + Donut-base)"]
@@ -79,8 +80,8 @@ flowchart LR
     PostgreSQL -->|"Geofence Alerts"| BlastLock
     AuditChain -->|"Verified Hash Feed"| RegulatorPortal
 
-    PostgreSQL <-->|"Feature Vectors"| RiskModel
-    PostgreSQL <-->|"Hydrochemical Ions"| WaterInrush
+    PostgreSQL -->|"Feature Vectors"| RiskModel
+    PostgreSQL -->|"Hydrochemical Ions"| WaterInrush
     WaterInrush -->|"SHAP Feature Attribution"| WaterUI
 
     OfflineApp -.->|"RTSP / Snapshot Feed"| PPEMonitor

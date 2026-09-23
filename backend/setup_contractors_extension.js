@@ -1,22 +1,16 @@
 import { Client } from 'pg';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import { createPgClient } from './dbClient.js';
 dotenv.config();
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://pkynukxdzwlywrxcwtay.supabase.co';
-const SUPABASE_KEY = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBreW51a3hkendseXdyeGN3dGF5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODQ0MDc2MywiZXhwIjoyMTA0MDE2NzYzfQ.hC2QoX0M97sJ2wz0m_mH0M_rFwD9mC_5O9p9_5K8_Z8'; // fallback for demo
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY; // fallback for demo
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function setup() {
-  const client = new Client({
-    host: 'aws-0-ap-southeast-1.pooler.supabase.com',
-    port: 6543,
-    database: 'postgres',
-    user: 'postgres.pkynukxdzwlywrxcwtay',
-    password: 'Shubham@123',
-    ssl: { rejectUnauthorized: false }
-  });
+  const client = createPgClient();
   await client.connect();
   console.log('Connected to PG');
 

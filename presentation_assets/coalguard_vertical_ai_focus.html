@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CoalGuard — AI Smart Governance for Coal Mines (Vertical / AI-Focus)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cy:#38bdf8;--tl:#2dd4bf;--am:#fbbf24;--rs:#fb7185;--vi:#a78bfa;--em:#34d399;
+  --ink:#eaf3ff;--mut:#9fb8d4;--pnl:rgba(255,255,255,.055);--bd:rgba(125,205,255,.22);
+}
+html,body{background:#050d1b;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;
+  color:var(--ink);-webkit-font-smoothing:antialiased;display:flex;justify-content:center}
+#slide{width:1320px;height:2090px;overflow:hidden;position:relative;padding:16px 18px 12px;
+  display:flex;flex-direction:column;gap:8px;
+  background:radial-gradient(1100px 700px at 50% -10%,#123a63 0%,transparent 60%),
+             linear-gradient(168deg,#071527 0%,#0b2745 42%,#0a2f4d 72%,#082036 100%)}
+#slide::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(120,200,255,.045) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(120,200,255,.045) 1px,transparent 1px);
+  background-size:26px 26px}
+/* ── header ─────────────────────────────────────────────── */
+.hdr{display:flex;align-items:center;gap:14px;position:relative;z-index:2;padding:4px 2px 8px;
+  border-bottom:2px solid rgba(56,189,248,.35)}
+.shield{width:58px;height:58px;flex:none;border-radius:14px;
+  background:linear-gradient(150deg,#0e7490,#155e75 55%,#1e3a8a);
+  border:1.5px solid rgba(125,211,252,.6);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 26px rgba(56,189,248,.35)}
+.hdr h1{flex:1;font-size:40px;font-weight:800;letter-spacing:-.4px;line-height:1.08}
+.hdr h1 span{color:var(--cy)}
+.hdr .sub{margin-top:6px;font-size:14.5px;color:var(--mut);letter-spacing:.3px;font-weight:600}
+.sih{flex:none;text-align:right;font-size:10.5px;font-weight:700;letter-spacing:.9px;
+  text-transform:uppercase;color:var(--mut);border-left:3px solid var(--am);padding-left:10px;line-height:1.55}
+.sih b{display:block;color:var(--am);font-size:13px;letter-spacing:.6px}
+.sih i{display:block;font-style:normal;color:#cfe6ff;font-size:10.5px;margin-top:2px}
+/* ── section frames ────────────────────────────────────── */
+.sec{position:relative;z-index:2;border:1.5px solid var(--bd);border-radius:14px;padding:9px 11px 11px;
+  background:linear-gradient(180deg,rgba(10,32,58,.86),rgba(8,24,44,.72))}
+.sec.hero{border-color:rgba(56,189,248,.55);
+  background:linear-gradient(180deg,rgba(12,44,76,.94),rgba(8,26,48,.8));
+  box-shadow:0 0 0 1px rgba(56,189,248,.12) inset,0 18px 46px -22px rgba(56,189,248,.5)}
+.band{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.bnum{font-size:10.5px;font-weight:800;letter-spacing:1.4px;color:#04263f;background:var(--cy);
+  border-radius:5px;padding:4px 9px;white-space:nowrap}
+.hero .bnum{background:var(--am);color:#3b2400}
+.band h2{font-size:24px;font-weight:800;letter-spacing:.2px}
+.band .tag{margin-left:auto;font-size:10.5px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;
+  color:var(--mut);border:1.2px solid var(--bd);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.hero .band .tag{color:var(--am);border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.08)}
+/* ── section 1 tiles ───────────────────────────────────── */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.tile{border:1.3px solid var(--bd);border-radius:11px;padding:9px 8px 10px;text-align:center;
+  background:var(--pnl);display:flex;flex-direction:column;align-items:center;gap:6px}
+.tile .ic{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;
+  background:rgba(251,113,133,.12);border:1.2px solid rgba(251,113,133,.4)}
+.tile b{font-size:13.5px;line-height:1.22;font-weight:800}
+.tile small{font-size:10.8px;color:var(--mut);line-height:1.28;font-weight:600}
+/* ── arrows ────────────────────────────────────────────── */
+.arrow{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:4px;
+  color:var(--cy);font-size:10px;font-weight:800;letter-spacing:1.4px}
+.arrow i{display:block;width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;
+  border-top:16px solid var(--cy);filter:drop-shadow(0 0 8px rgba(56,189,248,.6))}
+/* ── AI core strip ─────────────────────────────────────── */
+.core{display:flex;align-items:center;gap:12px;border:1.4px solid rgba(251,191,36,.42);border-radius:12px;
+  padding:9px 13px;background:linear-gradient(90deg,rgba(251,191,36,.14),rgba(56,189,248,.09))}
+.core .ck{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:linear-gradient(150deg,#0e7490,#1e3a8a);border:1.4px solid rgba(125,211,252,.65)}
+.core .ct{flex:1}
+.core .ct b{font-size:15.5px;font-weight:800;letter-spacing:.4px}
+.core .ct p{font-size:11.4px;color:#cfe6ff;margin-top:2px;line-height:1.35}
+.klift{display:flex;flex-direction:column;gap:4px}
+.klift span{font-size:10.3px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;white-space:nowrap;
+  border-radius:6px;padding:3px 8px;background:rgba(56,189,248,.14);border:1.1px solid rgba(56,189,248,.4)}
+/* ── AI categories ─────────────────────────────────────── */
+.cat{border:1.3px solid var(--bd);border-radius:12px;padding:8px 10px 10px;background:var(--pnl);margin-top:8px}
+.cat-hd{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.cat-hd .k{width:26px;height:26px;border-radius:7px;flex:none;display:grid;place-items:center;
+  font-size:10.5px;font-weight:800;color:#052033}
+.cat-hd h3{font-size:15px;font-weight:800;letter-spacing:.3px}
+.cat-hd .note{margin-left:auto;font-size:10.4px;color:var(--mut);font-weight:600;letter-spacing:.2px}
+.cards{display:grid;gap:7px}
+.c2{grid-template-columns:1fr 1fr}
+.c3{grid-template-columns:1fr 1fr 1fr}
+.c4{grid-template-columns:repeat(4,1fr)}
+.card{border:1.15px solid var(--bd);border-radius:9px;padding:7px 9px 8px;background:rgba(4,18,34,.55)}
+.card .top{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.glyph{width:30px;height:30px;border-radius:8px;flex:none;display:grid;place-items:center;
+  font-size:9.6px;font-weight:900;letter-spacing:.2px;color:#04212f;text-align:center;line-height:1.05}
+.card h4{font-size:12.4px;font-weight:800;line-height:1.2}
+.card .mdl{font-size:9.7px;font-weight:700;letter-spacing:.3px;color:var(--cy);
+  font-family:Consolas,'JetBrains Mono',monospace}
+.card p{font-size:10.9px;line-height:1.34;color:#d5e6f8}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.chip{font-size:9.3px;font-weight:800;letter-spacing:.35px;text-transform:uppercase;border-radius:5px;
+  padding:2.5px 6px;background:rgba(45,212,191,.13);border:1px solid rgba(45,212,191,.42);color:#a7f3e4}
+.chip.am{background:rgba(251,191,36,.13);border-color:rgba(251,191,36,.45);color:#fde68a}
+.chip.vi{background:rgba(167,139,250,.14);border-color:rgba(167,139,250,.45);color:#ddd6fe}
+.chip.rs{background:rgba(251,113,133,.14);border-color:rgba(251,113,133,.45);color:#fecdd3}
+/* ── fixture images ────────────────────────────────────── */
+.fixtures{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.fx{border:1.2px solid var(--bd);border-radius:9px;overflow:hidden;background:#fff}
+.fx img{width:100%;height:130px;object-fit:contain;display:block;background:#fff}
+.fx .cap{font-size:9.9px;font-weight:800;letter-spacing:.2px;padding:4px 6px;text-align:center}
+.fx .cap.ok{background:#dcfce7;color:#14532d}
+.fx .cap.no{background:#fee2e2;color:#7f1d1d}
+.docfx{display:grid;grid-template-columns:200px 1fr;gap:9px;align-items:center;margin-top:7px}
+.docfx .im{border:1.2px solid var(--bd);border-radius:9px;overflow:hidden;background:#fff}
+.docfx .im img{width:100%;height:120px;object-fit:contain;display:block}
+.docfx .rd{border:1.2px solid var(--bd);border-radius:9px;padding:7px 9px;background:rgba(4,18,34,.5)}
+.docfx .rd b{font-size:10.6px;font-weight:800;letter-spacing:.3px;display:block;margin-bottom:4px}
+.docfx .rd span{font-size:9.5px;font-weight:700;border-radius:5px;padding:2px 6px;margin:2px 3px 0 0;
+  display:inline-block;background:rgba(255,255,255,.07);border:1px solid var(--bd);
+  font-family:Consolas,'JetBrains Mono',monospace}
+/* ── pipelines ─────────────────────────────────────────── */
+.pipes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.pipe{border:1.3px solid rgba(56,189,248,.4);border-radius:11px;padding:8px 9px 9px;
+  background:linear-gradient(180deg,rgba(56,189,248,.1),rgba(4,18,34,.5))}
+.pipe .ph{display:flex;align-items:center;gap:7px;font-size:11.2px;font-weight:800;letter-spacing:.25px;
+  margin-bottom:6px}
+.pipe .ph .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.steps{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.step{font-size:9.5px;font-weight:700;border-radius:6px;padding:3px 6px;background:rgba(255,255,255,.07);
+  border:1px solid var(--bd);color:#e4f1ff;white-space:nowrap}
+.sep{color:var(--cy);font-size:10px;font-weight:800}
+/* ── trust layer ───────────────────────────────────────── */
+.trust{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.tcard{border:1.2px solid var(--bd);border-radius:10px;padding:8px 9px;background:rgba(4,18,34,.5)}
+.tcard b{display:block;font-size:11.3px;font-weight:800;margin-bottom:3px}
+.tcard p{font-size:10.2px;line-height:1.32;color:#cfe0f4}
+/* ── outcomes ──────────────────────────────────────────── */
+.out{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.ocard{border:1.3px solid rgba(52,211,153,.4);border-radius:11px;padding:10px 9px;text-align:center;
+  background:linear-gradient(180deg,rgba(52,211,153,.12),rgba(4,18,34,.5));display:flex;
+  flex-direction:column;align-items:center;gap:6px}
+.ocard .ic{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;
+  background:rgba(52,211,153,.15);border:1.2px solid rgba(52,211,153,.45)}
+.ocard b{font-size:13px;font-weight:800;line-height:1.2}
+.ocard small{font-size:10.4px;color:#bfe9d8;font-weight:600;line-height:1.28}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.stat{border:1.2px solid var(--bd);border-radius:10px;padding:9px 8px;background:rgba(4,18,34,.5);text-align:center}
+.stat u{display:block;text-decoration:none;font-size:20px;font-weight:900;color:var(--am);letter-spacing:-.5px}
+.stat span{font-size:9.7px;font-weight:700;letter-spacing:.4px;color:var(--mut);text-transform:uppercase;
+  line-height:1.25;display:block;margin-top:2px}
+/* ── footer ────────────────────────────────────────────── */
+.ftr{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-top:1.6px solid rgba(56,189,248,.3);padding-top:7px;font-size:10.5px;font-weight:700;
+  letter-spacing:.5px;color:var(--mut);text-transform:uppercase}
+.ftr b{color:var(--cy)}
+</style>
+</head>
+<body>
+<div id="slide">
+<!-- ══════════ HEADER ══════════ -->
+<div class="hdr">
+  <div class="shield">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2.5 4.5 6v6c0 5 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.5 7.5-9.5V6z"/>
+      <path d="m8.8 12.2 2.3 2.3 4.3-4.6"/>
+    </svg>
+  </div>
+  <div class="hst">
+    <h1>CoalGuard: <span>AI Smart Governance</span> for Coal Mines</h1>
+    <div class="sub">Vertical deck · AI Innovation deep-dive · 9 model families · 35 live AI endpoints · offline-first mine deployment</div>
+  </div>
+  <div class="sih">
+    <b>SIH 2026</b>
+    <i>PS ID 26024</i>
+    <i>Ministry of Coal</i>
+  </div>
+</div>
+
+<!-- ══════════ SECTION 1 — THE PROBLEM ══════════ -->
+<div class="sec">
+  <div class="band">
+    <span class="bnum">SECTION 1</span>
+    <h2>The Problem</h2>
+    <span class="tag">Why mines still run on paper</span>
+  </div>
+  <div class="tiles">
+    <div class="tile">
+      <div class="ic">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7.5z"/>
+          <path d="M14 3v5h5M9 13h6M9 17h4"/>
+        </svg>
+      </div>
+      <b>Paper-based<br>Forms</b>
+      <small>Registers, gate passes &amp; circulars filled by hand — unsearchable and unverifiable</small>
+    </div>
+    <div class="tile">
+      <div class="ic">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="13" r="8"/><path d="M12 9v5l3 2M9 2h6"/>
+        </svg>
+      </div>
+      <b>Delayed<br>Escalations</b>
+      <small>Violations reach the GM days later, after the hazard window has already closed</small>
+    </div>
+    <div class="tile">
+      <div class="ic">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8a15 15 0 0 1 18 0"/><path d="M6 12a10 10 0 0 1 12 0"/><path d="M9 15.6a5 5 0 0 1 6 0"/>
+          <circle cx="12" cy="19" r="1.2" fill="#fb7185"/>
+          <path d="M4 4l16 16"/>
+        </svg>
+      </div>
+      <b>Zero<br>Underground Signal</b>
+      <small>No SIM, no Wi-Fi, no GPS at the face — cloud-only apps simply stop working</small>
+    </div>
+    <div class="tile">
+      <div class="ic">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.3 3.6 2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/>
+          <path d="M12 9v4.5M12 17h.01"/>
+        </svg>
+      </div>
+      <b>Safety Hazards &amp;<br>Compliance Gaps</b>
+      <small>PPE misses, water-inrush risk and statutory lapses caught only after an audit or an accident</small>
+    </div>
+  </div>
+</div>
+
+<div class="arrow"><span>AI LAYER</span><i></i></div>
+<!-- ══════════ SECTION 2 — AI INNOVATION (HERO) ══════════ -->
+<div class="sec hero">
+  <div class="band">
+    <span class="bnum">SECTION 2</span>
+    <h2>AI Innovation</h2>
+    <span class="tag">Deep-dive · the engine room</span>
+  </div>
+
+  <div class="core">
+    <div class="ck">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="8" width="8" height="8" rx="1.6"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>
+      </svg>
+    </div>
+    <div class="ct">
+      <b>CoalGuard AI Core — one multi-modal inference service, 9 model families, 35 endpoints</b>
+      <p>Vision · language · speech · tabular ML · explainability — chained into 3 production pipelines that turn a raw photo, a voice note or a scanned register into a statutory action.</p>
+    </div>
+    <div class="klift">
+      <span>Offline-first PWA</span>
+      <span>FastAPI + FastAI stack</span>
+      <span>Human-in-the-loop</span>
+    </div>
+  </div>
+
+  <!-- ── CATEGORY A ── -->
+  <div class="cat">
+    <div class="cat-hd">
+      <span class="k" style="background:#38bdf8">A</span>
+      <h3>Computer Vision &amp; Perception</h3>
+      <span class="note">See every face, vest and hazard — without a network</span>
+    </div>
+    <div class="cards c3">
+      <div class="card">
+        <div class="top">
+          <span class="glyph" style="background:#38bdf8">YOLO<br>v8</span>
+          <h4>PPE &amp; Safety Gear Detection</h4>
+        </div>
+        <div class="mdl">yolov8n-ppe · ultralytics · conf ≥ 0.25</div>
+        <p>Detects <b>Hardhat / NO-Hardhat / Safety Vest / NO-Safety Vest / Person</b> and maps each miss to the mine zone it happened in.</p>
+        <div class="chips"><span class="chip">6 classes</span><span class="chip am">zonal map</span></div>
+      </div>
+      <div class="card">
+        <div class="top">
+          <span class="glyph" style="background:#2dd4bf">EVT<br>BUS</span>
+          <h4>Live Camera Violation Stream</h4>
+        </div>
+        <div class="mdl">/api/ppe/live-event · batch-events</div>
+        <p>Camera monitors push events into a FastAPI event bus; batch ingestion keeps it viable for thousands of frames per shift.</p>
+        <div class="chips"><span class="chip">batch ingest</span><span class="chip am">24h window</span></div>
+      </div>
+      <div class="card">
+        <div class="top">
+          <span class="glyph" style="background:#a78bfa">IMG<br>→TCK</span>
+          <h4>Photo → Auto Violation Ticket</h4>
+        </div>
+        <div class="mdl">/api/pipeline/photo-inspection</div>
+        <p>One inspection photo runs the YOLOv8 chain and returns a ready-to-sign violation ticket with evidence, zone and confidence.</p>
+        <div class="chips"><span class="chip">1-click</span><span class="chip vi">audit-ready</span></div>
+      </div>
+    </div>
+    <div class="fixtures">
+      <div class="fx">
+        <img src="../test_assets/worker_with_ppe.png" alt="Worker wearing helmet and safety vest">
+        <div class="cap ok">✓ COMPLIANT — helmet + vest detected, zero violations raised</div>
+      </div>
+      <div class="fx">
+        <img src="../test_assets/student_no_ppe.png" alt="Person without PPE">
+        <div class="cap no">✗ VIOLATION — NO-Hardhat / NO-Safety Vest → ticket auto-generated</div>
+      </div>
+    </div>
+  </div>
+<!--NEXT-->
+
+
+</div>
+</body>
+</html>

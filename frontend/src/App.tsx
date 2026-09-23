@@ -136,7 +136,12 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/mines-map" element={<GeospatialMap />} />
             
-            <Route path="/dashboard" element={<DashboardLayout />}>
+            {/* NOTE: this layout route is intentionally PATHLESS — every child below uses an
+                absolute path. Adding a `path` here would prefix it onto every child and break
+                all sidebar / AlertBell / role-redirect links. */}
+
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<Navigate to="/dashboard/colliery" replace />} />
               <Route path="dashboard/mine" element={<Navigate to="/dashboard/colliery" replace />} />
               <Route path="dashboard/colliery" element={
                 <ProtectedRoute allowedRoles={['mine_official', 'corporate', 'regulator']}>

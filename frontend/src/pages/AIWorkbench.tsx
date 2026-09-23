@@ -14,12 +14,16 @@ import BiometricLoginModal from '../components/BiometricLoginModal';
 
 const AI_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://127.0.0.1:8000';
 
+/**
+ * Returns the Hugging Face token in use, if the operator has supplied one at
+ * runtime (stored in localStorage only).
+ *
+ * SECURITY: a build-time VITE_HF_API_TOKEN must NEVER be used here — Vite inlines
+ * `import.meta.env.VITE_*` into the public JS bundle, which would leak the token
+ * to every visitor. Server-side AI calls use ai-service's HF_API_TOKEN instead.
+ */
 export function getActiveHfToken(): string {
-    return (
-        localStorage.getItem('HF_API_TOKEN') ||
-        import.meta.env.VITE_HF_API_TOKEN ||
-        ''
-    ).trim();
+    return (localStorage.getItem('HF_API_TOKEN') || '').trim();
 }
 
 // ── Text to Speech Helper ──────────────────────────────────────────
@@ -2910,9 +2914,8 @@ export default function AIWorkbench() {
             setHfStatus({ checked: true, configured: true });
         } else {
             localStorage.removeItem('HF_API_TOKEN');
-            const fallbackToken = (import.meta.env.VITE_HF_API_TOKEN || '').trim();
-            setCurrentToken(fallbackToken);
-            setHfStatus({ checked: true, configured: Boolean(fallbackToken) });
+            setCurrentToken('');
+            setHfStatus({ checked: true, configured: false });
         }
         setSaveSuccess(true);
         setTimeout(() => {
@@ -3041,13 +3044,9 @@ export default function AIWorkbench() {
                         )}
 
                         <div className="flex items-center justify-between pt-2">
-                            <button
-                                type="button"
-                                onClick={() => setTokenInput(import.meta.env.VITE_HF_API_TOKEN || '')}
-                                className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 underline"
-                            >
-                                Reset to default token
-                            </button>
+                            <span className="text-xs text-slate-600 dark:text-slate-400">
+                                Tokens are stored in this browser only (localStorage).
+                            </span>
                             <div className="flex items-center gap-2">
                                 <button
                                     type="button"

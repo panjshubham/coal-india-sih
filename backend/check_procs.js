@@ -1,15 +1,9 @@
 import { Client } from 'pg';
 import fs from 'fs';
+import { createPgClient } from './dbClient.js';
 
 async function checkProcs() {
-  const client = new Client({
-    host: 'aws-0-ap-southeast-1.pooler.supabase.com',
-    port: 6543,
-    database: 'postgres',
-    user: 'postgres.pkynukxdzwlywrxcwtay',
-    password: 'Shubham@123',
-    ssl: { rejectUnauthorized: false }
-  });
+  const client = createPgClient();
   await client.connect();
 
   const procs = await client.query(`

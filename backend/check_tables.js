@@ -1,5 +1,6 @@
 import { Client } from 'pg';
-const client = new Client({ connectionString: 'postgresql://postgres:Shubham%40123@db.pkynukxdzwlywrxcwtay.supabase.co:5432/postgres' });
+import { createPgClient } from './dbClient.js';
+const client = createPgClient();
 async function run() {
   await client.connect();
   const res = await client.query(`
