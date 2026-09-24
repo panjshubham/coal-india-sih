@@ -9,8 +9,12 @@ import LanguageSelector from '../components/LanguageSelector';
 import BiometricLoginModal, { type HQPersonnel } from '../components/BiometricLoginModal';
 
 export default function Login() {
+  // Demo password convenience: only pre-filled when the operator explicitly
+  // configured VITE_DEMO_PASSWORD (dev/demo only). Never hardcode a real
+  // password here — this file ships in the public JS bundle.
+  const demoPassword = import.meta.env.VITE_DEMO_PASSWORD as string | undefined;
   const [email, setEmail] = useState('corporate@coalguard.demo');
-  const [password, setPassword] = useState('Demo@2026');
+  const [password, setPassword] = useState(demoPassword ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -85,13 +89,13 @@ export default function Login() {
     setError(null);
     if (roleType === 'corporate') {
       setEmail('corporate@coalguard.demo');
-      setPassword('Demo@2026');
+      setPassword(demoPassword ?? '');
     } else if (roleType === 'mine_official') {
       setEmail('mine_official@coalguard.demo');
-      setPassword('Demo@2026');
+      setPassword(demoPassword ?? '');
     } else if (roleType === 'regulator') {
       setEmail('regulator@coalguard.demo');
-      setPassword('Demo@2026');
+      setPassword(demoPassword ?? '');
     }
   };
 
@@ -171,7 +175,7 @@ export default function Login() {
               <span className="flex items-center gap-1.5">
                 <KeyRound className="w-3.5 h-3.5" /> Pre-Seeded Demo Roles
               </span>
-              <span className="text-[10px] text-slate-600 dark:text-slate-400 font-normal">Password: Demo@2026</span>
+              <span className="text-[10px] text-slate-600 dark:text-slate-400 font-normal">{demoPassword ? `Password: ${demoPassword}` : 'Password: (ask admin)'}</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <button
@@ -240,7 +244,7 @@ export default function Login() {
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                   Password
                 </label>
-                <span className="text-[11px] text-slate-600 dark:text-slate-400">Standard Demo Password: <span className="font-mono text-amber-700 dark:text-amber-400">Demo@2026</span></span>
+                <span className="text-[11px] text-slate-600 dark:text-slate-400">{demoPassword ? <>Standard Demo Password: <span className="font-mono text-amber-700 dark:text-amber-400">{demoPassword}</span></> : 'Enter your assigned password'}</span>
               </div>
               <div className="relative">
                 <input 
@@ -307,7 +311,7 @@ export default function Login() {
         onClose={() => setShowBiometricModal(false)}
         onSuccessLogin={(personnel: HQPersonnel) => {
           setEmail(personnel.email);
-          setPassword('Demo@2026');
+          setPassword(demoPassword ?? '');
         }}
       />
 

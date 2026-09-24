@@ -136,64 +136,65 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/mines-map" element={<GeospatialMap />} />
             
-            {/* NOTE: this layout route is intentionally PATHLESS — every child below uses an
-                absolute path. Adding a `path` here would prefix it onto every child and break
-                all sidebar / AlertBell / role-redirect links. */}
+            {/* NOTE: both wrapper routes above are intentionally PATHLESS, so every
+                child path below resolves from "/". Keep all child paths ABSOLUTE
+                (leading "/") — adding a `path` to a wrapper would silently break
+                every sidebar / AlertBell / role-redirect link. */}
 
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Navigate to="/dashboard/colliery" replace />} />
-              <Route path="dashboard/mine" element={<Navigate to="/dashboard/colliery" replace />} />
-              <Route path="dashboard/colliery" element={
+              <Route path="/dashboard/mine" element={<Navigate to="/dashboard/colliery" replace />} />
+              <Route path="/dashboard/colliery" element={
                 <ProtectedRoute allowedRoles={['mine_official', 'corporate', 'regulator']}>
                   <CollieryManagerDashboard />
                 </ProtectedRoute>
               } />
-              <Route path="dashboard/corporate" element={
+              <Route path="/dashboard/corporate" element={
                 <ProtectedRoute allowedRoles={['corporate']}>
                   <CorporateDashboard />
                 </ProtectedRoute>
               } />
-              <Route path="dashboard/regulator" element={
+              <Route path="/dashboard/regulator" element={
                 <ProtectedRoute allowedRoles={['regulator', 'corporate']}>
                   <RegulatorDashboard />
                 </ProtectedRoute>
               } />
               
-              <Route path="statutory-registers" element={<StatutoryRegisters />} />
-              <Route path="compliance" element={<Compliance />} />
-              <Route path="violations" element={<Violations />} />
-              <Route path="violations/:id" element={<ViolationDetail />} />
-              <Route path="inspections" element={<Inspections />} />
-              <Route path="inspections/new" element={<NewInspection />} />
-              <Route path="pit-inspector" element={<PitInspector />} />
-              <Route path="submissions" element={<MySubmissions />} />
-              <Route path="audit-log" element={<AuditLog />} />
-              <Route path="benchmarking" element={<BenchmarkingDashboard />} />
-              <Route path="ppe-monitor" element={<PPELiveFeed />} />
-              <Route path="data-import" element={
+              <Route path="/statutory-registers" element={<StatutoryRegisters />} />
+              <Route path="/compliance" element={<Compliance />} />
+              <Route path="/violations" element={<Violations />} />
+              <Route path="/violations/:id" element={<ViolationDetail />} />
+              <Route path="/inspections" element={<Inspections />} />
+              <Route path="/inspections/new" element={<NewInspection />} />
+              <Route path="/pit-inspector" element={<PitInspector />} />
+              <Route path="/submissions" element={<MySubmissions />} />
+              <Route path="/audit-log" element={<AuditLog />} />
+              <Route path="/benchmarking" element={<BenchmarkingDashboard />} />
+              <Route path="/ppe-monitor" element={<PPELiveFeed />} />
+              <Route path="/data-import" element={
                 <ProtectedRoute allowedRoles={['corporate', 'regulator']}>
                   <DataImport />
                 </ProtectedRoute>
               } />
-              <Route path="manage-users" element={
+              <Route path="/manage-users" element={
                 <ProtectedRoute allowedRoles={['corporate']}>
                   <ManageUsers />
                 </ProtectedRoute>
               } />
-              <Route path="financial-overview" element={
+              <Route path="/financial-overview" element={
                 <ProtectedRoute allowedRoles={['corporate']}>
                   <FinancialDashboard />
                 </ProtectedRoute>
               } />
-              <Route path="contractors" element={<Contractors />} />
-              <Route path="contractors/:id" element={<ContractorDetail />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="settings" element={<Profile />} />
-              <Route path="ai-workbench" element={<AIWorkbench />} />
-              <Route path="water-inrush" element={<WaterInrushAnalysis />} />
-              <Route path="blast-lockdown" element={<BlastZoneLockdown />} />
-              <Route path="help" element={<HelpSupport />} />
-              <Route path="admin-tickets" element={
+              <Route path="/contractors" element={<Contractors />} />
+              <Route path="/contractors/:id" element={<ContractorDetail />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Profile />} />
+              <Route path="/ai-workbench" element={<AIWorkbench />} />
+              <Route path="/water-inrush" element={<WaterInrushAnalysis />} />
+              <Route path="/blast-lockdown" element={<BlastZoneLockdown />} />
+              <Route path="/help" element={<HelpSupport />} />
+              <Route path="/admin-tickets" element={
                 <ProtectedRoute allowedRoles={['corporate']}>
                   <AdminTickets />
                 </ProtectedRoute>

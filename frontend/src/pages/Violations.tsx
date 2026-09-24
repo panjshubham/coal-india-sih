@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabase';
 import { Link, useLocation } from 'react-router-dom';
 import { formatISTShort } from '../lib/dateUtils';
@@ -13,6 +13,8 @@ export default function Violations() {
   const [filter, setFilter] = useState('all');
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
+  const isSyncingRef = useRef(false);
+  const setSyncing = (v: boolean) => { isSyncingRef.current = v; setIsSyncing(v); };
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [offlineSavedBanner, setOfflineSavedBanner] = useState(location.state?.offlineSaved === true);
@@ -92,50 +94,14 @@ export default function Violations() {
     setLoading(false);
   }, [filter]);
 
-  // Initial load + filter change
-  useEffect(() => {
-    fetchViolations();
-    refreshPendingCount();
-  }, [filter]);
-
-  // Connectivity tracking + auto-sync on reconnect
-  useEffect(() => {
-    const handleOnline = async () => {
-      setIsOnline(true);
-      const count = await getPendingCount();
-      if (count > 0) {
-        setSyncMessage(`Back online — syncing ${count} offline report${count > 1 ? 's' : ''}...`);
-        await handleSync();
-      }
-    };
-    const handleOffline = () => setIsOnline(false);
-
-    // Refresh violations list when sync completes
-    const handleSyncUpdated = () => {
-      fetchViolations();
-      refreshPendingCount();
-      setSyncMessage(null);
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    window.addEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
-    };
-  }, []);
-
-  const handleSync = async () => {
-    if (isSyncing) return;
+  const handleSync = useCallback(async () => {
+    if (isSyncingRef.current) return;
     if (!navigator.onLine) {
       setSyncMessage('Device is offline. Reports are saved in local storage and will sync once connection returns.');
       setTimeout(() => setSyncMessage(null), 4000);
       return;
     }
-    setIsSyncing(true);
+    setSyncing(true);
     setSyncMessage('Syncing all offline violations to central ledger...');
     try {
       const synced = await processSyncQueue();
@@ -152,18 +118,62 @@ export default function Violations() {
       setSyncMessage('⚠️ Sync completed with retries.');
       setTimeout(() => setSyncMessage(null), 3000);
     } finally {
-      setIsSyncing(false);
+      setSyncing(false);
     }
-  };
+  }, [fetchViolations, refreshPendingCount]);
+
+  // Initial load + filter change
+  useEffect(() => {
+    fetchViolations();
+    refreshPendingCount();
+  }, [fetchViolations, refreshPendingCount]);
+
+  // Connectivity tracking + auto-sync on reconnect.
+  // NOTE: handleOnline calls the CURRENT handleSync/fetchViolations via refs —
+  // a stale-closure bug here previously rebound fetchViolations to the first
+  // render's `filter='all'`, so after auto-sync the table silently showed all
+  // rows while the filter chip still showed the old value.
+  const fetchViolationsRef = useRef(fetchViolations);
+  fetchViolationsRef.current = fetchViolations;
+  const handleSyncRef = useRef(handleSync);
+  handleSyncRef.current = handleSync;
+  useEffect(() => {
+    const handleOnline = async () => {
+      setIsOnline(true);
+      const count = await getPendingCount();
+      if (count > 0) {
+        setSyncMessage(`Back online — syncing ${count} offline report${count > 1 ? 's' : ''}...`);
+        await handleSyncRef.current();
+      }
+    };
+    const handleOffline = () => setIsOnline(false);
+
+    // Refresh violations list when sync completes
+    const handleSyncUpdated = () => {
+      fetchViolationsRef.current();
+      refreshPendingCount();
+      setSyncMessage(null);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
+    };
+  }, [refreshPendingCount]);
 
   const handleSyncSingle = async (offlineItem: any) => {
-    if (isSyncing) return;
+    if (isSyncingRef.current) return;
     if (!navigator.onLine) {
       setSyncMessage('Device is offline. Cannot sync right now.');
       setTimeout(() => setSyncMessage(null), 3000);
       return;
     }
-    setIsSyncing(true);
+    setSyncing(true);
     setSyncMessage(`Syncing offline violation #${offlineItem.db_id}...`);
     try {
       const success = await syncSingleSubmission(offlineItem.raw_item || { id: offlineItem.db_id, payload: offlineItem });
@@ -177,7 +187,7 @@ export default function Violations() {
         setTimeout(() => setSyncMessage(null), 3000);
       }
     } finally {
-      setIsSyncing(false);
+      setSyncing(false);
     }
   };
 

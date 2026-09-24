@@ -59,7 +59,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq("id", userId)
         .single();
       
-      const userRole = (!error && data?.role) ? data.role : "mine_official";
+      // SECURITY: never silently grant a role. If the users-row lookup fails,
+      // the role stays null and ProtectedRoute denies access to restricted
+      // pages (fail-closed). Defaulting to "mine_official" here previously
+      // handed field-officer access to unregistered/failed lookups.
+      const userRole = (!error && data?.role) ? (data.role as Role) : null;
       const userName = data?.name || "Unknown Officer";
       const userEmail = data?.email || "";
 
@@ -71,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         ...currentProfile,
         fullName: userName,
         email: userEmail || currentProfile.email,
-        role: userRole
+        role: userRole ?? currentProfile.role
       });
     } catch (e) {
       console.error(e);

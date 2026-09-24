@@ -27,9 +27,15 @@ export default function ProtectedRoute({ allowedRoles, children }: ProtectedRout
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check role authorization if restricted
-  if (allowedRoles && role && !allowedRoles.includes(role)) {
-    const defaultDashboard = 
+  // Check role authorization if restricted.
+  // SECURITY: deny when the role is still unknown (null) — the previous
+  // `role && ...` check silently *skipped* authorization while the profile
+  // lookup was pending/failing, rendering corporate-only pages to anyone.
+  if (allowedRoles && (!role || !allowedRoles.includes(role))) {
+    // While the role is loading, keep the spinner (handled above via
+    // `loading`); here role===null means lookup failed, so send the user to
+    // the safest default instead of rendering the restricted page.
+    const defaultDashboard =
       role === 'mine_official' ? '/dashboard/colliery' :
       role === 'regulator' ? '/dashboard/regulator' : '/dashboard/corporate';
 

@@ -58,10 +58,10 @@ export default function ManageUsers() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Form inputs
+  // Form inputs (no hardcoded default — the operator types a password per user)
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('Demo@2026');
+  const [password, setPassword] = useState('');
   const [role, setRole] = useState<'mine_official' | 'corporate' | 'regulator'>('mine_official');
   const [assignedMineId, setAssignedMineId] = useState<number | ''>('');
   const [showPassword, setShowPassword] = useState(false);
@@ -160,7 +160,7 @@ export default function ManageUsers() {
       // Reset form
       setName('');
       setEmail('');
-      setPassword('Demo@2026');
+      setPassword('');
       setRole('mine_official');
       setIsAddModalOpen(false);
 
@@ -546,7 +546,7 @@ Login Portal: ${window.location.origin}/login`;
                   className="w-full px-3 py-2 text-xs rounded-lg border border-[var(--cg-border)] bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] focus:outline-none focus:border-amber-500 font-mono"
                 />
                 <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1">
-                  Default: <span className="font-mono text-amber-700 dark:text-amber-400">Demo@2026</span> (User can update password upon authentication).
+                  Set an initial password (user can update it upon authentication).
                 </p>
               </div>
 

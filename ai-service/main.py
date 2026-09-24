@@ -50,10 +50,20 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    # SECURITY: never use ["*"] together with allow_credentials=True — the
+    # browser would send the user's cookies to ANY origin. Restrict to the
+    # deployed frontend origin(s), comma-separated in ALLOWED_ORIGINS.
+    # e.g. ALLOWED_ORIGINS=https://coalguard.vercel.app,http://127.0.0.1:5173
+    allow_origins=[
+        o.strip()
+        for o in os.getenv(
+            "ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+        ).split(",")
+        if o.strip()
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
 # ─────────────────────────────────────────────────────────────
@@ -68,7 +78,12 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "").strip()
 HF_S3_ENDPOINT_URL = os.getenv("HF_S3_ENDPOINT_URL", "https://hub-ci.huggingface.co/s3").strip()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()
+# Accepts SUPABASE_SERVICE_ROLE_KEY (documented name). SUPABASE_KEY is kept as
+# a legacy fallback so existing deployments keep working.
+SUPABASE_KEY = (
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+    or os.getenv("SUPABASE_KEY", "").strip()
+)
 
 supabase: Optional[Client] = None
 if SUPABASE_URL and SUPABASE_KEY:

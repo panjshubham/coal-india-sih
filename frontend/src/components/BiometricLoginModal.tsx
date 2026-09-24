@@ -269,7 +269,16 @@ export default function BiometricLoginModal({ isOpen, onClose, onSuccessLogin }:
     setScanning(true);
     try {
       if (selectedPersonnel.email) {
-        const demoPass = import.meta.env.VITE_DEMO_PASSWORD || 'Demo@2026';
+        // Demo biometric personas: only usable when the operator has
+        // explicitly configured VITE_DEMO_PASSWORD (dev/demo only).
+        // Fail closed when unset — never fall back to a hardcoded password.
+        const demoPass = import.meta.env.VITE_DEMO_PASSWORD as string | undefined;
+        if (!demoPass) {
+          setScanStatus('failed');
+          setScanning(false);
+          console.warn('Biometric demo login disabled: VITE_DEMO_PASSWORD is not set.');
+          return;
+        }
         const { error } = await supabase.auth.signInWithPassword({
           email: selectedPersonnel.email,
           password: demoPass
