@@ -22,7 +22,7 @@ This directory contains the Python FastAPI server that runs all 10 AI models.
 - **`water_inrush_model.py` (23 KB):** The hydrochemical modeling script. It implements the cutting-edge **CLSSA-XGBoost** algorithm. It trains and executes the model that predicts underground water floods based on 8 chemical indicators (Calcium, Magnesium, pH, etc.) and generates TreeSHAP explainer values.
 - **`water_inrush_model.pkl` & `water_inrush_explainer.pkl`:** The serialized, pre-trained XGBoost model weights and its associated SHAP explainer file. These allow `main.py` to run split-second inference without retraining.
 - **`water_inrush_scaler.pkl`:** Feature normalizer for the chemical sensor data.
-- **`yolov8n-ppe.pt`:** The pre-trained YOLOv8 Nano PyTorch weights used specifically to detect hardhats, safety vests, and boots in CCTV feeds.
+- **`yolov8n-ppe.pt`:** The pre-trained YOLOv8 Nano PyTorch weights used specifically to https://127.0.0.1:10949/static/artifacts/2269e210-be65-440f-b426-03cf4cc90f01/technical_approach_slide_1790078420031.jpg?csrf=3737dcb9-762a-43b4-b00f-8179aecd003cdetect hardhats, safety vests, and boots in CCTV feeds.
 - **`requirements.txt`:** Python dependencies (FastAPI, PyTorch, Transformers, XGBoost, SHAP).
 
 ### B. Database & Backend Configuration (`/backend`)
@@ -41,7 +41,7 @@ The backend is powered by Supabase (PostgreSQL), and this folder contains all th
 The user interface built in React 19, Vite, and Tailwind CSS. It is configured as a Progressive Web App (PWA) to function deep in the mines without cell service.
 - **`package.json` & `vite-env.d.ts`:** Dependency lists and TypeScript configurations for Vite.
 - **`/src/App.tsx` & `main.tsx`:** The root entry points. Sets up React Router, Supabase Auth context providers, and global layout wrappers.
-- **`/src/index.css` & `theme.css`:** Core Tailwind CSS directives and custom UI variables (dark/light themes, glassmorphism utilities).
+- **`/src/index.css` & `theme.css`:** Core Tailwind CSS directives and custom UI variables (dark/light themes, glassmorphism utilities).https://127.0.0.1:10949/static/artifacts/2269e210-be65-440f-b426-03cf4cc90f01/technical_approach_slide_1790078420031.jpg?csrf=3737dcb9-762a-43b4-b00f-8179aecd003c
 - **`/src/supabase.ts`:** The Singleton Supabase client connection setup using environment variables.
 - **`/src/i18n.ts` (42 KB):** The massive internationalization config. Contains all static translations for the UI, allowing workers to toggle the app into Hindi, Bengali, Odia, etc.
 - **`/src/pages/`:** Contains the role-specific dashboards:
@@ -59,7 +59,7 @@ The user interface built in React 19, Vite, and Tailwind CSS. It is configured a
 
 The true power of this project lies in how these files combine into the **10-Model AI Pipeline**:
 
-1. **Worker Reports a Hazard (Offline):** A worker underground opens the PWA (`frontend/src/pages/`). They tap "Voice Note" and speak in Hindi. The PWA saves the audio to `IndexedDB` (`frontend/src/services/`).
+1. **Worker Reports a Hazard (Offline):** A worker underground opens the PWA (`frontend/src/pages/`). They tap "Voice Note" and speak in Hindi. The PWA saves the audio to `IndexedDB` https://127.0.0.1:10949/static/artifacts/2269e210-be65-440f-b426-03cf4cc90f01/technical_approach_slide_1790078420031.jpg?csrf=3737dcb9-762a-43b4-b00f-8179aecd003c(`frontend/src/services/`).
 2. **Auto-Sync:** The worker surfaces. The PWA detects internet and sends the payload to `main.py` in `ai-service`.
 3. **Speech-to-Text & Translation:** `main.py` runs **Whisper Large v3** to turn the audio into Hindi text, then runs **IndicTrans2** to translate it to English.
 4. **NLP Processing:** The English text is passed through **BART MNLI** to categorize the hazard (e.g., "Roof Support"), and **BERT NER** extracts timestamps and locations.

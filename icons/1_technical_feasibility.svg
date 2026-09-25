@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="techGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#2563EB" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="44" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2" filter="url(#shadow)"/>
+  
+  <!-- Central Microchip Body -->
+  <rect x="34" y="34" width="32" height="32" rx="6" fill="url(#techGrad)" />
+  <rect x="42" y="42" width="16" height="16" rx="3" fill="#FFFFFF" opacity="0.9"/>
+  <circle cx="50" cy="50" r="4" fill="#1E40AF" />
+
+  <!-- Top Pins -->
+  <line x1="42" y1="24" x2="42" y2="34" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="50" y1="22" x2="50" y2="34" stroke="#06B6D4" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="58" y1="24" x2="58" y2="34" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" />
+
+  <!-- Bottom Pins -->
+  <line x1="42" y1="66" x2="42" y2="76" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="50" y1="66" x2="50" y2="78" stroke="#06B6D4" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="58" y1="66" x2="58" y2="76" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" />
+
+  <!-- Left Pins -->
+  <line x1="24" y1="42" x2="34" y2="42" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="22" y1="50" x2="34" y2="50" stroke="#06B6D4" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="24" y1="58" x2="34" y2="58" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" />
+
+  <!-- Right Pins -->
+  <line x1="66" y1="42" x2="76" y2="42" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="66" y1="50" x2="78" y2="50" stroke="#06B6D4" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="66" y1="58" x2="76" y2="58" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" />
+</svg>

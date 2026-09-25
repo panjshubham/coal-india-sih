@@ -5,7 +5,7 @@ import {
   Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, 
   Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, ChevronDown,
   User, HelpCircle, IndianRupee, Camera, Building2, Activity, BookOpen, Droplets, Flame,
-  HardHat, Ticket, ClipboardCheck
+  HardHat, Ticket, ClipboardCheck, Search
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -15,6 +15,7 @@ import AlertBell from '../components/AlertBell';
 import ThemeToggle from '../components/ThemeToggle';
 import ConnectivityBadge from '../components/ConnectivityBadge';
 import LanguageSelector from '../components/LanguageSelector';
+import GlobalSearchModal from '../components/GlobalSearchModal';
 import { useTranslation } from 'react-i18next';
 
 function cn(...inputs: ClassValue[]) {
@@ -125,6 +126,19 @@ export default function DashboardLayout() {
   const { role, signOut } = useAuth();
   const { t, i18n } = useTranslation();
   const [time, setTime] = useState('');
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+
+  // Global Ctrl + K / Cmd + K keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchModalOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const handleProfileUpdate = () => setProfile(getProfile());
@@ -390,9 +404,29 @@ export default function DashboardLayout() {
             >
               <Menu className="w-4 h-4" />
             </button>
-            <span className="text-sm font-bold hidden sm:block truncate" style={{ color: 'var(--cg-text-primary)' }}>
+            <span className="text-sm font-bold hidden lg:block truncate" style={{ color: 'var(--cg-text-primary)' }}>
               Coal India Limited · Statutory Governance
             </span>
+
+            {/* Global Search Bar Button */}
+            <button
+              id="cg-global-search-btn"
+              onClick={() => setSearchModalOpen(true)}
+              className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900/70 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all cursor-pointer shadow-xs max-w-[280px] w-full"
+              title="Search everything across CoalGuard (Ctrl + K)"
+              type="button"
+            >
+              <Search className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="text-xs font-medium hidden sm:inline truncate">
+                Search anything...
+              </span>
+              <span className="text-xs font-medium sm:hidden">
+                Search...
+              </span>
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono font-bold rounded bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-400 ml-auto shadow-xs">
+                Ctrl K
+              </kbd>
+            </button>
           </div>
 
           {/* Right: utility controls — visually separated into logical groups */}
@@ -496,6 +530,12 @@ export default function DashboardLayout() {
         <main className="flex-1 overflow-auto relative" style={{ backgroundColor: 'var(--cg-bg)' }}>
           <Outlet />
         </main>
+
+        {/* Global Search Modal */}
+        <GlobalSearchModal 
+          isOpen={searchModalOpen} 
+          onClose={() => setSearchModalOpen(false)} 
+        />
       </div>
     </div>
   );

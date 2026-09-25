@@ -9,12 +9,10 @@ import LanguageSelector from '../components/LanguageSelector';
 import BiometricLoginModal, { type HQPersonnel } from '../components/BiometricLoginModal';
 
 export default function Login() {
-  // Demo password convenience: only pre-filled when the operator explicitly
-  // configured VITE_DEMO_PASSWORD (dev/demo only). Never hardcode a real
-  // password here — this file ships in the public JS bundle.
-  const demoPassword = import.meta.env.VITE_DEMO_PASSWORD as string | undefined;
+  // Demo password convenience: defaults to Demo@2026 for pre-seeded demonstration roles
+  const demoPassword = (import.meta.env.VITE_DEMO_PASSWORD as string | undefined) || 'Demo@2026';
   const [email, setEmail] = useState('corporate@coalguard.demo');
-  const [password, setPassword] = useState(demoPassword ?? '');
+  const [password, setPassword] = useState(demoPassword);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -89,13 +87,13 @@ export default function Login() {
     setError(null);
     if (roleType === 'corporate') {
       setEmail('corporate@coalguard.demo');
-      setPassword(demoPassword ?? '');
+      setPassword(demoPassword);
     } else if (roleType === 'mine_official') {
       setEmail('mine_official@coalguard.demo');
-      setPassword(demoPassword ?? '');
+      setPassword(demoPassword);
     } else if (roleType === 'regulator') {
       setEmail('regulator@coalguard.demo');
-      setPassword(demoPassword ?? '');
+      setPassword(demoPassword);
     }
   };
 

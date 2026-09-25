@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="neonRedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF4D4D" />
+      <stop offset="100%" stop-color="#DC2626" />
+    </linearGradient>
+    <linearGradient id="neonOrangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#EF4444" />
+    </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#EF4444" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Dark Shield Badge -->
+  <path d="M 50 12 L 80 24 V 52 C 80 72 50 88 50 88 C 50 88 20 72 20 52 V 24 Z" 
+        fill="#0F172A" stroke="#EF4444" stroke-width="2.5" filter="url(#neonGlow)"/>
+
+  <!-- Inner Cyber Grid Accent -->
+  <line x1="30" y1="40" x2="70" y2="40" stroke="#334155" stroke-width="1" stroke-dasharray="2 2" />
+  <line x1="30" y1="52" x2="70" y2="52" stroke="#334155" stroke-width="1" stroke-dasharray="2 2" />
+  <line x1="30" y1="64" x2="70" y2="64" stroke="#334155" stroke-width="1" stroke-dasharray="2 2" />
+  <line x1="50" y1="30" x2="50" y2="76" stroke="#334155" stroke-width="1" stroke-dasharray="2 2" />
+
+  <!-- Document Silhouette -->
+  <rect x="36" y="28" width="28" height="38" rx="3" fill="#1E293B" stroke="#64748B" stroke-width="1.8" />
+  <line x1="41" y1="36" x2="52" y2="36" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" />
+  <line x1="41" y1="43" x2="58" y2="43" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" />
+  <line x1="41" y1="50" x2="50" y2="50" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" />
+
+  <!-- Holographic / Red Warning Stamp (Falsified Detection) -->
+  <circle cx="58" cy="56" r="14" fill="#0F172A" stroke="#EF4444" stroke-width="2.2" />
+  
+  <!-- Red Exclamation Triangle -->
+  <path d="M 58 48 L 66 62 H 50 Z" fill="url(#neonRedGrad)" stroke="#FFA3A3" stroke-width="0.8" stroke-linejoin="round" />
+  <line x1="58" y1="53" x2="58" y2="57" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
+  <circle cx="58" cy="59.5" r="0.8" fill="#FFFFFF" />
+
+  <!-- GPS Geofence Ring Warning at bottom right -->
+  <circle cx="68" cy="74" r="8" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="2 2" />
+  <path d="M 68 68 C 65.5 68 63.5 70 63.5 72.5 C 63.5 76 68 80 68 80 C 68 80 72.5 76 72.5 72.5 C 72.5 70 70.5 68 68 68 Z" fill="#F59E0B" />
+  <circle cx="68" cy="72" r="1.5" fill="#0F172A" />
+</svg>

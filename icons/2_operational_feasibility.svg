@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="opGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D9488" />
+      <stop offset="100%" stop-color="#14B8A6" />
+    </linearGradient>
+    <filter id="opShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0D9488" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="44" fill="#F0FDFA" stroke="#CCFBF1" stroke-width="2" filter="url(#opShadow)"/>
+  
+  <!-- Database Stack -->
+  <!-- Top Disc -->
+  <ellipse cx="50" cy="34" rx="20" ry="7" fill="url(#opGrad)" />
+  <ellipse cx="50" cy="34" rx="15" ry="4" fill="#5EEAD4" opacity="0.6"/>
+
+  <!-- Middle Disc -->
+  <path d="M 30 34 V 46 C 30 52 70 52 70 46 V 34" fill="none" stroke="#0F766E" stroke-width="3.5" />
+  <ellipse cx="50" cy="46" rx="20" ry="7" fill="url(#opGrad)" opacity="0.9" />
+
+  <!-- Bottom Disc -->
+  <path d="M 30 46 V 58 C 30 64 70 64 70 58 V 46" fill="none" stroke="#0F766E" stroke-width="3.5" />
+  <ellipse cx="50" cy="58" rx="20" ry="7" fill="url(#opGrad)" />
+
+  <!-- Sync Rotating Arrows -->
+  <path d="M 72 26 A 28 28 0 0 1 82 52" fill="none" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round"/>
+  <polygon points="82,46 87,55 77,55" fill="#0D9488" />
+
+  <path d="M 28 74 A 28 28 0 0 1 18 48" fill="none" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round"/>
+  <polygon points="18,54 13,45 23,45" fill="#0D9488" />
+</svg>
