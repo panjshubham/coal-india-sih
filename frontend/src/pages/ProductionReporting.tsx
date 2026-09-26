@@ -161,7 +161,8 @@ export default function ProductionReporting() {
     extracted: records.filter(r=>r.report_date===date).reduce((s,r)=>s+(parseFloat(r.coal_extracted_mt)||0),0),
     target: records.filter(r=>r.report_date===date).reduce((s,r)=>s+(parseFloat(r.target_mt)||0),0),
   }));
-  const maxExtracted = Math.max(...trendData.map(d=>d.extracted),1);
+  const maxVal = Math.max(...trendData.map(d => Math.max(d.extracted, d.target)), 1);
+  const chartMax = maxVal * 1.2; // 20% headroom
 
   const totalMT = records.reduce((s, r) => s + (parseFloat(r.coal_extracted_mt) || 0), 0);
   const totalTarget = records.reduce((s, r) => s + (parseFloat(r.target_mt) || 0), 0);
@@ -247,8 +248,8 @@ export default function ProductionReporting() {
           </div>
           <div className="flex items-end gap-2 h-28">
             {trendData.map(d => {
-              const heightPct = maxExtracted > 0 ? (d.extracted / maxExtracted) * 100 : 0;
-              const targetPct = maxExtracted > 0 ? (d.target / maxExtracted) * 100 : 0;
+              const heightPct = chartMax > 0 ? (d.extracted / chartMax) * 100 : 0;
+              const targetPct = chartMax > 0 ? (d.target / chartMax) * 100 : 0;
               const onTarget = d.target > 0 && d.extracted >= d.target * 0.9;
               const dayLabel = new Date(d.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
               return (
