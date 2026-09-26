@@ -5,34 +5,41 @@ import { useAuth } from '../context/AuthContext';
 import {
   BarChart2, TrendingUp, TrendingDown, Plus, Download, Calendar,
   CheckCircle2, Loader2, AlertTriangle, Building2, Activity,
-  Package, Truck, Pickaxe, Flame, Send, FileText, ChevronDown, ChevronUp
+  Package, Truck, Pickaxe, Flame, Send, FileText, ChevronDown, ChevronUp,
+  Shield, BarChart3, Filter
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatISTShort } from '../lib/dateUtils';
 
-// Demo production records  
-const DEMO_RECORDS = [
-  { id: 1, report_date: new Date(Date.now() - 1 * 86400000).toISOString().slice(0, 10), mine_name: 'Govindpur Colliery', shift: 'A', coal_extracted_mt: 2340, overburden_removed_bcm: 8900, active_machines: 12, workforce_deployed: 284, blasts_conducted: 3, safety_incidents: 0, target_mt: 2500, submitted_by: 'Shri R.K. Mahapatra', status: 'approved' },
-  { id: 2, report_date: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10), mine_name: 'Govindpur Colliery', shift: 'B', coal_extracted_mt: 2180, overburden_removed_bcm: 7600, active_machines: 11, workforce_deployed: 271, blasts_conducted: 2, safety_incidents: 1, target_mt: 2500, submitted_by: 'Shri A.K. Singh', status: 'pending' },
-  { id: 3, report_date: new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10), mine_name: 'Bharat Coking Coal', shift: 'C', coal_extracted_mt: 1890, overburden_removed_bcm: 6200, active_machines: 9, workforce_deployed: 198, blasts_conducted: 4, safety_incidents: 0, target_mt: 2000, submitted_by: 'Shri P. Kumar', status: 'approved' },
+// Real CIL mines from the actual Supabase database
+const CIL_MINES = [
+  'Gevra OCP','Govindpur Colliery','Moonidih Project','Rajhara','Bhubaneswari OCP',
+  'Rajmahal OCP','Rohne','Choritand Tiliaya','Jogeshwar & Khas Jogeshwar','Rabodih OCP',
+  'Urtan North','North of Arkhapal Srirampur','Dhori Khas','Sonepur Bazari OCP',
+  'Jagannath OCP','Lingaraj OCP','Ib Valley OCP',
 ];
 
-const MINES = ['Govindpur Colliery', 'Bharat Coking Coal', 'Eastern Coalfields', 'South Eastern Coalfields'];
+const MINE_TARGETS = {
+  'Gevra OCP': 8500, 'Govindpur Colliery': 2500, 'Moonidih Project': 1800,
+  'Rajhara': 3200, 'Bhubaneswari OCP': 6200, 'Rajmahal OCP': 4800, 'Rohne': 2200,
+};
 
 export default function ProductionReporting() {
   const { role } = useAuth();
-  const [records, setRecords] = useState(DEMO_RECORDS);
+  const [records, setRecords] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
+  const [mineFilter, setMineFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('7');
 
   const today = new Date().toISOString().slice(0, 10);
   const [form, setForm] = useState({
     report_date: today,
-    mine_name: 'Govindpur Colliery',
+    mine_name: 'Gevra OCP',
     shift: 'A',
     coal_extracted_mt: '',
     overburden_removed_bcm: '',
@@ -45,12 +52,26 @@ export default function ProductionReporting() {
     submitted_by: '',
   });
 
+  // Auto-fill target when mine changes
+  const handleMineChange = (mineName) => {
+    const defaultTarget = MINE_TARGETS[mineName];
+    setForm(f => ({ ...f, mine_name: mineName, target_mt: defaultTarget ? String(Math.round(defaultTarget / 3)) : f.target_mt }));
+  };
+
   const fetchRecords = useCallback(async () => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase.from('production_reports').select('*').order('report_date', { ascending: false });
+      let query = supabase.from('production_reports').select('*').order('report_date', { ascending: false }).order('created_at', { ascending: false });
+      if (mineFilter !== 'all') query = query.eq('mine_name', mineFilter);
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - parseInt(dateFilter));
+      query = query.gte('report_date', cutoff.toISOString().slice(0, 10));
+      const { data, error } = await query;
       if (!error && data && data.length > 0) setRecords(data);
-    } catch (e) {}
-  }, []);
+      else if (error) console.warn('Production fetch error:', error.message);
+    } catch (e) { console.warn(e); }
+    finally { setLoading(false); }
+  }, [mineFilter, dateFilter]);
 
   useEffect(() => { fetchRecords(); }, [fetchRecords]);
 
@@ -133,10 +154,20 @@ export default function ProductionReporting() {
     doc.save(`Production_Report_${Date.now()}.pdf`);
   };
 
-  // Summary stats
-  const totalMT = records.reduce((s, r) => s + (r.coal_extracted_mt || 0), 0);
-  const avgAchievement = records.length ? records.reduce((s, r) => s + (r.target_mt ? (r.coal_extracted_mt / r.target_mt) * 100 : 0), 0) / records.length : 0;
+  // Trend: group by date, sum extraction for chart
+  const last7Dates = Array.from({length:7}, (_,i) => { const d=new Date(); d.setDate(d.getDate()-i); return d.toISOString().slice(0,10); }).reverse();
+  const trendData = last7Dates.map(date => ({
+    date,
+    extracted: records.filter(r=>r.report_date===date).reduce((s,r)=>s+(parseFloat(r.coal_extracted_mt)||0),0),
+    target: records.filter(r=>r.report_date===date).reduce((s,r)=>s+(parseFloat(r.target_mt)||0),0),
+  }));
+  const maxExtracted = Math.max(...trendData.map(d=>d.extracted),1);
+
+  const totalMT = records.reduce((s, r) => s + (parseFloat(r.coal_extracted_mt) || 0), 0);
+  const totalTarget = records.reduce((s, r) => s + (parseFloat(r.target_mt) || 0), 0);
+  const avgAchievement = totalTarget > 0 ? (totalMT / totalTarget) * 100 : 0;
   const totalIncidents = records.reduce((s, r) => s + (r.safety_incidents || 0), 0);
+  const totalWorkforce = records.reduce((s, r) => s + (r.workforce_deployed || 0), 0);
 
   return (
     <div className="space-y-6 p-6">
@@ -167,24 +198,81 @@ export default function ProductionReporting() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
-          <p className="text-2xl font-black text-amber-700 dark:text-amber-400">{(totalMT / 1000).toFixed(1)}K MT</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Total Coal Extracted</p>
+          <p className="text-xl font-black text-amber-700 dark:text-amber-400">{totalMT >= 1000 ? `${(totalMT/1000).toFixed(1)}K` : totalMT.toFixed(0)} MT</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Coal Extracted</p>
+        </div>
+        <div className={`p-4 rounded-xl border ${avgAchievement >= 90 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' : 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20'}`}>
+          <p className={`text-xl font-black ${avgAchievement >= 90 ? 'text-emerald-700 dark:text-emerald-400' : 'text-orange-700 dark:text-orange-400'}`}>{avgAchievement.toFixed(1)}%</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Target Achievement</p>
         </div>
         <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
-          <p className="text-2xl font-black text-blue-700 dark:text-blue-400">{avgAchievement.toFixed(1)}%</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Avg Target Achievement</p>
+          <p className="text-xl font-black text-blue-700 dark:text-blue-400">{records.length}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Reports Filed</p>
         </div>
-        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
-          <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">{records.length}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Reports Submitted</p>
+        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-500/10 border border-slate-200 dark:border-white/10">
+          <p className="text-xl font-black text-slate-700 dark:text-slate-300">{totalWorkforce >= 1000 ? `${(totalWorkforce/1000).toFixed(1)}K` : totalWorkforce}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Total Workforce</p>
         </div>
-        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
-          <p className="text-2xl font-black text-red-700 dark:text-red-400">{totalIncidents}</p>
+        <div className={`p-4 rounded-xl border ${totalIncidents === 0 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20'}`}>
+          <p className={`text-xl font-black ${totalIncidents === 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>{totalIncidents}</p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Safety Incidents</p>
         </div>
       </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <select value={mineFilter} onChange={e => setMineFilter(e.target.value)}
+          className="px-3 py-2 text-sm bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:border-amber-500">
+          <option value="all">All Mines</option>
+          {CIL_MINES.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <select value={dateFilter} onChange={e => setDateFilter(e.target.value)}
+          className="px-3 py-2 text-sm bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:border-amber-500">
+          <option value="7">Last 7 Days</option>
+          <option value="14">Last 14 Days</option>
+          <option value="30">Last 30 Days</option>
+        </select>
+        {loading && <span className="text-xs text-slate-400 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />Loading...</span>}
+      </div>
+
+      {/* 7-Day Production Trend Chart */}
+      {trendData.some(d => d.extracted > 0) && (
+        <div className="p-5 bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-2xl">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">7-Day Production Trend</h3>
+            <span className="text-xs text-slate-400 ml-auto">Coal Extracted (MT) vs Target</span>
+          </div>
+          <div className="flex items-end gap-2 h-28">
+            {trendData.map(d => {
+              const heightPct = maxExtracted > 0 ? (d.extracted / maxExtracted) * 100 : 0;
+              const targetPct = maxExtracted > 0 ? (d.target / maxExtracted) * 100 : 0;
+              const onTarget = d.target > 0 && d.extracted >= d.target * 0.9;
+              const dayLabel = new Date(d.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
+              return (
+                <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="w-full relative flex items-end" style={{height:'80px'}}>
+                    {d.target > 0 && <div className="absolute inset-x-0 border-t-2 border-dashed border-slate-300 dark:border-slate-600 opacity-60" style={{bottom:`${targetPct}%`}} title={`Target: ${d.target.toLocaleString()} MT`} />}
+                    <div
+                      className={`w-full rounded-t-md transition-all ${d.extracted === 0 ? 'bg-slate-200 dark:bg-slate-700/50' : onTarget ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-amber-500 dark:bg-amber-400'}`}
+                      style={{height: d.extracted === 0 ? '4px' : `${heightPct}%`}}
+                      title={`${d.date}: ${d.extracted.toLocaleString()} MT`}
+                    />
+                  </div>
+                  <span className="text-[9px] text-slate-500 dark:text-slate-400 text-center">{dayLabel}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
+            <span className="flex items-center gap-1"><span className="w-3 h-2 rounded-sm bg-emerald-500 inline-block"/>On/above target</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-2 rounded-sm bg-amber-500 inline-block"/>Below target</span>
+            <span className="flex items-center gap-1"><span className="w-6 border-t-2 border-dashed border-slate-400 inline-block"/>Daily target</span>
+          </div>
+        </div>
+      )}
 
       {/* Records List */}
       <div className="space-y-3">
@@ -274,8 +362,8 @@ export default function ProductionReporting() {
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5 block">Mine Name</label>
-                  <select value={form.mine_name} onChange={e => setForm(f => ({ ...f, mine_name: e.target.value }))} className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
-                    {MINES.map(m => <option key={m} value={m}>{m}</option>)}
+                  <select value={form.mine_name} onChange={e => handleMineChange(e.target.value)} className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-amber-500">
+                    {CIL_MINES.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
                 <div>

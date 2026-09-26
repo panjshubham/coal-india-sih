@@ -4,13 +4,20 @@ import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import {
   MessageSquarePlus, AlertTriangle, CheckCircle2, Clock, XCircle,
-  ChevronDown, ChevronUp, Filter, Plus, Search, User, Calendar,
+  ChevronDown, ChevronUp, Plus, Search, User, Calendar,
   FileText, Loader2, ShieldAlert, Megaphone, Wrench, HardHat,
-  ThumbsUp, Send, RefreshCw, Download
+  Send, RefreshCw, Download, Building2, TrendingUp, Shield
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatISTShort } from '../lib/dateUtils';
+
+// Real CIL mine names pulled from the actual database
+const CIL_MINES = [
+  'Govindpur Colliery','Moonidih Project','Gevra OCP','Rajhara','Bhubaneswari OCP',
+  'Rajmahal OCP','Rohne','Choritand Tiliaya','Jogeshwar & Khas Jogeshwar','Rabodih OCP',
+  'Urtan North','North of Arkhapal Srirampur','Dhori Khas','Sonepur Bazari OCP',
+];
 
 const GRIEVANCE_CATEGORIES = [
   { value: 'safety', label: 'Safety Hazard', icon: HardHat, color: 'red' },
@@ -45,10 +52,12 @@ const DEMO_GRIEVANCES = [
 
 export default function GrievanceManagement() {
   const { role } = useAuth();
-  const [grievances, setGrievances] = useState(DEMO_GRIEVANCES);
-  const [loading, setLoading] = useState(false);
+  const [grievances, setGrievances] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [mineFilter, setMineFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -64,6 +73,14 @@ export default function GrievanceManagement() {
     anonymous: false,
   });
 
+  // SLA helper — days since creation
+  const daysSince = (dateStr) => Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+  const slaBreach = (g) => {
+    if (g.status === 'resolved' || g.status === 'rejected') return false;
+    const limits = { critical: 1, high: 3, medium: 7, low: 14 };
+    return daysSince(g.created_at) > (limits[g.priority] || 7);
+  };
+
   const fetchGrievances = useCallback(async () => {
     setLoading(true);
     try {
@@ -73,9 +90,21 @@ export default function GrievanceManagement() {
         .order('created_at', { ascending: false });
       if (!error && data && data.length > 0) {
         setGrievances(data);
+      } else {
+        // Use realistic demo data while DB propagates
+        setGrievances([
+          { id:'d1', grievance_id:'GRV-2026-001', category:'safety',     priority:'critical', subject:'Roof bolting failure in Moonidih Project seam 4', description:'Multiple roof bolts found loose in Seam 4 North panel. Risk of roof collapse. CMR Reg 36 mandates immediate inspection.', submitted_by:'Shri Suresh Nath', mine_name:'Moonidih Project', status:'in_progress', created_at:new Date(Date.now()-2*86400000).toISOString(), resolution_notes:'Safety Inspector dispatched. Panel sealed pending re-bolting.' },
+          { id:'d2', grievance_id:'GRV-2026-002', category:'wages',      priority:'high',     subject:'Overtime wages unpaid for August 2026 — Govindpur Colliery', description:'94 workers in Shift-C have not received overtime payment for 22 hours of emergency production support.', submitted_by:'Ramesh Kumar Yadav', mine_name:'Govindpur Colliery', status:'pending', created_at:new Date(Date.now()-5*86400000).toISOString(), resolution_notes:null },
+          { id:'d3', grievance_id:'GRV-2026-003', category:'equipment',  priority:'medium',   subject:'SDL Loader #SL-42 hydraulic failure — Gevra OCP', description:'SDL Loader SL-42 hydraulic pressure warnings for 11 days. Last CMR service was 38 days ago (limit: 30 days).', submitted_by:'Er. Manjit Singh Brar', mine_name:'Gevra OCP', status:'resolved', created_at:new Date(Date.now()-12*86400000).toISOString(), resolution_notes:'Equipment serviced 22-Sep-2026. Hydraulic pump replaced.' },
+          { id:'d4', grievance_id:'GRV-2026-004', category:'welfare',    priority:'low',      subject:'Drinking water supply disrupted — Rajhara mine', description:'Potable water supply at Rajhara surface canteen disrupted for 5 days. Mines Act 1952 Reg 19 requires adequate water supply.', submitted_by:'Anil Kumar Verma', mine_name:'Rajhara', status:'pending', created_at:new Date(Date.now()-1*86400000).toISOString(), resolution_notes:null },
+          { id:'d5', grievance_id:'GRV-2026-005', category:'safety',     priority:'high',     subject:'Missing safety signage at Rajmahal OCP blasting zone', description:'Critical blasting zone warning signs missing on eastern access road. CMR Reg 167 mandatory signage not met.', submitted_by:'Anonymous', mine_name:'Rajmahal OCP', status:'in_progress', created_at:new Date(Date.now()-3*86400000).toISOString(), resolution_notes:'Signage reinstalled 25-Sep-2026. Blast protocol re-communicated.' },
+          { id:'d6', grievance_id:'GRV-2026-006', category:'harassment', priority:'high',     subject:'Workplace harassment complaint — Bhubaneswari OCP', description:'Female technical staff reports verbal harassment by a shift supervisor. Formal POSH complaint filed.', submitted_by:'Anonymous', mine_name:'Bhubaneswari OCP', status:'pending', created_at:new Date(Date.now()-4*86400000).toISOString(), resolution_notes:null },
+          { id:'d7', grievance_id:'GRV-2026-007', category:'welfare',    priority:'medium',   subject:'Inadequate PPE distribution — Rohne OCP workers', description:'Shift-B workers at Rohne OCP received worn-out hard hats from 2023 batch. CMR Reg 115 requires PPE replacement. 34 workers affected.', submitted_by:'Shri Deepak Pandey', mine_name:'Rohne', status:'resolved', created_at:new Date(Date.now()-8*86400000).toISOString(), resolution_notes:'New Karam Safety helmets distributed on 24-Sep-2026.' },
+          { id:'d8', grievance_id:'GRV-2026-008', category:'other',      priority:'low',      subject:'Delay in ESI medical claim reimbursement', description:'Seven workers at North of Arkhapal Srirampur have ESI reimbursement claims pending 90+ days from July 2026 conveyor incident.', submitted_by:'Shri Biswajit Pradhan', mine_name:'North of Arkhapal Srirampur', status:'in_progress', created_at:new Date(Date.now()-6*86400000).toISOString(), resolution_notes:'Escalated to ESIC Bhubaneswar. Ref: ESIC-OD-2026-4471.' },
+        ]);
       }
     } catch (e) {
-      // Table may not exist yet — use demo data
+      console.warn('Grievance fetch error:', e);
     } finally {
       setLoading(false);
     }
@@ -161,9 +190,11 @@ export default function GrievanceManagement() {
   };
 
   const filteredGrievances = grievances.filter(g => {
-    const matchesFilter = filter === 'all' || g.status === filter;
-    const matchesSearch = !searchQuery || g.subject.toLowerCase().includes(searchQuery.toLowerCase()) || g.grievance_id?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+    const matchesStatus = filter === 'all' || g.status === filter;
+    const matchesMine = mineFilter === 'all' || g.mine_name === mineFilter;
+    const matchesCat = categoryFilter === 'all' || g.category === categoryFilter;
+    const matchesSearch = !searchQuery || g.subject?.toLowerCase().includes(searchQuery.toLowerCase()) || g.grievance_id?.toLowerCase().includes(searchQuery.toLowerCase()) || g.mine_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesMine && matchesCat && matchesSearch;
   });
 
   const stats = {
@@ -171,6 +202,7 @@ export default function GrievanceManagement() {
     pending: grievances.filter(g => g.status === 'pending').length,
     in_progress: grievances.filter(g => g.status === 'in_progress').length,
     resolved: grievances.filter(g => g.status === 'resolved').length,
+    sla_breached: grievances.filter(g => slaBreach(g)).length,
   };
 
   return (
@@ -206,12 +238,13 @@ export default function GrievanceManagement() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
-          { label: 'Total Filed', value: stats.total, color: 'text-slate-700 dark:text-slate-300', bg: 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-white/10' },
-          { label: 'Pending Review', value: stats.pending, color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20' },
-          { label: 'In Progress', value: stats.in_progress, color: 'text-blue-700 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20' },
-          { label: 'Resolved', value: stats.resolved, color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' },
+          { label: 'Total Filed',      value: stats.total,        color: 'text-slate-700 dark:text-slate-300', bg: 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-white/10' },
+          { label: 'Pending Review',   value: stats.pending,      color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20' },
+          { label: 'In Progress',      value: stats.in_progress,  color: 'text-blue-700 dark:text-blue-400',   bg: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20' },
+          { label: 'Resolved',         value: stats.resolved,     color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' },
+          { label: 'SLA Breached',     value: stats.sla_breached, color: 'text-red-700 dark:text-red-400',     bg: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20' },
         ].map(s => (
           <div key={s.label} className={`p-4 rounded-xl border ${s.bg}`}>
             <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
@@ -221,17 +254,29 @@ export default function GrievanceManagement() {
       </div>
 
       {/* Filters & Search */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-          <input
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search grievances..."
-            className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
-          />
+      <div className="space-y-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by subject, ID, or mine..."
+              className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <select value={mineFilter} onChange={e => setMineFilter(e.target.value)}
+            className="px-3 py-2 text-sm bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500">
+            <option value="all">All Mines</option>
+            {CIL_MINES.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
+            className="px-3 py-2 text-sm bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500">
+            <option value="all">All Categories</option>
+            {GRIEVANCE_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           {['all', 'pending', 'in_progress', 'resolved', 'rejected'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize transition-all ${filter === f ? 'bg-blue-600 text-white shadow' : 'bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10'}`}
@@ -254,9 +299,11 @@ export default function GrievanceManagement() {
           const isExpanded = expandedId === g.id;
           const CatIcon = catConf.icon;
           const StatusIcon = statusConf.icon;
+          const breached = slaBreach(g);
+          const daysOpen = daysSince(g.created_at);
 
           return (
-            <div key={g.id} className="bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+            <div key={g.id} className={`bg-white dark:bg-white/[0.03] border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all ${breached ? 'border-red-300 dark:border-red-500/40' : 'border-slate-200 dark:border-white/10'}`}>
               <div className="p-4 flex items-start justify-between gap-4 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : g.id)}>
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div className={`w-9 h-9 rounded-xl bg-${catConf.color}-100 dark:bg-${catConf.color}-500/10 flex items-center justify-center shrink-0 border border-${catConf.color}-200 dark:border-${catConf.color}-500/20`}>
@@ -265,12 +312,15 @@ export default function GrievanceManagement() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
                       <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">{g.grievance_id}</span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${prioConf.color}`}>{g.priority.toUpperCase()}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${prioConf.color}`}>{g.priority?.toUpperCase()}</span>
+                      {breached && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-500/30 animate-pulse">⚠ SLA BREACH</span>}
+                      {g.mine_name && <span className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 px-1.5 py-0.5 bg-slate-100 dark:bg-white/5 rounded-md border border-slate-200 dark:border-white/10"><Building2 className="w-2.5 h-2.5" />{g.mine_name}</span>}
                     </div>
                     <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{g.subject}</p>
                     <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                       <span className="flex items-center gap-1"><User className="w-3 h-3" />{g.submitted_by}</span>
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatISTShort(g.created_at)}</span>
+                      <span className={`font-semibold ${daysOpen > 3 && g.status !== 'resolved' ? 'text-orange-600 dark:text-orange-400' : ''}`}>{daysOpen}d open</span>
                     </div>
                   </div>
                 </div>
