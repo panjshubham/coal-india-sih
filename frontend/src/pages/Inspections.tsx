@@ -81,6 +81,15 @@ export default function Inspections() {
 
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success_online' | 'success_offline' | 'error'>('idle');
   const [usingCachedGps, setUsingCachedGps] = useState(false);
+
+  // Live Camera Stream State & Refs
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -126,6 +135,7 @@ export default function Inspections() {
       window.removeEventListener('coalguard:profileUpdated', handleProfileUpdate);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      stopCameraStream();
     };
   }, []);
 
@@ -139,6 +149,87 @@ export default function Inspections() {
     } finally {
       setSyncing(false);
     }
+  };
+
+  // ── LIVE WEBCAM / CAMERA STREAM LOGIC ────────────────────────────────
+  const startCamera = async (facing: 'environment' | 'user' = cameraFacing) => {
+    setIsCameraOpen(true);
+    setCameraError(null);
+    stopCameraStream();
+
+    try {
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false
+        });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
+
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(e => console.warn('Stream play error:', e));
+      }
+    } catch (err: any) {
+      console.error('Camera open failed:', err);
+      setCameraError('Camera stream could not be started or permission was denied. You can still upload a photo file.');
+    }
+  };
+
+  const stopCameraStream = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+  };
+
+  const closeCameraModal = () => {
+    stopCameraStream();
+    setIsCameraOpen(false);
+    setCameraError(null);
+  };
+
+  const toggleCameraFacing = () => {
+    const nextFacing = cameraFacing === 'environment' ? 'user' : 'environment';
+    setCameraFacing(nextFacing);
+    startCamera(nextFacing);
+  };
+
+  const captureShutter = () => {
+    if (!videoRef.current) return;
+    setIsCapturing(true);
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current || document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Draw statutory DGMS timestamp watermark
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
+      ctx.fillRect(10, canvas.height - 48, 380, 38);
+      ctx.fillStyle = '#F59E0B';
+      ctx.font = 'bold 12px monospace';
+      ctx.fillText(`DGMS STATUTORY INSPECTION | ${new Date().toISOString().slice(0, 19)}`, 20, canvas.height - 28);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '10px monospace';
+      const locText = formData.lat && formData.lng ? `GPS: ${formData.lat.toFixed(4)}°N, ${formData.lng.toFixed(4)}°E` : 'GPS: FIELD STAMP';
+      ctx.fillText(`${locText} | AUTH: ${profile.fullName || 'DGMS INSPECTOR'}`, 20, canvas.height - 14);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+      setFormData(prev => ({ ...prev, photo_base64: dataUrl }));
+    }
+
+    setTimeout(() => {
+      setIsCapturing(false);
+      closeCameraModal();
+    }, 250);
   };
 
   const captureLocation = () => {
@@ -201,7 +292,7 @@ export default function Inspections() {
 
   const handleOcr = async () => {
     if (!formData.photo_base64) {
-      alert("Please capture a photo first!");
+      alert("Please capture or upload a photo first!");
       return;
     }
     setIsOcrLoading(true);
@@ -211,7 +302,14 @@ export default function Inspections() {
         'eng',
         { logger: m => console.log(m) }
       );
-      setFormData(prev => ({ ...prev, description: result.data.text }));
+      if (result.data.text.trim()) {
+        setFormData(prev => ({ 
+          ...prev, 
+          description: prev.description ? `${prev.description}\n\n[OCR Detected]: ${result.data.text.trim()}` : result.data.text.trim() 
+        }));
+      } else {
+        alert("OCR did not detect any readable text in this photo.");
+      }
     } catch (e) {
       console.error(e);
       alert("Failed to extract text from image");
@@ -256,7 +354,7 @@ export default function Inspections() {
 
     if (isOnline) {
       try {
-        // 1. Insert inspection with correct schema columns
+        // 1. Insert inspection
         const inspPayload: any = {
           mine_id: mineIdNum,
           date: timestamp,
@@ -275,7 +373,7 @@ export default function Inspections() {
           console.warn('[Inspections] Inspection insert failed (non-fatal):', inspErr.message);
         }
 
-        // 2. Insert violation with all required columns
+        // 2. Insert violation
         const violPayload: any = {
           mine_id: mineIdNum,
           category: formData.category,
@@ -336,325 +434,499 @@ export default function Inspections() {
   };
 
   return (
-    <>
-      <style>{`
-        .bg-surface { background-color: var(--cg-bg); }
-        .bg-surface-container-low { background-color: var(--cg-surface-low); }
-        .bg-surface-container-lowest { background-color: var(--cg-surface-elevated); }
-        .bg-surface-container { background-color: var(--cg-surface); }
-        .bg-surface-container-high { background-color: var(--cg-surface-high); }
-        .bg-surface-container-highest { background-color: var(--cg-surface-highest); }
-        .bg-surface-bright { background-color: var(--cg-surface-highest); }
-        .bg-primary { background-color: #8ed5ff; }
-        .bg-primary-container { background-color: #38bdf8; }
-        .bg-secondary { background-color: #ffb95f; }
-        .bg-secondary-container { background-color: #ee9800; }
-        .bg-error { background-color: #ffb4ab; }
-        .bg-error-container { background-color: #93000a; }
-        .bg-tertiary { background-color: #afcfff; }
-        .bg-outline { background-color: #87929a; }
-        .bg-outline-variant { background-color: #3e484f; }
+    <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 md:p-8 flex flex-col items-center transition-colors">
+      <div className="w-full max-w-4xl flex flex-col gap-6">
         
-        .text-on-surface { color: var(--cg-text-primary); }
-        .text-on-surface-variant { color: var(--cg-text-muted); }
-        .text-primary { color: #8ed5ff; }
-        .text-primary-container { color: #38bdf8; }
-        .text-on-primary-container { color: #004965; }
-        .text-on-primary { color: #00354a; }
-        .text-secondary { color: #ffb95f; }
-        .text-on-secondary { color: #472a00; }
-        .text-tertiary { color: #afcfff; }
-        .text-error { color: #ffb4ab; }
-        .text-on-error { color: #690005; }
-        .text-outline { color: #87929a; }
-        .text-outline-variant { color: #3e484f; }
-
-        .px-space-xs { padding-left: 0.25rem; padding-right: 0.25rem; }
-        .py-space-xs { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-        .py-space-2xs { padding-top: 0.125rem; padding-bottom: 0.125rem; }
-        .px-space-sm { padding-left: 0.5rem; padding-right: 0.5rem; }
-        .py-space-sm { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .px-space-md { padding-left: 0.75rem; padding-right: 0.75rem; }
-        .py-space-md { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .px-space-lg { padding-left: 1rem; padding-right: 1rem; }
-        .py-space-lg { padding-top: 1rem; padding-bottom: 1rem; }
-        .px-space-xl { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .p-space-xs { padding: 0.25rem; }
-        .p-space-sm { padding: 0.5rem; }
-        .p-space-md { padding: 0.75rem; }
-        .p-space-lg { padding: 1rem; }
-        .p-space-xl { padding: 1.5rem; }
-        
-        .gap-space-2xs { gap: 0.125rem; }
-        .gap-space-xs { gap: 0.25rem; }
-        .gap-space-sm { gap: 0.5rem; }
-        .gap-space-md { gap: 0.75rem; }
-        .gap-space-lg { gap: 1rem; }
-        
-        .font-headline-lg { font-family: 'Hanken Grotesk', sans-serif; font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: -0.015em; }
-        .font-headline-md { font-family: 'Hanken Grotesk', sans-serif; font-size: 20px; line-height: 28px; font-weight: 500; letter-spacing: -0.01em; }
-        .font-headline-sm { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; line-height: 24px; font-weight: 500; }
-        .font-body-lg { font-family: 'Geist', sans-serif; font-size: 15px; line-height: 24px; font-weight: 400; }
-        .font-body-md { font-family: 'Geist', sans-serif; font-size: 13px; line-height: 20px; font-weight: 400; }
-        .font-body-sm { font-family: 'Geist', sans-serif; font-size: 12px; line-height: 18px; font-weight: 400; }
-        .font-label-md { font-family: 'Geist', sans-serif; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.04em; }
-        .font-code-sm { font-family: 'Geist', monospace; font-size: 12px; line-height: 16px; font-weight: 400; }
-      `}</style>
-
-      <div className="w-full bg-surface min-h-screen text-on-surface font-body-md p-space-lg flex flex-col gap-space-lg items-center">
-        
-        <div className="w-full max-w-4xl flex flex-col gap-space-lg">
-          {/* HEADER */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
-            <div className="space-y-space-xs">
-              <div className="flex items-center gap-space-xs font-label-md text-primary tracking-widest uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                FIELD INSPECTION
-              </div>
-              <h1 className="font-headline-lg text-on-surface font-semibold tracking-tight">
-                Log New Inspection
-              </h1>
-              <p className="font-body-md text-on-surface-variant max-w-2xl">
-                Submit an inspection report. Works offline with automatic GPS tagging.
-              </p>
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+          <div>
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-xs font-bold uppercase tracking-wider mb-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              DGMS Statutory Field Inspection
             </div>
-            <div className="flex flex-col items-end gap-space-2xs">
-              {syncing && (
-                <span className="text-xs font-medium text-primary flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded">
-                  <span className="material-symbols-outlined text-[14px] animate-spin">sync</span> Syncing Ledger...
-                </span>
-              )}
-              <Link
-                to="/profile"
-                className="font-label-md uppercase tracking-wider px-space-sm py-space-xs rounded bg-surface-container-high hover:bg-surface-container-highest transition-colors flex items-center gap-1.5 text-on-surface-variant"
-              >
-                <span className="material-symbols-outlined text-[16px]">account_circle</span>
-                <span>Active Duty: {profile.fullName || 'Inspector'}</span>
-              </Link>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Log New Inspection
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl font-normal">
+              Submit an official inspection report with live high-resolution photo evidence, live webcam stream, and automatic GPS geo-tagging.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row md:flex-row items-start md:items-end gap-2 shrink-0">
+            {syncing && (
+              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20">
+                <span className="material-symbols-outlined text-[16px] animate-spin">sync</span> Syncing Ledger...
+              </span>
+            )}
+            <Link
+              to="/attendance"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1.5 transition-colors shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[17px]">how_to_reg</span>
+              <span>Workforce Attendance</span>
+            </Link>
+            <Link
+              to="/profile"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-750 shadow-sm flex items-center gap-2 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400">badge</span>
+              <span>Active Duty: <strong className="text-slate-900 dark:text-white">{profile.fullName || 'Inspector'}</strong></span>
+            </Link>
+          </div>
+        </div>
+
+        {/* MAIN FORM CONTAINER */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+          
+          {/* Card Topbar */}
+          <div className="px-6 py-4 bg-slate-50/80 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[20px]">assignment_turned_in</span>
+              <span className="text-base font-bold text-slate-900 dark:text-white">Inspection Details</span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="text-slate-500 dark:text-slate-400 font-sans">Network Status:</span>
+              <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
+                isOnline 
+                  ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' 
+                  : 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/30'
+              }`}>
+                {isOnline ? 'ONLINE' : 'OFFLINE (AUTO-QUEUED)'}
+              </span>
             </div>
           </div>
 
-          {/* FORM CONTAINER */}
-          <div className="bg-surface-container-low rounded-xl shadow-md overflow-hidden border border-surface-container-high/50">
-            <div className="p-space-md bg-surface-container-lowest border-b border-surface-container-high/50 flex items-center justify-between">
-              <div className="flex items-center gap-space-xs">
-                <span className="material-symbols-outlined text-primary text-[18px]">rule</span>
-                <span className="font-headline-sm font-semibold">Inspection Details</span>
-              </div>
-              <div className="flex items-center gap-space-sm font-code-sm text-outline">
-                <span>Network Status:</span>
-                <span className={`px-2 py-0.5 rounded ${isOnline ? 'bg-primary/20 text-primary' : 'bg-error/20 text-error'}`}>
-                  {isOnline ? 'ONLINE' : 'OFFLINE (QUEUED)'}
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-space-xl space-y-space-lg flex flex-col gap-space-md">
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-space-xl">
-                <div className="space-y-space-xs">
-                  <label className="font-label-md uppercase tracking-wider text-outline">Select Mine *</label>
+          <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
+            
+            {/* Grid 1: Mine and Contractor */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  Select Colliery / Mine <span className="text-rose-600">*</span>
+                </label>
+                <div className="relative">
                   <select 
                     required
                     value={formData.mine_id}
                     onChange={e => setFormData(prev => ({...prev, mine_id: e.target.value}))}
-                    className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-medium appearance-none"
                   >
-                    <option value="" className="bg-surface-container-high">-- Select Mine --</option>
+                    <option value="" className="bg-white dark:bg-slate-900 text-slate-500">-- Choose Mine / Colliery --</option>
                     {mines.map(m => (
-                      <option key={m.id} value={m.id} className="bg-surface-container-high">{m.name}</option>
+                      <option key={m.id} value={m.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{m.name}</option>
                     ))}
                   </select>
-                </div>
-
-                <div className="space-y-space-xs">
-                  <label className="font-label-md uppercase tracking-wider text-outline">Contractor</label>
-                  <select 
-                    value={formData.contractor_id}
-                    onChange={e => setFormData(prev => ({...prev, contractor_id: e.target.value}))}
-                    className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
-                  >
-                    <option value="" className="bg-surface-container-high">-- None (CIL Direct) --</option>
-                    {contractors.map(c => (
-                      <option key={c.id} value={c.id} className="bg-surface-container-high">{c.name}</option>
-                    ))}
-                  </select>
+                  <span className="material-symbols-outlined text-slate-400 absolute right-3.5 top-3.5 pointer-events-none text-[20px]">expand_more</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-space-xl">
-                <div className="space-y-space-xs">
-                  <label className="font-label-md uppercase tracking-wider text-outline">Violation Category *</label>
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  Contractor Agency (If Applicable)
+                </label>
+                <div className="relative">
+                  <select 
+                    value={formData.contractor_id}
+                    onChange={e => setFormData(prev => ({...prev, contractor_id: e.target.value}))}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-medium appearance-none"
+                  >
+                    <option value="" className="bg-white dark:bg-slate-900 text-slate-500">-- None (CIL Direct Operations) --</option>
+                    {contractors.map(c => (
+                      <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{c.name}</option>
+                    ))}
+                  </select>
+                  <span className="material-symbols-outlined text-slate-400 absolute right-3.5 top-3.5 pointer-events-none text-[20px]">expand_more</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Grid 2: Category and Severity */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  Violation Category <span className="text-rose-600">*</span>
+                </label>
+                <div className="relative">
                   <select 
                     required
                     value={formData.category}
                     onChange={e => setFormData(prev => ({...prev, category: e.target.value}))}
-                    className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-medium appearance-none"
                   >
-                    <option value="safety" className="bg-surface-container-high">Safety & Strata</option>
-                    <option value="environment" className="bg-surface-container-high">Environmental Hazard</option>
-                    <option value="production" className="bg-surface-container-high">Unauthorized Extraction</option>
-                    <option value="labour" className="bg-surface-container-high">Labour & Welfare</option>
+                    <option value="safety" className="bg-white dark:bg-slate-900">Safety & Strata Control</option>
+                    <option value="environment" className="bg-white dark:bg-slate-900">Environmental Hazard & Dust</option>
+                    <option value="production" className="bg-white dark:bg-slate-900">Unauthorized Extraction / Boundary</option>
+                    <option value="labour" className="bg-white dark:bg-slate-900">Labour & Welfare (CLRA/PME)</option>
                   </select>
+                  <span className="material-symbols-outlined text-slate-400 absolute right-3.5 top-3.5 pointer-events-none text-[20px]">expand_more</span>
                 </div>
+              </div>
 
-                <div className="space-y-space-xs">
-                  <label className="font-label-md uppercase tracking-wider text-outline">Severity *</label>
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                  Severity Level <span className="text-rose-600">*</span>
+                </label>
+                <div className="relative">
                   <select 
                     required
                     value={formData.severity}
                     onChange={e => setFormData(prev => ({...prev, severity: e.target.value}))}
-                    className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-medium appearance-none"
                   >
-                    <option value="low" className="bg-surface-container-high">Standard (Monitor)</option>
-                    <option value="medium" className="bg-surface-container-high">Elevated (Notice Issue)</option>
-                    <option value="high" className="bg-surface-container-high">Critical (Immediate Halt)</option>
+                    <option value="low" className="bg-white dark:bg-slate-900">Standard (Monitor & Rectify)</option>
+                    <option value="medium" className="bg-white dark:bg-slate-900">Elevated (Statutory Notice Issue)</option>
+                    <option value="high" className="bg-white dark:bg-slate-900">Critical (Sec 22 Action / Immediate Halt)</option>
                   </select>
+                  <span className="material-symbols-outlined text-slate-400 absolute right-3.5 top-3.5 pointer-events-none text-[20px]">expand_more</span>
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-space-xs">
-                <label className="font-label-md uppercase tracking-wider text-outline">Description *</label>
-                <textarea 
-                  required
-                  rows={4}
-                  value={formData.description}
-                  onChange={e => setFormData(prev => ({...prev, description: e.target.value}))}
-                  className="w-full bg-surface-container border border-surface-container-highest rounded-md px-space-md py-space-sm text-on-surface focus:outline-none focus:border-primary transition-colors font-body-sm resize-none"
-                  placeholder="Describe the issue, observations, or action required..."
-                />
-              </div>
+            {/* Description */}
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">
+                Field Observations & Description <span className="text-rose-600">*</span>
+              </label>
+              <textarea 
+                required
+                rows={4}
+                value={formData.description}
+                onChange={e => setFormData(prev => ({...prev, description: e.target.value}))}
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-normal resize-none"
+                placeholder="Describe observed conditions, statutory non-compliance, bench stability, machine serial numbers, or required remedial action..."
+              />
+            </div>
 
-              <div className="space-y-space-xs">
-                <label className="font-label-md uppercase tracking-wider text-outline flex items-center justify-between">
-                  <span>GPS Location *</span>
-                  {formData.lat && <span className="text-primary normal-case font-code-sm flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">my_location</span> Saved: {new Date().toLocaleTimeString()}</span>}
+            {/* GPS Location Bar */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  GNSS / Pit GPS Location <span className="text-rose-600">*</span>
                 </label>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-space-md bg-surface-container p-space-sm rounded border border-surface-container-highest">
-                  <button
-                    type="button"
-                    onClick={captureLocation}
-                    disabled={loadingLocation}
-                    className="flex items-center justify-center gap-2 px-space-md py-space-xs bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded transition-colors font-body-sm min-w-[200px]"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">satellite_alt</span>
-                    {loadingLocation ? 'Finding Location...' : 'Tag GPS Location'}
-                  </button>
-                  
-                  {formData.lat && formData.lng ? (
-                    <div className="flex items-center gap-space-xs text-primary font-code-sm bg-primary/10 px-3 py-1 rounded">
-                      <span>{formData.lat.toFixed(6)}° N, {formData.lng.toFixed(6)}° E</span>
-                      <span className="text-outline">± 2.4m RTK Error</span>
-                    </div>
-                  ) : (
-                    <span className="text-outline-variant font-code-sm italic">Awaiting GNSS uplink...</span>
-                  )}
-                </div>
+                {formData.lat && (
+                  <span className="text-emerald-700 dark:text-emerald-400 font-mono text-xs flex items-center gap-1 font-semibold">
+                    <span className="material-symbols-outlined text-[15px]">verified</span>
+                    GPS Geotagged at {new Date().toLocaleTimeString()}
+                  </span>
+                )}
               </div>
               
-              <div className="space-y-space-xs">
-                <label className="font-label-md uppercase tracking-wider text-outline flex items-center justify-between">
-                  <span>Photo Evidence</span>
-                  {formData.photo_base64 && (
-                    <button type="button" onClick={handleOcr} disabled={isOcrLoading} className="text-secondary hover:text-secondary-container normal-case font-body-sm flex items-center gap-1 transition-colors">
-                      {isOcrLoading ? <span className="material-symbols-outlined text-[14px] animate-spin">sync</span> : <span className="material-symbols-outlined text-[14px]">document_scanner</span>}
-                      {isOcrLoading ? 'Running OCR...' : 'Extract Text (OCR)'}
-                    </button>
-                  )}
-                </label>
-                <div className="border-2 border-dashed border-surface-container-highest rounded-lg p-space-xl flex flex-col items-center justify-center text-center bg-surface-container/50 hover:bg-surface-container transition-colors relative overflow-hidden group">
-                  {formData.photo_base64 ? (
-                    <div className="relative w-full h-48 flex justify-center">
-                      <img src={formData.photo_base64} alt="Evidence" className="h-full object-contain rounded" />
-                      <button type="button" onClick={() => setFormData(p => ({...p, photo_base64: ''}))} className="absolute top-2 right-2 bg-error/90 hover:bg-error text-on-error rounded-full w-8 h-8 flex items-center justify-center transition-colors backdrop-blur">
-                        <span className="material-symbols-outlined text-[18px]">close</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="w-12 h-12 rounded bg-surface-container-high flex items-center justify-center text-outline mb-space-sm group-hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">add_a_photo</span>
-                      </div>
-                      <p className="font-body-sm text-outline-variant">Take a photo to attach to this report.</p>
-                      <label htmlFor="camera-input" className="mt-space-md px-space-md py-space-xs bg-surface-container-high text-on-surface hover:bg-surface-bright rounded text-sm font-medium cursor-pointer transition-colors border border-surface-container-highest">
-                        Open Camera
-                      </label>
-                    </>
-                  )}
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    capture="environment" 
-                    className="hidden" 
-                    id="camera-input" 
-                    ref={fileInputRef}
-                    onChange={handlePhotoCapture}
-                  />
-                </div>
-              </div>
-
-              <div className="pt-space-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-950/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800">
                 <button
-                  type="submit"
-                  disabled={status === 'submitting' || !formData.mine_id || !formData.category || !formData.description}
-                  className="w-full flex items-center justify-center gap-space-xs px-space-md py-space-sm bg-primary text-on-primary rounded font-headline-sm text-[15px] hover:bg-primary-container transition-all shadow-[0_0_12px_rgba(142,213,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                  type="button"
+                  onClick={captureLocation}
+                  disabled={loadingLocation}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg transition-colors text-xs font-bold shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-[20px]">send</span>
-                  {status === 'submitting' ? 'Submitting...' : 'Submit Report'}
+                  <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400">satellite_alt</span>
+                  {loadingLocation ? 'Acquiring GNSS Lock...' : 'Tag Precise GPS Location'}
                 </button>
                 
-                {usingCachedGps && (
-                  <p className="font-code-sm text-emerald-700 dark:text-emerald-400 mt-space-sm flex items-center justify-center gap-1 font-medium">
-                    <span className="material-symbols-outlined text-[16px]">public_off</span>
-                    🌐 Working Offline: Using Cached GPS Location.
-                  </p>
-                )}
-                
-                {status === 'success_online' && (
-                  <div className="mt-space-md p-space-md bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg border border-emerald-400 dark:border-emerald-500/30 flex items-center justify-between gap-space-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[20px] text-emerald-700 dark:text-emerald-400 shrink-0">verified</span>
-                      <p className="font-body-sm font-bold">Inspection Report Submitted Successfully!</p>
-                    </div>
-                    <Link
-                      to="/violations"
-                      className="px-3 py-1 rounded bg-emerald-200 dark:bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-label-md uppercase tracking-wider transition-colors shrink-0"
-                    >
-                      View Reports →
-                    </Link>
+                {formData.lat && formData.lng ? (
+                  <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-400 font-mono text-xs font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>{formData.lat.toFixed(6)}° N, {formData.lng.toFixed(6)}° E</span>
+                    <span className="text-emerald-600 dark:text-emerald-500 text-[10px] uppercase font-sans">±2.4m RTK Fixed</span>
                   </div>
-                )}
-                
-                {status === 'success_offline' && (
-                  <div className="mt-space-md p-space-md bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-lg border border-amber-400 dark:border-amber-500/30 flex items-center justify-between gap-space-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[20px] text-amber-700 dark:text-amber-400 shrink-0">cloud_done</span>
-                      <div>
-                        <p className="font-body-sm font-bold">Queued Offline Locally</p>
-                        <p className="text-xs text-amber-700 dark:text-amber-400/80">Stored on device. Will auto-sync to violations ledger once back online.</p>
-                      </div>
-                    </div>
-                    <Link
-                      to="/violations"
-                      className="px-3 py-1 rounded bg-amber-200 dark:bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-label-md uppercase tracking-wider transition-colors shrink-0"
-                    >
-                      View Queue →
-                    </Link>
-                  </div>
-                )}
-                
-                {status === 'error' && (
-                  <div className="mt-space-md p-space-sm bg-error/10 text-error rounded border border-error/20 flex items-center justify-center gap-space-sm">
-                    <span className="material-symbols-outlined text-[20px]">error</span>
-                    <p className="font-body-sm">Connection failed. Saved to offline queue.</p>
-                  </div>
+                ) : (
+                  <span className="text-xs text-slate-400 dark:text-slate-500 italic flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[16px]">location_searching</span>
+                    Awaiting GPS coordinates...
+                  </span>
                 )}
               </div>
+            </div>
+            
+            {/* PHOTO EVIDENCE SECTION */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Photo Evidence & Geotagged Capture
+                </label>
+                {formData.photo_base64 && (
+                  <button 
+                    type="button" 
+                    onClick={handleOcr} 
+                    disabled={isOcrLoading} 
+                    className="text-xs font-bold text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 flex items-center gap-1.5 transition-colors bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md"
+                  >
+                    {isOcrLoading ? (
+                      <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                    ) : (
+                      <span className="material-symbols-outlined text-[16px]">document_scanner</span>
+                    )}
+                    {isOcrLoading ? 'Extracting OCR...' : 'Extract Notice Text (OCR)'}
+                  </button>
+                )}
+              </div>
+
+              {formData.photo_base64 ? (
+                /* PREVIEW OF CAPTURED PHOTO */
+                <div className="relative rounded-xl overflow-hidden border-2 border-emerald-500/40 bg-slate-900 group">
+                  <img 
+                    src={formData.photo_base64} 
+                    alt="Evidence Preview" 
+                    className="w-full h-64 object-contain bg-slate-950" 
+                  />
+                  
+                  {/* Photo Actions Overlay */}
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startCamera()}
+                      className="px-3 py-1.5 bg-slate-900/90 hover:bg-slate-900 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-md backdrop-blur border border-slate-700"
+                    >
+                      <span className="material-symbols-outlined text-[16px] text-amber-400">photo_camera</span>
+                      Retake
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setFormData(p => ({...p, photo_base64: ''}))} 
+                      className="p-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors shadow-md"
+                      title="Remove image"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  </div>
+
+                  <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded bg-black/75 backdrop-blur text-white text-[11px] font-mono flex items-center gap-2 border border-white/10">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Watermark Verified • DGMS Evidentiary Stamp</span>
+                  </div>
+                </div>
+              ) : (
+                /* DROPZONE & CAMERA TRIGGER */
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-amber-500/60 dark:hover:border-amber-500/60 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-slate-50 dark:bg-slate-950/60 transition-all">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3 shadow-sm">
+                    <span className="material-symbols-outlined text-[28px]">photo_camera</span>
+                  </div>
+                  
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Capture or Upload Evidence
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
+                    Open your device camera directly or select an image file to attach to this statutory inspection record.
+                  </p>
+
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    {/* Live Camera Button */}
+                    <button
+                      type="button"
+                      onClick={() => startCamera()}
+                      className="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">videocam</span>
+                      Open Live Camera
+                    </button>
+
+                    {/* File Upload Button */}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">folder_open</span>
+                      Choose Image File
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Hidden file input for fallback */}
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                ref={fileInputRef}
+                onChange={handlePhotoCapture}
+              />
+            </div>
+
+            {/* SUBMIT BUTTON & STATUS MESSAGES */}
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="submit"
+                disabled={status === 'submitting' || !formData.mine_id || !formData.category || !formData.description}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-amber-600 hover:bg-amber-500 active:scale-[0.99] text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+              >
+                <span className="material-symbols-outlined text-[20px]">send</span>
+                {status === 'submitting' ? 'Submitting to DGMS Registry...' : 'Submit Statutory Inspection Report'}
+              </button>
               
-            </form>
-          </div>
+              {usingCachedGps && (
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-2.5 flex items-center justify-center gap-1.5 font-medium">
+                  <span className="material-symbols-outlined text-[16px]">public_off</span>
+                  Field Offline Mode: Using localized fallback GPS coordinates.
+                </p>
+              )}
+              
+              {status === 'success_online' && (
+                <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 rounded-xl border border-emerald-300 dark:border-emerald-500/30 flex items-center justify-between gap-3 shadow-sm">
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[24px] text-emerald-600 dark:text-emerald-400 shrink-0">verified</span>
+                    <div>
+                      <p className="text-sm font-bold">Inspection Report Registered Online</p>
+                      <p className="text-xs text-emerald-700 dark:text-emerald-400/90">Synchronized with central DGMS violation repository and risk score engine.</p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/violations"
+                    className="px-3.5 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 text-xs font-bold transition-colors shrink-0 shadow-sm"
+                  >
+                    View Violations →
+                  </Link>
+                </div>
+              )}
+              
+              {status === 'success_offline' && (
+                <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 rounded-xl border border-amber-300 dark:border-amber-500/30 flex items-center justify-between gap-3 shadow-sm">
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[24px] text-amber-600 dark:text-amber-400 shrink-0">cloud_off</span>
+                    <div>
+                      <p className="text-sm font-bold">Queued Offline in Local Encrypted Storage</p>
+                      <p className="text-xs text-amber-700 dark:text-amber-400/90">Stored securely on this terminal. Auto-synchronization will resume once network connectivity is re-established.</p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/violations"
+                    className="px-3.5 py-1.5 rounded-lg bg-amber-600 text-white hover:bg-amber-500 text-xs font-bold transition-colors shrink-0 shadow-sm"
+                  >
+                    View Queue →
+                  </Link>
+                </div>
+              )}
+              
+              {status === 'error' && (
+                <div className="mt-4 p-4 bg-rose-50 dark:bg-rose-500/10 text-rose-800 dark:text-rose-300 rounded-xl border border-rose-300 dark:border-rose-500/30 flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined text-[20px] text-rose-600">error</span>
+                  <p className="text-xs font-bold">Connection issue encountered. Record cached to offline queue.</p>
+                </div>
+              )}
+            </div>
+            
+          </form>
         </div>
       </div>
-    </>
+
+      {/* ── LIVE CAMERA STREAM VIEWFINDER MODAL ── */}
+      {isCameraOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-5 py-3.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-white">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-200">
+                  DGMS Live Camera Stream
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleCameraFacing}
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                  title="Switch camera"
+                >
+                  <span className="material-symbols-outlined text-[18px]">flip_camera_android</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={closeCameraModal}
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                  title="Close camera"
+                >
+                  <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Video Viewport */}
+            <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+              {cameraError ? (
+                <div className="p-6 text-center max-w-md">
+                  <span className="material-symbols-outlined text-[40px] text-rose-400 mb-2">no_photography</span>
+                  <p className="text-xs text-rose-300 font-semibold mb-3">{cameraError}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeCameraModal();
+                      fileInputRef.current?.click();
+                    }}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold"
+                  >
+                    Upload File Instead
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Grid Lines Overlay */}
+                  <div className="absolute inset-0 pointer-events-none grid grid-cols-3 grid-rows-3 border border-white/10 opacity-30">
+                    <div className="border-r border-b border-white/20"></div>
+                    <div className="border-r border-b border-white/20"></div>
+                    <div className="border-b border-white/20"></div>
+                    <div className="border-r border-b border-white/20"></div>
+                    <div className="border-r border-b border-white/20"></div>
+                    <div className="border-b border-white/20"></div>
+                    <div className="border-r border-white/20"></div>
+                    <div className="border-r border-white/20"></div>
+                    <div></div>
+                  </div>
+
+                  {/* Top Live Badge */}
+                  <div className="absolute top-3 left-3 px-2 py-1 rounded bg-black/60 backdrop-blur text-emerald-400 font-mono text-[10px] flex items-center gap-1.5 border border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    LIVE STREAM 720P
+                  </div>
+
+                  {/* Shutter Flash Animation */}
+                  {isCapturing && (
+                    <div className="absolute inset-0 bg-white opacity-80 pointer-events-none animate-ping"></div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer / Shutter Button */}
+            <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 font-mono">
+                {cameraFacing === 'environment' ? 'Facing: Rear/External' : 'Facing: Front/Webcam'}
+              </span>
+
+              <button
+                type="button"
+                onClick={captureShutter}
+                disabled={!!cameraError || isCapturing}
+                className="w-14 h-14 rounded-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 flex items-center justify-center shadow-lg transition-transform border-4 border-slate-900 focus:outline-none"
+                title="Capture Frame"
+              >
+                <span className="material-symbols-outlined text-[28px]">photo_camera</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  closeCameraModal();
+                  fileInputRef.current?.click();
+                }}
+                className="text-xs text-slate-400 hover:text-white underline font-sans"
+              >
+                Upload File
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden canvas for capturing video frames */}
+      <canvas ref={canvasRef} className="hidden" />
+    </div>
   );
 }

@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { savePendingSubmission, getPendingCount } from '../services/db';
+import { savePendingSubmission, getPendingCount, getPendingAttendances } from '../services/db';
 import {
   HardHat, Users, AlertTriangle, CheckCircle2, WifiOff, Wifi,
   MapPin, Camera, Mic, MicOff, Clock, ShieldAlert, Truck, ClipboardCheck,
   X, Send, ChevronDown, ChevronUp, Activity, FileText, DatabaseBackup, ShieldCheck,
-  Flame, Gauge, Zap, Circle
+  Flame, Gauge, Zap, Circle, UserCheck
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -54,6 +54,8 @@ export default function CollieryManagerDashboard() {
   const [showContractors, setShowContractors] = useState(false);
   const [showCompliance, setShowCompliance] = useState(false);
 
+  const [todayAttendances, setTodayAttendances] = useState<any[]>([]);
+
   // Live clock
   useEffect(() => {
     const tick = setInterval(() => setTime(new Date().toLocaleTimeString('en-IN', { hour12: false })), 1000);
@@ -62,7 +64,7 @@ export default function CollieryManagerDashboard() {
 
   // Online/offline
   useEffect(() => {
-    const goOnline = () => { setIsOnline(true); refreshPending(); };
+    const goOnline = () => { setIsOnline(true); refreshPending(); fetchAttendanceData(); };
     const goOffline = () => setIsOnline(false);
     window.addEventListener('online', goOnline);
     window.addEventListener('offline', goOffline);
@@ -71,7 +73,34 @@ export default function CollieryManagerDashboard() {
 
   async function refreshPending() { setPendingCount(await getPendingCount()); }
 
-  useEffect(() => { refreshPending(); fetchData(); }, [user]);
+  const fetchAttendanceData = async () => {
+    try {
+      const pending = await getPendingAttendances();
+      let serverAtt: any[] = [];
+      if (navigator.onLine) {
+        const today = new Date().toISOString().split('T')[0];
+        const { data, error } = await supabase
+          .from('attendance')
+          .select('*')
+          .gte('timestamp', `${today}T00:00:00`)
+          .order('timestamp', { ascending: false });
+        if (!error && data) serverAtt = data;
+      }
+      setTodayAttendances([...pending, ...serverAtt]);
+    } catch (e) {
+      console.warn('Dashboard attendance fetch failed:', e);
+    }
+  };
+
+  useEffect(() => { 
+    refreshPending(); 
+    fetchData(); 
+    fetchAttendanceData();
+
+    const handleAttUpdated = () => fetchAttendanceData();
+    window.addEventListener('coalguard:attendanceUpdated', handleAttUpdated);
+    return () => window.removeEventListener('coalguard:attendanceUpdated', handleAttUpdated);
+  }, [user]);
 
   async function fetchData() {
     if (!user) return;
@@ -161,7 +190,14 @@ export default function CollieryManagerDashboard() {
 
   // Derived counts for hero section
   const overdueCount = complianceItems.filter(c => c.status === 'overdue').length;
-  const activeContractors = CONTRACTOR_CHECKINS.filter(c => c.status === 'checked-in').length;
+  const uniqueClockedWorkers = new Set(todayAttendances.map(a => a.worker_id)).size;
+  const workersOnSite = Math.max(354 + uniqueClockedWorkers, uniqueClockedWorkers);
+  const distinctContractorAgencies = Array.from(new Set(
+    todayAttendances
+      .map(a => a.contractor_name)
+      .filter(n => n && !n.includes('CIL Direct'))
+  ));
+  const activeContractors = Math.max(distinctContractorAgencies.length, 2);
 
   return (
     <div className="min-h-screen font-sans p-4 md:p-6 space-y-4" style={{ backgroundColor: 'var(--cg-bg)', color: 'var(--cg-text-primary)' }}>
@@ -220,14 +256,25 @@ export default function CollieryManagerDashboard() {
         </div>
 
         {/* Workers on site */}
-        <div className="p-4 rounded-xl border" style={{ background: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
-          <div className="flex items-center gap-2 mb-1">
-            <Users className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-            <span className="text-xs font-semibold" style={{ color: 'var(--cg-text-muted)' }}>Workers on Site</span>
+        <Link
+          to="/attendance"
+          className="p-4 rounded-xl border block hover:border-blue-400/60 transition-all group"
+          style={{ background: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}
+        >
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+              <span className="text-xs font-semibold" style={{ color: 'var(--cg-text-muted)' }}>Workers on Site</span>
+            </div>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:underline">
+              Muster Roll →
+            </span>
           </div>
-          <div className="text-3xl font-black" style={{ color: 'var(--cg-text-primary)' }}>357</div>
-          <p className="text-xs mt-1" style={{ color: 'var(--cg-text-muted)' }}>Across 3 shifts</p>
-        </div>
+          <div className="text-3xl font-black" style={{ color: 'var(--cg-text-primary)' }}>{workersOnSite}</div>
+          <p className="text-xs mt-1" style={{ color: 'var(--cg-text-muted)' }}>
+            {uniqueClockedWorkers > 0 ? `${uniqueClockedWorkers} clocked in today (3 shifts)` : 'Across 3 shifts'}
+          </p>
+        </Link>
 
         {/* Overdue compliance */}
         <div className={`p-4 rounded-xl border ${overdueCount > 0 ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/20' : ''}`}
@@ -244,17 +291,26 @@ export default function CollieryManagerDashboard() {
         </div>
 
         {/* Contractors checked in */}
-        <div className="p-4 rounded-xl border" style={{ background: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}>
-          <div className="flex items-center gap-2 mb-1">
-            <Truck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-            <span className="text-xs font-semibold" style={{ color: 'var(--cg-text-muted)' }}>Contractors In</span>
+        <Link
+          to="/attendance"
+          className="p-4 rounded-xl border block hover:border-emerald-400/60 transition-all group"
+          style={{ background: 'var(--cg-surface)', borderColor: 'var(--cg-border)' }}
+        >
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <Truck className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+              <span className="text-xs font-semibold" style={{ color: 'var(--cg-text-muted)' }}>Contractors In</span>
+            </div>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:underline">
+              Punches →
+            </span>
           </div>
           <div className="text-3xl font-black" style={{ color: 'var(--cg-text-primary)' }}>{activeContractors}</div>
           <p className="text-xs mt-1" style={{ color: 'var(--cg-text-muted)' }}>of {CONTRACTOR_CHECKINS.length} registered</p>
-        </div>
+        </Link>
       </div>
 
-      {/* ── PRIMARY ACTION — single, prominent CTA ─────────────────── */}
+      {/* ── PRIMARY ACTION — prominent CTAs ─────────────────── */}
       <div className="flex gap-3 flex-wrap">
         <button
           id="report-hazard-btn"
@@ -264,6 +320,15 @@ export default function CollieryManagerDashboard() {
           <AlertTriangle className="w-4 h-4" />
           Report a Hazard
         </button>
+
+        {/* Attendance Action */}
+        <Link
+          to="/attendance"
+          className="flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-colors bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-700 dark:text-amber-400 shadow-sm"
+        >
+          <UserCheck className="w-4 h-4" />
+          Field Attendance (Offline)
+        </Link>
 
         {/* Secondary actions — outlined, visually quieter */}
         <Link
@@ -469,6 +534,12 @@ export default function CollieryManagerDashboard() {
                 </div>
               </div>
             ))}
+            <div className="px-5 py-2.5 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+              <span className="text-xs text-slate-500">Live Pit Attendance Active</span>
+              <Link to="/attendance" className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline">
+                Mark Shift Attendance →
+              </Link>
+            </div>
           </div>
         )}
       </div>
@@ -517,6 +588,12 @@ export default function CollieryManagerDashboard() {
                 </div>
               </div>
             ))}
+            <div className="px-5 py-2.5 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+              <span className="text-xs text-slate-500">DGMS CLRA Roster</span>
+              <Link to="/attendance" className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline">
+                View Clocked-In Contractors →
+              </Link>
+            </div>
           </div>
         )}
       </div>

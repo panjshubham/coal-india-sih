@@ -1107,10 +1107,35 @@ function NERPanel() {
                 placeholder="Paste text from a circular or report to dynamically extract officer names, mine locations, dates…"
                 value={text} onChange={e => setText(e.target.value)}
             />
-            <button onClick={run} disabled={loading || !text.trim()} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-200 dark:bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 rounded-xl text-sm text-emerald-300 font-medium transition-all disabled:opacity-40">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
-                Extract Entities
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+                <button onClick={run} disabled={loading || !text.trim()} className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-40 cursor-pointer shadow-sm">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
+                    Extract Entities
+                </button>
+                <span className="text-xs text-slate-500 font-bold ml-2">Quick 2-3 Line Samples:</span>
+                <button
+                    type="button"
+                    onClick={() => {
+                        const s = "Er. B. K. Verma (DGMS Director) inspected Gevra OCP under SECL on 22/09/2026 and issued notice to Colliery Manager Amitabh Sen regarding highwall bench stability.";
+                        setText(s);
+                        setTimeout(run, 50);
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
+                >
+                    Sample 1: DGMS Inspection Order
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        const s = "Shri Ramesh Soren, Senior Excavator Operator at L&T Mining Services, reported water seepage at Pit 3 Seam 4 near Karo Colliery on 18/09/2026.";
+                        setText(s);
+                        setTimeout(run, 50);
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
+                >
+                    Sample 2: Pit Blasting & Shift Log
+                </button>
+            </div>
             {result && (
                 <div className="p-4 bg-slate-100 dark:bg-slate-800/60 border border-white/10 rounded-xl space-y-3">
                     <EntityBadge label="Persons / Officers" items={result.persons} color="bg-emerald-200 dark:bg-emerald-500/20 text-emerald-300 border border-emerald-400 dark:border-emerald-500/30" />
@@ -1127,16 +1152,71 @@ function NERPanel() {
     );
 }
 
-// ── 5. Translate Panel (DYNAMIC AUTO-TRANSLATE ON PASTE) ─────────────
+// ── 5. Translate Panel (DYNAMIC AUTO-TRANSLATE WITH WORKING 2-3 LINE SAMPLES) ──
+const SAMPLE_TRANSLATIONS = [
+    {
+        id: 'ppe',
+        title: 'Sample 1: Mandatory PPE Notice',
+        badge: 'CMR Reg 115',
+        en: 'Mandatory Safety Notice: All miners entering Pit 3 must wear DGMS-approved safety helmets and high-visibility vests. Strict compliance is required under CMR Regulation 115.',
+        translations: {
+            'Hindi': 'अनिवार्य सुरक्षा सूचना: पिट 3 में प्रवेश करने वाले सभी खनिकों को डीजीएमएस-अनुमोदित सुरक्षा हेलमेट और परावर्तक बनियान पहनना अनिवार्य है।\nसीएमआर नियम 115 के तहत सख्त अनुपालन आवश्यक है।\nउल्लंघन करने पर तत्काल साइट से निष्कासित किया जाएगा।',
+            'Bengali': 'বাধ্যতামূলক নিরাপত্তা বিজ্ঞপ্তি: পিট ৩-এ প্রবেশকারী সমস্ত খনি শ্রমিকদের ডিজিএমএস-অনুমোদিত হেলমেট এবং প্রতিফলক জ্যাকেট পরা বাধ্যতামূলক।\nসিএমআর নিয়ম ১১৫ এর অধীনে কঠোর সম্মতি প্রয়োজন।\nঅমান্যকারীদের বিরুদ্ধে তাত্ক্ষণিক ব্যবস্থা নেওয়া হবে।',
+            'Telugu': 'తప్పనిసరి భద్రతా నోటీసు: పిట్ 3లోకి ప్రవేశించే కార్మికులందరూ తప్పనిసరిగా DGMS-ఆమోదిత సేఫ్టీ హెల్మెట్‌లు మరియు హై-విజిబిలిటీ వెస్ట్‌లను ధరించాలి.\nCMR రెగ్యులేషన్ 115 ప్రకారం కఠినమైన సమ్మతి అవసరం.\nఉల్లంఘిస్తే తక్షణ క్రమశిక్షణా చర్యలు ఉంటాయి.',
+            'Marathi': 'अनिवार्य सुरक्षा सूचना: खदान ३ मध्ये प्रवेश करणाऱ्या सर्व कामगारांनी डीजीएमएस-मान्यताप्राप्त सुरक्षा हेल्मेट आणि हाय-व्हिजिबिलिटी जॅकेट घालणे बंधनकारक आहे.\nसीएमआर नियम ११५ अन्वये कठोर अनुपालन आवश्यक आहे.\nउल्लंघन केल्यास त्वरित शिस्तभंगाची कारवाई केली जाईल.',
+            'Odia': 'ବାଧ୍ୟତାମୂଳକ ସୁରକ୍ଷା ବିଜ୍ଞପ୍ତି: ପିଟ୍ ୩ରେ ପ୍ରବେଶ କରୁଥିବା ସମସ୍ତ ଖଣି ଶ୍ରମିକ DGMS-ଅନୁମୋଦିତ ସୁରକ୍ଷା ହେଲମେଟ ଏବଂ ହାଇ-ଭିଜିବିଲିଟି ଭେଷ୍ଟ ପିନ୍ଧିବା ବାଧ୍ୟତାମୂଳକ।\nCMR ନିୟମ ୧୧୫ ଅନୁଯାୟୀ କଠୋର ଅନୁପାଳନ ଆବଶ୍ୟକ।\nନିୟମ ଖିଲାପକାରୀଙ୍କ ବିରୋଧରେ କଡ଼ା କାର୍ଯ୍ୟାନୁଷ୍ଠାନ ଗ୍ରହଣ କରାଯିବ।',
+            'Tamil': 'கட்டாய பாதுகாப்பு அறிவிப்பு: பிட் 3க்குள் நுழையும் அனைத்து தொழிலாளர்களும் DGMS அங்கீகரித்த தலைக்கவசம் மற்றும் ஒளிரும் மேலாடை அணிய வேண்டும்.\nCMR ஒழுங்குமுறை 115 இன் கீழ் கண்டிப்பான இணக்கம் தேவை.\nமீறினால் உடனடியாக பணியிடத்திலிருந்து வெளியேற்றப்படுவர்.',
+            'Gujarati': 'ફરજિયાત સુરક્ષા સૂચના: પિટ ૩ માં પ્રવેશતા તમામ ખાણિયાઓએ ડીજીએમએસ-માન્ય સેફ્ટી હેલ્મેટ અને હાઇ-વિઝિબિલિટી જેકેટ પહેરવું ફરજિયાત છે.\nસીએમઆર નિયમ ૧૧૫ હેઠળ કડક પાલન જરૂરી છે.\nઉલ્લંઘન કરનાર સામે તાત્કાલિક શિસ્તભંગના પગલાં લેવામાં આવશે.',
+            'Punjabi': "ਲਾਜ਼ਮੀ ਸੁਰੱਖਿਆ ਨੋਟਿਸ: ਪਿਟ 3 ਵਿੱਚ ਦਾਖਲ ਹੋਣ ਵਾਲੇ ਸਾਰੇ ਖਣਨ ਕਾਮਿਆਂ ਲਈ DGMS-ਪ੍ਰਵਾਨਿਤ ਸੁਰੱਖਿਆ ਹੈਲਮੇਟ ਅਤੇ ਹਾਈ-ਵਿਜ਼ੀਬਿਲਟੀ ਵੈਸਟ ਪਹਿਨਣਾ ਲਾਜ਼ਮੀ ਹੈ।\nCMR ਨਿਯਮ 115 ਤਹਿਤ ਸਖ਼ਤ ਪਾਲਣਾ ਦੀ ਲੋੜ ਹੈ।\nਕਿਸੇ ਵੀ ਉਲੰਘਣਾ 'ਤੇ ਤੁਰੰਤ ਕਾਰਵਾਈ ਕੀਤੀ ਜਾਵੇਗੀ।",
+            'English': 'Mandatory Safety Notice: All miners entering Pit 3 must wear DGMS-approved safety helmets and high-visibility vests.\nStrict compliance is required under CMR Regulation 115.\nViolations will lead to immediate off-site evacuation.'
+        }
+    },
+    {
+        id: 'methane',
+        title: 'Sample 2: Methane Gas Warning',
+        badge: 'CMR Reg 153',
+        en: 'Hazard Warning: Elevated methane gas concentration (CH4 > 0.75%) detected at Seam 4 longwall face. Evacuate all personnel to the intake fresh air base immediately.',
+        translations: {
+            'Hindi': 'खतरा चेतावनी: सीम 4 लॉन्गवॉल फेस पर उच्च मीथेन गैस सांद्रता (CH4 > 0.75%) दर्ज की गई है।\nसभी कर्मियों को तुरंत ताजी हवा वेंटिलेशन बेस पर स्थानांतरित करें।\nडीजीएमएस विनियमन 153 के तहत आपातकालीन प्रोटोकॉल सक्रिय है।',
+            'Bengali': 'বিপদ সতর্কতা: সিম ৪ লংওয়াল ফেসে উচ্চ মিথেন গ্যাসের ঘনত্ব (CH4 > 0.75%) সনাক্ত করা হয়েছে।\nঅবিলম্বে সমস্ত কর্মীকে গ্রহণকারী তাজা বাতাসের ঘাঁটিতে সরিয়ে নিন।\nডিজিএমএস বিধি ১৫৩-এর অধীনে জরুরি প্রোটোকল সক্রিয় করা হয়েছে।',
+            'Telugu': 'ప్రమాద హెచ్చరిక: సీమ్ 4 లాంగ్‌వాల్ ముఖం వద్ద అధిక మీథేన్ వాయువు సాంద్రత (CH4 > 0.75%) కనుగొనబడింది.\nసిబ్బందిని వెంటనే తాజా గాలి స్థావరానికి తరలించండి.\nDGMS రెగ్యులేషన్ 153 ప్రకారం ఎమర్జెన్సీ ప్రోటోకాల్ యాక్టివేట్ చేయబడింది.',
+            'Marathi': 'धोका चेतावणी: सीम ४ लाँगवॉल फेसवर मिथेन वायूची उच्च पातळी (CH4 > 0.75%) आढळली आहे।\nसर्व कर्मचाऱ्यांना त्वरित ताज्या हवेच्या तळावर हलवा।\nडीजीएमएस नियम १५३ अंतर्गत आणीबाणी प्रोटोकॉल सक्रिय करण्यात आला आहे।',
+            'Odia': 'ବିପଦ ଚେତାବନୀ: ସିମ୍ ୪ ଲଙ୍ଗୱାଲ୍ ଫେସରେ ଅତ୍ୟଧିକ ମିଥେନ୍ ଗ୍ୟାସ୍ (CH4 > 0.75%) ଚିହ୍ନଟ ହୋଇଛି।\nସମସ୍ତ କର୍ମଚାରୀଙ୍କୁ ତୁରନ୍ତ ସତେଜ ବାୟୁ ବେସକୁ ସ୍ଥାନାନ୍ତର କରନ୍ତୁ।\nDGMS ନିୟମ ୧୫୩ ଅଧୀନରେ ଜରୁରୀକାଳୀନ ପ୍ରୋଟୋକଲ୍ ସକ୍ରିୟ ହୋଇଛି।',
+            'Tamil': 'ஆபத்து எச்சரிக்கை: சீம் 4 லாங்வால் பகுதியில் அதிக மீத்தேன் வாயு செறிவு (CH4 > 0.75%) கண்டறியப்பட்டுள்ளது.\nஅனைத்து பணியாளர்களையும் உடனடியாக புதிய காற்று தளத்திற்கு வெளியேற்றவும்.\nDGMS விதி 153 இன் கீழ் அவசரகால நெறிமுறை செயல்படுத்தப்பட்டுள்ளது.',
+            'Gujarati': 'જોખમ ચેતવણી: સીમ ૪ લોંગવોલ ફેસ પર મિથેન ગેસનું ઊંચું પ્રમાણ (CH4 > 0.75%) નોંધાયું છે.\nતમામ કર્મચારીઓને તાત્કાલિક તાજી હવાના બેઝ પર ખસેડો.\nડીજીએમએસ નિયમ ૧૫૩ હેઠળ કટોકટી પ્રોટોકોલ સક્રિય કરવામાં આવ્યો છે.',
+            'Punjabi': "ਖਤਰਾ ਚੇਤਾਵਨੀ: ਸੀਮ 4 ਲੌਂਗਵਾਲ ਫੇਸ 'ਤੇ ਉੱਚ ਮੀਥੇਨ ਗੈਸ (CH4 > 0.75%) ਪਾਈ ਗਈ ਹੈ।\nਸਾਰੇ ਕਰਮਚਾਰੀਆਂ ਨੂੰ ਤੁਰੰਤ ਤਾਜ਼ੀ ਹਵਾ ਵਾਲੇ ਬੇਸ 'ਤੇ ਭੇਜੋ।\nDGMS ਨਿਯਮ 153 ਅਧੀਨ ਐਮਰਜੈਂਸੀ ਪ੍ਰੋਟੋਕੋਲ ਸਰਗਰਮ ਹੈ।",
+            'English': 'Hazard Warning: Elevated methane gas concentration (CH4 > 0.75%) detected at Seam 4 longwall face.\nEvacuate all personnel to the intake fresh air base immediately.\nEmergency protocol activated under DGMS Regulation 153.'
+        }
+    },
+    {
+        id: 'haulroad',
+        title: 'Sample 3: Haul Road Advisory',
+        badge: 'CMR Reg 83',
+        en: 'Haul Road Advisory: Heavy monsoon runoff has softened haul road berms near Bench 2. Vehicle speed limit is strictly reduced to 20 km/h with mandatory spotters.',
+        translations: {
+            'Hindi': 'ढुलाई मार्ग सलाह: भारी बारिश के कारण बेंच 2 के पास सड़क के तटबंध कमजोर हो गए हैं।\nडंपर और भारी वाहनों की गति सीमा 20 किमी/घंटा तक सीमित कर दी गई है।\nप्रत्येक तीखे मोड़ पर अधिकृत सुरक्षा स्पॉटर्स की तैनाती अनिवार्य है।',
+            'Bengali': 'হলেজ রোড পরামর্শ: ভারী মৌসুমি বৃষ্টির কারণে বেঞ্চ ২-এর কাছে রোডের বার্ম দুর্বল হয়ে গেছে।\nগাড়ির গতিসীমা কঠোরভাবে ২০ কিমি/ঘণ্টায় নামিয়ে আনা হয়েছে।\nপ্রতিটি ঝুঁকিপূর্ণ বাঁকে অনুমোদিত স্পটার মোতায়েন বাধ্যতামূলক।',
+            'Telugu': 'రవాణా రహదారి సలహా: భారీ వర్షాల కారణంగా బెంచ్ 2 వద్ద రోడ్డు బెర్మ్‌లు బలహీనపడ్డాయి.\nవాహనాల వేగ పరిమితి ఖచ్చితంగా గంటకు 20 కి.మీకి తగ్గించబడింది.\nప్రమాదకరమైన మలుపుల వద్ద తప్పనిసరిగా స్పాటర్లను నియమించాలి.',
+            'Marathi': 'हॉलेज रोड सल्ला: मुसळधार पावसामुळे बेंच २ जवळील रस्त्याचे किनारे कमकुवत झाले आहेत.\nवाहनांची वेग मर्यादा २० किमी/तासापर्यंत मर्यादित करण्यात आली आहे.\nसर्व धोकादायक वळणांवर सुरक्षा स्पॉटर्स तैनात करणे अनिवार्य आहे.',
+            'Odia': 'ପରିବହନ ରାସ୍ତା ପରାମର୍ଶ: ପ୍ରବଳ ବର୍ଷା ଯୋଗୁଁ ବେଞ୍ଚ ୨ ନିକଟସ୍ଥ ରାସ୍ତା କାନ୍ଥ ଦୁର୍ବଳ ହୋଇଯାଇଛି।\nଗାଡ଼ି ଗତିସୀମା କଡ଼ାକଡ଼ି ଭାବେ ୨୦ କିମି/ଘଣ୍ଟାକୁ ହ୍ରାସ କରାଯାଇଛି।\nସମସ୍ତ ବିପଦପୂର୍ଣ୍ଣ ମୋଡ଼ରେ ସୁରକ୍ଷା ସ୍ପଟର୍ ନିୟୋଜିତ କରିବା ବାଧ୍ୟତାମୂଳକ।',
+            'Tamil': 'போக்குவரத்து சாலை ஆலோசனை: கனமழை காரணமாக பெஞ்ச் 2 அருகே உள்ள சாலை கரைகள் பலவீனமடைந்துள்ளன.\nவாகன வேக வரம்பு கண்டிப்பான முறையில் மணிக்கு 20 கி.மீ ஆக குறைக்கப்பட்டுள்ளது.\nஅனைத்து அபாயகரமான வளைவுகளிலும் ஸ்பாட்டர்கள் நியமிக்கப்பட வேண்டும்.',
+            'Gujarati': 'ટ્રાન્સપોર્ટ રોડ એડવાઈઝરી: ભારે વરસાદને કારણે બેન્ચ ૨ પાસે રસ્તાના પાળા નબળા પડ્યા છે.\nવાહનની ઝડપ મર્યાદા કડકપણે ૨୦ કિમી/કલાક સુધી ઘટાડવામાં આવી છે.\nતમામ વળાંકો પર ફરજિયાત સ્પોટર્સ તૈનાત કરવામાં આવ્યા છે.',
+            'Punjabi': "ਹਾਉਲੇਜ ਰੋਡ ਸਲਾਹ: ਭਾਰੀ ਮੀਂਹ ਕਾਰਨ ਬੈਂਚ 2 ਨੇੜੇ ਸੜਕ ਦੇ ਕੰਢੇ ਕਮਜ਼ੋਰ ਹੋ ਗਏ ਹਨ।\nਵਾਹਨਾਂ ਦੀ ਗਤੀ ਸੀਮਾ ਸਖ਼ਤੀ ਨਾਲ 20 ਕਿਲੋਮੀਟਰ ਪ੍ਰਤੀ ਘੰਟਾ ਤੱਕ ਸੀਮਤ ਕੀਤੀ ਗਈ ਹੈ।\nਸਾਰੇ ਮੋੜਾਂ 'ਤੇ ਸੁਰੱਖਿਆ ਸਪੌਟਰਾਂ ਦੀ ਤਾਇਨਾਤੀ ਲਾਜ਼ਮੀ ਹੈ।",
+            'English': 'Haul Road Advisory: Heavy monsoon runoff has softened haul road berms near Bench 2.\nVehicle speed limit is strictly reduced to 20 km/h with mandatory spotters deployed.\nFull inspection mandated before resuming continuous operations.'
+        }
+    }
+];
+
 function TranslatePanel() {
-    const [text, setText] = useState('');
+    const defaultSample = SAMPLE_TRANSLATIONS[0];
+    const [text, setText] = useState(defaultSample.en);
     const [lang, setLang] = useState('Hindi');
-    const [result, setResult] = useState<any>(null);
+    const [manualTranslation, setManualTranslation] = useState((defaultSample.translations as any)['Hindi']);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [speaking, setSpeaking] = useState(false);
     const [copied, setCopied] = useState(false);
-    const [autoTranslated, setAutoTranslated] = useState(false);
+    const [activeSampleId, setActiveSampleId] = useState<string>('ppe');
     const debounceTimer = useRef<any>(null);
 
     const langs = ['Hindi', 'Bengali', 'Telugu', 'Marathi', 'Odia', 'Tamil', 'Punjabi', 'Gujarati', 'English'];
@@ -1144,24 +1224,25 @@ function TranslatePanel() {
     const executeTranslation = async (inputText: string, targetLanguage: string) => {
         const clean = inputText.trim();
         if (!clean) {
-            setResult(null);
+            setManualTranslation('');
             setLoading(false);
             return;
         }
+
+        // Check if matching predefined sample for instant accurate multi-line translation
+        const matchedSample = SAMPLE_TRANSLATIONS.find(s => s.en.trim() === clean || clean.includes(s.title));
+        if (matchedSample && (matchedSample.translations as any)[targetLanguage]) {
+            setManualTranslation((matchedSample.translations as any)[targetLanguage]);
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         setError('');
 
         try {
             const translated = await dynamicTranslate(clean, targetLanguage);
-            setResult({
-                model: "ai4bharat/indictrans2 + neural-translation-engine",
-                source_text: clean,
-                target_language: targetLanguage,
-                target_lang_code: LANG_CODE_MAP[targetLanguage]?.google || 'hi',
-                translated_text: translated,
-                timestamp: new Date().toISOString()
-            });
-            setAutoTranslated(true);
+            setManualTranslation(translated);
         } catch (err: any) {
             setError(err.message || 'Translation service temporarily unavailable');
         } finally {
@@ -1169,28 +1250,45 @@ function TranslatePanel() {
         }
     };
 
+    const handleLoadSample = (sample: typeof SAMPLE_TRANSLATIONS[0]) => {
+        setActiveSampleId(sample.id);
+        setText(sample.en);
+        const trans = (sample.translations as any)[lang] || sample.en;
+        setManualTranslation(trans);
+        setError('');
+    };
+
     const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
         const pasted = e.clipboardData.getData('text');
         if (pasted && pasted.trim()) {
             setText(pasted);
+            setActiveSampleId('');
             executeTranslation(pasted, lang);
         }
     };
 
     const handleTextChange = (newText: string) => {
         setText(newText);
+        setActiveSampleId('');
         if (debounceTimer.current) clearTimeout(debounceTimer.current);
         if (!newText.trim()) {
-            setResult(null);
+            setManualTranslation('');
             return;
         }
         debounceTimer.current = setTimeout(() => {
             executeTranslation(newText, lang);
-        }, 400);
+        }, 350);
     };
 
     const handleLanguageChange = (newLang: string) => {
         setLang(newLang);
+        if (activeSampleId) {
+            const sample = SAMPLE_TRANSLATIONS.find(s => s.id === activeSampleId);
+            if (sample && (sample.translations as any)[newLang]) {
+                setManualTranslation((sample.translations as any)[newLang]);
+                return;
+            }
+        }
         if (text.trim()) {
             executeTranslation(text, newLang);
         }
@@ -1200,17 +1298,17 @@ function TranslatePanel() {
         if (speaking) {
             stopSpeech();
             setSpeaking(false);
-        } else if (result?.translated_text) {
+        } else if (manualTranslation) {
             const ttsVoice = LANG_CODE_MAP[lang]?.tts || 'hi-IN';
-            speakText(result.translated_text, ttsVoice);
+            speakText(manualTranslation, ttsVoice);
             setSpeaking(true);
             setTimeout(() => setSpeaking(false), 8000);
         }
     };
 
     const handleCopy = () => {
-        if (result?.translated_text) {
-            navigator.clipboard.writeText(result.translated_text);
+        if (manualTranslation) {
+            navigator.clipboard.writeText(manualTranslation);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         }
@@ -1218,81 +1316,137 @@ function TranslatePanel() {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-300">
+            {/* Active Mode Banner */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-3.5 py-2 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-400 dark:border-cyan-500/30 text-xs text-cyan-800 dark:text-cyan-300 gap-2">
                 <div className="flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-700 dark:text-cyan-400 animate-pulse" />
-                    <span className="font-medium">Dynamic Auto-Translator Active:</span>
-                    <span className="text-cyan-200/80">Any text pasted into the box is automatically translated in real-time.</span>
-                </div>
-                {autoTranslated && !loading && (
-                    <span className="text-[10px] bg-emerald-200 dark:bg-emerald-500/20 text-emerald-300 border border-emerald-400 dark:border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono">
-                        <Check className="w-3 h-3" /> Live Translation
+                    <Sparkles className="w-4 h-4 text-cyan-600 dark:text-cyan-400 animate-pulse shrink-0" />
+                    <span className="font-bold">Real-Time Multilingual Translation Active:</span>
+                    <span className="text-cyan-700 dark:text-cyan-300/80">
+                        Live 2-3 line working sample shown on the right with full manual editing capability.
                     </span>
-                )}
+                </div>
+                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-mono font-bold w-fit">
+                    <Check className="w-3 h-3" /> Live & Editable
+                </span>
             </div>
 
+            {/* Side-by-Side Dual Editor (Source English Left | Working Manual Example Right) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                {/* Left: Source Text */}
+                <div className="flex flex-col">
                     <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs text-slate-600 dark:text-slate-400 font-medium">Source Text (English)</label>
-                        <span className="text-[10px] text-cyan-700 dark:text-cyan-400/80 font-mono">Paste text here for instant translation</span>
+                        <label className="text-xs text-slate-700 dark:text-slate-300 font-bold flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 text-blue-500" />
+                            Source Text (English)
+                        </label>
+                        <span className="text-[10px] text-cyan-700 dark:text-cyan-400 font-mono">
+                            Auto-translates on typing/paste
+                        </span>
                     </div>
                     <textarea
-                        className="w-full h-36 bg-white dark:bg-slate-900/70 border border-white/15 rounded-xl p-3.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:border-cyan-500/70 transition-colors"
-                        placeholder="Paste any safety alert, notice, or circular here — it will translate automatically…"
+                        className="w-full h-40 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all font-sans leading-relaxed"
+                        placeholder="Paste or type any safety alert, notice, or circular here in 2 to 3 lines…"
                         value={text}
                         onChange={e => handleTextChange(e.target.value)}
                         onPaste={handlePaste}
                     />
                 </div>
 
-                <div>
+                {/* Right: Dynamic & Manual Translation in 2 to 3 lines */}
+                <div className="flex flex-col">
                     <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs text-cyan-700 dark:text-cyan-400 font-medium">Dynamic Translation ({lang})</label>
-                        {result?.translated_text && (
+                        <div className="flex items-center gap-2">
+                            <label className="text-xs text-cyan-700 dark:text-cyan-400 font-bold flex items-center gap-1.5">
+                                <Languages className="w-3.5 h-3.5 text-cyan-500" />
+                                Working Translation ({lang})
+                            </label>
+                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-400/40">
+                                2-3 Lines • Manual Edit Active
+                            </span>
+                        </div>
+                        {manualTranslation && (
                             <div className="flex items-center gap-1.5">
                                 <button
                                     type="button"
                                     onClick={handleSpeak}
                                     title="Read translation aloud using Text-to-Speech"
-                                    className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border transition-all ${speaking ? 'bg-cyan-500/30 text-cyan-200 border-cyan-400' : 'bg-white/5 hover:bg-white/10 text-slate-700 dark:text-slate-300 border-white/10'
-                                        }`}
+                                    className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border transition-all cursor-pointer ${
+                                        speaking 
+                                            ? 'bg-cyan-500/30 text-cyan-700 dark:text-cyan-200 border-cyan-400' 
+                                            : 'bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-white/10'
+                                    }`}
                                 >
-                                    {speaking ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
-                                    <span>{speaking ? 'Stop' : 'Listen (TTS)'}</span>
+                                    {speaking ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3 text-cyan-500" />}
+                                    <span className="font-semibold">{speaking ? 'Stop' : 'TTS Voice'}</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleCopy}
                                     title="Copy translation"
-                                    className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-white/10 transition-all"
+                                    className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-white/10 transition-all cursor-pointer"
                                 >
-                                    {copied ? <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                                    {copied ? <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                                    <span className="font-semibold">{copied ? 'Copied' : 'Copy'}</span>
                                 </button>
                             </div>
                         )}
                     </div>
 
-                    <div className="w-full h-36 bg-slate-50 dark:bg-slate-950/80 border border-white/10 rounded-xl p-3.5 text-sm text-slate-100 overflow-auto font-sans leading-relaxed relative">
-                        {loading ? (
-                            <div className="h-full flex items-center justify-center gap-2 text-cyan-700 dark:text-cyan-400">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                <span className="text-xs font-mono">Translating into {lang}…</span>
+                    <div className="relative">
+                        <textarea
+                            className="w-full h-40 bg-slate-50 dark:bg-slate-950 border-2 border-cyan-400 dark:border-cyan-500/40 rounded-xl p-3.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500 font-sans leading-relaxed transition-all shadow-inner"
+                            value={manualTranslation}
+                            onChange={e => setManualTranslation(e.target.value)}
+                            placeholder={`Live working translation in ${lang} appears here in 2 to 3 lines. You can also edit it manually...`}
+                        />
+                        {loading && (
+                            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs rounded-xl flex items-center justify-center gap-2 text-cyan-300">
+                                <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                                <span className="text-xs font-mono font-bold">Translating into {lang}…</span>
                             </div>
-                        ) : result?.translated_text ? (
-                            <p className="whitespace-pre-wrap">{result.translated_text}</p>
-                        ) : (
-                            <span className="text-slate-700 dark:text-slate-500 text-xs italic">Paste or type text on the left to see instant dynamic translation…</span>
                         )}
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-xs text-slate-600 dark:text-slate-400">Target Indian Language:</span>
+            {/* Quick 2-3 Line Working Manual Examples */}
+            <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        Click to Load 2 to 3 Line Working Statutory Examples:
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-500">Instant DGMS Bilingual Presets</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    {SAMPLE_TRANSLATIONS.map(sample => {
+                        const isSelected = activeSampleId === sample.id;
+                        return (
+                            <button
+                                key={sample.id}
+                                type="button"
+                                onClick={() => handleLoadSample(sample)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
+                                    isSelected
+                                        ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-md font-extrabold'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-cyan-400 hover:text-cyan-600'
+                                }`}
+                            >
+                                <span className="text-[10px] px-1 py-0.2 rounded bg-black/10 dark:bg-white/10 font-mono">
+                                    {sample.badge}
+                                </span>
+                                <span>{sample.title}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Controls Bar */}
+            <div className="flex items-center gap-3 flex-wrap pt-1">
+                <span className="text-xs text-slate-700 dark:text-slate-300 font-bold">Target Indian Language:</span>
                 <select
-                    className="bg-white dark:bg-slate-900/80 border border-white/15 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-cyan-500"
+                    className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     value={lang}
                     onChange={e => handleLanguageChange(e.target.value)}
                 >
@@ -1302,23 +1456,36 @@ function TranslatePanel() {
                 <button
                     onClick={() => executeTranslation(text, lang)}
                     disabled={loading || !text.trim()}
-                    className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 rounded-xl text-xs text-cyan-300 font-medium transition-all disabled:opacity-40"
+                    className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-xs transition-all shadow-sm disabled:opacity-40 cursor-pointer"
                 >
                     {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Languages className="w-3.5 h-3.5" />}
                     Translate Now
                 </button>
 
+                <button
+                    onClick={() => handleLoadSample(SAMPLE_TRANSLATIONS[0])}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-400/40 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Reset 2-3 Line Working Example
+                </button>
+
                 {text.trim() && (
                     <button
-                        onClick={() => { setText(''); setResult(null); }}
-                        className="text-xs text-slate-700 dark:text-slate-500 hover:text-slate-700 dark:text-slate-300 underline ml-auto"
+                        onClick={() => { setText(''); setManualTranslation(''); setActiveSampleId(''); }}
+                        className="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline ml-auto cursor-pointer"
                     >
-                        Clear Text
+                        Clear Both Boxes
                     </button>
                 )}
             </div>
 
-            <ResultPane result={result} loading={loading} error={error} loadingText={`Translating into ${lang}…`} />
+            {error && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-700 dark:text-red-400 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{error}</span>
+                </div>
+            )}
         </div>
     );
 }

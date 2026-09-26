@@ -53,23 +53,24 @@ const navGroups: NavGroup[] = [
     label: 'Operations',
     id: 'operations',
     items: [
-      { id: 'map',           href: '/mines-map',     icon: MapIcon,        roles: ['regulator', 'corporate'] },
-      { id: 'blastLockdown', href: '/blast-lockdown', icon: Flame,          roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'compliance',    href: '/compliance',    icon: ClipboardList,   roles: ['mine_official', 'corporate'] },
+      { id: 'compliance',    href: '/compliance',    icon: ClipboardList,   roles: ['mine_official', 'regulator', 'corporate'] },
       { id: 'inspections',   href: '/inspections',   icon: Activity,        roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'pitInspector',  href: '/pit-inspector', icon: HardHat,         roles: ['mine_official'] },
-      { id: 'mySubmissions', href: '/submissions',    icon: ClipboardCheck,  roles: ['mine_official'] },
       { id: 'violations',    href: '/violations',    icon: AlertTriangle,   roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'contractors',   href: '/contractors',   icon: Users,           roles: ['mine_official', 'corporate'] },
+      { id: 'attendance',    href: '/attendance',    icon: UserCheck,       roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'contractors',   href: '/contractors',   icon: Users,           roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'blastLockdown', href: '/blast-lockdown', icon: Flame,          roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'map',           href: '/mines-map',     icon: MapIcon,        roles: ['mine_official', 'regulator', 'corporate'] },
     ]
   },
   {
     label: 'Safety & Records',
     id: 'safety',
     items: [
-      { id: 'statutoryRegisters', href: '/statutory-registers', icon: BookOpen,   roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'ppeMonitor',         href: '/ppe-monitor',         icon: Camera,     roles: ['mine_official', 'corporate'] },
-      { id: 'audit',              href: '/audit-log',           icon: ShieldCheck, roles: ['corporate', 'regulator'] },
+      { id: 'pitInspector',       href: '/pit-inspector',       icon: HardHat,        roles: ['mine_official'] },
+      { id: 'mySubmissions',      href: '/submissions',         icon: ClipboardCheck, roles: ['mine_official'] },
+      { id: 'statutoryRegisters', href: '/statutory-registers', icon: BookOpen,       roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'ppeMonitor',         href: '/ppe-monitor',         icon: Camera,         roles: ['mine_official', 'corporate'] },
+      { id: 'audit',              href: '/audit-log',           icon: ShieldCheck,    roles: ['corporate'] },
     ]
   },
   {
@@ -78,7 +79,7 @@ const navGroups: NavGroup[] = [
     items: [
       { id: 'aiWorkbench',       href: '/ai-workbench',      icon: Cpu,      roles: ['mine_official', 'regulator', 'corporate'] },
       { id: 'waterInrush',       href: '/water-inrush',      icon: Droplets, roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'benchmarking',      href: '/benchmarking',      icon: BarChart2, roles: ['corporate', 'regulator'] },
+      { id: 'benchmarking',      href: '/benchmarking',      icon: BarChart2, roles: ['mine_official', 'corporate'] },
       { id: 'financialOverview', href: '/financial-overview', icon: IndianRupee, roles: ['corporate'] },
     ]
   },
@@ -96,7 +97,7 @@ const navGroups: NavGroup[] = [
     label: 'Account',
     id: 'account',
     items: [
-      { id: 'profile',     href: '/profile', icon: UserCheck },
+      { id: 'profile',     href: '/profile', icon: UserCheck, roles: ['mine_official', 'corporate'] },
       { id: 'helpSupport', href: '/help',    icon: HelpCircle },
     ]
   },
@@ -494,24 +495,28 @@ export default function DashboardLayout() {
                     </div>
                   </div>
                   <div className="p-1.5 space-y-0.5">
-                    <Link
-                      to="/profile"
-                      onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
-                      style={{ color: 'var(--cg-text-secondary)' }}
-                    >
-                      <User className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                      View Profile
-                    </Link>
-                    <Link
-                      to="/audit-log"
-                      onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
-                      style={{ color: 'var(--cg-text-secondary)' }}
-                    >
-                      <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      Cryptographic Audit Log
-                    </Link>
+                    {role !== 'regulator' && (
+                      <Link
+                        to="/profile"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                        style={{ color: 'var(--cg-text-secondary)' }}
+                      >
+                        <User className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        View Profile
+                      </Link>
+                    )}
+                    {role === 'corporate' && (
+                      <Link
+                        to="/audit-log"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                        style={{ color: 'var(--cg-text-secondary)' }}
+                      >
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        Cryptographic Audit Log
+                      </Link>
+                    )}
                     <button
                       onClick={async () => { setProfileMenuOpen(false); await signOut(); navigate('/login'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"

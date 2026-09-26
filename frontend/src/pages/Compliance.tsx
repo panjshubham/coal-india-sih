@@ -516,10 +516,41 @@ export default function Compliance() {
             type="button"
           >
             <Plus className="w-4 h-4 text-slate-950" />
-            <span>Issue Directive</span>
+            <span>{role === 'regulator' ? 'Issue DGMS Notice (Sec 22)' : 'Issue Directive'}</span>
           </button>
         </div>
       </div>
+
+      {/* DGMS Statutory Enforcement Banner (Regulator Role Exclusive) */}
+      {role === 'regulator' && (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                  DGMS Statutory Enforcement Authority
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">
+                  Regulatory Officer Mode
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                Full jurisdiction across all CIL subsidiaries. You have statutory authority under CMR 2017 to endorse verified rectifications, issue Section 22 improvement orders, or initiate show-cause inquiries.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shrink-0 shadow-sm flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Issue Sec 22 Notice</span>
+          </button>
+        </div>
+      )}
 
       {/* 2. Key KPI Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

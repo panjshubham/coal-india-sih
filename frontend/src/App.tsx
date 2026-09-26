@@ -34,6 +34,7 @@ import { getPendingCount } from './services/db';
 import PitInspector from './pages/PitInspector';
 import StatutoryRegisters from './pages/StatutoryRegisters';
 import AdminTickets from './pages/AdminTickets';
+import Attendance from './pages/Attendance';
 
 import PublicTracking from './pages/PublicTracking';
 import AutoTranslator from './components/AutoTranslator';
@@ -166,10 +167,19 @@ function App() {
               <Route path="/violations/:id" element={<ViolationDetail />} />
               <Route path="/inspections" element={<Inspections />} />
               <Route path="/inspections/new" element={<NewInspection />} />
+              <Route path="/attendance" element={<Attendance />} />
               <Route path="/pit-inspector" element={<PitInspector />} />
               <Route path="/submissions" element={<MySubmissions />} />
-              <Route path="/audit-log" element={<AuditLog />} />
-              <Route path="/benchmarking" element={<BenchmarkingDashboard />} />
+              <Route path="/audit-log" element={
+                <ProtectedRoute allowedRoles={['corporate']}>
+                  <AuditLog />
+                </ProtectedRoute>
+              } />
+              <Route path="/benchmarking" element={
+                <ProtectedRoute allowedRoles={['mine_official', 'corporate']}>
+                  <BenchmarkingDashboard />
+                </ProtectedRoute>
+              } />
               <Route path="/ppe-monitor" element={<PPELiveFeed />} />
               <Route path="/data-import" element={
                 <ProtectedRoute allowedRoles={['corporate', 'regulator']}>
@@ -188,8 +198,16 @@ function App() {
               } />
               <Route path="/contractors" element={<Contractors />} />
               <Route path="/contractors/:id" element={<ContractorDetail />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Profile />} />
+              <Route path="/profile" element={
+                <ProtectedRoute allowedRoles={['mine_official', 'corporate']}>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute allowedRoles={['mine_official', 'corporate']}>
+                  <Profile />
+                </ProtectedRoute>
+              } />
               <Route path="/ai-workbench" element={<AIWorkbench />} />
               <Route path="/water-inrush" element={<WaterInrushAnalysis />} />
               <Route path="/blast-lockdown" element={<BlastZoneLockdown />} />

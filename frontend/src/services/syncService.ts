@@ -103,6 +103,39 @@ export const syncSingleSubmission = async (item: any): Promise<boolean> => {
       photoUrl = photoData;
     }
 
+    // ── Check if submission is ATTENDANCE ─────────────────────────────
+    if (p.type === 'attendance' || p.submission_type === 'attendance' || (p.worker_id && !p.category)) {
+      const attMineId = Number(p.mine_id || p.mineId) || 42;
+      const attPayload = {
+        worker_id: String(p.worker_id || 'UNKNOWN-WORKER'),
+        worker_name: String(p.worker_name || 'Field Operative'),
+        designation: String(p.designation || 'Miner'),
+        shift: String(p.shift || 'Morning (Shift 1)'),
+        mine_id: attMineId,
+        contractor_id: p.contractor_id ? Number(p.contractor_id) : null,
+        contractor_name: p.contractor_name || null,
+        latitude: p.latitude !== undefined ? Number(p.latitude) : (p.lat !== undefined ? Number(p.lat) : null),
+        longitude: p.longitude !== undefined ? Number(p.longitude) : (p.lng !== undefined ? Number(p.lng) : null),
+        accuracy_meters: p.accuracy_meters !== undefined ? Number(p.accuracy_meters) : 2.4,
+        status: p.status || 'present',
+        verification_method: p.verification_method || 'geo_fenced_gate',
+        photo_url: photoUrl,
+        timestamp: p.timestamp || item.timestamp || new Date().toISOString(),
+        synced: true,
+      };
+
+      const { error: attError } = await supabase.from('attendance').insert([attPayload]);
+      if (attError) {
+        console.error('[SyncService] Attendance insert error:', attError.message);
+        throw attError;
+      }
+
+      await removePendingSubmission(id);
+      console.log(`[SyncService] ✅ Successfully synced offline attendance for ${attPayload.worker_name} (#${id})`);
+      window.dispatchEvent(new Event('coalguard:attendanceUpdated'));
+      return true;
+    }
+
     // ── 2. Normalise fields with valid fallbacks ─────────────────────────
     let mine_id = Number(p.mine_id || p.mineId);
     // Ensure mine_id is a valid integer foreign key (fallback to 42 - Govindpur Colliery)

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   ShieldCheck, 
@@ -12,11 +13,16 @@ import {
   Filter,
   Activity,
   Download,
-  Brain
+  Brain,
+  ClipboardList,
+  Users,
+  UserCheck,
+  ShieldAlert
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import RiskExplanationModal from '../components/RiskExplanationModal';
+import FacilityDetailModal from '../components/FacilityDetailModal';
 
 interface MineRecord {
   id: string;
@@ -83,7 +89,9 @@ export default function RegulatorDashboard() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [verifiedHash, setVerifiedHash] = useState<string | null>(null);
   const [showRiskModal, setShowRiskModal] = useState<boolean>(false);
-  const [selectedMineId, setSelectedMineId] = useState<string>('M-CCL-102');
+  const [selectedMineId, setSelectedMineId] = useState<string>('MIN-001');
+  const [selectedDetailMine, setSelectedDetailMine] = useState<MineRecord | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
 
   const filteredMines = mockMines.filter(m => {
     const matchesSub = selectedSubsidiary === 'ALL' || m.subsidiary === selectedSubsidiary;
@@ -222,23 +230,29 @@ export default function RegulatorDashboard() {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('metric_violations', 'Active Violations')}</p>
+        <Link to="/violations" className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:border-amber-500/50 rounded-xl shadow-sm block transition-all group">
+          <div className="flex justify-between items-center">
+            <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('metric_violations', 'Active Violations')}</p>
+            <span className="text-[10px] text-amber-600 dark:text-amber-400 group-hover:underline">Review →</span>
+          </div>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-amber-600 dark:text-amber-400">11</h3>
             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-50 dark:bg-red-950/80 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 font-medium">
               {t('reg_metric_sla', '3 Needs Action')}
             </span>
           </div>
-        </div>
+        </Link>
 
-        <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-          <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
+        <Link to="/compliance" className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:border-red-500/50 rounded-xl shadow-sm block transition-all group">
+          <div className="flex justify-between items-center">
+            <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('corp_metric_overdue_compliance', 'Overdue Compliance')}</p>
+            <span className="text-[10px] text-red-600 dark:text-red-400 group-hover:underline">Enforce →</span>
+          </div>
           <div className="flex items-baseline justify-between mt-1">
             <h3 className="text-3xl font-black text-red-600 dark:text-red-400">5</h3>
             <span className="text-xs text-slate-800 dark:text-slate-500 font-mono">{t('reg_metric_action_flagged', 'Action Flagged')}</span>
           </div>
-        </div>
+        </Link>
 
         <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
           <p className="text-xs font-mono text-slate-800 dark:text-slate-500 uppercase">{t('reg_metric_risk_score', 'AI Risk Score')}</p>
@@ -246,6 +260,47 @@ export default function RegulatorDashboard() {
             <h3 className="text-3xl font-black text-indigo-700 dark:text-cyan-400">29 <span className="text-sm font-normal text-slate-700 dark:text-slate-500">/ 100</span></h3>
             <span className="text-[10px] text-slate-800 dark:text-slate-500 font-mono">{t('reg_metric_xgboost', 'AI Predicted')}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Statutory Enforcement Quick Actions Bar */}
+      <div className="mt-4 p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <ShieldAlert className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              DGMS Statutory Enforcement Tools
+            </h4>
+            <p className="text-[11px] text-slate-500">Direct role-specific access to colliery compliance proof and contractor surveillance.</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            to="/compliance"
+            className="px-3.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors"
+          >
+            <ClipboardList className="w-3.5 h-3.5" />
+            <span>Statutory Compliance</span>
+          </Link>
+
+          <Link
+            to="/contractors"
+            className="px-3.5 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors"
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Contractors (CLRA / Watchlist)</span>
+          </Link>
+
+          <Link
+            to="/attendance"
+            className="px-3.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors"
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Workforce Muster Roll</span>
+          </Link>
         </div>
       </div>
 
@@ -383,7 +438,12 @@ export default function RegulatorDashboard() {
 
                     <td className="py-3.5 px-4 text-right">
                       <button 
-                        className="px-2.5 py-1 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded border border-slate-300 dark:border-slate-700 text-[10px] font-medium transition shadow-sm"
+                        type="button"
+                        onClick={() => {
+                          setSelectedDetailMine(mine);
+                          setShowDetailModal(true);
+                        }}
+                        className="px-2.5 py-1 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded border border-slate-300 dark:border-slate-700 text-[10px] font-medium transition shadow-sm cursor-pointer"
                       >
                         View Details
                       </button>
@@ -406,10 +466,19 @@ export default function RegulatorDashboard() {
             </div>
 
             <div className="mt-4 space-y-3 font-sans">
-              <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 rounded-lg">
+              <div 
+                onClick={() => {
+                  const target = mockMines.find(m => m.id === 'MIN-001');
+                  if (target) {
+                    setSelectedDetailMine(target);
+                    setShowDetailModal(true);
+                  }
+                }}
+                className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 rounded-lg cursor-pointer hover:border-red-400 transition"
+              >
                 <div className="flex items-center justify-between text-xs font-bold text-red-800 dark:text-red-400">
                   <span>Karo Spl (Risk: 74)</span>
-                  <span className="font-mono text-[10px] uppercase">High Priority</span>
+                  <span className="font-mono text-[10px] uppercase">High Priority • Click for Details</span>
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
                   Localized bench displacement detected on North Highwall. 2 pending DGMS directives regarding haul road berm heights are unresolved.
@@ -419,20 +488,38 @@ export default function RegulatorDashboard() {
                 </div>
               </div>
 
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-lg">
+              <div 
+                onClick={() => {
+                  const target = mockMines.find(m => m.id === 'MIN-002');
+                  if (target) {
+                    setSelectedDetailMine(target);
+                    setShowDetailModal(true);
+                  }
+                }}
+                className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-lg cursor-pointer hover:border-amber-400 transition"
+              >
                 <div className="flex items-center justify-between text-xs font-bold text-amber-800 dark:text-amber-400">
                   <span>Dhori Khas (Score: 58)</span>
-                  <span className="font-mono text-[10px] uppercase">Moderate</span>
+                  <span className="font-mono text-[10px] uppercase">Moderate • Click for Details</span>
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
                   Seasonal water inflow elevation in Sump-3 combined with routine maintenance backlog on ventilation fan #2. Particulate emissions remain nominal.
                 </p>
               </div>
 
-              <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg">
+              <div 
+                onClick={() => {
+                  const target = mockMines.find(m => m.id === 'MIN-003');
+                  if (target) {
+                    setSelectedDetailMine(target);
+                    setShowDetailModal(true);
+                  }
+                }}
+                className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer hover:border-slate-400 transition"
+              >
                 <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
                   <span>Govindpur Colliery (Risk: 42)</span>
-                  <span className="font-mono text-[10px] uppercase">Low Risk</span>
+                  <span className="font-mono text-[10px] uppercase">Low Risk • Click for Details</span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
                   Minor documentation renewal lag on heavy earth-moving machinery (HEMM) certificates; zero active gas or strata stability breaches.
@@ -443,7 +530,16 @@ export default function RegulatorDashboard() {
 
           <div className="mt-6 pt-3 border-t border-slate-200 dark:border-slate-800/80 text-[11px] font-mono text-slate-700 dark:text-slate-500 flex items-center justify-between">
             <span>Overall Compliance: 98.2%</span>
-            <span className="text-indigo-600 dark:text-cyan-400 cursor-pointer hover:underline font-semibold">View All 18 Mines &rarr;</span>
+            <span 
+              onClick={() => {
+                const target = mockMines[0];
+                setSelectedDetailMine(target);
+                setShowDetailModal(true);
+              }}
+              className="text-indigo-600 dark:text-cyan-400 cursor-pointer hover:underline font-semibold"
+            >
+              View Facility Details &rarr;
+            </span>
           </div>
         </div>
 
@@ -457,6 +553,17 @@ export default function RegulatorDashboard() {
           <span>[10:14:02 IST] Karo Spl Bench #4 inspection report uploaded</span>
         </div>
       </div>
+
+      {/* Deep Facility Risk & Statutory Compliance Index Modal */}
+      <FacilityDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        mineRecord={selectedDetailMine}
+        onOpenExplain={(mineId) => {
+          setSelectedMineId(mineId);
+          setShowRiskModal(true);
+        }}
+      />
 
       {/* Interactive AI Risk SHAP Explainability Modal */}
       <RiskExplanationModal

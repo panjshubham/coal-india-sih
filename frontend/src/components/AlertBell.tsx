@@ -192,8 +192,39 @@ export default function AlertBell() {
       })
       .subscribe();
 
+    const handleCustomAlert = (e: any) => {
+      const newAlert = e.detail;
+      if (!newAlert) return;
+
+      const normalizedAlert: SystemAlert = {
+        id: newAlert.id || `alert-${Date.now()}`,
+        type: normalizeAlertType(newAlert.type || newAlert.related_entity_type, newAlert.message),
+        severity: (newAlert.severity || 'high').toLowerCase(),
+        title: newAlert.title || getAlertTitle(newAlert.type, newAlert.message),
+        message: newAlert.message,
+        related_entity_id: newAlert.related_entity_id,
+        related_entity_type: newAlert.related_entity_type,
+        destination: newAlert.destination || getAlertTarget(newAlert),
+        created_at: newAlert.created_at || new Date().toISOString(),
+        is_read: false,
+      };
+
+      setAlerts(prev => {
+        const key = `${normalizedAlert.message}_${normalizedAlert.related_entity_id || ''}_${normalizedAlert.type || ''}`;
+        const exists = prev.some(a => `${a.message}_${a.related_entity_id || ''}_${a.type || ''}` === key);
+        if (exists) return prev;
+
+        playNotificationSound();
+        setUnreadCount(count => count + 1);
+        return [normalizedAlert, ...prev];
+      });
+    };
+
+    window.addEventListener('coalguard:newAlert', handleCustomAlert);
+
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener('coalguard:newAlert', handleCustomAlert);
     };
   }, []);
 

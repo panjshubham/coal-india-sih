@@ -138,11 +138,12 @@ const FEATURES = [
     color: 'slate',
     title: 'Audit Log',
     route: '/audit-log',
+    roles: ['corporate'],
     summary: 'A tamper-proof, cryptographic record of every action taken in the system.',
     steps: [
       'Every inspection submission, violation update, and status change is recorded here.',
       'Each entry has a unique cryptographic hash — if anyone changes a record, the hash no longer matches.',
-      'Regulators can use this page as proof that data has not been tampered with.',
+      'Corporate administrators can use this page as proof that data has not been tampered with.',
       'You can filter by user, date, or action type to trace any specific event.',
     ],
   },
@@ -579,7 +580,7 @@ export default function HelpSupport() {
 
           {/* Feature cards grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {FEATURES.map(feat => {
+            {FEATURES.filter(feat => !(feat as any).roles || (role && (feat as any).roles.includes(role))).map(feat => {
               const c = COL[feat.color] || COL.slate;
               const isOpen = activeSection === feat.title;
               return (

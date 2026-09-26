@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { 
   Search, X, Command, ArrowRight, LayoutDashboard, Building2, ShieldAlert,
   Map as MapIcon, HardHat, Camera, Cpu, BookOpen, AlertTriangle, Users,
@@ -16,6 +17,7 @@ export interface SearchItem {
   icon: any;
   badge?: string;
   keywords?: string[];
+  roles?: ('mine_official' | 'regulator' | 'corporate')[];
 }
 
 export const searchableItems: SearchItem[] = [
@@ -138,6 +140,7 @@ export const searchableItems: SearchItem[] = [
     href: '/audit-log',
     icon: ShieldCheck,
     badge: 'SHA-256',
+    roles: ['corporate'],
     keywords: ['audit', 'ledger', 'hash', 'sha-256', 'immutable', 'blockchain', 'tamper-proof']
   },
   {
@@ -310,6 +313,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsContainerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { role } = useAuth();
 
   // Focus input on open
   useEffect(() => {
@@ -342,6 +346,11 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
     const cleanQuery = query.toLowerCase().trim();
 
     return searchableItems.filter(item => {
+      // Role filter
+      if (item.roles && (!role || !item.roles.includes(role))) {
+        return false;
+      }
+
       // Category filter
       if (selectedCategory !== 'All' && item.category !== selectedCategory) {
         return false;
@@ -357,7 +366,7 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
 
       return titleMatch || descMatch || badgeMatch || keywordMatch;
     });
-  }, [query, selectedCategory]);
+  }, [query, selectedCategory, role]);
 
   // Reset selected index when filtered list changes
   useEffect(() => {
