@@ -44,8 +44,9 @@ const resources = {
       "nav_helpSupport": "Help & Support",
       "nav_adminTickets": "Support Tickets",
       "nav_pitInspector": "Pit Inspector",
-      "nav_submissions": "My Submissions",
       "nav_attendance": "Workforce Attendance",
+      "nav_production": "Production Reporting",
+      "nav_grievances": "Grievance Management",
 
       // Attendance
       "att_title": "Field Workforce Attendance",
@@ -302,8 +303,9 @@ const resources = {
       "nav_helpSupport": "सहायता एवं समर्थन",
       "nav_adminTickets": "समर्थन टिकट",
       "nav_pitInspector": "पिट इंस्पेक्टर",
-      "nav_submissions": "मेरी प्रस्तुतियाँ",
       "nav_attendance": "कार्यबल उपस्थिति",
+      "nav_production": "उत्पादन रिपोर्टिंग",
+      "nav_grievances": "शिकायत प्रबंधन",
 
       // Attendance
       "att_title": "फील्ड कार्यबल उपस्थिति",
