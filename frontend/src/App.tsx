@@ -35,6 +35,8 @@ import PitInspector from './pages/PitInspector';
 import StatutoryRegisters from './pages/StatutoryRegisters';
 import AdminTickets from './pages/AdminTickets';
 import Attendance from './pages/Attendance';
+import GrievanceManagement from './pages/GrievanceManagement';
+import ProductionReporting from './pages/ProductionReporting';
 
 import PublicTracking from './pages/PublicTracking';
 import AutoTranslator from './components/AutoTranslator';
@@ -212,6 +214,8 @@ function App() {
               <Route path="/water-inrush" element={<WaterInrushAnalysis />} />
               <Route path="/blast-lockdown" element={<BlastZoneLockdown />} />
               <Route path="/help" element={<HelpSupport />} />
+              <Route path="/grievances" element={<GrievanceManagement />} />
+              <Route path="/production-reports" element={<ProductionReporting />} />
               <Route path="/admin-tickets" element={
                 <ProtectedRoute allowedRoles={['corporate']}>
                   <AdminTickets />

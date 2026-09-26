@@ -5,7 +5,7 @@ import {
   Users, Menu, X, LogOut, Pickaxe, UserCheck, ShieldCheck, 
   Languages, Database, ShieldAlert, Cpu, ChevronLeft, ChevronRight, ChevronDown,
   User, HelpCircle, IndianRupee, Camera, Building2, Activity, BookOpen, Droplets, Flame,
-  HardHat, Ticket, ClipboardCheck, Search
+  HardHat, Ticket, ClipboardCheck, Search, MessageSquarePlus, BarChart3
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -56,10 +56,12 @@ const navGroups: NavGroup[] = [
       { id: 'compliance',    href: '/compliance',    icon: ClipboardList,   roles: ['mine_official', 'regulator', 'corporate'] },
       { id: 'inspections',   href: '/inspections',   icon: Activity,        roles: ['mine_official', 'regulator', 'corporate'] },
       { id: 'violations',    href: '/violations',    icon: AlertTriangle,   roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'attendance',    href: '/attendance',    icon: UserCheck,       roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'contractors',   href: '/contractors',   icon: Users,           roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'blastLockdown', href: '/blast-lockdown', icon: Flame,          roles: ['mine_official', 'regulator', 'corporate'] },
-      { id: 'map',           href: '/mines-map',     icon: MapIcon,        roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'attendance',    href: '/attendance',    icon: UserCheck,         roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'contractors',   href: '/contractors',   icon: Users,             roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'blastLockdown', href: '/blast-lockdown', icon: Flame,            roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'map',           href: '/mines-map',     icon: MapIcon,           roles: ['mine_official', 'regulator', 'corporate'] },
+      { id: 'production',    href: '/production-reports', icon: BarChart3,    roles: ['mine_official', 'corporate'] },
+      { id: 'grievances',    href: '/grievances',    icon: MessageSquarePlus, roles: ['mine_official', 'corporate', 'regulator'] },
     ]
   },
   {
