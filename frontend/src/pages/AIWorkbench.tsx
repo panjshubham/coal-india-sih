@@ -203,11 +203,6 @@ function ResultPane({ result, loading, error, loadingText }: { result: any; load
                     <CheckCircle className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                     <span className="text-xs font-mono text-emerald-700 dark:text-emerald-400 font-medium">Model Output JSON</span>
                 </div>
-                {result?.model && (
-                    <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-white/5 px-2 py-0.5 rounded">
-                        {result.model}
-                    </span>
-                )}
             </div>
             <pre className="p-4 text-xs text-slate-700 dark:text-slate-300 overflow-auto max-h-80 font-mono leading-relaxed whitespace-pre-wrap">
                 {JSON.stringify(result, null, 2)}
@@ -3263,15 +3258,6 @@ export default function AIWorkbench() {
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400">{activeTabInfo.description}</p>
                     </div>
-                    <a
-                        href={`https://huggingface.co/${activeTabInfo.model}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${colors.badge} hover:opacity-80`}
-                    >
-                        {activeTabInfo.model.split('/')[1]}
-                        <ExternalLink className="w-3 h-3" />
-                    </a>
                 </div>
 
                 <div className="border-t border-white/10 pt-4">
@@ -3294,7 +3280,6 @@ export default function AIWorkbench() {
                                 <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-slate-600 dark:text-slate-400 transition-colors" />
                             </div>
                             <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-0.5">{tab.task}</p>
-                            <p className="text-[10px] font-mono text-slate-700 dark:text-slate-500 truncate">{tab.model}</p>
                         </button>
                     );
                 })}

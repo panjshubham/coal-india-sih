@@ -67,7 +67,6 @@ const navGroups: NavGroup[] = [
     id: 'safety',
     items: [
       { id: 'pitInspector',       href: '/pit-inspector',       icon: HardHat,        roles: ['mine_official'] },
-      { id: 'mySubmissions',      href: '/submissions',         icon: ClipboardCheck, roles: ['mine_official'] },
       { id: 'statutoryRegisters', href: '/statutory-registers', icon: BookOpen,       roles: ['mine_official', 'regulator', 'corporate'] },
       { id: 'ppeMonitor',         href: '/ppe-monitor',         icon: Camera,         roles: ['mine_official', 'corporate'] },
       { id: 'audit',              href: '/audit-log',           icon: ShieldCheck,    roles: ['corporate'] },
