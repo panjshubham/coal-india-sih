@@ -173,7 +173,7 @@ function App() {
               <Route path="/pit-inspector" element={<PitInspector />} />
               <Route path="/submissions" element={<MySubmissions />} />
               <Route path="/audit-log" element={
-                <ProtectedRoute allowedRoles={['corporate']}>
+                <ProtectedRoute allowedRoles={['corporate', 'regulator']}>
                   <AuditLog />
                 </ProtectedRoute>
               } />
@@ -201,12 +201,12 @@ function App() {
               <Route path="/contractors" element={<Contractors />} />
               <Route path="/contractors/:id" element={<ContractorDetail />} />
               <Route path="/profile" element={
-                <ProtectedRoute allowedRoles={['mine_official', 'corporate']}>
+                <ProtectedRoute allowedRoles={['mine_official', 'corporate', 'regulator']}>
                   <Profile />
                 </ProtectedRoute>
               } />
               <Route path="/settings" element={
-                <ProtectedRoute allowedRoles={['mine_official', 'corporate']}>
+                <ProtectedRoute allowedRoles={['mine_official', 'corporate', 'regulator']}>
                   <Profile />
                 </ProtectedRoute>
               } />

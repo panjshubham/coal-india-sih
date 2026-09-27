@@ -104,3 +104,9 @@ export const removePendingSubmission = async (id: number) => {
   const db = await getDB();
   return db.delete('pending_submissions', id);
 };
+
+export const clearAllPendingSubmissions = async () => {
+  const db = await getDB();
+  return db.clear('pending_submissions');
+};
+

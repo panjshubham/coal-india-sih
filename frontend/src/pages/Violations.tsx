@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabase';
 import { Link, useLocation } from 'react-router-dom';
 import { formatISTShort } from '../lib/dateUtils';
-import { getPendingCount, getPendingSubmissions } from '../services/db';
+import { getPendingCount, getPendingSubmissions, removePendingSubmission, clearAllPendingSubmissions } from '../services/db';
 import { processSyncQueue, syncSingleSubmission } from '../services/syncService';
 
 export default function Violations() {
@@ -122,6 +122,54 @@ export default function Violations() {
     }
   }, [fetchViolations, refreshPendingCount]);
 
+  const handleSyncSingle = useCallback(async (v: any) => {
+    if (isSyncingRef.current) return;
+    if (!v.raw_item) return;
+    setSyncing(true);
+    setSyncMessage('Syncing report to central ledger...');
+    try {
+      const ok = await syncSingleSubmission(v.raw_item);
+      await fetchViolations();
+      await refreshPendingCount();
+      if (ok) {
+        setSyncMessage('✅ Offline report synchronized successfully!');
+      } else {
+        setSyncMessage('⚠️ Could not sync report. Item retained in offline queue.');
+      }
+    } catch (e: any) {
+      console.error('Sync single error:', e);
+      setSyncMessage(`⚠️ Sync error: ${e.message || 'Failed'}`);
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncMessage(null), 4000);
+    }
+  }, [fetchViolations, refreshPendingCount]);
+
+  const handleDiscardSingle = useCallback(async (dbId: number) => {
+    try {
+      await removePendingSubmission(dbId);
+      await fetchViolations();
+      await refreshPendingCount();
+      setSyncMessage('🗑️ Offline report discarded.');
+      setTimeout(() => setSyncMessage(null), 3000);
+    } catch (e) {
+      console.error('Discard error:', e);
+    }
+  }, [fetchViolations, refreshPendingCount]);
+
+  const handleClearAllOffline = useCallback(async () => {
+    if (!window.confirm('Are you sure you want to clear all queued offline reports?')) return;
+    try {
+      await clearAllPendingSubmissions();
+      await fetchViolations();
+      await refreshPendingCount();
+      setSyncMessage('🗑️ All queued offline reports cleared.');
+      setTimeout(() => setSyncMessage(null), 3000);
+    } catch (e) {
+      console.error('Clear all error:', e);
+    }
+  }, [fetchViolations, refreshPendingCount]);
+
   // Initial load + filter change
   useEffect(() => {
     fetchViolations();
@@ -165,31 +213,6 @@ export default function Violations() {
       window.removeEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
     };
   }, [refreshPendingCount]);
-
-  const handleSyncSingle = async (offlineItem: any) => {
-    if (isSyncingRef.current) return;
-    if (!navigator.onLine) {
-      setSyncMessage('Device is offline. Cannot sync right now.');
-      setTimeout(() => setSyncMessage(null), 3000);
-      return;
-    }
-    setSyncing(true);
-    setSyncMessage(`Syncing offline violation #${offlineItem.db_id}...`);
-    try {
-      const success = await syncSingleSubmission(offlineItem.raw_item || { id: offlineItem.db_id, payload: offlineItem });
-      if (success) {
-        setSyncMessage(`✅ Offline violation synced successfully!`);
-        await fetchViolations();
-        await refreshPendingCount();
-        setTimeout(() => setSyncMessage(null), 3000);
-      } else {
-        setSyncMessage(`Failed to sync violation. It remains queued in offline database.`);
-        setTimeout(() => setSyncMessage(null), 3000);
-      }
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   const getSeverityPill = (severity: string) => {
     const s = severity?.toLowerCase();
@@ -361,30 +384,40 @@ export default function Violations() {
           </div>
 
           <div className="flex flex-wrap items-center gap-space-sm">
-            {/* SYNC OFFLINE BUTTON */}
+            {/* SYNC OFFLINE BUTTON & CLEAR QUEUE */}
             {pendingCount > 0 && (
-              <button
-                onClick={handleSync}
-                disabled={isSyncing}
-                title={!isOnline ? 'You are offline. Submissions will sync when connection returns.' : 'Sync offline reports'}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-label-md uppercase tracking-wider font-bold transition-all duration-200 border shadow-sm ${
-                  isSyncing
-                    ? 'bg-blue-600/30 text-blue-200 border-blue-400/50 cursor-wait animate-pulse'
-                    : 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-400 shadow-amber-500/20 shadow-md'
-                }`}
-              >
-                <span className={`material-symbols-outlined text-[18px] ${isSyncing ? 'animate-spin text-blue-300' : 'text-slate-950'}`}>
-                  sync
-                </span>
-                <span>
-                  {isSyncing ? 'Syncing...' : 'Sync Offline Reports'}
-                </span>
-                {!isSyncing && (
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-50 dark:bg-slate-950 text-amber-300">
-                    {pendingCount} Pending
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSync}
+                  disabled={isSyncing}
+                  title={!isOnline ? 'You are offline. Submissions will sync when connection returns.' : 'Sync offline reports'}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-label-md uppercase tracking-wider font-bold transition-all duration-200 border shadow-sm ${
+                    isSyncing
+                      ? 'bg-blue-600/30 text-blue-200 border-blue-400/50 cursor-wait animate-pulse'
+                      : 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-amber-400 shadow-amber-500/20 shadow-md'
+                  }`}
+                >
+                  <span className={`material-symbols-outlined text-[18px] ${isSyncing ? 'animate-spin text-blue-300' : 'text-slate-950'}`}>
+                    sync
                   </span>
-                )}
-              </button>
+                  <span>
+                    {isSyncing ? 'Syncing...' : 'Sync Offline Reports'}
+                  </span>
+                  {!isSyncing && (
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-50 dark:bg-slate-950 text-amber-300">
+                      {pendingCount} Pending
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={handleClearAllOffline}
+                  title="Discard / Clear all offline queued reports"
+                  className="px-3 py-2 rounded-lg bg-red-100 dark:bg-red-500/20 hover:bg-red-200 dark:hover:bg-red-500/30 text-red-700 dark:text-red-300 font-label-md uppercase tracking-wider flex items-center gap-1 border border-red-300 dark:border-red-500/40 transition-colors font-semibold"
+                >
+                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                  Clear Queue
+                </button>
+              </div>
             )}
 
             {/* FILTER BUTTONS */}
@@ -481,20 +514,29 @@ export default function Violations() {
                     <div className="flex flex-col md:text-right">
                       <span className="font-code-sm text-on-surface">{formatDate(v)}</span>
                     </div>
-                    {isOnline ? (
+                    <div className="flex items-center gap-2">
+                      {isOnline ? (
+                        <button
+                          onClick={() => handleSyncSingle(v)}
+                          disabled={isSyncing}
+                          className="px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 dark:text-blue-300 font-label-md uppercase tracking-wider flex items-center gap-1.5 transition-colors font-bold"
+                        >
+                          <span className={`material-symbols-outlined text-[16px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
+                          {isSyncing ? 'Syncing...' : 'Sync Now'}
+                        </button>
+                      ) : (
+                        <span className="px-space-sm py-1 rounded font-label-md uppercase tracking-wider font-bold text-amber-700 dark:text-amber-400">
+                          Waiting for connection
+                        </span>
+                      )}
                       <button
-                        onClick={() => handleSyncSingle(v)}
-                        disabled={isSyncing}
-                        className="px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 dark:text-blue-300 font-label-md uppercase tracking-wider flex items-center gap-1.5 transition-colors font-bold"
+                        onClick={() => handleDiscardSingle(v.db_id)}
+                        title="Discard this offline report"
+                        className="p-1.5 rounded-lg bg-red-100/60 dark:bg-red-500/20 hover:bg-red-200 dark:hover:bg-red-500/40 text-red-700 dark:text-red-300 transition-colors"
                       >
-                        <span className={`material-symbols-outlined text-[16px] ${isSyncing ? 'animate-spin' : ''}`}>sync</span>
-                        {isSyncing ? 'Syncing...' : 'Sync Now'}
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
                       </button>
-                    ) : (
-                      <span className="px-space-sm py-1 rounded font-label-md uppercase tracking-wider font-bold text-amber-700 dark:text-amber-400">
-                        Waiting for connection
-                      </span>
-                    )}
+                    </div>
                   </div>
                 </div>
               ) : (

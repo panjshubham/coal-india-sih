@@ -39,7 +39,7 @@ const SUBSIDIARY_OPTIONS = [
 ];
 
 export default function SignUp() {
-  const [role, setRole] = useState<'corporate' | 'regulator'>('corporate');
+  const [role, setRole] = useState<'corporate' | 'regulator' | 'mine_official'>('corporate');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -71,11 +71,13 @@ export default function SignUp() {
   }, [session, activeRole, authLoading, navigate]);
 
   // Adjust default organization when switching role
-  const handleRoleSelect = (selectedRole: 'corporate' | 'regulator') => {
+  const handleRoleSelect = (selectedRole: 'corporate' | 'regulator' | 'mine_official') => {
     setRole(selectedRole);
     setError(null);
     if (selectedRole === 'regulator') {
       setOrganization('Directorate General of Mines Safety (DGMS)');
+    } else if (selectedRole === 'mine_official') {
+      setOrganization('Eastern Coalfields Limited (ECL)');
     } else {
       setOrganization('Coal India Limited (CIL HQ)');
     }
@@ -184,6 +186,8 @@ export default function SignUp() {
           navigate('/dashboard/corporate', { replace: true });
         } else if (role === 'regulator') {
           navigate('/dashboard/regulator', { replace: true });
+        } else if (role === 'mine_official') {
+          navigate('/dashboard/colliery', { replace: true });
         } else {
           navigate('/', { replace: true });
         }
@@ -230,14 +234,18 @@ export default function SignUp() {
             <h2 className="text-3xl font-serif font-bold text-white leading-tight">
               {role === 'corporate' ? (
                 <>Register for <span className="text-amber-400">Corporate HQ</span> Oversight</>
+              ) : role === 'mine_official' ? (
+                <>Register for <span className="text-emerald-400">Mine Official</span> Operations</>
               ) : (
-                <>Register for <span className="text-blue-400">Regulator / DGMS</span> Audit Access</>
+                <>Register for <span className="text-blue-400">Regulatory Authority</span> Audit Access</>
               )}
             </h2>
             <p className="text-slate-300 text-sm leading-relaxed">
-              {role === 'corporate' 
+              {role === 'corporate'
                 ? 'Empower your subsidiary leadership with real-time SCADA telemetry, automated ESG compliance reporting, and predictive hazard analytics.'
-                : 'Access statutory registers, trigger unannounced colliery inspections, issue safety directives, and monitor DGMS rule compliance.'
+                : role === 'mine_official'
+                ? 'Manage day-to-day mine operations, track compliance tasks, submit inspection reports, and monitor workforce attendance.'
+                : 'Access statutory registers, trigger unannounced colliery inspections, issue safety directives, and monitor DGMS/MoEFCC rule compliance.'
               }
             </p>
           </div>
@@ -255,6 +263,19 @@ export default function SignUp() {
                   <BadgeCheck className="w-5 h-5 text-amber-400 mb-1.5" />
                   <div className="text-xs font-bold text-white">Financial & ESG Net</div>
                   <div className="text-[11px] text-slate-400 mt-0.5">Predictive penalty mitigation & production caps</div>
+                </div>
+              </>
+            ) : role === 'mine_official' ? (
+              <>
+                <div className="p-3.5 rounded-lg bg-slate-900/80 border border-slate-800 text-left">
+                  <Briefcase className="w-5 h-5 text-emerald-400 mb-1.5" />
+                  <div className="text-xs font-bold text-white">Compliance Task Board</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">Track all pending & overdue statutory tasks</div>
+                </div>
+                <div className="p-3.5 rounded-lg bg-slate-900/80 border border-slate-800 text-left">
+                  <Globe className="w-5 h-5 text-emerald-400 mb-1.5" />
+                  <div className="text-xs font-bold text-white">Field Reporting</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">Geo-tagged inspections, incident & attendance</div>
                 </div>
               </>
             ) : (
@@ -324,30 +345,42 @@ export default function SignUp() {
           </div>
 
           {/* Role Selector Tabs */}
-          <div className="mb-6 p-1 bg-[var(--cg-surface-high)] border border-[var(--cg-border)] rounded-xl grid grid-cols-2 gap-1">
+          <div className="mb-6 p-1 bg-[var(--cg-surface-high)] border border-[var(--cg-border)] rounded-xl grid grid-cols-3 gap-1">
             <button
               type="button"
               onClick={() => handleRoleSelect('corporate')}
-              className={`py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
+              className={`py-2.5 px-2 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-1 transition-all duration-200 cursor-pointer ${
                 role === 'corporate'
                   ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-[var(--cg-text-primary)]'
               }`}
             >
               <Building2 className="w-4 h-4" />
-              <span>Corporate HQ</span>
+              <span className="text-[10px] leading-tight text-center">Corporate HQ</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleRoleSelect('mine_official')}
+              className={`py-2.5 px-2 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-1 transition-all duration-200 cursor-pointer ${
+                role === 'mine_official'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-[var(--cg-text-primary)]'
+              }`}
+            >
+              <Briefcase className="w-4 h-4" />
+              <span className="text-[10px] leading-tight text-center">Mine Official</span>
             </button>
             <button
               type="button"
               onClick={() => handleRoleSelect('regulator')}
-              className={`py-2.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
+              className={`py-2.5 px-2 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-1 transition-all duration-200 cursor-pointer ${
                 role === 'regulator'
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-[var(--cg-text-primary)]'
               }`}
             >
               <FileCheck className="w-4 h-4" />
-              <span>Regulator / DGMS</span>
+              <span className="text-[10px] leading-tight text-center">Regulatory Authority</span>
             </button>
           </div>
 
@@ -396,7 +429,7 @@ export default function SignUp() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="w-full h-11 px-3 border border-[var(--cg-border)] rounded-lg bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/50 transition-all text-sm"
-                placeholder={role === 'corporate' ? "corporate.officer@coalindia.in" : "inspector@dgms.gov.in"}
+                placeholder={role === 'corporate' ? "corporate.officer@coalindia.in" : role === 'mine_official' ? "safety.officer@ecl.coalindia.in" : "inspector@dgms.gov.in"}
                 required
               />
             </div>
@@ -496,6 +529,8 @@ export default function SignUp() {
                 className={`w-full h-11 flex items-center justify-center font-bold tracking-wide rounded-lg transition-all duration-150 cursor-pointer text-sm shadow-lg disabled:opacity-70 disabled:cursor-not-allowed ${
                   role === 'corporate'
                     ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/10'
+                    : role === 'mine_official'
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/10'
                     : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/10'
                 }`}
               >
@@ -504,7 +539,7 @@ export default function SignUp() {
                 ) : (
                   <>
                     <UserCheck className="w-4 h-4 mr-2" />
-                    Complete {role === 'corporate' ? 'Corporate' : 'Regulator'} Sign Up
+                    Complete {role === 'corporate' ? 'Corporate' : role === 'mine_official' ? 'Mine Official' : 'Regulatory Authority'} Sign Up
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </>
                 )}
