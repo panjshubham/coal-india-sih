@@ -407,7 +407,7 @@ export default function DashboardLayout() {
               <Menu className="w-4 h-4" />
             </button>
             <span className="text-sm font-bold hidden lg:block truncate" style={{ color: 'var(--cg-text-primary)' }}>
-              Coal India Limited · Statutory Governance
+              CoalGuard · Statutory Governance
             </span>
 
             {/* Global Search Bar Button */}

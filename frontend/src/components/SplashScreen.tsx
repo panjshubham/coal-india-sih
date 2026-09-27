@@ -120,7 +120,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               </svg>
             </div>
             <div className="flex flex-col text-left">
-              <span className="font-national text-[11px] tracking-[0.16em] font-bold text-slate-900 dark:text-white uppercase leading-tight">Coal India</span>
+              <span className="font-national text-[11px] tracking-[0.16em] font-bold text-slate-900 dark:text-white uppercase leading-tight">CoalGuard</span>
               <span className="text-[9px] tracking-[0.16em] font-medium text-slate-700 dark:text-slate-300 uppercase">Ministry of Coal</span>
             </div>
           </div>
