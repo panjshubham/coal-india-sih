@@ -13,16 +13,14 @@
 const IST = 'Asia/Kolkata';
 
 /**
- * Safely parse any timestamp string to a Date object.
- * Strings without a timezone suffix are treated as UTC (appends 'Z').
+ * Safely parse any timestamp string to a Date object by stripping unwanted 'Z'.
+ * This prevents double timezone shifting if the raw string already has local hours.
  */
 export function parseTimestamp(dateStr: string | null | undefined): Date | null {
   if (!dateStr) return null;
   try {
-    // If the string has no timezone info, assume UTC to avoid double-offset
-    const hasOffset = /[Zz]$|[+-]\d{2}:\d{2}$/.test(dateStr.trim());
-    const normalised = hasOffset ? dateStr.trim() : dateStr.trim() + 'Z';
-    const d = new Date(normalised);
+    const cleanTs = dateStr.trim().endsWith('Z') ? dateStr.trim().slice(0, -1) : dateStr.trim();
+    const d = new Date(cleanTs);
     return isNaN(d.getTime()) ? null : d;
   } catch {
     return null;
@@ -36,17 +34,9 @@ export function formatIST(dateStr: string | null | undefined): string {
   const d = parseTimestamp(dateStr);
   if (!d) return 'Unknown Date';
   try {
-    const parts = new Intl.DateTimeFormat('en-IN', {
-      timeZone: IST,
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).formatToParts(d);
-    const get = (type: string) => parts.find(p => p.type === type)?.value ?? '';
-    return `${get('day')} ${get('month')} ${get('year')}, ${get('hour')}:${get('minute')} IST`;
+    const datePart = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    const timePart = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `${datePart}, ${timePart} IST`;
   } catch {
     return 'Unknown Date';
   }
@@ -59,17 +49,9 @@ export function formatISTShort(dateStr: string | null | undefined): string {
   const d = parseTimestamp(dateStr);
   if (!d) return 'Unknown Date';
   try {
-    const parts = new Intl.DateTimeFormat('en-IN', {
-      timeZone: IST,
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).formatToParts(d);
-    const get = (type: string) => parts.find(p => p.type === type)?.value ?? '';
-    return `${get('day')} ${get('month')} ${get('year')}, ${get('hour')}:${get('minute')}`;
+    const datePart = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    const timePart = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `${datePart}, ${timePart}`;
   } catch {
     return 'Unknown Date';
   }
@@ -82,18 +64,9 @@ export function formatISTLong(dateStr: string | null | undefined): string {
   const d = parseTimestamp(dateStr);
   if (!d) return 'Unknown Date';
   try {
-    const parts = new Intl.DateTimeFormat('en-IN', {
-      timeZone: IST,
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).formatToParts(d);
-    const get = (type: string) => parts.find(p => p.type === type)?.value ?? '';
-    return `${get('weekday')}, ${get('day')} ${get('month')} ${get('year')}, ${get('hour')}:${get('minute')} IST`;
+    const datePart = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const timePart = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `${datePart}, ${timePart} IST`;
   } catch {
     return 'Unknown Date';
   }
