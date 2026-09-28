@@ -207,10 +207,32 @@ export default function Violations() {
     window.addEventListener('offline', handleOffline);
     window.addEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
 
+    // Setup Supabase Realtime Subscription for auto-refresh
+    const channel = supabase
+      .channel('public:violations')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'violations' },
+        (payload) => {
+          fetchViolationsRef.current();
+          refreshPendingCount();
+        }
+      )
+      .subscribe();
+
+    // Fallback auto-refresh interval (every 15 seconds)
+    const interval = setInterval(() => {
+      if (navigator.onLine && !isSyncingRef.current) {
+        fetchViolationsRef.current();
+      }
+    }, 15000);
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
+      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [refreshPendingCount]);
 
