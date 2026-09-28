@@ -220,19 +220,11 @@ export default function Violations() {
       )
       .subscribe();
 
-    // Fallback auto-refresh interval (every 15 seconds)
-    const interval = setInterval(() => {
-      if (navigator.onLine && !isSyncingRef.current) {
-        fetchViolationsRef.current();
-      }
-    }, 15000);
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('coalguard:syncQueueUpdated', handleSyncUpdated);
       supabase.removeChannel(channel);
-      clearInterval(interval);
     };
   }, [refreshPendingCount]);
 

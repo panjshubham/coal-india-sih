@@ -19,7 +19,8 @@ const IST = 'Asia/Kolkata';
 export function parseTimestamp(dateStr: string | null | undefined): Date | null {
   if (!dateStr) return null;
   try {
-    const cleanTs = dateStr.trim().endsWith('Z') ? dateStr.trim().slice(0, -1) : dateStr.trim();
+    // Strip both 'Z' and offset like '+00:00' to force local parsing
+    const cleanTs = dateStr.trim().replace(/(Z|[+-]\d{2}:?\d{2})$/i, '');
     const d = new Date(cleanTs);
     return isNaN(d.getTime()) ? null : d;
   } catch {
