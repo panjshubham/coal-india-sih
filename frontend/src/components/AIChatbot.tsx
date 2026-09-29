@@ -3,7 +3,6 @@ import { MessageSquare, X, Send, Bot, User, Loader2, Mic, MicOff, Languages } fr
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useNavigate } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -226,14 +225,10 @@ export default function AIChatbot() {
                     className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
                       msg.type === 'user'
                         ? 'bg-emerald-600 text-white rounded-br-none'
-                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-bl-none shadow-sm prose prose-sm dark:prose-invert prose-p:leading-snug prose-p:m-0'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-bl-none shadow-sm whitespace-pre-wrap'
                     }`}
                   >
-                    {msg.type === 'bot' ? (
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
-                    ) : (
-                      msg.text
-                    )}
+                    {msg.text}
                   </div>
 
                   {msg.type === 'user' && (
