@@ -40,6 +40,7 @@ import ProductionReporting from './pages/ProductionReporting';
 
 import PublicTracking from './pages/PublicTracking';
 import AutoTranslator from './components/AutoTranslator';
+import AIChatbot from './components/AIChatbot';
 
 // ── Sync Toast ──────────────────────────────────────────────────────────────
 interface SyncToast {
@@ -129,6 +130,7 @@ function App() {
     <>
       <AutoTranslator />
       <SyncToastContainer />
+      <AIChatbot />
       <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
