@@ -130,8 +130,8 @@ function App() {
     <>
       <AutoTranslator />
       <SyncToastContainer />
-      <AIChatbot />
       <Router>
+        <AIChatbot />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/public" element={<PublicTracking />} />
