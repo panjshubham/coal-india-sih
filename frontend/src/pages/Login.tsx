@@ -3,13 +3,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
-import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, CheckCircle2, Eye, EyeOff, Fingerprint, ScanFace, Sparkles } from 'lucide-react';
+import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, Eye, EyeOff, Fingerprint, ScanFace } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSelector from '../components/LanguageSelector';
 import BiometricLoginModal, { type HQPersonnel } from '../components/BiometricLoginModal';
 
 export default function Login() {
-  // Demo password convenience: defaults to Demo@2026 for pre-seeded demonstration roles
   const demoPassword = (import.meta.env.VITE_DEMO_PASSWORD as string | undefined) || 'Demo@2026';
   const [email, setEmail] = useState('corporate@coalguard.demo');
   const [password, setPassword] = useState(demoPassword);
@@ -17,12 +16,11 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showBiometricModal, setShowBiometricModal] = useState(false);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const { session, role, loading: authLoading } = useAuth();
 
-  // If user is already authenticated with a role, redirect to appropriate dashboard
   useEffect(() => {
     if (!authLoading && session && role) {
       const from = location.state?.from?.pathname;
@@ -50,17 +48,16 @@ export default function Login() {
       });
 
       if (signInError) throw signInError;
-      if (!data.user) throw new Error("No user returned from login");
+      if (!data.user) throw new Error('No user returned from login');
 
-      // Query role
       const { data: userData, error: roleError } = await supabase
         .from('users')
         .select('role')
         .eq('id', data.user.id)
         .single();
-        
+
       if (roleError) throw roleError;
-      
+
       const userRole = userData?.role;
       const from = location.state?.from?.pathname;
 
@@ -75,7 +72,6 @@ export default function Login() {
       } else {
         navigate('/', { replace: true });
       }
-
     } catch (err: any) {
       setError(err.message || 'Failed to authenticate');
     } finally {
@@ -98,213 +94,250 @@ export default function Login() {
   };
 
   return (
-    <div className="flex w-full min-h-screen" style={{ backgroundColor: 'var(--cg-bg)', transition: 'background-color 0.3s ease' }}>
-      
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex flex-col w-1/2 relative overflow-hidden justify-center items-center p-12" style={{ backgroundColor: 'var(--cg-surface-low)', borderRight: '1px solid var(--cg-border)' }}>
-        <div className="absolute inset-0 opacity-5 dark:opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-400 via-transparent to-transparent pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col items-center text-center max-w-md">
-          <div className="w-20 h-20 mb-6 flex items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
-            <ShieldAlert className="w-11 h-11 text-amber-500" />
-          </div>
-          <h1 className="text-4xl font-serif font-black tracking-wide mb-3" style={{ color: 'var(--cg-text-primary)' }}>COALGUARD</h1>
-          <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: 'var(--cg-accent)' }}>
-            Enterprise Governance &amp; Statutory Compliance
-          </p>
-          <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--cg-text-muted)' }}>
-            National platform for real-time telemetry, DGMS regulatory audit synchronization, and operational oversight.
-          </p>
+    <div
+      className="min-h-screen w-full flex flex-col items-center justify-center p-4 relative overflow-hidden"
+      style={{ backgroundColor: 'var(--cg-bg)', transition: 'background-color 0.3s ease' }}
+    >
+      {/* Subtle ambient glow — decorative */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[320px] rounded-full opacity-20 pointer-events-none blur-3xl"
+        style={{ background: 'radial-gradient(ellipse, rgba(245,158,11,0.35) 0%, transparent 70%)' }}
+      />
 
-          {/* Provisioning Notice Box */}
-          <div className="w-full p-4 rounded-lg text-left text-xs space-y-2" style={{ backgroundColor: 'var(--cg-surface-elevated)', border: '1px solid var(--cg-border-strong)' }}>
-            <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-[10px]" style={{ color: 'var(--cg-accent)' }}>
-              <Lock className="w-3.5 h-3.5" />
-              Corporate &amp; Regulator Registration Open
-            </div>
-            <p className="leading-normal text-[11px]" style={{ color: 'var(--cg-text-muted)' }}>
-              Corporate Officers and DGMS Regulatory Auditors can now self-register using their enterprise credentials. Mine Officials are provisioned by Corporate HQ.
-            </p>
-          </div>
-        </div>
-        
-        <div className="absolute bottom-6 left-8 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <p className="text-[11px] font-mono font-medium" style={{ color: 'var(--cg-text-faint)' }}>MINISTRY OF COAL • SECURE DGMS GATEWAY</p>
-        </div>
+      {/* Top-right controls */}
+      <div className="absolute top-5 right-5 flex items-center gap-3">
+        <Link
+          to="/signup"
+          className="text-xs font-semibold hover:underline transition-colors"
+          style={{ color: 'var(--cg-accent)' }}
+        >
+          New User? Sign Up
+        </Link>
+        <LanguageSelector variant="topbar" />
+        <ThemeToggle variant="landing" />
       </div>
 
-      {/* Right Panel - Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-12 relative" style={{ backgroundColor: 'var(--cg-surface)' }}>
-        
-        {/* Theme Toggle & Sign Up — top right */}
-        <div className="absolute top-6 right-6 flex items-center gap-3">
-          <Link
-            to="/signup"
-            className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline transition-colors"
+      {/* Brand header above card */}
+      <div className="flex flex-col items-center mb-8 text-center">
+        <div
+          className="w-14 h-14 mb-4 flex items-center justify-center rounded-2xl shadow-lg"
+          style={{
+            background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))',
+            border: '1px solid rgba(245,158,11,0.35)',
+            boxShadow: '0 0 24px rgba(245,158,11,0.15)',
+          }}
+        >
+          <ShieldAlert className="w-7 h-7 text-amber-500" />
+        </div>
+        <h1
+          className="text-2xl font-serif font-black tracking-widest mb-1"
+          style={{ color: 'var(--cg-text-primary)' }}
+        >
+          COALGUARD
+        </h1>
+        <p className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--cg-accent)' }}>
+          Ministry of Coal · Secure DGMS Gateway
+        </p>
+      </div>
+
+      {/* Card */}
+      <div
+        className="w-full max-w-md rounded-2xl p-7 sm:p-8 relative"
+        style={{
+          backgroundColor: 'var(--cg-surface)',
+          border: '1px solid var(--cg-border)',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
+        }}
+      >
+        {/* Card header */}
+        <div className="mb-6">
+          <h2
+            className="text-xl font-bold tracking-tight mb-1"
+            style={{ color: 'var(--cg-text-primary)' }}
           >
-            New User? Sign Up
-          </Link>
-          <LanguageSelector variant="topbar" />
-          <ThemeToggle variant="landing" />
-        </div>
-        
-        {/* Mobile Logo Fallback */}
-        <div className="absolute top-6 left-6 flex lg:hidden items-center gap-2.5">
-          <div className="w-8 h-8 flex items-center justify-center rounded bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30">
-            <ShieldAlert className="w-5 h-5 text-amber-500" />
-          </div>
-          <span className="font-serif font-bold text-lg tracking-wide text-[var(--cg-text-primary)]">COALGUARD</span>
+            Sign In
+          </h2>
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--cg-text-muted)' }}>
+            Enter your enterprise credentials to access your authorized workspace.
+          </p>
         </div>
 
-        <div className="w-full max-w-md pt-12 lg:pt-0">
-          <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--cg-text-primary)] mb-2 tracking-tight">
-              Sign In
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
-              Enter your enterprise credentials to access your authorized workspace.
-            </p>
+        {/* Demo Role Selector */}
+        <div
+          className="mb-5 p-3 rounded-xl space-y-2.5"
+          style={{
+            background: 'rgba(245,158,11,0.06)',
+            border: '1px solid rgba(245,158,11,0.25)',
+          }}
+        >
+          <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider font-bold" style={{ color: 'var(--cg-accent)' }}>
+            <span className="flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5" /> Pre-Seeded Demo Roles
+            </span>
+            <span className="font-normal text-[10px]" style={{ color: 'var(--cg-text-muted)' }}>
+              {demoPassword ? `Password: ${demoPassword}` : 'Password: (ask admin)'}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { key: 'corporate', label: 'Corporate', icon: <Building2 className="w-4 h-4" />, color: 'text-amber-600 dark:text-amber-400' },
+              { key: 'mine_official', label: 'Mine Official', icon: <HardHat className="w-4 h-4" />, color: 'text-emerald-600 dark:text-emerald-400' },
+              { key: 'regulator', label: 'Regulator', icon: <FileCheck className="w-4 h-4" />, color: 'text-blue-600 dark:text-blue-400' },
+            ].map(({ key, label, icon, color }) => {
+              const active = email.startsWith(key === 'mine_official' ? 'mine_official' : key);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setDemoCredentials(key as any)}
+                  className={`px-2 py-2 rounded-lg text-xs font-semibold flex flex-col items-center gap-1 border transition-all duration-200 active:scale-[0.97] cursor-pointer ${color}`}
+                  style={{
+                    backgroundColor: active ? 'rgba(245,158,11,0.15)' : 'var(--cg-surface-high)',
+                    borderColor: active ? 'rgba(245,158,11,0.5)' : 'var(--cg-border)',
+                  }}
+                >
+                  {icon}
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleLogin} className="space-y-4">
+          {error && (
+            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-500/30 text-red-700 dark:text-red-400 text-xs font-medium flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Email */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--cg-text-muted)' }}>
+              Authorized Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="w-full h-11 px-3 rounded-lg text-sm outline-none transition-all duration-200"
+              style={{
+                backgroundColor: 'var(--cg-surface-high)',
+                border: '1px solid var(--cg-border)',
+                color: 'var(--cg-text-primary)',
+              }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#F59E0B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.15)'; }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'var(--cg-border)'; e.currentTarget.style.boxShadow = 'none'; }}
+              placeholder="official@coalguard.demo"
+              required
+            />
           </div>
 
-          {/* Quick Demo Credentials Selector */}
-          <div className="mb-6 p-3 rounded-lg border border-amber-300 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/5 space-y-2.5">
-            <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-amber-700 dark:text-amber-400 font-bold">
-              <span className="flex items-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5" /> Pre-Seeded Demo Roles
-              </span>
-              <span className="text-[10px] text-slate-600 dark:text-slate-400 font-normal">{demoPassword ? `Password: ${demoPassword}` : 'Password: (ask admin)'}</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setDemoCredentials('corporate')}
-                className={`px-2.5 py-2 rounded text-xs font-semibold flex flex-col items-center gap-1 border transition-all duration-200 active:scale-[0.97] cursor-pointer ${
-                  email.startsWith('corporate') 
-                    ? 'bg-amber-200 dark:bg-amber-500/20 border-amber-500/50 text-amber-700 dark:text-amber-400 font-bold' 
-                    : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:border-amber-500/40'
-                }`}
-              >
-                <Building2 className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                <span>Corporate</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setDemoCredentials('mine_official')}
-                className={`px-2.5 py-2 rounded text-xs font-semibold flex flex-col items-center gap-1 border transition-all duration-200 active:scale-[0.97] cursor-pointer ${
-                  email.startsWith('mine_official') 
-                    ? 'bg-amber-200 dark:bg-amber-500/20 border-amber-500/50 text-amber-700 dark:text-amber-400 font-bold' 
-                    : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:border-amber-500/40'
-                }`}
-              >
-                <HardHat className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                <span>Mine Official</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setDemoCredentials('regulator')}
-                className={`px-2.5 py-2 rounded text-xs font-semibold flex flex-col items-center gap-1 border transition-all duration-200 active:scale-[0.97] cursor-pointer ${
-                  email.startsWith('regulator') 
-                    ? 'bg-amber-200 dark:bg-amber-500/20 border-amber-500/50 text-amber-700 dark:text-amber-400 font-bold' 
-                    : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:border-amber-500/40'
-                }`}
-              >
-                <FileCheck className="w-4 h-4 text-blue-700 dark:text-blue-400" />
-                <span>Regulator</span>
-              </button>
-            </div>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            {error && (
-              <div className="p-3 rounded-lg bg-red-100 dark:bg-red-500/10 border border-red-400 dark:border-red-500/30 text-red-700 dark:text-red-400 text-xs font-medium flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 shrink-0 text-red-700 dark:text-red-400" />
-                <span>{error}</span>
-              </div>
-            )}
-            
-            <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                Authorized Email
+          {/* Password */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--cg-text-muted)' }}>
+                Password
               </label>
-              <input 
-                type="email" 
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full h-11 px-3 border border-[var(--cg-border)] rounded-lg bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/50 transition-all duration-200 ease-in-out text-sm"
-                placeholder="official@coalguard.demo"
+              <span className="text-[10px]" style={{ color: 'var(--cg-text-faint)' }}>
+                {demoPassword ? (
+                  <>Demo: <span className="font-mono" style={{ color: 'var(--cg-accent)' }}>{demoPassword}</span></>
+                ) : 'Enter assigned password'}
+              </span>
+            </div>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full h-11 px-3 pr-10 rounded-lg text-sm font-mono outline-none transition-all duration-200"
+                style={{
+                  backgroundColor: 'var(--cg-surface-high)',
+                  border: '1px solid var(--cg-border)',
+                  color: 'var(--cg-text-primary)',
+                }}
+                onFocus={e => { e.currentTarget.style.borderColor = '#F59E0B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(245,158,11,0.15)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--cg-border)'; e.currentTarget.style.boxShadow = 'none'; }}
+                placeholder="••••••••"
                 required
               />
-            </div>
-            
-            <div className="space-y-1 relative">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                  Password
-                </label>
-                <span className="text-[11px] text-slate-600 dark:text-slate-400">{demoPassword ? <>Standard Demo Password: <span className="font-mono text-amber-700 dark:text-amber-400">{demoPassword}</span></> : 'Enter your assigned password'}</span>
-              </div>
-              <div className="relative">
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full h-11 px-3 pr-10 border border-[var(--cg-border)] rounded-lg bg-[var(--cg-surface-high)] text-[var(--cg-text-primary)] outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/50 transition-all duration-200 ease-in-out text-sm font-mono"
-                  placeholder="••••••••"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 mt-6">
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full h-11 flex items-center justify-center bg-amber-500 hover:brightness-105 text-slate-900 font-bold tracking-wide rounded-lg transition-all duration-150 ease-in-out disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-amber-500/10 text-sm"
-              >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4 mr-2" />
-                    Secure Login
-                  </>
-                )}
-              </button>
-
-              {/* Biometric Login (HQ Pass / WebAuthn) Button */}
               <button
                 type="button"
-                onClick={() => setShowBiometricModal(true)}
-                className="w-full h-11 flex items-center justify-center gap-2 border border-amber-500/40 text-amber-700 dark:text-amber-400 font-bold tracking-wide rounded-lg transition-all duration-150 ease-in-out cursor-pointer shadow-md text-xs uppercase hover:brightness-105"
-                style={{ backgroundColor: 'var(--cg-surface-highest)' }}
+                onClick={() => setShowPassword(p => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                style={{ color: 'var(--cg-text-faint)' }}
               >
-                <Fingerprint className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <ScanFace className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span>HQ Biometric Access Pass (Fingerprint / Face ID)</span>
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-          </form>
-
-          {/* Registration Link */}
-          <div className="mt-6 pt-4 border-t border-[var(--cg-border)] text-center text-xs text-slate-600 dark:text-slate-400">
-            Need an official enterprise account?{' '}
-            <Link to="/signup" className="font-bold text-amber-600 dark:text-amber-400 hover:underline">
-              Sign Up as Corporate or Regulator
-            </Link>
           </div>
 
+          {/* Action buttons */}
+          <div className="flex flex-col gap-2.5 pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 flex items-center justify-center gap-2 rounded-xl font-bold text-sm tracking-wide transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              style={{
+                background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                color: '#1C0A00',
+                boxShadow: '0 4px 14px rgba(245,158,11,0.30)',
+              }}
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Lock className="w-4 h-4" />
+                  Secure Login
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowBiometricModal(true)}
+              className="w-full h-11 flex items-center justify-center gap-2 rounded-xl font-bold text-xs uppercase tracking-wide transition-all duration-150 cursor-pointer hover:brightness-105"
+              style={{
+                backgroundColor: 'var(--cg-surface-elevated)',
+                border: '1px solid rgba(245,158,11,0.35)',
+                color: 'var(--cg-accent)',
+              }}
+            >
+              <Fingerprint className="w-4 h-4" />
+              <ScanFace className="w-4 h-4" />
+              <span>HQ Biometric Access Pass (Fingerprint / Face ID)</span>
+            </button>
+          </div>
+        </form>
+
+        {/* Footer */}
+        <div
+          className="mt-5 pt-4 text-center text-xs"
+          style={{ borderTop: '1px solid var(--cg-border)', color: 'var(--cg-text-muted)' }}
+        >
+          Need an official enterprise account?{' '}
+          <Link
+            to="/signup"
+            className="font-bold hover:underline"
+            style={{ color: 'var(--cg-accent)' }}
+          >
+            Sign Up as Corporate or Regulator
+          </Link>
         </div>
       </div>
 
-      {/* HQ Biometric Login Modal */}
+      {/* Bottom status bar */}
+      <div className="mt-6 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <p className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--cg-text-faint)' }}>
+          Ministry of Coal &amp; Mines · ISO 27001 Secured · ECDSA-P384
+        </p>
+      </div>
+
+      {/* Biometric Modal */}
       <BiometricLoginModal
         isOpen={showBiometricModal}
         onClose={() => setShowBiometricModal(false)}
@@ -313,7 +346,6 @@ export default function Login() {
           setPassword(demoPassword ?? '');
         }}
       />
-
     </div>
   );
 }
