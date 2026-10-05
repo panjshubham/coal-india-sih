@@ -61,14 +61,16 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = 't
 
   return (
     <div className={`relative inline-block text-left ${className}`} ref={dropdownRef}>
+      {/* Trigger button — theme-aware for all variants */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-xs border ${
-          variant === 'landing'
-            ? 'bg-slate-900/80 hover:bg-slate-800 text-slate-200 border-slate-700/60'
-            : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30'
-        }`}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-xs"
+        style={{
+          backgroundColor: 'var(--cg-surface-elevated)',
+          border: '1px solid var(--cg-border-strong)',
+          color: 'var(--cg-text-secondary)',
+        }}
         title="Select Language / भाषा चुनें"
         aria-expanded={isOpen}
       >
@@ -77,13 +79,30 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = 't
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 opacity-75 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
+      {/* Dropdown panel — fully theme-aware */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-2xl bg-slate-900 border border-slate-700/80 text-white z-[9999] py-1.5 overflow-hidden backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
-          <div className="px-3 py-1.5 text-[10px] font-bold tracking-wider text-amber-400 uppercase border-b border-slate-800 flex items-center justify-between">
+        <div
+          className="absolute right-0 mt-2 w-52 rounded-xl shadow-2xl z-[9999] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          style={{
+            backgroundColor: 'var(--cg-surface)',
+            border: '1px solid var(--cg-border-strong)',
+            boxShadow: '0 16px 48px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.10)',
+          }}
+        >
+          {/* Header */}
+          <div
+            className="px-3 py-2 text-[10px] font-bold tracking-wider uppercase flex items-center justify-between"
+            style={{
+              color: 'var(--cg-accent)',
+              borderBottom: '1px solid var(--cg-border)',
+            }}
+          >
             <span>Select Language</span>
-            <Languages className="w-3 h-3 text-amber-400" />
+            <Languages className="w-3 h-3" style={{ color: 'var(--cg-accent)' }} />
           </div>
-          <div className="max-h-64 overflow-y-auto py-1 scrollbar-thin scrollbar-thumb-slate-700">
+
+          {/* Language list */}
+          <div className="max-h-64 overflow-y-auto py-1">
             {SUPPORTED_LANGUAGES.map((lang) => {
               const isActive = lang.code === currentLangCode;
               return (
@@ -91,20 +110,26 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = 't
                   key={lang.code}
                   type="button"
                   onClick={() => handleSelectLanguage(lang.code)}
-                  className={`w-full px-3 py-2 text-xs flex items-center justify-between transition-colors cursor-pointer text-left ${
-                    isActive
-                      ? 'bg-amber-500/20 text-amber-300 font-bold'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
+                  className="w-full px-3 py-2 text-xs flex items-center justify-between transition-colors cursor-pointer text-left"
+                  style={{
+                    backgroundColor: isActive ? 'rgba(245,158,11,0.12)' : 'transparent',
+                    color: isActive ? 'var(--cg-accent)' : 'var(--cg-text-secondary)',
+                  }}
+                  onMouseEnter={e => {
+                    if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--cg-surface-elevated)';
+                  }}
+                  onMouseLeave={e => {
+                    if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                  }}
                 >
                   <div className="flex items-center gap-2 truncate">
                     <span className="text-sm">{lang.flag}</span>
                     <div className="flex flex-col leading-tight truncate">
                       <span className="font-semibold text-xs">{lang.nativeName}</span>
-                      <span className="text-[10px] text-slate-400">{lang.name}</span>
+                      <span className="text-[10px]" style={{ color: 'var(--cg-text-faint)' }}>{lang.name}</span>
                     </div>
                   </div>
-                  {isActive && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                  {isActive && <Check className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--cg-accent)' }} />}
                 </button>
               );
             })}
