@@ -101,28 +101,28 @@ export default function Login() {
     <div className="flex w-full min-h-screen" style={{ backgroundColor: 'var(--cg-bg)', transition: 'background-color 0.3s ease' }}>
       
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex flex-col w-1/2 bg-[#0E172A] relative overflow-hidden justify-center items-center p-12">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
+      <div className="hidden lg:flex flex-col w-1/2 relative overflow-hidden justify-center items-center p-12" style={{ backgroundColor: 'var(--cg-surface-low)', borderRight: '1px solid var(--cg-border)' }}>
+        <div className="absolute inset-0 opacity-5 dark:opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-400 via-transparent to-transparent pointer-events-none" />
         
         <div className="relative z-10 flex flex-col items-center text-center max-w-md">
-          <div className="w-20 h-20 mb-6 flex items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+          <div className="w-20 h-20 mb-6 flex items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
             <ShieldAlert className="w-11 h-11 text-amber-500" />
           </div>
-          <h1 className="text-4xl font-serif font-black text-white tracking-wide mb-3">COALGUARD</h1>
-          <p className="text-amber-400 font-mono text-xs uppercase tracking-widest mb-4">
-            Enterprise Governance & Statutory Compliance
+          <h1 className="text-4xl font-serif font-black tracking-wide mb-3" style={{ color: 'var(--cg-text-primary)' }}>COALGUARD</h1>
+          <p className="font-mono text-xs uppercase tracking-widest mb-4" style={{ color: 'var(--cg-accent)' }}>
+            Enterprise Governance &amp; Statutory Compliance
           </p>
-          <p className="text-slate-300 text-sm leading-relaxed mb-8">
+          <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--cg-text-muted)' }}>
             National platform for real-time telemetry, DGMS regulatory audit synchronization, and operational oversight.
           </p>
 
           {/* Provisioning Notice Box */}
-          <div className="w-full p-4 rounded-lg bg-slate-900/80 border border-slate-700/60 text-left text-xs text-slate-300 space-y-2">
-            <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[10px]">
-              <Lock className="w-3.5 h-3.5 text-amber-400" />
-              Corporate & Regulator Registration Open
+          <div className="w-full p-4 rounded-lg text-left text-xs space-y-2" style={{ backgroundColor: 'var(--cg-surface-elevated)', border: '1px solid var(--cg-border-strong)' }}>
+            <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-[10px]" style={{ color: 'var(--cg-accent)' }}>
+              <Lock className="w-3.5 h-3.5" />
+              Corporate &amp; Regulator Registration Open
             </div>
-            <p className="text-slate-400 leading-normal text-[11px]">
+            <p className="leading-normal text-[11px]" style={{ color: 'var(--cg-text-muted)' }}>
               Corporate Officers and DGMS Regulatory Auditors can now self-register using their enterprise credentials. Mine Officials are provisioned by Corporate HQ.
             </p>
           </div>
@@ -130,7 +130,7 @@ export default function Login() {
         
         <div className="absolute bottom-6 left-8 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <p className="text-[11px] text-slate-400 font-mono font-medium">MINISTRY OF COAL • SECURE DGMS GATEWAY</p>
+          <p className="text-[11px] font-mono font-medium" style={{ color: 'var(--cg-text-faint)' }}>MINISTRY OF COAL • SECURE DGMS GATEWAY</p>
         </div>
       </div>
 
@@ -283,10 +283,11 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowBiometricModal(true)}
-                className="w-full h-11 flex items-center justify-center gap-2 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 border border-amber-500/40 text-amber-400 font-bold tracking-wide rounded-lg transition-all duration-150 ease-in-out cursor-pointer shadow-md text-xs uppercase"
+                className="w-full h-11 flex items-center justify-center gap-2 border border-amber-500/40 text-amber-700 dark:text-amber-400 font-bold tracking-wide rounded-lg transition-all duration-150 ease-in-out cursor-pointer shadow-md text-xs uppercase hover:brightness-105"
+                style={{ backgroundColor: 'var(--cg-surface-highest)' }}
               >
-                <Fingerprint className="w-4 h-4 text-amber-400" />
-                <ScanFace className="w-4 h-4 text-amber-400" />
+                <Fingerprint className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <ScanFace className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <span>HQ Biometric Access Pass (Fingerprint / Face ID)</span>
               </button>
             </div>
