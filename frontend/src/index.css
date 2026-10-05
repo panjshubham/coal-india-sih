@@ -55,6 +55,11 @@
 
   /* Toggle icon */
   --cg-toggle-icon:      #9FB2C8;
+
+  /* Code panel background (dark terminal look in dark mode) */
+  --cg-code-panel-bg:    #0b101a;
+  --cg-code-divider:     rgba(255, 255, 255, 0.06);
+  --cg-hero-gradient:    linear-gradient(to right, #ffffff, #dbeafe, rgba(142, 213, 255, 0.8));
 }
 
 /* Light mode overrides — Clean, High-Contrast, Bold Official Government Portal */
@@ -107,6 +112,11 @@
 
   /* Toggle icon */
   --cg-toggle-icon:      #1E293B;
+
+  /* Code panel background (light paper look in light mode) */
+  --cg-code-panel-bg:    #F1F5F9;
+  --cg-code-divider:     rgba(0, 0, 0, 0.08);
+  --cg-hero-gradient:    linear-gradient(to right, #0F172A, #1E3A5F, #1D4ED8);
 }
 
 /* Light mode bold & high-contrast typography enhancement */
@@ -171,6 +181,173 @@
 .light .text-slate-300 {
   color: #0F172A !important;
   font-weight: 600;
+}
+
+/* ============================================================
+   LANDING PAGE — Light Mode Specific Fixes
+   ============================================================ */
+
+/* Fix: text-primary in Landing.tsx inline style uses #8ed5ff which is
+   near-invisible on white. Override those local class colours for light mode. */
+[data-theme="light"] .text-primary,
+.light .text-primary {
+  color: #0369A1 !important; /* sky-700 — readable on white */
+}
+
+[data-theme="light"] .bg-primary\/10,
+.light .bg-primary\/10 {
+  background-color: rgba(3, 105, 161, 0.1) !important;
+}
+
+[data-theme="light"] .text-on-primary,
+.light .text-on-primary {
+  color: #FFFFFF !important;
+}
+
+/* Fix: bg-primary (used in profile avatar) */
+[data-theme="light"] .bg-primary,
+.light .bg-primary {
+  background-color: #0369A1 !important;
+}
+
+/* Fix: bg-primary-container hover state */
+[data-theme="light"] .hover\:bg-primary-container:hover,
+.light .hover\:bg-primary-container:hover {
+  background-color: #0284C7 !important;
+}
+
+/* Fix secondary color (amber/orange) — keep warm in light mode */
+[data-theme="light"] .text-secondary,
+.light .text-secondary {
+  color: #B45309 !important; /* amber-700 — clearly visible on white */
+}
+
+[data-theme="light"] .bg-secondary,
+.light .bg-secondary {
+  background-color: #D97706 !important;
+}
+
+[data-theme="light"] .hover\:bg-secondary-container:hover,
+.light .hover\:bg-secondary-container:hover {
+  background-color: #B45309 !important;
+}
+
+[data-theme="light"] .bg-secondary\/15,
+.light .bg-secondary\/15 {
+  background-color: rgba(180, 83, 9, 0.12) !important;
+}
+
+[data-theme="light"] .bg-secondary\/20,
+.light .bg-secondary\/20 {
+  background-color: rgba(180, 83, 9, 0.15) !important;
+}
+
+/* Fix: dark code panels on feature cards */
+[data-theme="light"] [style*="background-color: var(--cg-code-panel-bg)"],
+.light [style*="background-color: var(--cg-code-panel-bg)"] {
+  border-color: #CBD5E1 !important;
+}
+
+/* Fix: metric card backgrounds — too transparent/dark on light bg */
+[data-theme="light"] .bg-surface-container-high\/70,
+.light .bg-surface-container-high\/70 {
+  background-color: #F1F5F9 !important;
+  border: 1px solid #E2E8F0;
+}
+
+[data-theme="light"] .hover\:bg-surface-container-high:hover,
+.light .hover\:bg-surface-container-high:hover {
+  background-color: #E2E8F0 !important;
+}
+
+/* Fix: cards with low opacity backgrounds */
+[data-theme="light"] .bg-surface-container-low\/50,
+.light .bg-surface-container-low\/50 {
+  background-color: #FFFFFF !important;
+}
+
+[data-theme="light"] .bg-surface-container-low\/30,
+.light .bg-surface-container-low\/30 {
+  background-color: #F8FAFC !important;
+}
+
+[data-theme="light"] .bg-surface-container-low\/80,
+.light .bg-surface-container-low\/80 {
+  background-color: #F1F5F9 !important;
+}
+
+/* Fix: header background which uses lowest/90 opacity */
+[data-theme="light"] .bg-surface-container-lowest\/90,
+.light .bg-surface-container-lowest\/90 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Fix: hero mini-badges opacity backgrounds */
+[data-theme="light"] .bg-surface-container-high\/60,
+.light .bg-surface-container-high\/60 {
+  background-color: #E2E8F0 !important;
+}
+
+[data-theme="light"] .bg-surface-container-lowest\/40,
+.light .bg-surface-container-lowest\/40 {
+  background-color: rgba(248, 250, 252, 0.9) !important;
+}
+
+[data-theme="light"] .bg-surface-container-lowest\/80,
+.light .bg-surface-container-lowest\/80 {
+  background-color: #F8FAFC !important;
+}
+
+/* Fix: hero telemetry lock badge */
+[data-theme="light"] .bg-surface-container-lowest\/80.border-primary\/20,
+[data-theme="light"] [class*="bg-surface-container-lowest"],
+.light [class*="bg-surface-container-lowest"] {
+  border-color: rgba(3, 105, 161, 0.25) !important;
+}
+
+/* Fix: white-alpha borders (invisible on light backgrounds) */
+[data-theme="light"] [class*="border-white"],
+.light [class*="border-white"] {
+  border-color: #CBD5E1 !important;
+}
+
+/* Fix: text-outline should be visible in light mode */
+[data-theme="light"] .text-outline,
+.light .text-outline {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .text-outline-variant,
+.light .text-outline-variant {
+  color: #64748B !important;
+}
+
+/* Fix: hero CTA secondary button (transparent with white border) */
+[data-theme="light"] button.border-white\/10,
+[data-theme="light"] button[class*="border-white"],
+.light button.border-white\/10,
+.light button[class*="border-white"] {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+  border-color: #94A3B8 !important;
+  color: #0F172A !important;
+}
+
+/* Fix: surface-bright hover on buttons */
+[data-theme="light"] .hover\:bg-surface-bright:hover,
+.light .hover\:bg-surface-bright:hover {
+  background-color: #E2E8F0 !important;
+}
+
+/* Fix: table row hover in light mode (was rgba white) */
+[data-theme="light"] .divide-surface-container-high\/40 > *,
+.light .divide-surface-container-high\/40 > * {
+  border-color: #E2E8F0;
+}
+
+/* Fix: backdrop-blur containers in hero */
+[data-theme="light"] .backdrop-blur-md,
+.light .backdrop-blur-md {
+  backdrop-filter: blur(12px) !important;
 }
 
 /* ============================================================

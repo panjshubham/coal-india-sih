@@ -178,6 +178,25 @@ export default function Landing() {
         .text-outline { color: #87929a; }
         .text-outline-variant { color: #3e484f; }
 
+        /* ── Light mode colour overrides for landing page custom classes ── */
+        [data-theme="light"] .text-primary, .light .text-primary { color: #0369A1; }
+        [data-theme="light"] .text-primary-container, .light .text-primary-container { color: #0284C7; }
+        [data-theme="light"] .text-secondary, .light .text-secondary { color: #B45309; }
+        [data-theme="light"] .text-on-primary, .light .text-on-primary { color: #FFFFFF; }
+        [data-theme="light"] .text-on-secondary, .light .text-on-secondary { color: #FFFFFF; }
+        [data-theme="light"] .text-outline, .light .text-outline { color: #475569; }
+        [data-theme="light"] .text-outline-variant, .light .text-outline-variant { color: #64748B; }
+        [data-theme="light"] .text-error, .light .text-error { color: #B91C1C; }
+        [data-theme="light"] .bg-primary, .light .bg-primary { background-color: #0369A1; }
+        [data-theme="light"] .bg-primary-container, .light .bg-primary-container { background-color: #0284C7; }
+        [data-theme="light"] .bg-secondary, .light .bg-secondary { background-color: #D97706; }
+        [data-theme="light"] .bg-secondary-container, .light .bg-secondary-container { background-color: #B45309; }
+        [data-theme="light"] .bg-surface-container-lowest, .light .bg-surface-container-lowest { background-color: #F8FAFC; }
+        [data-theme="light"] .bg-surface-container-low, .light .bg-surface-container-low { background-color: #F1F5F9; }
+        [data-theme="light"] .bg-surface-container, .light .bg-surface-container { background-color: #FFFFFF; }
+        [data-theme="light"] .bg-surface-container-high, .light .bg-surface-container-high { background-color: #E2E8F0; }
+        [data-theme="light"] .bg-surface-bright, .light .bg-surface-bright { background-color: #CBD5E1; }
+
         .px-space-xs { padding-left: 0.25rem; padding-right: 0.25rem; }
         .py-space-xs { padding-top: 0.25rem; padding-bottom: 0.25rem; }
         .py-space-2xs { padding-top: 0.125rem; padding-bottom: 0.125rem; }
@@ -361,7 +380,7 @@ export default function Landing() {
                   {/* Subtle glow behind title */}
                   <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 blur-[100px] rounded-full pointer-events-none"></div>
                   
-                  <h1 className="font-display-lg tracking-tight font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-primary/80 leading-[1.1] pb-2">
+                  <h1 className="font-display-lg tracking-tight font-bold leading-[1.1] pb-2" style={{ background: 'var(--cg-hero-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                     AI-Based Smart Governance and Compliance Monitoring System
                   </h1>
                   <p className="font-body-lg text-on-surface-variant max-w-3xl leading-relaxed text-[17px]">
@@ -585,20 +604,20 @@ export default function Landing() {
                       </div>
                     </div>
 
-                    <div className="mt-space-xl p-space-md rounded-lg bg-[#0b101a] border border-outline-variant/20 space-y-space-sm font-code-sm relative overflow-hidden z-10 shadow-inner">
-                      <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
+                    <div className="mt-space-xl p-space-md rounded-lg border space-y-space-sm font-code-sm relative overflow-hidden z-10 shadow-inner" style={{ backgroundColor: 'var(--cg-code-panel-bg)', borderColor: 'var(--cg-code-divider)' }}>
+                      <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">SUPABASE STREAM:</span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20 font-bold">
                           VERIFIED LIVE
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
+                        <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span>Active Open Violations:</span>
                         <span className="text-amber-700 dark:text-amber-400 font-mono font-bold bg-amber-100 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-500/20">
                           {featureStats.activeViolationsCount} Open
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
+                        <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span>Mines Monitored:</span>
                         <span className="text-on-surface font-mono font-bold">
                           {featureStats.minesCount} Active Collieries
@@ -639,8 +658,8 @@ export default function Landing() {
                       </div>
                     </div>
 
-                    <div className="mt-space-xl p-space-md rounded-lg bg-[#0b101a] border border-outline-variant/20 space-y-space-sm font-code-sm relative z-10 shadow-inner">
-                      <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
+                    <div className="mt-space-xl p-space-md rounded-lg border space-y-space-sm font-code-sm relative z-10 shadow-inner" style={{ backgroundColor: 'var(--cg-code-panel-bg)', borderColor: 'var(--cg-code-divider)' }}>
+                      <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">HIGHEST-RISK SEEDED MINE:</span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-500/20 font-bold">
                           XGBOOST · LIVE
@@ -652,7 +671,7 @@ export default function Landing() {
                           {featureStats.topRisk.mineName} ({featureStats.topRisk.subsidiary})
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
+                        <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span>Statutory Risk Level:</span>
                         <span className="text-red-700 dark:text-red-400 font-mono font-bold bg-red-100 dark:bg-red-500/10 px-2 py-0.5 rounded border border-red-300 dark:border-red-500/20">
                           {featureStats.topRisk.score}/100 ({featureStats.topRisk.riskLevel.toUpperCase()})
@@ -692,14 +711,14 @@ export default function Landing() {
                       </div>
                     </div>
 
-                    <div className="mt-space-xl p-space-md rounded-lg bg-[#080d14] border border-dashed border-slate-300 dark:border-slate-700/80 space-y-space-sm font-code-sm relative z-10 shadow-inner">
-                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 border-b border-white/5 pb-2">
+                    <div className="mt-space-xl p-space-md rounded-lg border-dashed border space-y-space-sm font-code-sm relative z-10 shadow-inner" style={{ backgroundColor: 'var(--cg-code-panel-bg)', borderColor: 'var(--cg-code-divider)' }}>
+                      <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">HARDWARE TELEMETRY:</span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-600 font-bold uppercase tracking-wider">
                           SIMULATED PREVIEW
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 border-b border-white/5 pb-2">
+                        <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span className="flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
                           Slope Inclinometers (X/Y/Z):
@@ -708,13 +727,13 @@ export default function Landing() {
                           {sensorSim.slopeInclinometer} mm/hr
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 border-b border-white/5 pb-2">
+                        <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span>Seismic Peak Velocity:</span>
                         <span className="text-slate-700 dark:text-slate-300 font-mono">
                           {sensorSim.seismicPPV} mm/s <span className="text-slate-700 dark:text-slate-500 text-[10px]">(Lim:10)</span>
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                        <div className="flex justify-between items-center text-on-surface-variant">
                         <span className="flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
                           Ambient Methane (Shaft #3):
@@ -752,20 +771,20 @@ export default function Landing() {
                       </div>
                     </div>
 
-                    <div className="mt-space-xl p-space-md rounded-lg bg-[#0b101a] border border-outline-variant/20 space-y-space-sm font-code-sm relative z-10 shadow-inner">
-                      <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
+                    <div className="mt-space-xl p-space-md rounded-lg border space-y-space-sm font-code-sm relative z-10 shadow-inner" style={{ backgroundColor: 'var(--cg-code-panel-bg)', borderColor: 'var(--cg-code-divider)' }}>
+                      <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">FIELD GPS LOCK:</span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20 font-bold">
                           VERIFIED SEEDED RECORD
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
-                        <span>Captured Coordinates:</span>
-                        <span className="text-on-surface font-mono font-bold bg-surface-container-high/60 px-2 py-0.5 rounded border border-white/5">
+                        <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
+                          <span>Captured Coordinates:</span>
+                          <span className="text-on-surface font-mono font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'var(--cg-surface-high)', border: '1px solid var(--cg-code-divider)' }}>
                           {featureStats.sampleGps.latitude?.toFixed(4)}° N, {featureStats.sampleGps.longitude?.toFixed(4)}° E
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
+                        <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span>Logged Incident:</span>
                         <span className="text-primary font-mono capitalize">
                           Category: {featureStats.sampleGps.category} ({featureStats.sampleGps.severity} Sev)
@@ -806,28 +825,28 @@ export default function Landing() {
                       </div>
                     </div>
 
-                    <div className="mt-space-xl p-space-md rounded-lg bg-[#0b101a] border border-outline-variant/20 space-y-space-sm font-code-sm relative z-10 shadow-inner">
-                      <div className="flex justify-between items-center text-on-surface-variant border-b border-white/5 pb-2">
+                    <div className="mt-space-xl p-space-md rounded-lg border space-y-space-sm font-code-sm relative z-10 shadow-inner" style={{ backgroundColor: 'var(--cg-code-panel-bg)', borderColor: 'var(--cg-code-divider)' }}>
+                      <div className="flex justify-between items-center text-on-surface-variant pb-2" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
                         <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400">STATUTORY LEDGER ENGINE:</span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20 font-bold">
                           IMMUTABLE LOG · LIVE
                         </span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                        <div className="flex flex-col border-b sm:border-b-0 sm:border-r border-white/5 pb-2 sm:pb-0 sm:pr-3">
-                          <span className="text-slate-600 dark:text-slate-400 text-[11px]">Active Pit Alerts:</span>
+                        <div className="flex flex-col pb-2 sm:pb-0 sm:pr-3" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
+                          <span className="text-on-surface-variant text-[11px]">Active Pit Alerts:</span>
                           <span className="text-amber-700 dark:text-amber-400 font-mono font-bold text-sm">
                             {featureStats.activeAlertsCount} Unresolved
                           </span>
                         </div>
-                        <div className="flex flex-col border-b sm:border-b-0 sm:border-r border-white/5 pb-2 sm:pb-0 sm:pr-3">
-                          <span className="text-slate-600 dark:text-slate-400 text-[11px]">Audit Ledger Entries:</span>
+                        <div className="flex flex-col pb-2 sm:pb-0 sm:pr-3" style={{ borderBottom: '1px solid var(--cg-code-divider)' }}>
+                          <span className="text-on-surface-variant text-[11px]">Audit Ledger Entries:</span>
                           <span className="text-emerald-700 dark:text-emerald-400 font-mono font-bold text-sm">
                             {featureStats.auditLogsCount} SHA-256 Blocks
                           </span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-slate-600 dark:text-slate-400 text-[11px]">Latest Merkle Hash:</span>
+                          <span className="text-on-surface-variant text-[11px]">Latest Merkle Hash:</span>
                           <span className="text-primary font-mono text-[11px] truncate">
                             sha256:{featureStats.latestBlockHash ? `${featureStats.latestBlockHash.slice(0, 12)}...${featureStats.latestBlockHash.slice(-6)}` : '5a6a9490a177...'}
                           </span>
@@ -909,7 +928,7 @@ export default function Landing() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-surface-container-high/40 font-mono text-[13px]">
-                      <motion.tr whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.03)' }} className="transition-colors group cursor-pointer">
+                      <motion.tr whileHover={{ scale: 1.01 }} style={{ '--tw-hover-bg': 'var(--cg-surface-elevated)' } as React.CSSProperties} className="transition-colors group cursor-pointer hover:bg-[var(--cg-surface-elevated)]">
                         <td className="py-3.5 px-4 font-sans text-on-surface font-semibold">Jharia Block-IV Colliery</td>
                         <td className="py-3.5 px-4 text-on-surface-variant font-sans">BCCL / Coal India</td>
                         <td className="py-3.5 px-4 text-primary font-medium">99.2% (Stable)</td>
@@ -925,7 +944,7 @@ export default function Landing() {
                           <button className="px-2.5 py-1 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary text-[11px] font-medium transition-colors">Inspect</button>
                         </td>
                       </motion.tr>
-                      <motion.tr whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.03)' }} className="transition-colors group cursor-pointer">
+                      <motion.tr whileHover={{ scale: 1.01 }} className="transition-colors group cursor-pointer hover:bg-[var(--cg-surface-elevated)]">
                         <td className="py-3.5 px-4 font-sans text-on-surface font-semibold">Korba West Open Cast Mine</td>
                         <td className="py-3.5 px-4 text-on-surface-variant font-sans">SECL Central Pit</td>
                         <td className="py-3.5 px-4 text-primary font-medium">98.7% (Stable)</td>
@@ -941,7 +960,7 @@ export default function Landing() {
                           <button className="px-2.5 py-1 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary text-[11px] font-medium transition-colors">Inspect</button>
                         </td>
                       </motion.tr>
-                      <motion.tr whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.03)' }} className="transition-colors group cursor-pointer relative">
+                      <motion.tr whileHover={{ scale: 1.01 }} className="transition-colors group cursor-pointer relative hover:bg-[var(--cg-surface-elevated)]">
                         <td className="py-3.5 px-4 font-sans text-on-surface font-semibold">Singrauli Northern Ridge</td>
                         <td className="py-3.5 px-4 text-on-surface-variant font-sans">NCL Governance Unit</td>
                         <td className="py-3.5 px-4 text-secondary font-medium">91.4% (Review Bench 4)</td>
@@ -957,7 +976,7 @@ export default function Landing() {
                           <button className="px-2.5 py-1 rounded bg-secondary/20 text-secondary group-hover:bg-secondary group-hover:text-on-secondary text-[11px] font-medium transition-colors">View Alert</button>
                         </td>
                       </motion.tr>
-                      <motion.tr whileHover={{ scale: 1.01, backgroundColor: 'rgba(255,255,255,0.03)' }} className="transition-colors group cursor-pointer">
+                      <motion.tr whileHover={{ scale: 1.01 }} className="transition-colors group cursor-pointer hover:bg-[var(--cg-surface-elevated)]">
                         <td className="py-3.5 px-4 font-sans text-on-surface font-semibold">Talcher Deep Seam Complex</td>
                         <td className="py-3.5 px-4 text-on-surface-variant font-sans">MCL Mahanadi Range</td>
                         <td className="py-3.5 px-4 text-primary font-medium">99.8% (Stable)</td>
