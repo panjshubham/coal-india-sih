@@ -51,6 +51,8 @@ export default function AIChatbot() {
           const transcript = event.results[0][0].transcript;
           setInputValue(prev => prev ? prev + ' ' + transcript : transcript);
           setIsListening(false);
+          // Automatically send the voice command
+          handleSend(transcript);
         };
         
         recognitionRef.current.onerror = () => setIsListening(false);
@@ -79,13 +81,14 @@ export default function AIChatbot() {
     setLanguage(prev => prev === 'en-US' ? 'hi-IN' : 'en-US');
   };
 
-  const handleSend = async () => {
-    if (!inputValue.trim()) return;
+  const handleSend = async (overrideText?: string) => {
+    const textToSend = typeof overrideText === 'string' ? overrideText : inputValue;
+    if (!textToSend.trim()) return;
 
     const newUserMsg: Message = {
       id: Date.now().toString(),
       type: 'user',
-      text: inputValue
+      text: textToSend
     };
 
     setMessages(prev => [...prev, newUserMsg]);
@@ -122,7 +125,7 @@ export default function AIChatbot() {
         })),
       });
 
-      const result = await chat.sendMessage(inputValue);
+      const result = await chat.sendMessage(textToSend);
       let botResponse = result.response.text();
 
       // Check for navigation command
@@ -131,6 +134,8 @@ export default function AIChatbot() {
         const path = navMatch[1];
         // Remove the tag from the text shown to the user
         botResponse = botResponse.replace(/\[NAVIGATE:[^\]]+\]/, '').trim();
+        // If the message is completely empty after removing the tag, add a brief response
+        if (!botResponse) botResponse = "Navigating right away!";
         
         // Wait slightly for the user to read before navigating
         setTimeout(() => {
@@ -143,12 +148,15 @@ export default function AIChatbot() {
         type: 'bot',
         text: botResponse
       }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Gemini API Error:", error);
+      const isApiKeyIssue = error.message?.includes('API key') || import.meta.env.VITE_GEMINI_API_KEY?.length < 10;
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        text: "I'm sorry, I'm having trouble connecting to my central neural network. Please check my API key."
+        text: isApiKeyIssue 
+          ? "I'm having trouble connecting to my central neural network. It looks like the API key is invalid or missing. Ensure your key is correct and restart your Vite server."
+          : "I'm sorry, I encountered an error connecting to my systems. Please try again."
       }]);
     } finally {
       setIsTyping(false);

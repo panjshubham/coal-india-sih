@@ -195,7 +195,7 @@ export default function GeospatialMap() {
         
         .map-wrapper {
           font-family: 'Geist', sans-serif;
-          background-color: ${isLight ? '#E8EDF5' : '#080D1A'};
+          background-color: ${isLight ? '#F0F4F8' : '#080D1A'};
           color: ${isLight ? '#1E293B' : '#e2e8f0'};
           overflow: hidden;
         }
@@ -209,12 +209,12 @@ export default function GeospatialMap() {
         .text-status-rose { color: ${isLight ? '#DC2626' : '#F87171'}; }
         .bg-status-rose { background-color: ${isLight ? '#DC2626' : '#F87171'}; }
         
-        /* Overriding Leaflet default Popup styles for dark theme */
+        /* Leaflet Popup styles — theme-aware */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-          background-color: #0F172A !important;
-          color: white !important;
-          border: 1px border border-white/[0.1] !important;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.7) !important;
+          background-color: ${isLight ? '#FFFFFF' : '#0F172A'} !important;
+          color: ${isLight ? '#1E293B' : '#F1F5F9'} !important;
+          border: 1px solid ${isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)'} !important;
+          box-shadow: ${isLight ? '0 8px 30px rgba(0,0,0,0.12)' : '0 20px 50px rgba(0,0,0,0.7)'} !important;
           border-radius: 0.75rem !important;
         }
         .leaflet-popup-content {
@@ -222,12 +222,12 @@ export default function GeospatialMap() {
           width: 320px !important;
         }
         .leaflet-container a.leaflet-popup-close-button {
-          color: #94a3b8 !important;
+          color: ${isLight ? '#64748B' : '#94a3b8'} !important;
           top: 8px !important;
           right: 8px !important;
         }
         .leaflet-container a.leaflet-popup-close-button:hover {
-          color: white !important;
+          color: ${isLight ? '#1E293B' : 'white'} !important;
         }
         /* Leaflet Controls hidden/repositioned */
         .leaflet-control-zoom {
@@ -246,7 +246,7 @@ export default function GeospatialMap() {
         </button>
 
         {/* 1. TOP BAR */}
-        <header className="fixed top-0 left-0 right-0 h-10 z-[1000] px-6 flex items-center justify-between backdrop-blur-md bg-[#0E172A]/75 border-b border-white/[0.08] text-xs shadow-sm">
+        <header className={`fixed top-0 left-0 right-0 h-10 z-[1000] px-6 flex items-center justify-between backdrop-blur-md border-b text-xs shadow-sm ${isLight ? 'bg-white/80 border-slate-200' : 'bg-[#0E172A]/75 border-white/[0.08]'}`}>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-status-sage animate-pulse" />
@@ -269,7 +269,7 @@ export default function GeospatialMap() {
         </header>
 
         {/* 2. LEAFLET MAP */}
-        <div className="absolute inset-0 z-0 bg-[#080D1A]">
+        <div className={`absolute inset-0 z-0 ${isLight ? 'bg-[#F0F4F8]' : 'bg-[#080D1A]'}`}>
           <MapContainer 
             center={[23.5, 84.0]} // Center of India roughly over coal belts
             zoom={6} 
@@ -285,8 +285,20 @@ export default function GeospatialMap() {
             ) : cartoKey ? (
               <TileLayer
                 attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-                url={`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`}
+                url={`https://{s}.basemaps.cartocdn.com/${isLight ? 'light_all' : 'dark_all'}/{z}/{x}/{y}{r}.png?key=${cartoKey}`}
               />
+            ) : isLight ? (
+              <>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+                  maxZoom={16}
+                />
+                <TileLayer
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
+                  maxZoom={16}
+                />
+              </>
             ) : (
               <>
                 <TileLayer
@@ -337,21 +349,20 @@ export default function GeospatialMap() {
                     }}
                   >
                     <div className="p-5 relative overflow-hidden">
-                      <div className="absolute -left-2 top-[34px] w-4 h-4 bg-[#0F172A] border-l border-b border-white/[0.1] -rotate-45 pointer-events-none" />
-                      <div className="font-mono text-[10px] tracking-[0.14em] uppercase text-slate-600 dark:text-slate-400 flex items-center gap-1.5 mb-1.5 pr-4">
+                      <div className={`font-mono text-[10px] tracking-[0.14em] uppercase flex items-center gap-1.5 mb-1.5 pr-4 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                         {mine.subsidiary} • {mine.region}
                       </div>
-                      <h3 className="font-serif text-xl font-medium tracking-tight text-slate-900 dark:text-white leading-snug">
+                      <h3 className={`font-serif text-xl font-medium tracking-tight leading-snug ${isLight ? 'text-slate-900' : 'text-white'}`}>
                         {mine.name}
                       </h3>
                       
-                      <div className="mt-4 flex items-center justify-between pb-3.5 border-b border-white/[0.07]">
+                      <div className={`mt-4 flex items-center justify-between pb-3.5 border-b ${isLight ? 'border-slate-200' : 'border-white/[0.07]'}`}>
                         <div className="flex flex-col">
-                          <span className="font-mono text-[10px] uppercase tracking-wider text-slate-600 dark:text-slate-400">Composite Risk</span>
+                          <span className={`font-mono text-[10px] uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Composite Risk</span>
                           <div className="flex items-baseline gap-1 mt-0.5">
-                            <span className="font-serif text-3xl font-medium text-slate-900 dark:text-white tracking-tight leading-none">{score}</span>
-                            <span className="font-mono text-xs text-slate-600 dark:text-slate-400">/ 100</span>
+                            <span className={`font-serif text-3xl font-medium tracking-tight leading-none ${isLight ? 'text-slate-900' : 'text-white'}`}>{score}</span>
+                            <span className={`font-mono text-xs ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>/ 100</span>
                           </div>
                           <span className={`font-mono text-[9px] uppercase tracking-wider ${statusColor} font-semibold mt-1`}>
                             {riskLabel}
@@ -359,11 +370,11 @@ export default function GeospatialMap() {
                         </div>
                         <div className="relative w-14 h-14 flex items-center justify-center">
                           <svg className="w-14 h-14 -rotate-90" viewBox="0 0 48 48">
-                            <circle cx="24" cy="24" fill="none" r="20" stroke="rgba(255,255,255,0.08)" strokeWidth="2.5" />
+                            <circle cx="24" cy="24" fill="none" r="20" stroke={isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)'} strokeWidth="2.5" />
                             <circle 
                               className="transition-all duration-1000 ease-out" 
                               cx="24" cy="24" fill="none" r="20" 
-                              stroke={score > 75 ? "#F87171" : score >= 45 ? "#F59E0B" : "#4ADE80"} 
+                              stroke={score > 75 ? (isLight ? "#DC2626" : "#F87171") : score >= 45 ? (isLight ? "#D97706" : "#F59E0B") : (isLight ? "#16A34A" : "#4ADE80")} 
                               strokeDasharray="125.66" 
                               strokeDashoffset={125.66 - (125.66 * (score / 100))} 
                               strokeLinecap="round" strokeWidth="2.5" 
@@ -376,9 +387,9 @@ export default function GeospatialMap() {
                       </div>
                       
                       {explanation && (
-                        <div className={`mt-3.5 p-2.5 rounded-lg bg-white/[0.03] border border-white/10 flex items-start gap-2`}>
+                        <div className={`mt-3.5 p-2.5 rounded-lg flex items-start gap-2 border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.03] border-white/10'}`}>
                           <span className={`material-symbols-outlined ${statusColor} text-[15px] shrink-0 mt-0.5`}>auto_awesome</span>
-                          <p className="font-sans text-[11px] leading-relaxed text-slate-700 dark:text-slate-300 font-normal">
+                          <p className={`font-sans text-[11px] leading-relaxed font-normal ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
                             {explanation}
                           </p>
                         </div>
@@ -388,9 +399,9 @@ export default function GeospatialMap() {
                         <button 
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate('/dashboard/corporate'); // Defaulting back to dashboard, could be specific
+                            navigate('/dashboard/corporate');
                           }}
-                          className="group/link inline-flex items-center gap-1 font-sans text-xs font-medium text-amber-300 hover:text-amber-200 transition-colors cursor-pointer"
+                          className={`group/link inline-flex items-center gap-1 font-sans text-xs font-medium transition-colors cursor-pointer ${isLight ? 'text-amber-600 hover:text-amber-700' : 'text-amber-300 hover:text-amber-200'}`}
                         >
                           <span>View Full Details</span>
                           <span className="material-symbols-outlined text-[14px] transition-transform duration-200 group-hover/link:translate-x-1">arrow_forward</span>
@@ -433,8 +444,8 @@ export default function GeospatialMap() {
         </div>
 
         {/* 3. LEFT FILTER PANEL */}
-        <aside className="fixed top-14 left-6 z-[1000] w-72 backdrop-blur-md bg-[#0E172A]/85 border border-white/[0.08] rounded-xl shadow-2xl p-4 flex flex-col gap-3.5 transition-all max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar">
-          <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.06]">
+        <aside className={`fixed top-14 left-6 z-[1000] w-72 backdrop-blur-md rounded-xl shadow-2xl p-4 flex flex-col gap-3.5 transition-all max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar border ${isLight ? 'bg-white/90 border-slate-200/80' : 'bg-[#0E172A]/85 border-white/[0.08]'}`}>
+          <div className={`flex items-center justify-between pb-2.5 border-b ${isLight ? 'border-slate-200' : 'border-white/[0.06]'}`}>
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-amber-700 dark:text-amber-400 text-[16px]">tune</span>
               <span className="font-sans text-xs font-semibold text-slate-900 dark:text-white tracking-tight">Geospatial Filters</span>
@@ -447,7 +458,7 @@ export default function GeospatialMap() {
           <div className="relative w-full">
             <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400 text-[15px]">search</span>
             <input 
-              className="w-full bg-[#080D1A]/90 border border-white/[0.08] text-slate-900 dark:text-white text-xs pl-8 pr-7 py-1.5 rounded-lg focus:outline-none focus:border-amber-400/50 focus:ring-1 focus:ring-amber-400/30 placeholder:text-slate-700 dark:text-slate-500 font-sans tracking-tight transition-all" 
+              className={`w-full border text-xs pl-8 pr-7 py-1.5 rounded-lg focus:outline-none focus:border-amber-400/50 focus:ring-1 focus:ring-amber-400/30 font-sans tracking-tight transition-all ${isLight ? 'bg-slate-100 border-slate-300 text-slate-900 placeholder:text-slate-400' : 'bg-[#080D1A]/90 border-white/[0.08] text-white placeholder:text-slate-500'}`} 
               placeholder="Search mine name..." 
               type="text" 
               value={searchQuery}
@@ -459,7 +470,7 @@ export default function GeospatialMap() {
             <label className="font-mono text-[9px] uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 font-medium">Subsidiary / Region</label>
             <div className="relative">
               <select 
-                className="w-full bg-[#080D1A]/90 border border-white/[0.08] text-slate-800 dark:text-slate-200 text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-amber-400/50 cursor-pointer appearance-none font-sans font-normal"
+                className={`w-full border text-xs px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-amber-400/50 cursor-pointer appearance-none font-sans font-normal ${isLight ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-[#080D1A]/90 border-white/[0.08] text-slate-200'}`}
                 value={subsidiaryFilter}
                 onChange={(e) => setSubsidiaryFilter(e.target.value)}
               >
@@ -474,7 +485,7 @@ export default function GeospatialMap() {
           
           <div className="flex flex-col gap-1.5">
             <label className="font-mono text-[9px] uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 font-medium">Risk Tier Filter</label>
-            <div className="grid grid-cols-4 gap-1 p-1 bg-[#080D1A]/90 border border-white/[0.06] rounded-lg text-center font-mono text-[10px]">
+            <div className={`grid grid-cols-4 gap-1 p-1 rounded-lg text-center font-mono text-[10px] border ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#080D1A]/90 border-white/[0.06]'}`}>
               <button 
                 className={`py-1 rounded transition-colors ${riskFilter === 'All' ? 'bg-white/10 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white'}`} 
                 onClick={() => setRiskFilter('All')}
@@ -502,7 +513,7 @@ export default function GeospatialMap() {
             </div>
           </div>
           
-          <div className="pt-2 border-t border-white/[0.06] flex flex-col gap-1.5">
+          <div className={`pt-2 border-t flex flex-col gap-1.5 ${isLight ? 'border-slate-200' : 'border-white/[0.06]'}`}>
              <label className="font-mono text-[9px] uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 font-medium mb-1">Results</label>
              <div className="flex flex-col gap-1.5 max-h-[250px] overflow-y-auto pr-1">
                {filteredMines.map(mine => {
@@ -533,7 +544,7 @@ export default function GeospatialMap() {
         </aside>
 
         {/* 4. LEGEND & LAYER SWITCHER */}
-        <div className="fixed top-14 right-6 z-[1000] backdrop-blur-md bg-[#0E172A]/85 border border-white/[0.08] px-4 py-2 rounded-full flex items-center gap-4 text-xs text-slate-700 dark:text-slate-300 shadow-2xl">
+        <div className={`fixed top-14 right-6 z-[1000] backdrop-blur-md border px-4 py-2 rounded-full flex items-center gap-4 text-xs shadow-2xl ${isLight ? 'bg-white/90 border-slate-200 text-slate-700' : 'bg-[#0E172A]/85 border-white/[0.08] text-slate-300'}`}>
           {/* Layer Selector */}
           <div className="flex items-center gap-1 bg-white dark:bg-slate-900/90 p-0.5 rounded-full border border-white/10 mr-1">
             <button
