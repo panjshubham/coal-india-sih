@@ -15,6 +15,108 @@ marked.setOptions({ breaks: true, gfm: true });
 
 const LOCAL_STORAGE_KEY = "coalguard_chat_history";
 const CHAT_OPEN_KEY = "coalguard_chat_is_open";
+const LAST_USER_KEY = "coalguard_last_user_id";
+const RATE_LIMIT_STORAGE_KEY = "coalguard_ai_rate_limit";
+
+// Rate limiting settings to ensure Gemini credits last long
+const MAX_PER_MINUTE = 5;
+const MAX_PER_HOUR = 25;
+const MAX_PER_DAY = 70;
+const MIN_COOLDOWN_MS = 3500; // 3.5s cooldown between consecutive AI calls
+
+interface RateLimitTracker {
+  timestamps: number[];
+  dailyCount: number;
+  lastDay: string;
+}
+
+function checkRateLimit(): { allowed: boolean; reason?: string; waitSeconds?: number } {
+  try {
+    const now = Date.now();
+    const today = new Date().toISOString().split("T")[0];
+    const raw = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
+    let tracker: RateLimitTracker = raw
+      ? JSON.parse(raw)
+      : { timestamps: [], dailyCount: 0, lastDay: today };
+
+    if (tracker.lastDay !== today) {
+      tracker.dailyCount = 0;
+      tracker.lastDay = today;
+    }
+
+    const oneHourAgo = now - 3600000;
+    tracker.timestamps = (tracker.timestamps || []).filter((t) => t > oneHourAgo);
+
+    // 1. Check daily budget
+    if (tracker.dailyCount >= MAX_PER_DAY) {
+      return {
+        allowed: false,
+        reason: `Daily AI credit budget reached (${MAX_PER_DAY} queries/day). API credits are preserved for statutory alerts. Direct navigation and DGMS safety rules remain active.`,
+      };
+    }
+
+    // 2. Check per-minute window
+    const oneMinuteAgo = now - 60000;
+    const inLastMinute = tracker.timestamps.filter((t) => t > oneMinuteAgo);
+    if (inLastMinute.length >= MAX_PER_MINUTE) {
+      const oldestInMinute = Math.min(...inLastMinute);
+      const waitSeconds = Math.max(1, Math.ceil((oldestInMinute + 60000 - now) / 1000));
+      return {
+        allowed: false,
+        reason: `Rate limit active: Maximum ${MAX_PER_MINUTE} queries per minute to preserve API credits. Please wait ${waitSeconds}s before asking again.`,
+        waitSeconds,
+      };
+    }
+
+    // 3. Check per-hour window
+    if (tracker.timestamps.length >= MAX_PER_HOUR) {
+      const oldestInHour = Math.min(...tracker.timestamps);
+      const waitMinutes = Math.max(1, Math.ceil((oldestInHour + 3600000 - now) / 60000));
+      return {
+        allowed: false,
+        reason: `Hourly AI quota reached (${MAX_PER_HOUR} queries/hr) to ensure credit longevity. Please wait ${waitMinutes} minute(s).`,
+      };
+    }
+
+    // 4. Consecutive cooldown
+    if (tracker.timestamps.length > 0) {
+      const lastCall = Math.max(...tracker.timestamps);
+      if (now - lastCall < MIN_COOLDOWN_MS) {
+        const waitSeconds = Math.max(1, Math.ceil((lastCall + MIN_COOLDOWN_MS - now) / 1000));
+        return {
+          allowed: false,
+          reason: `Please wait ${waitSeconds}s before sending another AI query.`,
+          waitSeconds,
+        };
+      }
+    }
+
+    return { allowed: true };
+  } catch {
+    return { allowed: true };
+  }
+}
+
+function recordAiRequest() {
+  try {
+    const now = Date.now();
+    const today = new Date().toISOString().split("T")[0];
+    const raw = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
+    let tracker: RateLimitTracker = raw
+      ? JSON.parse(raw)
+      : { timestamps: [], dailyCount: 0, lastDay: today };
+
+    if (tracker.lastDay !== today) {
+      tracker.dailyCount = 0;
+      tracker.lastDay = today;
+    }
+
+    if (!Array.isArray(tracker.timestamps)) tracker.timestamps = [];
+    tracker.timestamps.push(now);
+    tracker.dailyCount += 1;
+    localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify(tracker));
+  } catch {}
+}
 
 const SYSTEM_INSTRUCTION = `You are CoalBot, the intelligent AI assistant and copilot for CoalGuard (Coal India Mine Safety & DGMS Compliance Platform).
 You monitor mine safety, track DGMS statutory compliance, predict hazards, execute safety actions, and guide/navigate users to any part of the website.
@@ -663,6 +765,37 @@ export default function AIChatbot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
+  const { user } = useAuth();
+
+  // Reset chat on user sign-out, login, or account switch
+  useEffect(() => {
+    const currentUserId = user?.id || "unauthenticated";
+    const storedLastUserId = localStorage.getItem(LAST_USER_KEY);
+
+    if (storedLastUserId && storedLastUserId !== currentUserId) {
+      // Clear old conversation history completely and start fresh
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      setMessages([INITIAL_MESSAGE]);
+    }
+    localStorage.setItem(LAST_USER_KEY, currentUserId);
+  }, [user]);
+
+  // Clean up instantly on Supabase SIGNED_OUT event
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        localStorage.removeItem(CHAT_OPEN_KEY);
+        setMessages([INITIAL_MESSAGE]);
+        setIsOpen(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   // Keep open state synced
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -825,23 +958,55 @@ export default function AIChatbot() {
       return;
     }
 
-    // 3. Check for fast local knowledge response (under 50ms)
+    // 3. Check for fast local knowledge response (under 50ms) - FREE, DOES NOT CONSUME API CREDITS!
     const fastKnowledge = getFastLocalResponse(textToSend, language);
+    if (fastKnowledge) {
+      setIsTyping(false);
+      const botMsgId = (Date.now() + 1).toString();
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: botMsgId,
+          type: "bot",
+          text: fastKnowledge.text,
+          navigatedTo: fastKnowledge.targetPath
+            ? { path: fastKnowledge.targetPath, title: ROUTE_DIRECTORY[fastKnowledge.targetPath] || fastKnowledge.targetPath }
+            : undefined,
+        },
+      ]);
+      return;
+    }
 
-    // 4. Call Google Gemini API with strict 4.5s timeout for ultra-fast response
+    // 4. Rate Limiter Guard - Preserves Gemini API credits for long-lasting usage
+    const rateLimit = checkRateLimit();
+    if (!rateLimit.allowed) {
+      setIsTyping(false);
+      const botMsgId = (Date.now() + 1).toString();
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: botMsgId,
+          type: "bot",
+          text: `⏳ **AI Credit Preservation Guard Active**\n\n${rateLimit.reason}\n\n*Note: Direct actions (e.g. "create compliance", "create inspection") and website navigation remain immediately available without consuming API quota.*`,
+        },
+      ]);
+      return;
+    }
+
+    recordAiRequest();
+
+    // 5. Call Google Gemini API with strict 4.5s timeout for ultra-fast response
     const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || "").trim();
 
     if (!apiKey) {
       setIsTyping(false);
-      const fallbackText = fastKnowledge?.text || "The Gemini API key is not configured. Here are quick DGMS guidance options available on CoalGuard:";
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           type: "bot",
-          text: fallbackText,
-          navigatedTo: fastKnowledge?.targetPath ? { path: fastKnowledge.targetPath, title: ROUTE_DIRECTORY[fastKnowledge.targetPath] || fastKnowledge.targetPath } : undefined
-        }
+          text: "The Gemini API key is not configured. Please set `VITE_GEMINI_API_KEY` in Vercel.",
+        },
       ]);
       return;
     }
@@ -936,11 +1101,10 @@ export default function AIChatbot() {
 
       // If streaming hadn't completed, provide immediate expert fallback
       if (!completedStream) {
-        const targetPath = destination ? destination.path : (fastKnowledge?.targetPath || "/dashboard/colliery");
+        const targetPath = destination ? destination.path : "/dashboard/colliery";
         const pathTitle = ROUTE_DIRECTORY[targetPath] || targetPath;
 
-        const fallbackText = fastKnowledge?.text ||
-          `**CoalGuard Safety Co-Pilot:**\n\nI have verified your request for **${pathTitle}** against current DGMS safety parameters.\n• Click the button below to inspect the dashboard directly.`;
+        const fallbackText = `**CoalGuard Safety Co-Pilot:**\n\nI have verified your request for **${pathTitle}** against current DGMS safety parameters.\n• Click the button below to inspect the dashboard directly.`;
 
         if (wantsNav && destination) {
           navigate(destination.path);
@@ -1007,8 +1171,11 @@ export default function AIChatbot() {
                   <Bot className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">CoalGuard AI Copilot</h3>
-                  <p className="text-xs text-emerald-100 flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-semibold text-sm">CoalGuard AI Copilot</h3>
+                    <span className="text-[10px] bg-emerald-700/60 text-emerald-200 px-1.5 py-0.5 rounded-full font-mono">Quota-Safe</span>
+                  </div>
+                  <p className="text-xs text-emerald-100 flex items-center gap-1 mt-0.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
                     Online & Ready to Act
                   </p>
