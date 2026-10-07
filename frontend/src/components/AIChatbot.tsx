@@ -177,6 +177,7 @@ export default function AIChatbot() {
   };
 
   const handleSend = async (overrideText?: string) => {
+    if (isTyping) return;
     const textToSend = typeof overrideText === 'string' ? overrideText : inputValue;
     if (!textToSend.trim()) return;
 
@@ -253,11 +254,24 @@ export default function AIChatbot() {
         - User: "show attendance" -> Response: "Opening Biometric Attendance and Shift Rosters. [NAVIGATE:/attendance]"`,
       });
 
+      // Ensure valid history: no empty messages, and strictly alternating roles to prevent 400 Bad Request
+      const validHistory: any[] = [];
+      let lastRole = '';
+      
+      messages.slice(1).forEach(msg => {
+        const text = msg.text.trim();
+        if (!text) return;
+        const role = msg.type === 'user' ? 'user' : 'model';
+        if (role === lastRole) {
+          validHistory[validHistory.length - 1].parts[0].text += '\n\n' + text;
+        } else {
+          validHistory.push({ role, parts: [{ text }] });
+          lastRole = role;
+        }
+      });
+
       const chat = model.startChat({
-        history: messages.slice(1).map(msg => ({ 
-          role: msg.type === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.text }],
-        })),
+        history: validHistory,
       });
 
       const result = await chat.sendMessageStream(textToSend);
@@ -318,7 +332,7 @@ export default function AIChatbot() {
       ));
     } catch (error: any) {
       console.error("Gemini API Error:", error);
-      const errorMsg = error?.message || '';
+      const errorMsg = error?.message || String(error);
       const isAuthError = 
         errorMsg.includes('401') || 
         errorMsg.includes('403') || 
@@ -326,7 +340,7 @@ export default function AIChatbot() {
         errorMsg.includes('credentials') || 
         errorMsg.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED');
 
-      let replyText = "I'm sorry, I encountered an error connecting to my systems. Please try again.";
+      let replyText = `I'm sorry, I encountered an error connecting to my systems. (Error: ${errorMsg}). Please try again.`;
       if (isAuthError) {
         replyText = "Authentication Error: Google rejected the API key (401/403). Please verify that your active Google AI Studio API key is entered in Vercel under VITE_GEMINI_API_KEY and redeploy.";
       }
