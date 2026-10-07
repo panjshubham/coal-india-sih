@@ -290,7 +290,7 @@ export default function AIChatbot() {
 
                   {/* Send Button */}
                   <button
-                    onClick={handleSend}
+                    onClick={() => handleSend()}
                     disabled={!inputValue.trim() || isTyping}
                     className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white p-2 rounded-full transition-colors flex items-center justify-center"
                   >
