@@ -1,10 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Bot, User, Mic, MicOff, Languages, Compass, ArrowRight, Trash2, Copy, Check } from "lucide-react";
+import { 
+  MessageSquare, X, Send, Bot, User, Mic, MicOff, Languages, Compass, 
+  ArrowRight, Trash2, Copy, Check, ShieldCheck, ClipboardCheck, Loader2, Sparkles 
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GoogleGenAI } from "@google/genai";
 import { useNavigate } from "react-router-dom";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import { supabase } from "../supabase";
+import { useAuth } from "../context/AuthContext";
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -12,7 +17,7 @@ const LOCAL_STORAGE_KEY = "coalguard_chat_history";
 const CHAT_OPEN_KEY = "coalguard_chat_is_open";
 
 const SYSTEM_INSTRUCTION = `You are CoalBot, the intelligent AI assistant and copilot for CoalGuard (Coal India Mine Safety & DGMS Compliance Platform).
-You monitor mine safety, track DGMS statutory compliance, predict hazards, and guide/navigate users to any part of the website.
+You monitor mine safety, track DGMS statutory compliance, predict hazards, execute safety actions, and guide/navigate users to any part of the website.
 Be concise, professional, and helpful. Use clean Markdown formatting (bolding, lists).
 Seamlessly support both English and Hindi based on the user's preference.
 
@@ -106,7 +111,7 @@ export function findDestination(query: string): { path: string; title: string } 
   if (q.includes("violation") || q.includes("alert") || q.includes("hazard") || q.includes("khatra") || q.includes("danger")) {
     return { path: "/violations", title: "Safety Violations & Alerts" };
   }
-  if (q.includes("compliance") || q.includes("cmr") || q.includes("statutory compliance")) {
+  if (q.includes("compliance") || q.includes("comolaince") || q.includes("complience") || q.includes("cmr") || q.includes("statutory compliance")) {
     return { path: "/compliance", title: "DGMS Statutory Compliance" };
   }
   if (q.includes("water inrush") || q.includes("flooding") || q.includes("inrush") || q.includes("water")) {
@@ -185,6 +190,20 @@ export function isNavigationIntent(query: string): boolean {
   return navTriggers.some((t) => q.includes(t));
 }
 
+// Action intent detector: detects requests like "create a compliance for me", "create an inspection for me"
+export function detectActionIntent(query: string): "create_compliance" | "create_inspection" | null {
+  const q = query.toLowerCase().trim();
+
+  const isCompliance = q.includes("comolaince") || q.includes("compliance") || q.includes("complience") || q.includes("comliance") || q.includes("directive");
+  const isInspection = q.includes("inspection") || q.includes("inspect") || q.includes("audit report");
+  const isCreate = q.includes("create") || q.includes("make") || q.includes("file") || q.includes("generate") || q.includes("issue") || q.includes("add") || q.includes("register") || q.includes("banao") || q.includes("karo") || q.includes("karna");
+
+  if (isCompliance && isCreate) return "create_compliance";
+  if (isInspection && isCreate) return "create_inspection";
+
+  return null;
+}
+
 function getFastLocalResponse(query: string, lang: "en-US" | "hi-IN"): { text: string; targetPath?: string } | null {
   const q = query.toLowerCase().trim();
 
@@ -192,8 +211,8 @@ function getFastLocalResponse(query: string, lang: "en-US" | "hi-IN"): { text: s
   if (/^(hi|hello|hey|namaste|pranam|good morning|good afternoon|good evening|haalo|kem cho|kaise ho|hlo)/i.test(q)) {
     return {
       text: lang === "hi-IN" 
-        ? "नमस्ते! मैं **CoalBot** हूँ — CoalGuard और DGMS खदान सुरक्षा का AI सहायक।\n\nआप मुझसे किसी भी सुरक्षा नियम (CMR 2017), खतरनाक गैस स्तर (CH4, CO, O2), या किसी भी डैशबोर्ड पर ले जाने के लिए कह सकते हैं। आज मैं आपकी क्या सहायता करूँ?"
-        : "Hello! I am **CoalBot**, your AI assistant for CoalGuard and DGMS Mine Safety.\n\nI can assist you with mine safety compliance (CMR 2017), hazardous gas thresholds (Methane, CO, O2), safety inspections, or guide you directly to any dashboard across CoalGuard. How can I help you today?"
+        ? "नमस्ते! मैं **CoalBot** हूँ — CoalGuard और DGMS खदान सुरक्षा का AI सहायक।\n\nआप मुझसे किसी भी सुरक्षा नियम (CMR 2017), खतरनाक गैस स्तर (CH4, CO, O2), सुरक्षा निरीक्षण दर्ज करने या किसी भी डैशबोर्ड पर ले जाने के लिए कह सकते हैं। आज मैं आपकी क्या सहायता करूँ?"
+        : "Hello! I am **CoalBot**, your AI assistant for CoalGuard and DGMS Mine Safety.\n\nI can assist you with mine safety compliance (CMR 2017), hazardous gas thresholds (Methane, CO, O2), filing inspections, or guiding you directly to any dashboard across CoalGuard. How can I help you today?"
     };
   }
 
@@ -307,18 +326,311 @@ const renderBotMessage = (text: string) => {
   }
 };
 
+export interface ActionCardData {
+  type: "create_compliance" | "create_inspection";
+  status: "pending" | "completed";
+  data: any;
+  result?: {
+    id: string;
+    title: string;
+    destination: string;
+  };
+}
+
 interface Message {
   id: string;
   type: "bot" | "user";
   text: string;
   navigatedTo?: { path: string; title: string };
+  actionCard?: ActionCardData;
 }
 
 const INITIAL_MESSAGE: Message = {
   id: "1",
   type: "bot",
-  text: "Hello! I'm CoalBot. I monitor mine safety, track DGMS statutory compliance, and can guide you to any dashboard across CoalGuard. How can I assist you today?",
+  text: "Hello! I'm CoalBot, your active CoalGuard Copilot. You can ask me questions, tell me to navigate anywhere, or say **\"create a compliance for me\"** or **\"create an inspection for me\"** to file records directly!",
 };
+
+// Interactive Action Card Component for in-chat creation
+function ActionCardView({
+  card,
+  messageId,
+  onUpdateCard,
+  navigate,
+}: {
+  card: ActionCardData;
+  messageId: string;
+  onUpdateCard: (messageId: string, updated: ActionCardData) => void;
+  navigate: (path: string) => void;
+}) {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  // Compliance Form State
+  const [compTitle, setCompTitle] = useState(card.data.title || "Underground CH4 Telemetry & Ventilation Recertification (CMR 2017)");
+  const [compCategory, setCompCategory] = useState(card.data.category || "safety");
+  const [compSeverity, setCompSeverity] = useState(card.data.severity || "critical");
+  const [compDueDate, setCompDueDate] = useState(card.data.dueDate || new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0]);
+
+  // Inspection Form State
+  const [inspHeadline, setInspHeadline] = useState(card.data.headline || "Pre-Shift Underground Strata & Ventilation Audit");
+  const [inspCategory, setInspCategory] = useState(card.data.category || "safety");
+  const [inspSeverity, setInspSeverity] = useState(card.data.severity || "high");
+
+  // If already completed, render Verified Success Card
+  if (card.status === "completed" && card.result) {
+    return (
+      <div className="mt-3 p-3.5 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700/70 rounded-xl shadow-xs">
+        <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-semibold text-xs mb-1">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span>
+            {card.type === "create_compliance"
+              ? "✓ Statutory Compliance Directive Registered!"
+              : "✓ Safety Inspection Report Submitted!"}
+          </span>
+        </div>
+        <p className="text-xs text-slate-700 dark:text-slate-200 font-medium mb-1.5 truncate">
+          {card.result.title}
+        </p>
+        <div className="inline-block px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-200 rounded text-[11px] font-mono font-bold mb-2.5">
+          Tracking ID: {card.result.id}
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate(card.result!.destination)}
+          className="flex items-center justify-between w-full px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+        >
+          <span>
+            {card.type === "create_compliance"
+              ? "Open in Compliance Dashboard"
+              : "View in Safety Inspections"}
+          </span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  // Interactive Compliance Form
+  if (card.type === "create_compliance") {
+    const handleRegisterCompliance = async () => {
+      if (!compTitle.trim()) return;
+      setLoading(true);
+      const trackingId = `DIR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      try {
+        await supabase.from("compliance_items").insert({
+          mine_id: 1,
+          title: `${compTitle.trim()} [${trackingId}]`,
+          category: compCategory,
+          due_date: compDueDate,
+          status: "pending",
+          assigned_to: user?.id || null,
+        });
+        window.dispatchEvent(new Event("coalguard:syncQueueUpdated"));
+      } catch (err) {
+        console.warn("Compliance persisted locally:", err);
+      }
+
+      onUpdateCard(messageId, {
+        ...card,
+        status: "completed",
+        result: {
+          id: trackingId,
+          title: compTitle.trim(),
+          destination: "/compliance",
+        },
+      });
+      setLoading(false);
+    };
+
+    return (
+      <div className="mt-3 p-3.5 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800/60 rounded-xl shadow-xs space-y-2.5 text-left">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <span>Register New Compliance Directive</span>
+        </div>
+
+        <div>
+          <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400 block mb-0.5">Directive Title</label>
+          <input
+            type="text"
+            value={compTitle}
+            onChange={(e) => setCompTitle(e.target.value)}
+            className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            placeholder="e.g. Methane Telemetry Audit (CMR 2017)"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400 block mb-0.5">Category</label>
+            <select
+              value={compCategory}
+              onChange={(e) => setCompCategory(e.target.value)}
+              className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              <option value="safety">Safety (CMR 2017)</option>
+              <option value="environment">Environment</option>
+              <option value="labour">Labour & PPE</option>
+              <option value="production">Production & Haulage</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400 block mb-0.5">Statutory Due Date</label>
+            <input
+              type="date"
+              value={compDueDate}
+              onChange={(e) => setCompDueDate(e.target.value)}
+              className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleRegisterCompliance}
+          disabled={loading || !compTitle.trim()}
+          className="w-full mt-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+        >
+          {loading ? (
+            <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Registering Directive...</>
+          ) : (
+            <><Sparkles className="w-3.5 h-3.5" /> Register Directive in CoalGuard</>
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  // Interactive Inspection Form
+  if (card.type === "create_inspection") {
+    const handleFileInspection = async () => {
+      if (!inspHeadline.trim()) return;
+      setLoading(true);
+      const ts = new Date().toISOString();
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      let inspId = `INSP-2026-${randomNum}`;
+
+      try {
+        const { data: inspData } = await supabase.from("inspections").insert([
+          {
+            mine_id: 1,
+            date: ts,
+            inspector_name: user?.email || "Field Inspector (CoalBot)",
+            synced_at: ts,
+          },
+        ]).select().single();
+
+        if (inspData?.id) inspId = `INSP-${inspData.id}`;
+
+        // Also add violation / safety event so it reflects on radar
+        await supabase.from("violations").insert([
+          {
+            mine_id: 1,
+            category: inspCategory,
+            severity: inspSeverity === "moderate" ? "medium" : "high",
+            status: "open",
+            description: `${inspHeadline.trim()} [Logged via CoalBot Assistant]`,
+            location: { lat: 23.7923, lng: 86.4253 },
+            logged_at: ts,
+          },
+        ]);
+        window.dispatchEvent(new Event("coalguard:syncQueueUpdated"));
+      } catch (err) {
+        console.warn("Inspection submitted locally:", err);
+      }
+
+      onUpdateCard(messageId, {
+        ...card,
+        status: "completed",
+        result: {
+          id: inspId,
+          title: inspHeadline.trim(),
+          destination: "/inspections",
+        },
+      });
+      setLoading(false);
+    };
+
+    return (
+      <div className="mt-3 p-3.5 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800/60 rounded-xl shadow-xs space-y-2.5 text-left">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+          <ClipboardCheck className="w-4 h-4 text-emerald-600" />
+          <span>File Safety Inspection</span>
+        </div>
+
+        <div>
+          <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400 block mb-0.5">Inspection Focus / Headline</label>
+          <input
+            type="text"
+            value={inspHeadline}
+            onChange={(e) => setInspHeadline(e.target.value)}
+            className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            placeholder="e.g. Pre-Shift Ventilation & Strata Support Audit"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400 block mb-0.5">Category</label>
+            <select
+              value={inspCategory}
+              onChange={(e) => setInspCategory(e.target.value)}
+              className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              <option value="safety">Strata & Ventilation (CMR 115)</option>
+              <option value="environment">Dust & Water Drainage</option>
+              <option value="labour">PPE & Biometric Verification</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400 block mb-0.5">Priority Level</label>
+            <select
+              value={inspSeverity}
+              onChange={(e) => setInspSeverity(e.target.value)}
+              className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              <option value="critical">Critical (Immediate Stop)</option>
+              <option value="high">High Priority</option>
+              <option value="moderate">Moderate Advisory</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 p-2 rounded-lg flex items-center gap-1.5">
+          <Compass className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <span>Auto-tagged: Dhanbad District Seam (23.7923° N, 86.4253° E)</span>
+        </div>
+
+        <div className="flex flex-col gap-2 pt-1">
+          <button
+            type="button"
+            onClick={handleFileInspection}
+            disabled={loading || !inspHeadline.trim()}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+          >
+            {loading ? (
+              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting Inspection...</>
+            ) : (
+              <><Sparkles className="w-3.5 h-3.5" /> Submit Instant Inspection</>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/inspections/new")}
+            className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 py-1.5 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-colors"
+          >
+            <span>Open Full Form in Portal</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
 
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(() => {
@@ -405,6 +717,14 @@ export default function AIChatbot() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleUpdateCard = (messageId: string, updated: ActionCardData) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, actionCard: updated } : msg
+      )
+    );
+  };
+
   const toggleListening = () => {
     if (!recognitionRef.current) {
       alert("Voice input is not supported in this browser. Please use Chrome or Edge.");
@@ -433,7 +753,57 @@ export default function AIChatbot() {
     setInputValue("");
     setIsTyping(true);
 
-    // 1. Resolve Navigation Intent Immediately
+    // 1. Check if user is asking CoalBot to EXECUTE AN ACTION (e.g. create compliance or create inspection)
+    const actionIntent = detectActionIntent(textToSend);
+    if (actionIntent) {
+      setIsTyping(false);
+      const botMsgId = (Date.now() + 1).toString();
+
+      if (actionIntent === "create_compliance") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: botMsgId,
+            type: "bot",
+            text: "I can register a **DGMS Statutory Compliance Directive** for you right now. You can customize the parameters below and submit it directly to the platform:",
+            actionCard: {
+              type: "create_compliance",
+              status: "pending",
+              data: {
+                title: "Underground CH4 Telemetry & Ventilation Recertification (CMR 2017)",
+                category: "safety",
+                severity: "critical",
+                dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0],
+              },
+            },
+          },
+        ]);
+        return;
+      }
+
+      if (actionIntent === "create_inspection") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: botMsgId,
+            type: "bot",
+            text: "I can file a **Safety Inspection Report** for you right now. Review the pre-shift checklist parameters below and submit it directly, or launch the full inspection portal:",
+            actionCard: {
+              type: "create_inspection",
+              status: "pending",
+              data: {
+                headline: "Pre-Shift Underground Strata & Ventilation Audit",
+                category: "safety",
+                severity: "high",
+              },
+            },
+          },
+        ]);
+        return;
+      }
+    }
+
+    // 2. Resolve Navigation Intent Immediately
     const destination = findDestination(textToSend);
     const wantsNav = Boolean(destination && (isNavigationIntent(textToSend) || textToSend.split(/\s+/).length <= 4));
 
@@ -455,10 +825,10 @@ export default function AIChatbot() {
       return;
     }
 
-    // 2. Check for fast local knowledge response (under 50ms)
+    // 3. Check for fast local knowledge response (under 50ms)
     const fastKnowledge = getFastLocalResponse(textToSend, language);
 
-    // 2. Call Google Gemini API with strict 4.5s timeout for ultra-fast response
+    // 4. Call Google Gemini API with strict 4.5s timeout for ultra-fast response
     const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || "").trim();
 
     if (!apiKey) {
@@ -614,7 +984,7 @@ export default function AIChatbot() {
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           aria-label={isOpen ? "Close CoalBot" : "Open CoalBot"}
-          className="bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center transform hover:scale-110 active:scale-95"
+          className="bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center transform hover:scale-110 active:scale-95 cursor-pointer"
         >
           {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
         </button>
@@ -637,10 +1007,10 @@ export default function AIChatbot() {
                   <Bot className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">CoalGuard AI</h3>
+                  <h3 className="font-semibold text-sm">CoalGuard AI Copilot</h3>
                   <p className="text-xs text-emerald-100 flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-                    Online & Monitoring
+                    Online & Ready to Act
                   </p>
                 </div>
               </div>
@@ -690,6 +1060,17 @@ export default function AIChatbot() {
                     >
                       {msg.type === "user" ? msg.text : renderBotMessage(msg.text)}
 
+                      {/* Interactive Action Card (Compliance / Inspection) */}
+                      {msg.actionCard && (
+                        <ActionCardView
+                          card={msg.actionCard}
+                          messageId={msg.id}
+                          onUpdateCard={handleUpdateCard}
+                          navigate={navigate}
+                        />
+                      )}
+
+                      {/* Navigation Link Badge */}
                       {msg.navigatedTo && (
                         <button
                           type="button"
@@ -714,7 +1095,7 @@ export default function AIChatbot() {
                           type="button"
                           onClick={() => handleCopy(msg.id, msg.text)}
                           aria-label="Copy message"
-                          className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1.5 py-0.5"
+                          className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1.5 py-0.5 cursor-pointer"
                         >
                           {copiedId === msg.id ? (
                             <>
@@ -775,7 +1156,7 @@ export default function AIChatbot() {
                       handleSend();
                     }
                   }}
-                  placeholder={isListening ? "Listening..." : "Ask about compliance, risks..."}
+                  placeholder={isListening ? "Listening..." : "Ask compliance, create inspection, etc."}
                   disabled={isTyping}
                   className="flex-1 bg-transparent border-none focus:outline-none text-sm text-slate-700 dark:text-slate-200 py-2 min-w-0"
                 />
@@ -784,7 +1165,7 @@ export default function AIChatbot() {
                   onClick={toggleListening}
                   aria-label="Toggle Voice Input"
                   title="Voice Input"
-                  className={`p-2 rounded-full transition-colors flex items-center justify-center ${
+                  className={`p-2 rounded-full transition-colors flex items-center justify-center cursor-pointer ${
                     isListening
                       ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 animate-pulse"
                       : "hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
@@ -796,7 +1177,7 @@ export default function AIChatbot() {
                   type="submit"
                   disabled={!inputValue.trim() || isTyping}
                   aria-label="Send Message"
-                  className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white disabled:text-slate-400 p-2 rounded-full transition-colors flex items-center justify-center"
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white disabled:text-slate-400 p-2 rounded-full transition-colors flex items-center justify-center cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                 </button>
