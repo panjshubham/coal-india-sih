@@ -397,12 +397,15 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-[9999] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
+      onClick={onClose}
+    >
       <div 
-        className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[82vh] transition-all"
+        className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[82vh] transition-all cursor-default"
         onClick={e => e.stopPropagation()}
       >
-        {/* Search Input Bar */}
+        {/* Search Input Bar with Dedicated Exit Button */}
         <div className="flex items-center px-4 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 gap-3">
           <Search className="w-5 h-5 text-amber-500 shrink-0" />
           <input
@@ -412,20 +415,32 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleInputKeyDown}
             placeholder="Search mines, statutory Form V, AI tools, violations... (e.g. Gevra, YOLO, Reg 153)"
-            className="w-full bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm sm:text-base outline-none font-medium"
+            className="w-full bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm sm:text-base outline-none font-medium min-w-0"
           />
-          {query ? (
+          {query && (
             <button 
+              type="button"
               onClick={() => setQuery('')}
-              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              title="Clear input"
+              aria-label="Clear input"
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" />
             </button>
-          ) : (
-            <div className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-slate-400 bg-slate-200/60 dark:bg-slate-800/80 px-2 py-0.5 rounded border border-slate-300/40 dark:border-slate-700/60">
-              <span>ESC</span>
-            </div>
           )}
+
+          {/* Dedicated Exit / Close Button */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Exit Search Modal"
+            title="Exit Search (Esc)"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-slate-600 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400 bg-slate-200/70 hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-950/40 rounded-lg border border-slate-300/60 hover:border-red-300 dark:border-slate-700 dark:hover:border-red-800/60 transition-all cursor-pointer shrink-0 group active:scale-95 shadow-2xs select-none"
+          >
+            <span>Exit</span>
+            <kbd className="hidden sm:inline-block font-mono text-[10px] text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-900/80 px-1 py-0.2 rounded border border-slate-300/60 dark:border-slate-700/60 group-hover:border-red-300 dark:group-hover:border-red-800/60">ESC</kbd>
+            <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-200" />
+          </button>
         </div>
 
         {/* Categories Tabs */}
@@ -528,10 +543,14 @@ export default function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModal
               <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">↵</kbd>
               Open
             </span>
-            <span className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+            >
               <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">ESC</kbd>
-              Close
-            </span>
+              Exit
+            </button>
           </div>
           <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold">
             <Sparkles className="w-3 h-3" /> CoalGuard Global Search
