@@ -392,6 +392,7 @@ export default function AIChatbot() {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      e.stopPropagation();
       handleSend();
     }
   };
@@ -400,6 +401,7 @@ export default function AIChatbot() {
     <>
       <div className="fixed bottom-6 right-6 z-[9990]">
         <button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
           className="bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center transform hover:scale-110 active:scale-95"
         >
@@ -433,6 +435,7 @@ export default function AIChatbot() {
               
               <div className="flex items-center gap-2">
                 <button 
+                  type="button"
                   onClick={toggleLanguage}
                   className="flex items-center gap-1 bg-emerald-700/50 hover:bg-emerald-700 px-2 py-1 rounded-md text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400"
                   title="Toggle Voice Language"
@@ -442,6 +445,7 @@ export default function AIChatbot() {
                   {language === 'en-US' ? 'ENG' : 'HIN'}
                 </button>
                 <button
+                  type="button"
                   onClick={clearChat}
                   className="flex items-center gap-1 bg-emerald-700/50 hover:bg-red-500 hover:text-white px-2 py-1 rounded-md text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
                   aria-label="Clear Chat History"
@@ -540,13 +544,14 @@ export default function AIChatbot() {
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     placeholder={isListening ? "Listening..." : "Ask about compliance, risks..."}
                     className="flex-1 bg-transparent border-none focus:outline-none text-sm text-slate-700 dark:text-slate-200 py-2 min-w-0"
                   />
                   
                   {/* Voice Button */}
                   <button
+                    type="button"
                     onClick={toggleListening}
                     className={`p-2 rounded-full transition-colors flex items-center justify-center ${
                       isListening 
@@ -560,6 +565,7 @@ export default function AIChatbot() {
 
                   {/* Send Button */}
                   <button
+                    type="button"
                     onClick={() => handleSend()}
                     disabled={!inputValue.trim() || isTyping}
                     className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white p-2 rounded-full transition-colors flex items-center justify-center"
