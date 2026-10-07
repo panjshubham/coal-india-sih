@@ -547,7 +547,7 @@ function ActionCardView({
     };
 
     return (
-      <div className="mt-3 p-3.5 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800/60 rounded-xl shadow-xs space-y-2.5 text-left">
+      <div className="mt-3 p-3.5 bg-slate-50/80 dark:bg-slate-900/70 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl shadow-2xs space-y-2.5 text-left">
         <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
           <ShieldCheck className="w-4 h-4 text-emerald-600" />
           <span>Register New Compliance Directive</span>
@@ -559,7 +559,7 @@ function ActionCardView({
             type="text"
             value={compTitle}
             onChange={(e) => setCompTitle(e.target.value)}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-emerald-500"
             placeholder="e.g. Methane Telemetry Audit (CMR 2017)"
           />
         </div>
@@ -570,7 +570,7 @@ function ActionCardView({
             <select
               value={compCategory}
               onChange={(e) => setCompCategory(e.target.value)}
-              className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
             >
               <option value="safety">Safety (CMR 2017)</option>
               <option value="environment">Environment</option>
@@ -584,7 +584,7 @@ function ActionCardView({
               type="date"
               value={compDueDate}
               onChange={(e) => setCompDueDate(e.target.value)}
-              className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
             />
           </div>
         </div>
@@ -593,7 +593,7 @@ function ActionCardView({
           type="button"
           onClick={handleRegisterCompliance}
           disabled={loading || !compTitle.trim()}
-          className="w-full mt-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+          className="w-full mt-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
         >
           {loading ? (
             <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Registering Directive...</>
@@ -656,7 +656,7 @@ function ActionCardView({
     };
 
     return (
-      <div className="mt-3 p-3.5 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800/60 rounded-xl shadow-xs space-y-2.5 text-left">
+      <div className="mt-3 p-3.5 bg-slate-50/80 dark:bg-slate-900/70 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl shadow-2xs space-y-2.5 text-left">
         <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
           <ClipboardCheck className="w-4 h-4 text-emerald-600" />
           <span>File Safety Inspection</span>
@@ -668,7 +668,7 @@ function ActionCardView({
             type="text"
             value={inspHeadline}
             onChange={(e) => setInspHeadline(e.target.value)}
-            className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-emerald-500"
             placeholder="e.g. Pre-Shift Ventilation & Strata Support Audit"
           />
         </div>
@@ -679,7 +679,7 @@ function ActionCardView({
             <select
               value={inspCategory}
               onChange={(e) => setInspCategory(e.target.value)}
-              className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
             >
               <option value="safety">Strata & Ventilation (CMR 115)</option>
               <option value="environment">Dust & Water Drainage</option>
@@ -691,7 +691,7 @@ function ActionCardView({
             <select
               value={inspSeverity}
               onChange={(e) => setInspSeverity(e.target.value)}
-              className="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
             >
               <option value="critical">Critical (Immediate Stop)</option>
               <option value="high">High Priority</option>
@@ -700,7 +700,7 @@ function ActionCardView({
           </div>
         </div>
 
-        <div className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 p-2 rounded-lg flex items-center gap-1.5">
+        <div className="text-[10px] text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 p-2 rounded-lg flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700/60">
           <Compass className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
           <span>Auto-tagged: Dhanbad District Seam (23.7923° N, 86.4253° E)</span>
         </div>
@@ -710,7 +710,7 @@ function ActionCardView({
             type="button"
             onClick={handleFileInspection}
             disabled={loading || !inspHeadline.trim()}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
           >
             {loading ? (
               <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting Inspection...</>
@@ -721,7 +721,7 @@ function ActionCardView({
           <button
             type="button"
             onClick={() => navigate("/inspections/new")}
-            className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 py-1.5 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-colors"
+            className="w-full bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 py-1.5 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-colors cursor-pointer"
           >
             <span>Open Full Form in Portal</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -1147,10 +1147,21 @@ export default function AIChatbot() {
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? "Close CoalBot" : "Open CoalBot"}
-          className="bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center transform hover:scale-110 active:scale-95 cursor-pointer"
+          aria-label={isOpen ? "Close CoalBot Copilot" : "Open CoalBot Copilot"}
+          title={isOpen ? "Close CoalGuard Copilot" : "Open CoalGuard AI Copilot"}
+          className="relative bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-500 hover:from-emerald-600 hover:to-teal-400 text-white p-3.5 sm:p-4 rounded-full shadow-2xl shadow-emerald-950/40 hover:shadow-emerald-600/30 border border-emerald-400/30 flex items-center justify-center transform hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
         >
-          {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+          {isOpen ? (
+            <X className="w-6 h-6 transition-transform rotate-0" />
+          ) : (
+            <>
+              <MessageSquare className="w-6 h-6" />
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-400 border-2 border-white dark:border-slate-900" />
+              </span>
+            </>
+          )}
         </button>
       </div>
 
@@ -1158,140 +1169,150 @@ export default function AIChatbot() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 w-96 h-[580px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col z-[9990] overflow-hidden"
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="fixed bottom-24 right-4 sm:right-6 w-[415px] sm:w-[425px] max-w-[calc(100vw-2rem)] h-[610px] max-h-[calc(100vh-7rem)] bg-white dark:bg-slate-900 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border border-slate-200/90 dark:border-slate-700/80 flex flex-col z-[9990] overflow-hidden backdrop-blur-xl"
           >
-            {/* Header */}
-            <div className="bg-emerald-600 p-4 text-white flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 p-2 rounded-full">
-                  <Bot className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-semibold text-sm">CoalGuard AI Copilot</h3>
-                    <span className="text-[10px] bg-emerald-700/60 text-emerald-200 px-1.5 py-0.5 rounded-full font-mono">Quota-Safe</span>
+            {/* Executive Header */}
+            <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 px-4 py-3.5 text-white flex items-center justify-between shrink-0 border-b border-emerald-800/40 shadow-xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="relative shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
+                    <Bot className="w-5 h-5 text-emerald-300" />
                   </div>
-                  <p className="text-xs text-emerald-100 flex items-center gap-1 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-                    Online & Ready to Act
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-emerald-950 rounded-full" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-sm tracking-tight text-white truncate">CoalGuard Copilot</h3>
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 bg-emerald-800/70 text-emerald-200 border border-emerald-500/30 rounded-full shrink-0">
+                      Quota-Safe
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-200/80 flex items-center gap-1.5 mt-0.5 font-medium truncate">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                    <span>DGMS Statutory Mine AI & Action Copilot</span>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
                   onClick={toggleLanguage}
                   aria-label="Toggle Voice Language"
-                  className="flex items-center gap-1 bg-emerald-700/50 hover:bg-emerald-700 px-2 py-1 rounded-md text-xs transition-colors"
+                  title={language === "en-US" ? "Switch to Hindi voice & replies" : "Switch to English"}
+                  className="flex items-center gap-1 bg-white/10 hover:bg-white/20 border border-white/15 px-2.5 py-1 rounded-lg text-xs font-medium text-emerald-100 transition-colors cursor-pointer mr-0.5"
                 >
-                  <Languages className="w-3 h-3" />
-                  {language === "en-US" ? "ENG" : "HIN"}
+                  <Languages className="w-3.5 h-3.5 text-emerald-300" />
+                  <span>{language === "en-US" ? "ENG" : "हिन्दी"}</span>
                 </button>
                 <button
                   type="button"
                   onClick={clearChat}
                   aria-label="Clear Chat History"
-                  className="flex items-center gap-1 bg-emerald-700/50 hover:bg-red-500 px-2 py-1 rounded-md text-xs transition-colors"
+                  title="Clear chat history"
+                  className="p-1.5 rounded-lg text-emerald-100/80 hover:text-red-300 hover:bg-white/10 transition-colors cursor-pointer"
                 >
-                  <Trash2 className="w-3 h-3" />
-                  Clear
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Close Chat Window"
+                  title="Close chat"
+                  className="p-1.5 rounded-lg text-emerald-100/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900/50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-slate-50/70 dark:bg-slate-900/60 scrollbar-thin">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex gap-3 ${msg.type === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  {msg.type === "bot" && (
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center shrink-0 mt-1">
-                      <Bot className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                  )}
-
-                  <div className="flex flex-col gap-1 max-w-[85%] relative group">
-                    <div
-                      className={`rounded-2xl px-4 py-3 text-sm ${
-                        msg.type === "user"
-                          ? "bg-emerald-600 text-white rounded-br-none whitespace-pre-wrap"
-                          : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-none shadow-sm"
-                      }`}
-                    >
-                      {msg.type === "user" ? msg.text : renderBotMessage(msg.text)}
-
-                      {/* Interactive Action Card (Compliance / Inspection) */}
-                      {msg.actionCard && (
-                        <ActionCardView
-                          card={msg.actionCard}
-                          messageId={msg.id}
-                          onUpdateCard={handleUpdateCard}
-                          navigate={navigate}
-                        />
-                      )}
-
-                      {/* Navigation Link Badge */}
-                      {msg.navigatedTo && (
-                        <button
-                          type="button"
-                          onClick={() => navigate(msg.navigatedTo!.path)}
-                          className="mt-3 flex items-center justify-between w-full px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-emerald-800 dark:text-emerald-200 transition-all text-xs font-medium cursor-pointer group/nav"
-                        >
-                          <span className="flex items-center gap-2 font-semibold truncate mr-2">
-                            <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 group-hover/nav:rotate-45 transition-transform" />
-                            <span className="truncate">{msg.navigatedTo.title}</span>
-                          </span>
-                          <span className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
-                            <span>Open</span>
-                            <ArrowRight className="w-3.5 h-3.5 group-hover/nav:translate-x-1 transition-transform" />
-                          </span>
-                        </button>
-                      )}
-                    </div>
-
-                    {msg.type === "bot" && msg.id !== "1" && (
-                      <div className="flex justify-start px-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          type="button"
-                          onClick={() => handleCopy(msg.id, msg.text)}
-                          aria-label="Copy message"
-                          className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1.5 py-0.5 cursor-pointer"
-                        >
-                          {copiedId === msg.id ? (
-                            <>
-                              <Check className="w-3 h-3 text-emerald-500" /> Copied
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3" /> Copy
-                            </>
-                          )}
-                        </button>
+                  {msg.type === "bot" ? (
+                    <div className="flex gap-2.5 items-start max-w-[92%] group relative">
+                      <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-950/80 dark:to-teal-950/80 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                        <Bot className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                       </div>
-                    )}
-                  </div>
 
-                  {msg.type === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0 mt-1">
-                      <User className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                      <div className="flex-1 min-w-0">
+                        <div className="bg-white dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl rounded-tl-xs px-3.5 py-3 text-sm shadow-2xs leading-relaxed relative group/msg">
+                          {/* Copy button top-right on hover */}
+                          {msg.id !== "1" && (
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(msg.id, msg.text)}
+                              aria-label="Copy message"
+                              title="Copy response"
+                              className="absolute top-2 right-2 opacity-0 group-hover/msg:opacity-100 transition-opacity p-1 rounded-md text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-700/60 cursor-pointer"
+                            >
+                              {copiedId === msg.id ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          )}
+
+                          {/* Bot Markdown Content */}
+                          {renderBotMessage(msg.text)}
+
+                          {/* Action Card (Compliance / Inspection) */}
+                          {msg.actionCard && (
+                            <ActionCardView
+                              card={msg.actionCard}
+                              messageId={msg.id}
+                              onUpdateCard={handleUpdateCard}
+                              navigate={navigate}
+                            />
+                          )}
+
+                          {/* Navigation Link Card */}
+                          {msg.navigatedTo && (
+                            <button
+                              type="button"
+                              onClick={() => navigate(msg.navigatedTo!.path)}
+                              className="mt-2.5 flex items-center justify-between w-full p-2.5 bg-emerald-50/90 hover:bg-emerald-100/90 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 border border-emerald-300/70 dark:border-emerald-700/60 rounded-xl text-emerald-900 dark:text-emerald-100 transition-all text-xs font-semibold group/nav cursor-pointer shadow-2xs text-left"
+                            >
+                              <span className="flex items-center gap-2 min-w-0 mr-2">
+                                <div className="w-6 h-6 rounded-lg bg-emerald-200/70 dark:bg-emerald-800/60 flex items-center justify-center shrink-0">
+                                  <Compass className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300 group-hover/nav:rotate-45 transition-transform" />
+                                </div>
+                                <span className="truncate">{msg.navigatedTo.title}</span>
+                              </span>
+                              <span className="flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-300 font-bold shrink-0">
+                                <span>Open</span>
+                                <ArrowRight className="w-3.5 h-3.5 group-hover/nav:translate-x-0.5 transition-transform" />
+                              </span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Clean User Message Bubble without redundant avatar */
+                    <div className="max-w-[85%] bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl rounded-tr-xs px-3.5 py-2.5 text-sm shadow-2xs font-medium leading-relaxed break-words whitespace-pre-wrap">
+                      {msg.text}
                     </div>
                   )}
                 </div>
               ))}
 
+              {/* Typing animation */}
               {isTyping && (
-                <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center shrink-0">
-                    <Bot className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <div className="flex gap-2.5 items-start">
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-950/80 dark:to-teal-950/80 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                    <Bot className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                   </div>
-                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-1 shadow-sm">
+                  <div className="bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl rounded-tl-xs px-4 py-3 flex items-center gap-1.5 shadow-2xs">
                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
@@ -1301,15 +1322,37 @@ export default function AIChatbot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input with dedicated Form to prevent parent form submission or page reloads */}
-            <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 shrink-0">
+            {/* Quick Action Suggestion Chips */}
+            <div className="px-3 pt-2 pb-1.5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+              {[
+                { label: "📋 Create Compliance", query: "create a compliance for me" },
+                { label: "⚡ File Inspection", query: "create an inspection for me" },
+                { label: "🚨 Violations Radar", query: "take me to violations" },
+                { label: "💧 Water Inrush", query: "open water inrush" },
+                { label: "💨 Methane Limits", query: "what is methane safety limit" },
+                { label: "🗺️ Mine GIS Map", query: "open mines map" },
+              ].map((chip) => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={() => handleSend(chip.query)}
+                  disabled={isTyping}
+                  className="shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-emerald-950/50 text-slate-700 hover:text-emerald-700 dark:text-slate-300 dark:hover:text-emerald-300 border border-slate-200/80 hover:border-emerald-300 dark:border-slate-700/80 dark:hover:border-emerald-700/60 transition-colors cursor-pointer select-none"
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Input Bar */}
+            <div className="p-3 bg-white dark:bg-slate-900 shrink-0 border-t border-slate-100 dark:border-slate-800/60">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   handleSend();
                 }}
-                className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl pr-2 pl-4 py-1"
+                className="flex items-center gap-1.5 bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/90 rounded-2xl px-3 py-1 focus-within:ring-2 focus-within:ring-emerald-500/25 focus-within:border-emerald-500 transition-all shadow-inner"
               >
                 <input
                   ref={inputRef}
@@ -1323,19 +1366,19 @@ export default function AIChatbot() {
                       handleSend();
                     }
                   }}
-                  placeholder={isListening ? "Listening..." : "Ask compliance, create inspection, etc."}
+                  placeholder={isListening ? "Listening..." : "Ask compliance, file inspection, navigate..."}
                   disabled={isTyping}
-                  className="flex-1 bg-transparent border-none focus:outline-none text-sm text-slate-700 dark:text-slate-200 py-2 min-w-0"
+                  className="flex-1 bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 py-1.5 px-0 min-w-0"
                 />
                 <button
                   type="button"
                   onClick={toggleListening}
                   aria-label="Toggle Voice Input"
-                  title="Voice Input"
-                  className={`p-2 rounded-full transition-colors flex items-center justify-center cursor-pointer ${
+                  title={isListening ? "Stop listening" : "Start voice input"}
+                  className={`p-2 rounded-xl transition-all flex items-center justify-center cursor-pointer shrink-0 ${
                     isListening
-                      ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 animate-pulse"
-                      : "hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
+                      ? "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 animate-pulse"
+                      : "hover:bg-slate-200/70 dark:hover:bg-slate-700/70 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                   }`}
                 >
                   {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -1344,7 +1387,8 @@ export default function AIChatbot() {
                   type="submit"
                   disabled={!inputValue.trim() || isTyping}
                   aria-label="Send Message"
-                  className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-600 text-white disabled:text-slate-400 p-2 rounded-full transition-colors flex items-center justify-center cursor-pointer"
+                  title="Send message"
+                  className="bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:opacity-40 disabled:hover:bg-emerald-600 text-white p-2 rounded-xl transition-all flex items-center justify-center cursor-pointer shrink-0 shadow-2xs"
                 >
                   <Send className="w-4 h-4" />
                 </button>
