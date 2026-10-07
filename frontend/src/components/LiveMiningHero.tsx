@@ -76,7 +76,7 @@ export default function LiveMiningHero() {
           </button>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-6 py-3.5 rounded-lg bg-white dark:bg-slate-900/80 hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-sm border border-slate-300 dark:border-slate-700 backdrop-blur transition-all flex items-center gap-2 cursor-pointer"
+            className="px-6 py-3.5 rounded-lg bg-white dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-semibold text-sm border border-slate-300 dark:border-slate-700 backdrop-blur transition-all flex items-center gap-2 cursor-pointer"
           >
             <Compass className="w-4 h-4" /> Open Area Manager Cockpit
           </button>

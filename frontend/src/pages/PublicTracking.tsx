@@ -51,7 +51,7 @@ export default function PublicTracking() {
         <div className="flex items-center gap-3">
           <span className="font-bold">सत्यमेव जयते | GOVT. OF INDIA</span>
         </div>
-        <div className="flex items-center gap-4 hidden sm:flex">
+        <div className="hidden sm:flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 
             PUBLIC TRANSPARENCY PORTAL

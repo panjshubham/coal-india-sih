@@ -1043,6 +1043,19 @@ function ClassifyPanel() {
     );
 }
 
+// Helper component for NER tags
+function EntityBadge({ label, items, color }: { label: string; items: string[]; color: string }) {
+    if (!items || items.length === 0) return null;
+    return (
+        <div>
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">{label}</p>
+            <div className="flex flex-wrap gap-1.5">
+                {items.map(i => <span key={i} className={`px-2.5 py-1 rounded-lg text-xs font-medium ${color}`}>{i}</span>)}
+            </div>
+        </div>
+    );
+}
+
 // ── 4. NER Panel (Extract Entities) ─────────────────────────────────
 function NERPanel() {
     const [text, setText] = useState('');
@@ -1083,17 +1096,6 @@ function NERPanel() {
         });
         setLoading(false);
     };
-
-    const EntityBadge = ({ label, items, color }: { label: string; items: string[]; color: string }) => (
-        items.length > 0 ? (
-            <div>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">{label}</p>
-                <div className="flex flex-wrap gap-1.5">
-                    {items.map(i => <span key={i} className={`px-2.5 py-1 rounded-lg text-xs font-medium ${color}`}>{i}</span>)}
-                </div>
-            </div>
-        ) : null
-    );
 
     return (
         <div className="space-y-4">

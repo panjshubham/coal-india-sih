@@ -240,7 +240,7 @@ export default function GeospatialMap() {
         {/* Back Button */}
         <button 
           onClick={() => navigate(-1)}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] px-4 py-1.5 rounded-full bg-white dark:bg-slate-900/80 hover:bg-slate-100 dark:bg-slate-800 border border-white/10 text-xs font-mono text-slate-700 dark:text-slate-300 backdrop-blur-md transition-colors"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] px-4 py-1.5 rounded-full bg-white dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-white/10 text-xs font-mono text-slate-700 dark:text-slate-300 backdrop-blur-md transition-colors"
         >
           ← Return to Dashboard
         </button>
@@ -487,7 +487,7 @@ export default function GeospatialMap() {
             <label className="font-mono text-[9px] uppercase tracking-[0.1em] text-slate-600 dark:text-slate-400 font-medium">Risk Tier Filter</label>
             <div className={`grid grid-cols-4 gap-1 p-1 rounded-lg text-center font-mono text-[10px] border ${isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#080D1A]/90 border-white/[0.06]'}`}>
               <button 
-                className={`py-1 rounded transition-colors ${riskFilter === 'All' ? 'bg-white/10 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white'}`} 
+                className={`py-1 rounded transition-colors ${riskFilter === 'All' ? 'bg-white/10 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`} 
                 onClick={() => setRiskFilter('All')}
               >
                 All
@@ -553,7 +553,7 @@ export default function GeospatialMap() {
               className={`px-2.5 py-1 rounded-full text-[11px] font-mono transition-all ${
                 mapMode === 'dark' 
                   ? 'bg-white/15 text-slate-900 dark:text-white font-medium shadow-sm' 
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               Dark Canvas
@@ -564,7 +564,7 @@ export default function GeospatialMap() {
               className={`px-2.5 py-1 rounded-full text-[11px] font-mono transition-all ${
                 mapMode === 'satellite' 
                   ? 'bg-amber-500/25 text-amber-300 font-semibold border border-amber-500/40' 
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               Satellite

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '../supabase';
 import type { Session, User } from '@supabase/supabase-js';
 import { getProfile, saveProfile } from '../services/profileService';
@@ -27,6 +27,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<Role | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchRole = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("role, name, email")
+        .eq("id", userId)
+        .single();
+      
+      const userRole = (!error && data?.role) ? (data.role as Role) : null;
+      const userName = data?.name || "Unknown Officer";
+      const userEmail = data?.email || "";
+
+      setRole(userRole);
+      
+      const currentProfile = getProfile();
+      saveProfile({
+        ...currentProfile,
+        fullName: userName,
+        email: userEmail || currentProfile.email,
+        role: userRole ?? currentProfile.role
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -49,40 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
-
-  const fetchRole = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("role, name, email")
-        .eq("id", userId)
-        .single();
-      
-      // SECURITY: never silently grant a role. If the users-row lookup fails,
-      // the role stays null and ProtectedRoute denies access to restricted
-      // pages (fail-closed). Defaulting to "mine_official" here previously
-      // handed field-officer access to unregistered/failed lookups.
-      const userRole = (!error && data?.role) ? (data.role as Role) : null;
-      const userName = data?.name || "Unknown Officer";
-      const userEmail = data?.email || "";
-
-      setRole(userRole);
-      
-      // Dynamically update the UI profile based on logged-in user
-      const currentProfile = getProfile();
-      saveProfile({
-        ...currentProfile,
-        fullName: userName,
-        email: userEmail || currentProfile.email,
-        role: userRole ?? currentProfile.role
-      });
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchRole]);
 
   const signOut = async () => {
     try {

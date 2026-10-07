@@ -292,7 +292,7 @@ export default function AuditLog() {
               setSearchTerm(e.target.value);
               setPage(1);
             }}
-            className="pl-9 pr-4 py-2 bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:border-amber-500 w-full text-slate-800 dark:text-slate-200 placeholder:text-slate-700 dark:text-slate-500 text-xs"
+            className="pl-9 pr-4 py-2 bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:border-amber-500 w-full text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-xs"
           />
         </div>
         
@@ -511,7 +511,7 @@ export default function AuditLog() {
               </div>
               <button 
                 onClick={() => setSelectedLog(null)}
-                className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-500 hover:text-slate-900 dark:text-white transition cursor-pointer"
+                className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>

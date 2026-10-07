@@ -182,9 +182,12 @@ export default function Violations() {
   // render's `filter='all'`, so after auto-sync the table silently showed all
   // rows while the filter chip still showed the old value.
   const fetchViolationsRef = useRef(fetchViolations);
-  fetchViolationsRef.current = fetchViolations;
   const handleSyncRef = useRef(handleSync);
-  handleSyncRef.current = handleSync;
+
+  useEffect(() => {
+    fetchViolationsRef.current = fetchViolations;
+    handleSyncRef.current = handleSync;
+  });
   useEffect(() => {
     const handleOnline = async () => {
       setIsOnline(true);
@@ -495,14 +498,14 @@ export default function Violations() {
                 <p className="font-code-sm text-outline text-center">No regulatory infractions match the current filters.</p>
                 <Link
                   to="/inspections"
-                  className="mt-2 px-4 py-2 rounded-lg bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 font-label-md uppercase tracking-wider hover:bg-amber-200 dark:bg-amber-500/20 transition-colors"
+                  className="mt-2 px-4 py-2 rounded-lg bg-amber-100 dark:bg-amber-500/10 border border-amber-400 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 font-label-md uppercase tracking-wider hover:bg-amber-200 dark:hover:bg-amber-500/20 transition-colors"
                 >
                   + File New Violation
                 </Link>
               </div>
             ) : (
               violations.map(v => v.is_offline_pending ? (
-                <div key={v.id} className="flex flex-col md:flex-row md:items-center justify-between p-space-md bg-amber-50 dark:bg-amber-500/5 border-l-4 border-amber-500 hover:bg-amber-100 dark:bg-amber-500/10 transition-colors gap-space-md">
+                <div key={v.id} className="flex flex-col md:flex-row md:items-center justify-between p-space-md bg-amber-50 dark:bg-amber-500/5 border-l-4 border-amber-500 hover:bg-amber-100 dark:hover:bg-amber-500/10 transition-colors gap-space-md">
                   <div className="flex items-start gap-space-md w-full md:w-auto">
                     <div className="flex flex-col items-center justify-center p-2 rounded bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
                       <span className="material-symbols-outlined text-[20px] animate-pulse">cloud_off</span>

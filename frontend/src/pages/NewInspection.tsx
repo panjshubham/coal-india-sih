@@ -469,7 +469,7 @@ export default function NewInspection() {
                   <button 
                     type="button" 
                     onClick={() => { setPhoto(null); setIsPhotoPreviewVisible(false); }}
-                    className="w-8 h-8 rounded-lg bg-white/[0.08] hover:bg-rose-500/20 hover:text-rose-700 dark:text-rose-400 text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors shrink-0"
+                    className="w-8 h-8 rounded-lg bg-white/[0.08] hover:bg-rose-500/20 hover:text-rose-700 dark:hover:text-rose-400 text-slate-700 dark:text-slate-300 flex items-center justify-center transition-colors shrink-0"
                   >
                     <span className="material-symbols-outlined text-[18px]">close</span>
                   </button>

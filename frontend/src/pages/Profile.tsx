@@ -119,7 +119,7 @@ export default function Profile() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Secondary Phone */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 Secondary Mobile No. (Family Contact) *
               </label>
@@ -138,7 +138,7 @@ export default function Profile() {
 
             {/* Family Contact Name */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 Next of Kin / Family Contact Name *
               </label>
@@ -154,7 +154,7 @@ export default function Profile() {
 
             {/* Relationship */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 Relationship
               </label>
               <select
@@ -173,7 +173,7 @@ export default function Profile() {
 
             {/* Blood Group */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 <Activity className="w-3.5 h-3.5 text-red-500" />
                 Officer Blood Group
               </label>
@@ -195,7 +195,7 @@ export default function Profile() {
 
             {/* Family Residential Address */}
             <div className="space-y-1.5 md:col-span-2">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 <Building2 className="w-3.5 h-3.5 text-gray-500" />
                 Family Residential Address (Coal India Township / Colony)
               </label>
@@ -210,7 +210,7 @@ export default function Profile() {
 
             {/* Medical Precautions */}
             <div className="space-y-1.5 md:col-span-2">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
                 Medical Precautions / Underground Pit Allergies
               </label>
@@ -296,7 +296,7 @@ export default function Profile() {
 
             {/* DGMS Badge ID */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-blue-500" />
                 DGMS Officer Badge ID
               </label>
@@ -311,7 +311,7 @@ export default function Profile() {
 
             {/* Subsidiary */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 <Building2 className="w-3.5 h-3.5 text-blue-500" />
                 CIL Subsidiary & Circle
               </label>
@@ -325,7 +325,7 @@ export default function Profile() {
 
             {/* Primary Phone */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-blue-500" />
                 Primary Mobile No. (Officer Handset)
               </label>
@@ -339,7 +339,7 @@ export default function Profile() {
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-blue-500" />
                 Official NIC / DGMS Email
               </label>

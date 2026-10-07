@@ -368,7 +368,7 @@ export default function Landing() {
                     MINISTRY OF COAL & MINES • STATUTORY DIRECTIVE V4.2
                   </span>
                   <span className="text-outline-variant text-[10px] font-mono">|</span>
-                  <span className="font-code-sm text-on-surface-variant font-mono">DGMS-NOC-2025-SEC9</span>
+                  <span className="font-code-sm text-on-surface-variant">DGMS-NOC-2025-SEC9</span>
                 </motion.div>
                 
                 <motion.div 
