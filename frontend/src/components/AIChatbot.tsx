@@ -13,7 +13,9 @@ marked.setOptions({
 
 const renderBotMessage = (text: string) => {
   try {
-    const rawHtml = marked.parse(text) as string;
+    // Hide navigation tags if they appear during streaming
+    const cleanText = text.replace(/\[NAVIGATE:[^\]]*\]?/g, '').trim();
+    const rawHtml = marked.parse(cleanText) as string;
     const cleanHtml = typeof window !== 'undefined' ? DOMPurify.sanitize(rawHtml) : rawHtml;
     return (
       <div 
@@ -22,7 +24,7 @@ const renderBotMessage = (text: string) => {
       />
     );
   } catch {
-    return <span className="whitespace-pre-wrap">{text}</span>;
+    return <span className="whitespace-pre-wrap">{text.replace(/\[NAVIGATE:[^\]]*\]?/g, '').trim()}</span>;
   }
 };
 
@@ -258,8 +260,28 @@ export default function AIChatbot() {
         })),
       });
 
-      const result = await chat.sendMessage(textToSend);
-      let botResponse = result.response.text();
+      const result = await chat.sendMessageStream(textToSend);
+      
+      const newBotMsgId = (Date.now() + 1).toString();
+      let botResponse = '';
+      
+      // Add empty bot message and turn off typing indicator
+      setMessages(prev => [...prev, {
+        id: newBotMsgId,
+        type: 'bot',
+        text: ''
+      }]);
+      setIsTyping(false);
+
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        botResponse += chunkText;
+        
+        // Update message in state
+        setMessages(prev => prev.map(msg => 
+          msg.id === newBotMsgId ? { ...msg, text: botResponse } : msg
+        ));
+      }
 
       // Check for navigation command from model or client intent fallback
       let targetPath: string | null = null;
@@ -283,15 +305,17 @@ export default function AIChatbot() {
         }, 1200);
       }
 
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        type: 'bot',
-        text: botResponse,
-        navigatedTo: targetPath ? {
-          path: targetPath,
-          title: ROUTE_DIRECTORY[targetPath] || targetPath
-        } : undefined
-      }]);
+      // Final update to the message to set navigatedTo
+      setMessages(prev => prev.map(msg => 
+        msg.id === newBotMsgId ? {
+          ...msg,
+          text: botResponse,
+          navigatedTo: targetPath ? {
+            path: targetPath,
+            title: ROUTE_DIRECTORY[targetPath] || targetPath
+          } : undefined
+        } : msg
+      ));
     } catch (error: any) {
       console.error("Gemini API Error:", error);
       const errorMsg = error?.message || '';
