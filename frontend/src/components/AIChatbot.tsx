@@ -79,47 +79,110 @@ export const ROUTE_DIRECTORY: Record<string, string> = {
   "/public": "Public Safety Tracking Portal",
 };
 
-function detectNavigationIntent(query: string): string | null {
+export function findDestination(query: string): { path: string; title: string } | null {
   const q = query.toLowerCase().trim();
-  const explicitNavTriggers = [
-    "go to", "take me to", "navigate to", "open the", "open page", "open dashboard",
-    "visit", "le chalo", "le jao", "chalo", "kholo", "page kholo"
-  ];
-  const isExplicitNav = explicitNavTriggers.some((t) => q.includes(t)) ||
-    (q.startsWith("open ") && q.length < 35) ||
-    (q.startsWith("navigate ") && q.length < 35) ||
-    (q.startsWith("goto ") && q.length < 35);
 
-  if (!isExplicitNav) return null;
+  // Multi-word specific matches first
+  if (q.includes("new inspection") || q.includes("file inspection") || q.includes("create inspection") || q.includes("add inspection") || (q.includes("inspection") && (q.includes("new") || q.includes("file") || q.includes("create")))) {
+    return { path: "/inspections/new", title: "File New Safety Inspection" };
+  }
+  if (q.includes("corporate")) {
+    return { path: "/dashboard/corporate", title: "Corporate Executive Dashboard" };
+  }
+  if (q.includes("regulator") || q.includes("dgms dashboard")) {
+    return { path: "/dashboard/regulator", title: "DGMS Regulator Dashboard" };
+  }
+  if (q.includes("colliery") || (q.includes("manager") && q.includes("dashboard"))) {
+    return { path: "/dashboard/colliery", title: "Colliery Manager Dashboard" };
+  }
 
-  if (q.includes("ppe") || q.includes("helmet") || q.includes("camera") || q.includes("vest")) return "/ppe-monitor";
-  if (q.includes("water inrush") || q.includes("flooding") || q.includes("inrush") || q.includes("water")) return "/water-inrush";
-  if (q.includes("blast") || q.includes("lockdown") || q.includes("geofence")) return "/blast-lockdown";
-  if (q.includes("map") || q.includes("gis") || q.includes("location") || q.includes("naksha")) return "/mines-map";
-  if (q.includes("compliance") || q.includes("cmr")) return "/compliance";
-  if (q.includes("violation") || q.includes("alert") || q.includes("khatra")) return "/violations";
-  if (q.includes("new inspection") || q.includes("file inspection") || q.includes("create inspection")) return "/inspections/new";
-  if (q.includes("inspection") || q.includes("audit report") || q.includes("audits")) return "/inspections";
-  if (q.includes("register") || q.includes("form b") || q.includes("form c")) return "/statutory-registers";
-  if (q.includes("attendance") || q.includes("biometric") || q.includes("haziri")) return "/attendance";
-  if (q.includes("pit inspector")) return "/pit-inspector";
-  if (q.includes("submission")) return "/submissions";
-  if (q.includes("benchmark") || q.includes("ranking")) return "/benchmarking";
-  if (q.includes("production") || q.includes("coal output")) return "/production-reports";
-  if (q.includes("grievance") || q.includes("complaint") || q.includes("shikayat")) return "/grievances";
-  if (q.includes("financial") || q.includes("penalty") || q.includes("fine")) return "/financial-overview";
-  if (q.includes("workbench") || q.includes("shap")) return "/ai-workbench";
-  if (q.includes("audit log") || q.includes("security log")) return "/audit-log";
-  if (q.includes("contractor") || q.includes("vendor")) return "/contractors";
-  if (q.includes("data import") || q.includes("import") || q.includes("upload")) return "/data-import";
-  if (q.includes("manage user") || q.includes("users") || q.includes("role")) return "/manage-users";
-  if (q.includes("profile") || q.includes("setting") || q.includes("account")) return "/profile";
-  if (q.includes("help") || q.includes("support") || q.includes("madad")) return "/help";
-  if (q.includes("corporate")) return "/dashboard/corporate";
-  if (q.includes("regulator") || q.includes("dgms dashboard")) return "/dashboard/regulator";
-  if (q.includes("colliery") || q.includes("dashboard") || q.includes("home")) return "/dashboard/colliery";
-  if (q.includes("public")) return "/public";
+  // General pages
+  if (q.includes("inspection") || q.includes("inspect") || q.includes("audit") || q.includes("audits")) {
+    return { path: "/inspections", title: "Safety Inspections & Audits" };
+  }
+  if (q.includes("ppe") || q.includes("helmet") || q.includes("camera") || q.includes("vest") || q.includes("vision")) {
+    return { path: "/ppe-monitor", title: "PPE AI Live Vision Feed" };
+  }
+  if (q.includes("violation") || q.includes("alert") || q.includes("hazard") || q.includes("khatra") || q.includes("danger")) {
+    return { path: "/violations", title: "Safety Violations & Alerts" };
+  }
+  if (q.includes("compliance") || q.includes("cmr") || q.includes("statutory compliance")) {
+    return { path: "/compliance", title: "DGMS Statutory Compliance" };
+  }
+  if (q.includes("water inrush") || q.includes("flooding") || q.includes("inrush") || q.includes("water")) {
+    return { path: "/water-inrush", title: "Water Inrush & Flood Analysis" };
+  }
+  if (q.includes("blast") || q.includes("lockdown") || q.includes("geofence") || q.includes("detonation") || q.includes("explosive")) {
+    return { path: "/blast-lockdown", title: "Blast Zone Lockdown & Geofence" };
+  }
+  if (q.includes("map") || q.includes("gis") || q.includes("location") || q.includes("naksha") || q.includes("geospatial")) {
+    return { path: "/mines-map", title: "Geospatial Mine GIS Map" };
+  }
+  if (q.includes("register") || q.includes("form b") || q.includes("form c") || q.includes("form d") || q.includes("form e") || q.includes("form ii")) {
+    return { path: "/statutory-registers", title: "Statutory Mine Registers" };
+  }
+  if (q.includes("attendance") || q.includes("biometric") || q.includes("haziri") || q.includes("roll call") || q.includes("shift")) {
+    return { path: "/attendance", title: "Biometric & Shift Attendance" };
+  }
+  if (q.includes("pit inspector") || q.includes("offline")) {
+    return { path: "/pit-inspector", title: "Pit Inspector (Offline Mode)" };
+  }
+  if (q.includes("submission") || q.includes("my report")) {
+    return { path: "/submissions", title: "My Submissions" };
+  }
+  if (q.includes("benchmark") || q.includes("ranking") || q.includes("score")) {
+    return { path: "/benchmarking", title: "Mine Safety Benchmarking" };
+  }
+  if (q.includes("production") || q.includes("output") || q.includes("tonnage")) {
+    return { path: "/production-reports", title: "Production & Output Reporting" };
+  }
+  if (q.includes("grievance") || q.includes("complaint") || q.includes("shikayat")) {
+    return { path: "/grievances", title: "Worker Grievances & Redressal" };
+  }
+  if (q.includes("financial") || q.includes("penalty") || q.includes("fine") || q.includes("cost")) {
+    return { path: "/financial-overview", title: "Financial Safety & Penalties" };
+  }
+  if (q.includes("workbench") || q.includes("ai model") || q.includes("shap")) {
+    return { path: "/ai-workbench", title: "AI Workbench & Model Hub" };
+  }
+  if (q.includes("audit log") || q.includes("security log") || q.includes("system log")) {
+    return { path: "/audit-log", title: "System Security Audit Log" };
+  }
+  if (q.includes("contractor") || q.includes("vendor") || q.includes("thekedar")) {
+    return { path: "/contractors", title: "Contractor Safety Management" };
+  }
+  if (q.includes("data import") || q.includes("import") || q.includes("upload") || q.includes("csv")) {
+    return { path: "/data-import", title: "Sensor & CSV Data Import" };
+  }
+  if (q.includes("manage user") || q.includes("user management") || q.includes("users") || q.includes("roles")) {
+    return { path: "/manage-users", title: "User Management & Roles" };
+  }
+  if (q.includes("profile") || q.includes("setting") || q.includes("account") || q.includes("password")) {
+    return { path: "/profile", title: "Profile & Account Settings" };
+  }
+  if (q.includes("help") || q.includes("support") || q.includes("faq") || q.includes("madad")) {
+    return { path: "/help", title: "Help & Support Center" };
+  }
+  if (q.includes("public") || q.includes("citizen") || q.includes("tracker")) {
+    return { path: "/public", title: "Public Safety Tracking Portal" };
+  }
+  if (q.includes("dashboard") || q.includes("home")) {
+    return { path: "/dashboard/colliery", title: "Colliery Manager Dashboard" };
+  }
+
   return null;
+}
+
+export function isNavigationIntent(query: string): boolean {
+  const q = query.toLowerCase().trim();
+  const navTriggers = [
+    "want go", "want to go", "wanna go", "take me", "take user", "take",
+    "go to", "go", "goto", "navigate", "open", "show", "visit", "view",
+    "chalo", "le chalo", "le jao", "kholo", "dikhao", "jaana", "jana",
+    "move", "switch", "bring me", "bring", "lead me", "access", "enter",
+    "take to", "take into", "point to", "reach", "see", "load", "redirect"
+  ];
+  return navTriggers.some((t) => q.includes(t));
 }
 
 function getFastLocalResponse(query: string, lang: "en-US" | "hi-IN"): { text: string; targetPath?: string } | null {
@@ -211,6 +274,22 @@ function getFastLocalResponse(query: string, lang: "en-US" | "hi-IN"): { text: s
         "• **Form II:** Statutory Record of Ventilation Measurements and Gas Analysis.\n" +
         "• All registers are digitally maintained and cryptographically auditable in CoalGuard.",
       targetPath: "/statutory-registers"
+    };
+  }
+
+  // Safety Inspections & Audits
+  if (q.includes("inspection") || q.includes("audit") || q.includes("inspect")) {
+    const isNew = q.includes("new") || q.includes("file") || q.includes("create") || q.includes("add");
+    return {
+      text: isNew
+        ? "**File New Safety Inspection (DGMS Statutory Portal):**\n\n" +
+          "• Submit statutory pre-shift inspections, safety checklist audits, and danger reports.\n" +
+          "• Mandatory fields include inspector badge ID, ventilation speed, gas readings, and roof conditions."
+        : "**DGMS Safety Inspections & Mine Audits:**\n\n" +
+          "• **Overman / Mining Sirdar:** Pre-shift inspection required within 2 hours of shift commencement under CMR 2017.\n" +
+          "• **Managerial Audit:** Continuous hazard scoring and corrective action tracking.\n" +
+          "• View past inspection logs, open violations, and inspector remarks.",
+      targetPath: isNew ? "/inspections/new" : "/inspections"
     };
   }
 
@@ -354,28 +433,30 @@ export default function AIChatbot() {
     setInputValue("");
     setIsTyping(true);
 
-    // 1. Check for fast local knowledge response (under 50ms)
-    const fastKnowledge = getFastLocalResponse(textToSend, language);
-    const directNav = detectNavigationIntent(textToSend);
+    // 1. Resolve Navigation Intent Immediately
+    const destination = findDestination(textToSend);
+    const wantsNav = Boolean(destination && (isNavigationIntent(textToSend) || textToSend.split(/\s+/).length <= 4));
 
-    // If it's a direct navigational query with no complex questions, answer immediately
-    if (directNav && !fastKnowledge) {
-      const pageTitle = ROUTE_DIRECTORY[directNav] || directNav;
-      const navMsg = `Taking you to **${pageTitle}** right away!`;
-      const botMsgId = (Date.now() + 1).toString();
+    // If user asked to navigate/go to any part of the website, take them IMMEDIATELY!
+    if (destination && wantsNav) {
       setIsTyping(false);
+      const botMsgId = (Date.now() + 1).toString();
+      const navMsg = `Taking you to **${destination.title}** immediately!`;
       setMessages((prev) => [
         ...prev,
         {
           id: botMsgId,
           type: "bot",
           text: navMsg,
-          navigatedTo: { path: directNav, title: pageTitle }
-        }
+          navigatedTo: destination,
+        },
       ]);
-      setTimeout(() => navigate(directNav), 800);
+      navigate(destination.path);
       return;
     }
+
+    // 2. Check for fast local knowledge response (under 50ms)
+    const fastKnowledge = getFastLocalResponse(textToSend, language);
 
     // 2. Call Google Gemini API with strict 4.5s timeout for ultra-fast response
     const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || "").trim();
@@ -451,21 +532,21 @@ export default function AIChatbot() {
       if (timeoutId) clearTimeout(timeoutId);
       completedStream = true;
 
-      // Check navigation tag from model or explicit query
+      // Check navigation tag from model or query destination
       let targetPath: string | null = null;
       const navMatch = botResponse.match(/\[NAVIGATE:([^\]]+)\]/);
       if (navMatch) {
         targetPath = navMatch[1].trim();
         botResponse = botResponse.replace(/\[NAVIGATE:[^\]]+\]/, "").trim();
-      } else if (directNav) {
-        targetPath = directNav;
+      } else if (destination) {
+        targetPath = destination.path;
       }
 
       if (targetPath) {
         const pathTitle = ROUTE_DIRECTORY[targetPath] || targetPath;
         if (!botResponse) botResponse = `Taking you to **${pathTitle}** right away!`;
-        if (directNav) {
-          setTimeout(() => navigate(targetPath!), 1000);
+        if (wantsNav || navMatch) {
+          navigate(targetPath);
         }
       }
 
@@ -485,15 +566,15 @@ export default function AIChatbot() {
 
       // If streaming hadn't completed, provide immediate expert fallback
       if (!completedStream) {
-        const fallbackText = fastKnowledge?.text ||
-          "**CoalGuard Safety Co-Pilot:**\n\n" +
-          "I have verified your request against current DGMS safety parameters and mine records.\n" +
-          "• **Statutory Compliance:** Monitor live hazard metrics in the **Safety Violations** module.\n" +
-          "• **Underground Air Quality:** Permissible CH4 limit is 0.75% in return; min O2 is 19%.\n" +
-          "• Use the quick navigation button below to inspect relevant safety dashboards.";
-
-        const targetPath = fastKnowledge?.targetPath || directNav || "/violations";
+        const targetPath = destination ? destination.path : (fastKnowledge?.targetPath || "/dashboard/colliery");
         const pathTitle = ROUTE_DIRECTORY[targetPath] || targetPath;
+
+        const fallbackText = fastKnowledge?.text ||
+          `**CoalGuard Safety Co-Pilot:**\n\nI have verified your request for **${pathTitle}** against current DGMS safety parameters.\n• Click the button below to inspect the dashboard directly.`;
+
+        if (wantsNav && destination) {
+          navigate(destination.path);
+        }
 
         setMessages((prev) => {
           const exists = prev.some((m) => m.id === newBotMsgId);
