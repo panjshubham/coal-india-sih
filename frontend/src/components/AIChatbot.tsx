@@ -95,7 +95,19 @@ export default function AIChatbot() {
     setInputValue('');
     setIsTyping(true);
 
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+    const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || '').trim();
+
+    if (!apiKey) {
+      setIsTyping(false);
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        text: "Configuration Notice: The Gemini API key (VITE_GEMINI_API_KEY) is not set. Please configure VITE_GEMINI_API_KEY in your environment and redeploy."
+      }]);
+      return;
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
 
     try {
       const model = genAI.getGenerativeModel({
@@ -150,13 +162,23 @@ export default function AIChatbot() {
       }]);
     } catch (error: any) {
       console.error("Gemini API Error:", error);
-      const isApiKeyIssue = error.message?.includes('API key') || import.meta.env.VITE_GEMINI_API_KEY?.length < 10;
+      const errorMsg = error?.message || '';
+      const isAuthError = 
+        errorMsg.includes('401') || 
+        errorMsg.includes('403') || 
+        errorMsg.includes('API key') || 
+        errorMsg.includes('credentials') || 
+        errorMsg.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED');
+
+      let replyText = "I'm sorry, I encountered an error connecting to my systems. Please try again.";
+      if (isAuthError) {
+        replyText = "Authentication Error: Google rejected the API key (401/403). Please verify that your active Google AI Studio API key is entered in Vercel under VITE_GEMINI_API_KEY and redeploy.";
+      }
+
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        text: isApiKeyIssue 
-          ? "I'm having trouble connecting to my central neural network. It looks like the API key is invalid or missing. Ensure your key is correct and restart your Vite server."
-          : "I'm sorry, I encountered an error connecting to my systems. Please try again."
+        text: replyText
       }]);
     } finally {
       setIsTyping(false);
