@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, User, Loader2, Mic, MicOff, Languages } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, User, Loader2, Mic, MicOff, Languages, Compass, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useNavigate } from 'react-router-dom';
@@ -26,16 +26,87 @@ const renderBotMessage = (text: string) => {
   }
 };
 
+export const ROUTE_DIRECTORY: Record<string, string> = {
+  '/dashboard/colliery': 'Colliery Manager Dashboard',
+  '/dashboard/corporate': 'Corporate Executive Dashboard',
+  '/dashboard/regulator': 'DGMS Regulator Dashboard',
+  '/mines-map': 'Geospatial Mine GIS Map',
+  '/ppe-monitor': 'PPE AI Live Vision Feed',
+  '/violations': 'Safety Violations & Alerts',
+  '/compliance': 'DGMS Statutory Compliance',
+  '/inspections': 'Safety Inspections & Audits',
+  '/inspections/new': 'File New Safety Inspection',
+  '/statutory-registers': 'Statutory Mine Registers (Form B/C)',
+  '/water-inrush': 'Water Inrush & Flood Analysis',
+  '/blast-lockdown': 'Blast Zone Lockdown & Geofence',
+  '/attendance': 'Biometric & Shift Attendance',
+  '/pit-inspector': 'Pit Inspector (Offline Mode)',
+  '/submissions': 'My Submissions',
+  '/benchmarking': 'Mine Safety Benchmarking',
+  '/production-reports': 'Production & Output Reporting',
+  '/grievances': 'Worker Grievances & Redressal',
+  '/financial-overview': 'Financial Safety & Penalties',
+  '/ai-workbench': 'AI Workbench & Model Hub',
+  '/audit-log': 'System Security Audit Log',
+  '/contractors': 'Contractor Safety Management',
+  '/data-import': 'Sensor & CSV Data Import',
+  '/manage-users': 'User Management & Roles',
+  '/profile': 'Profile & Account Settings',
+  '/help': 'Help & Support Center',
+  '/public': 'Public Safety Tracking Portal'
+};
+
+function detectNavigationIntent(query: string): string | null {
+  const q = query.toLowerCase().trim();
+  const navTriggers = ['go to', 'open', 'take me', 'navigate', 'show me', 'show', 'view', 'kholo', 'dikhao', 'chalo', 'le chalo', 'le jao', 'visit'];
+  const hasTrigger = navTriggers.some(t => q.includes(t));
+  if (!hasTrigger) return null;
+
+  if (q.includes('ppe') || q.includes('helmet') || q.includes('camera') || q.includes('live feed') || q.includes('vest')) return '/ppe-monitor';
+  if (q.includes('water inrush') || q.includes('flooding') || q.includes('inrush') || q.includes('leakage') || q.includes('water')) return '/water-inrush';
+  if (q.includes('blast') || q.includes('lockdown') || q.includes('geofence')) return '/blast-lockdown';
+  if (q.includes('map') || q.includes('gis') || q.includes('location') || q.includes('naksha')) return '/mines-map';
+  if (q.includes('compliance') || q.includes('cmr') || q.includes('statutory compliance')) return '/compliance';
+  if (q.includes('violation') || q.includes('alert') || q.includes('danger') || q.includes('khatra')) return '/violations';
+  if (q.includes('new inspection') || q.includes('file inspection') || q.includes('create inspection')) return '/inspections/new';
+  if (q.includes('inspection') || q.includes('audit report')) return '/inspections';
+  if (q.includes('register') || q.includes('form b') || q.includes('form c') || q.includes('statutory register')) return '/statutory-registers';
+  if (q.includes('attendance') || q.includes('biometric') || q.includes('haziri') || q.includes('muster')) return '/attendance';
+  if (q.includes('pit inspector') || q.includes('pit inspection')) return '/pit-inspector';
+  if (q.includes('submission')) return '/submissions';
+  if (q.includes('benchmark') || q.includes('ranking') || q.includes('comparison')) return '/benchmarking';
+  if (q.includes('production') || q.includes('coal output') || q.includes('extraction')) return '/production-reports';
+  if (q.includes('grievance') || q.includes('complaint') || q.includes('shikayat')) return '/grievances';
+  if (q.includes('financial') || q.includes('penalty') || q.includes('cost') || q.includes('fine')) return '/financial-overview';
+  if (q.includes('ai workbench') || q.includes('model') || q.includes('workbench') || q.includes('shap')) return '/ai-workbench';
+  if (q.includes('audit log') || q.includes('security log') || q.includes('activity log')) return '/audit-log';
+  if (q.includes('contractor') || q.includes('vendor')) return '/contractors';
+  if (q.includes('data import') || q.includes('import') || q.includes('upload')) return '/data-import';
+  if (q.includes('manage user') || q.includes('users') || q.includes('role') || q.includes('permission')) return '/manage-users';
+  if (q.includes('profile') || q.includes('setting') || q.includes('account')) return '/profile';
+  if (q.includes('help') || q.includes('support') || q.includes('guide') || q.includes('madad')) return '/help';
+  if (q.includes('corporate')) return '/dashboard/corporate';
+  if (q.includes('regulator') || q.includes('dgms dashboard')) return '/dashboard/regulator';
+  if (q.includes('dashboard') || q.includes('colliery') || q.includes('home')) return '/dashboard/colliery';
+  if (q.includes('public')) return '/public';
+
+  return null;
+}
+
 interface Message {
   id: string;
   type: 'bot' | 'user';
   text: string;
+  navigatedTo?: {
+    path: string;
+    title: string;
+  };
 }
 
 const INITIAL_MESSAGE: Message = {
   id: '1',
   type: 'bot',
-  text: "Hello! I'm CoalBot. I monitor mine safety, track compliance, and navigate the dashboard for you. How can I assist you today?"
+  text: "Hello! I'm CoalBot. I monitor mine safety, track DGMS compliance, and can take you directly to any dashboard across CoalGuard. How can I assist you today?"
 };
 
 export default function AIChatbot() {
@@ -134,22 +205,50 @@ export default function AIChatbot() {
     try {
       const model = genAI.getGenerativeModel({
         model: "gemini-3.8-flash",
-        systemInstruction: `You are CoalBot, the official AI assistant for CoalGuard. 
-        You monitor mine safety, track DGMS compliance, and predict risks. 
-        Be professional, concise, and helpful. Use formatting (bolding, lists).
-        
-        CRITICAL: If the user asks to see or go to a specific dashboard/page, you MUST include a navigation tag at the very end of your response. 
-        Format: [NAVIGATE:/path]
-        
-        Available paths:
-        - /violations (for violations, safety alerts)
-        - /compliance (for DGMS compliance status)
-        - /mines-map (for map, locations)
-        - /inspections (for audit logs, inspection reports)
-        - /contractors (for contractor info)
-        - /profile (for user settings)
-        
-        Example response: "I can show you the recent safety alerts. [NAVIGATE:/violations]"`,
+        systemInstruction: `You are CoalBot, the intelligent AI assistant and copilot for CoalGuard (Coal India Mine Safety & DGMS Compliance Platform).
+        You monitor mine safety, track DGMS statutory compliance, predict hazards, and guide/navigate users to any part of the website.
+        Be concise, professional, and helpful. Use clean Markdown formatting (bolding, lists).
+        Seamlessly support both English and Hindi based on the user's preference.
+
+        CRITICAL AUTONOMOUS NAVIGATION RULE:
+        Whenever the user asks to open, view, show, visit, or navigate to any dashboard, page, tool, or section (in English or Hindi like "dikhao", "kholo", "chalo", "le chalo"), or when their request is best answered by viewing a specific dashboard, you MUST include a navigation tag at the very end of your response!
+        Format: [NAVIGATE:/exact-path]
+
+        Complete Directory of Available Paths & Dashboards:
+        - /dashboard/colliery -> Colliery Manager Dashboard (pit operations, sensor alerts, gas levels, active shift, production)
+        - /dashboard/corporate -> Corporate Executive Dashboard (enterprise KPI, multi-mine safety index, executive overview)
+        - /dashboard/regulator -> DGMS Regulator Dashboard (statutory audits, legal notices, mine safety compliance rating)
+        - /mines-map -> 3D Geospatial Mine GIS Map (mine locations, satellite overlays, hazard zones)
+        - /ppe-monitor -> PPE AI Vision Feed (computer vision camera feed, helmet & safety vest detection)
+        - /violations -> Active Safety Violations & Live Alerts (unresolved hazards, live alarms)
+        - /compliance -> DGMS Statutory Compliance (CMR 2017 checklist, statutory readiness)
+        - /inspections -> Safety Inspections & Audits (routine & surprise audit logs)
+        - /inspections/new -> File / Create New Safety Inspection
+        - /statutory-registers -> Statutory Mine Registers (Form A, B, C, D, E, H registers)
+        - /water-inrush -> Water Inrush & Hydrogeological Analysis (CLSSA-XGBoost flooding model, seam proximity)
+        - /blast-lockdown -> Blast Zone Lockdown & Geofence (active blasting alerts, clearance protocol)
+        - /attendance -> Biometric & Shift Attendance (worker check-ins, muster roll, cap lamp logs)
+        - /pit-inspector -> Pit Inspector Tool (field inspection offline logger)
+        - /submissions -> My Submissions (filed inspection logs)
+        - /benchmarking -> Mine Safety Benchmarking (comparative safety ranking between mines)
+        - /production-reports -> Daily Production & Coal Extraction Reports
+        - /grievances -> Worker Grievance Redressal (safety complaints, labor hazards)
+        - /financial-overview -> Financial Safety Dashboard (penalties, insurance savings, ROI)
+        - /ai-workbench -> AI Workbench & Model Hub (ML model playground, TreeSHAP explainability)
+        - /audit-log -> System Security Audit Log (immutable user activity logs)
+        - /contractors -> Contractor Safety Management (vendor compliance & labor safety)
+        - /data-import -> Sensor & CSV Data Import (bulk telemetry upload)
+        - /manage-users -> User Management & Access Roles
+        - /profile -> User Profile & Account Settings
+        - /help -> Help & Support Center
+        - /public -> Public Safety Tracking Portal
+
+        Example responses:
+        - User: "take me to ppe feed" -> Response: "Opening the AI Computer Vision PPE monitor for live helmet and vest detection. [NAVIGATE:/ppe-monitor]"
+        - User: "water inrush dikhao" -> Response: "Navigating to the Water Inrush & Hydrogeological Analysis dashboard. [NAVIGATE:/water-inrush]"
+        - User: "open map" -> Response: "Taking you to the Geospatial Mine Map right away. [NAVIGATE:/mines-map]"
+        - User: "check compliance" -> Response: "Here is the DGMS statutory compliance checklist. [NAVIGATE:/compliance]"
+        - User: "show attendance" -> Response: "Opening Biometric Attendance and Shift Rosters. [NAVIGATE:/attendance]"`,
       });
 
       const chat = model.startChat({
@@ -162,25 +261,36 @@ export default function AIChatbot() {
       const result = await chat.sendMessage(textToSend);
       let botResponse = result.response.text();
 
-      // Check for navigation command
+      // Check for navigation command from model or client intent fallback
+      let targetPath: string | null = null;
       const navMatch = botResponse.match(/\[NAVIGATE:([^\]]+)\]/);
       if (navMatch) {
-        const path = navMatch[1];
-        // Remove the tag from the text shown to the user
+        targetPath = navMatch[1].trim();
         botResponse = botResponse.replace(/\[NAVIGATE:[^\]]+\]/, '').trim();
-        // If the message is completely empty after removing the tag, add a brief response
-        if (!botResponse) botResponse = "Navigating right away!";
-        
-        // Wait slightly for the user to read before navigating
+      } else {
+        targetPath = detectNavigationIntent(textToSend);
+      }
+
+      if (targetPath) {
+        const pageTitle = ROUTE_DIRECTORY[targetPath] || targetPath;
+        if (!botResponse) {
+          botResponse = `Taking you to **${pageTitle}** right away!`;
+        }
+
+        // Automatically navigate after 1.2 seconds so user sees confirmation
         setTimeout(() => {
-          navigate(path);
-        }, 2000);
+          navigate(targetPath!);
+        }, 1200);
       }
 
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        text: botResponse
+        text: botResponse,
+        navigatedTo: targetPath ? {
+          path: targetPath,
+          title: ROUTE_DIRECTORY[targetPath] || targetPath
+        } : undefined
       }]);
     } catch (error: any) {
       console.error("Gemini API Error:", error);
@@ -281,6 +391,23 @@ export default function AIChatbot() {
                     }`}
                   >
                     {msg.type === 'user' ? msg.text : renderBotMessage(msg.text)}
+
+                    {msg.navigatedTo && (
+                      <button
+                        type="button"
+                        onClick={() => navigate(msg.navigatedTo!.path)}
+                        className="mt-3 flex items-center justify-between w-full px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-emerald-800 dark:text-emerald-200 transition-all text-xs font-medium cursor-pointer shadow-xs group"
+                      >
+                        <span className="flex items-center gap-2 font-semibold truncate mr-2">
+                          <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:rotate-45 transition-transform" />
+                          <span className="truncate">{msg.navigatedTo.title}</span>
+                        </span>
+                        <span className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold shrink-0">
+                          <span>Open</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                      </button>
+                    )}
                   </div>
 
                   {msg.type === 'user' && (
