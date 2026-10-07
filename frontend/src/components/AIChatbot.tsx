@@ -206,7 +206,7 @@ export default function AIChatbot() {
 
     try {
       const model = genAI.getGenerativeModel({
-        model: "gemini-3.8-flash",
+        model: "gemini-1.5-flash",
         systemInstruction: `You are CoalBot, the intelligent AI assistant and copilot for CoalGuard (Coal India Mine Safety & DGMS Compliance Platform).
         You monitor mine safety, track DGMS statutory compliance, predict hazards, and guide/navigate users to any part of the website.
         Be concise, professional, and helpful. Use clean Markdown formatting (bolding, lists).
