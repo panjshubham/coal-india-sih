@@ -3,6 +3,28 @@ import { MessageSquare, X, Send, Bot, User, Loader2, Mic, MicOff, Languages } fr
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useNavigate } from 'react-router-dom';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+
+marked.setOptions({
+  breaks: true,
+  gfm: true
+});
+
+const renderBotMessage = (text: string) => {
+  try {
+    const rawHtml = marked.parse(text) as string;
+    const cleanHtml = typeof window !== 'undefined' ? DOMPurify.sanitize(rawHtml) : rawHtml;
+    return (
+      <div 
+        className="chatbot-prose text-sm leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: cleanHtml }}
+      />
+    );
+  } catch {
+    return <span className="whitespace-pre-wrap">{text}</span>;
+  }
+};
 
 interface Message {
   id: string;
@@ -252,13 +274,13 @@ export default function AIChatbot() {
                   )}
                   
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
                       msg.type === 'user'
-                        ? 'bg-emerald-600 text-white rounded-br-none'
-                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-bl-none shadow-sm whitespace-pre-wrap'
+                        ? 'bg-emerald-600 text-white rounded-br-none whitespace-pre-wrap'
+                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-none shadow-sm'
                     }`}
                   >
-                    {msg.text}
+                    {msg.type === 'user' ? msg.text : renderBotMessage(msg.text)}
                   </div>
 
                   {msg.type === 'user' && (

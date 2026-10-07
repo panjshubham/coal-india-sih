@@ -637,3 +637,47 @@
   transform: rotate(90deg) scale(0.5);
   transition: opacity 200ms ease, transform 200ms ease;
 }
+
+/* ============================================================
+   CHATBOT MARKDOWN PROSE STYLING
+   ============================================================ */
+.chatbot-prose p {
+  margin-bottom: 0.5rem;
+}
+.chatbot-prose p:last-child {
+  margin-bottom: 0;
+}
+.chatbot-prose ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.375rem;
+  margin-bottom: 0.375rem;
+}
+.chatbot-prose ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-top: 0.375rem;
+  margin-bottom: 0.375rem;
+}
+.chatbot-prose li {
+  margin-bottom: 0.25rem;
+}
+.chatbot-prose li:last-child {
+  margin-bottom: 0;
+}
+.chatbot-prose strong {
+  font-weight: 600;
+  color: inherit;
+}
+.chatbot-prose code {
+  background-color: rgba(148, 163, 184, 0.2);
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+  font-size: 0.85em;
+}
+.chatbot-prose h1, .chatbot-prose h2, .chatbot-prose h3, .chatbot-prose h4 {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
