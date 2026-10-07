@@ -22,6 +22,7 @@
    - [Model 8: Automated Pipeline Chaining](#model-8-automated-ai-pipeline-chaining)
    - [Model 9: XGBoost + TreeSHAP Risk & Violation Predictor](#model-9-xgboost--treeshap-mine-risk--statutory-violation-predictor)
    - [Model 10: CLSSA-XGBoost + TreeSHAP Water Inrush AI](#model-10-clssa-xgboost--treeshap-water-inrush--leakage-ai)
+   - [Model 11: Gemini 1.5 Flash Voice Chatbot & AI Auto-Navigation](#model-11-gemini-15-flash-voice-chatbot--ai-auto-navigation)
 7. [Explainable AI (XAI) Framework](#7-explainable-ai-xai-framework)
 8. [Statutory Compliance & Legal Adherence (DGMS / CMR 2017)](#8-statutory-compliance--legal-adherence)
 9. [Deployment & Production Infrastructure](#9-deployment--production-infrastructure)
@@ -294,6 +295,14 @@ $$\text{Voice Audio} \xrightarrow{\text{Whisper v3}} \text{Raw Text} \xrightarro
   * Model weights: `water_inrush_model.pkl` ($599\text{ KB}$)
   * TreeSHAP explainer: `water_inrush_explainer.pkl` ($1.2\text{ MB}$)
   * Feature Normalizer: `water_inrush_scaler.pkl` ($775\text{ Bytes}$)
+
+---
+
+### Model 11: Gemini 3.8 Flash Voice Chatbot & AI Auto-Navigation
+* **Core Framework:** Google Generative AI (Gemini-3.8-Flash) paired with React Router and the browser-native Web Speech API.
+* **Smart Navigation System:** Utilizing prompt-engineering constraints, the model acts as an intelligent router agent. When a user asks "Show me recent violations", the model intelligently outputs `[NAVIGATE:/violations]`, triggering an automated UI transition without manual clicking.
+* **Hindi & English Voice Support:** Designed for non-technical colliery workers, the interface features a dual-language speech recognition pipeline, streaming spoken Hindi/English commands into Gemini's NLP engine.
+* **Context-Aware Analytics:** The AI agent is context-seeded with current mine statistics (XGBoost Threat Levels, YOLOv8 Helmet counts) to provide realistic, dynamic readouts to the user in a highly conversational format.
 
 ---
 
