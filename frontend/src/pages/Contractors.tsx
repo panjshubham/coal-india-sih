@@ -462,7 +462,7 @@ export default function Contractors() {
 
           <button
             onClick={() => { setGatePassModalOpen(true); setVerificationResult(null); }}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-xs rounded-xl transition shadow-[0_0_20px_rgba(16,185,129,0.3)] border border-emerald-500/40 cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-xs rounded-xl transition shadow-[0_0_20px_rgba(16,185,129,0.3)] border border-emerald-500/40 cursor-pointer"
           >
             <QrCode className="w-4 h-4" />
             <span>Pithead Gate Pass (VTC/PME)</span>
@@ -849,7 +849,7 @@ export default function Contractors() {
                 <button
                   type="submit"
                   disabled={isSubmittingOnboard}
-                  className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white text-xs font-bold rounded-xl transition shadow-lg flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2 bg-linear-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white text-xs font-bold rounded-xl transition shadow-lg flex items-center gap-1.5 cursor-pointer"
                 >
                   <ShieldCheck className="w-4 h-4" />
                   {isSubmittingOnboard ? 'Registering...' : 'Register Statutory Contractor'}
@@ -1050,7 +1050,7 @@ export default function Contractors() {
                   type="button"
                   onClick={handleVerifyGatePass}
                   disabled={isVerifyingGate}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-bold text-xs transition shadow-lg cursor-pointer"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-bold text-xs transition shadow-lg cursor-pointer"
                 >
                   <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
                   <span>{isVerifyingGate ? 'Scanning DGMS Database...' : 'Verify Gate Entry Pass'}</span>

@@ -236,7 +236,7 @@ export default function AuditLog() {
           </button>
           <button 
             onClick={exportPDF} 
-            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-lg text-xs font-bold transition shadow-lg shadow-amber-500/20 cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-lg text-xs font-bold transition shadow-lg shadow-amber-500/20 cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
             Save as Signed PDF
@@ -282,7 +282,7 @@ export default function AuditLog() {
       {/* 3. Interactive Filters Bar */}
       <div className="flex flex-wrap items-center gap-3 bg-slate-100 dark:bg-[#162032] border border-slate-300 dark:border-slate-700/50 rounded-xl p-3 text-xs">
         {/* Search */}
-        <div className="relative flex-1 min-w-[240px]">
+        <div className="relative flex-1 min-w-60">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-700 dark:text-slate-500" />
           <input 
             type="text" 

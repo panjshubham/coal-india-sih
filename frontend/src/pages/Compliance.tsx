@@ -676,7 +676,7 @@ export default function Compliance() {
           <div className="md:col-span-2">
             <button
               onClick={() => setSortAsc(!sortAsc)}
-              className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:border-slate-500 flex items-center justify-between transition-all"
+              className="w-full h-10 px-3 rounded-lg bg-[var(--cg-surface-high)] border border-[var(--cg-border)] text-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 flex items-center justify-between transition-all"
             >
               <span className="flex items-center gap-1.5 truncate">
                 <ArrowUpDown className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
@@ -696,7 +696,7 @@ export default function Compliance() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 statusFilter === 'ALL'
                   ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                  : 'bg-[var(--cg-surface-high)] text-slate-700 dark:text-slate-300 hover:bg-[var(--cg-surface-highest)] hover:text-slate-900 dark:text-white'
+                  : 'bg-[var(--cg-surface-high)] text-slate-700 dark:text-slate-300 hover:bg-[var(--cg-surface-highest)] hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               All Directives ({items.length})
@@ -926,7 +926,7 @@ export default function Compliance() {
             <button 
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>Previous</span>
@@ -939,7 +939,7 @@ export default function Compliance() {
             <button 
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+              className="h-8 px-3 rounded bg-[var(--cg-surface)] border border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>Next</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -967,7 +967,7 @@ export default function Compliance() {
               </div>
               <button 
                 onClick={() => setActiveDossier(null)}
-                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1055,7 +1055,7 @@ export default function Compliance() {
                     className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                       activeDossier.status === 'in_progress'
                         ? 'bg-sky-500/20 border-sky-500 text-sky-300 font-bold'
-                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white'
+                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
@@ -1067,7 +1067,7 @@ export default function Compliance() {
                     className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                       activeDossier.status === 'completed'
                         ? 'bg-emerald-200 dark:bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold'
-                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white'
+                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1079,7 +1079,7 @@ export default function Compliance() {
                     className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                       activeDossier.status === 'overdue'
                         ? 'bg-rose-500/20 border-rose-500 text-rose-300 font-bold'
-                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white'
+                        : 'bg-[var(--cg-surface-high)] border-[var(--cg-border)] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <AlertTriangle className="w-3.5 h-3.5" />
@@ -1115,7 +1115,7 @@ export default function Compliance() {
               </div>
               <button 
                 onClick={() => setShowCreateModal(false)}
-                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-lg bg-[var(--cg-surface-high)] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>

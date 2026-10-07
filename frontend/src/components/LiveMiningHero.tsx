@@ -21,8 +21,8 @@ export default function LiveMiningHero() {
       </div>
 
       {/* Industrial Gradients for Legibility */}
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/75 to-transparent z-10" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0E172A] via-transparent to-transparent z-10" />
+      <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-950/75 to-transparent z-10" />
+      <div className="absolute inset-0 bg-linear-to-t from-[#0E172A] via-transparent to-transparent z-10" />
 
       {/* Floating HUD Telemetry (Augmented Reality style over machines) */}
       <div className="absolute right-8 top-1/4 z-20 hidden lg:flex flex-col gap-3 font-mono text-xs">

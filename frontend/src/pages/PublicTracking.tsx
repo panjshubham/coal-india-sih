@@ -62,7 +62,7 @@ export default function PublicTracking() {
       {/* Header */}
       <header className="px-6 py-4 flex items-center justify-between border-b border-white/5 bg-slate-50 dark:bg-[#0B1326]/80 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.35)]">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.35)]">
             <Pickaxe className="w-5 h-5 text-amber-950" />
           </div>
           <div>
@@ -81,7 +81,7 @@ export default function PublicTracking() {
       <main className="max-w-6xl w-full mx-auto px-6 py-12 flex-1">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white mb-4">
-            Safety Through <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Transparency</span>.
+            Safety Through <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600">Transparency</span>.
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             CoalGuard tracks statutory compliance, hazard reports, and environmental clearance metrics across India's coal sector in real-time.
@@ -132,7 +132,7 @@ export default function PublicTracking() {
         </div>
 
         {/* Data Access Box */}
-        <div className="p-8 rounded-2xl bg-gradient-to-br from-blue-950/40 to-slate-900 border border-blue-300 dark:border-blue-500/20 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="p-8 rounded-2xl bg-linear-to-br from-blue-950/40 to-slate-900 border border-blue-300 dark:border-blue-500/20 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Open Data Initiative</h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl">

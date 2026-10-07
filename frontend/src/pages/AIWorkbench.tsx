@@ -170,7 +170,7 @@ function FileDropZone({ onFile, accept, label }: { onFile: (f: File) => void; ac
     return (
         <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${dragActive ? 'border-blue-500 bg-blue-100 dark:bg-blue-500/10' : 'border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.04]'}`}
+            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${dragActive ? 'border-blue-500 bg-blue-100 dark:bg-blue-500/10' : 'border-white/20 hover:border-white/40 bg-white/2 hover:bg-white/4'}`}
         >
             <input {...getInputProps()} />
             <Upload className="w-8 h-8 mx-auto mb-3 text-slate-700 dark:text-slate-500" />
@@ -190,7 +190,7 @@ function ResultPane({ result, loading, error, loadingText }: { result: any; load
     if (error) return (
         <div className="p-4 bg-red-100 dark:bg-red-500/10 border border-red-400 dark:border-red-500/30 rounded-xl">
             <div className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-700 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                <AlertTriangle className="w-4 h-4 text-red-700 dark:text-red-400 mt-0.5 shrink-0" />
                 <p className="text-sm text-red-300">{error}</p>
             </div>
         </div>
@@ -452,7 +452,7 @@ function DocumentCameraScanner({
                         }}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${sourceMode === 'upload'
                                 ? colorConfig.activeTab
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-white/5'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/5'
                             }`}
                     >
                         <Upload className="w-3.5 h-3.5" />
@@ -466,7 +466,7 @@ function DocumentCameraScanner({
                         }}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${sourceMode === 'camera'
                                 ? colorConfig.activeTab
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-white/5'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/5'
                             }`}
                     >
                         <Camera className="w-3.5 h-3.5" />
@@ -512,12 +512,12 @@ function DocumentCameraScanner({
 
                         {/* Document Viewfinder Overlay */}
                         <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-6">
-                            <div className="relative w-full max-w-md h-64 border border-dashed border-white/30 rounded-lg bg-white/[0.02]">
-                                <div className={`absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 ${colorConfig.corner} rounded-tl`} />
-                                <div className={`absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 ${colorConfig.corner} rounded-tr`} />
-                                <div className={`absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 ${colorConfig.corner} rounded-bl`} />
-                                <div className={`absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 ${colorConfig.corner} rounded-br`} />
-                                <div className="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse top-1/2 -translate-y-1/2 opacity-70" />
+                            <div className="relative w-full max-w-md h-64 border border-dashed border-white/30 rounded-lg bg-white/2">
+                                <div className={`absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 ${colorConfig.corner} rounded-tl-xs`} />
+                                <div className={`absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 ${colorConfig.corner} rounded-tr-xs`} />
+                                <div className={`absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 ${colorConfig.corner} rounded-bl-xs`} />
+                                <div className={`absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 ${colorConfig.corner} rounded-br-xs`} />
+                                <div className="absolute inset-x-2 h-0.5 bg-linear-to-r from-transparent via-cyan-400 to-transparent animate-pulse top-1/2 -translate-y-1/2 opacity-70" />
                                 <div className="absolute bottom-3 inset-x-0 flex justify-center">
                                     <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-[10px] text-slate-800 dark:text-slate-200 border border-white/10 shadow font-mono">
                                         📄 Align statutory paper inside corner guides
@@ -537,7 +537,7 @@ function DocumentCameraScanner({
                                     onClick={() => setContrastBoost(!contrastBoost)}
                                     className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono border transition cursor-pointer ${contrastBoost
                                             ? 'bg-amber-500/30 border-amber-500/60 text-amber-300'
-                                            : 'bg-black/60 border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200'
+                                            : 'bg-black/60 border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                                         }`}
                                     title="Enhance document contrast and text sharpness for OCR recognition"
                                 >
@@ -550,7 +550,7 @@ function DocumentCameraScanner({
                                 <button
                                     type="button"
                                     onClick={flipCamera}
-                                    className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white border border-white/10 transition cursor-pointer"
+                                    className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-white/10 transition cursor-pointer"
                                     title="Flip Camera (Front/Rear)"
                                 >
                                     <FlipHorizontal className="w-3.5 h-3.5" />
@@ -561,7 +561,7 @@ function DocumentCameraScanner({
                                         stopCamera();
                                         setSourceMode('upload');
                                     }}
-                                    className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-600 dark:text-slate-400 hover:text-red-700 dark:text-red-400 border border-white/10 transition cursor-pointer"
+                                    className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-600 dark:text-slate-400 hover:text-red-700 dark:hover:text-red-400 border border-white/10 transition cursor-pointer"
                                     title="Close Camera"
                                 >
                                     <X className="w-3.5 h-3.5" />
@@ -762,7 +762,7 @@ function OcrPanel() {
             {previewUrl && result && (
                 <div className="flex items-center justify-between gap-3 p-3 bg-white dark:bg-slate-900/80 border border-blue-300 dark:border-blue-500/20 rounded-xl">
                     <div className="flex items-center gap-3 min-w-0">
-                        <img src={previewUrl} alt="Scanned Document" className="w-14 h-16 object-cover rounded-lg border border-white/20 shadow flex-shrink-0" />
+                        <img src={previewUrl} alt="Scanned Document" className="w-14 h-16 object-cover rounded-lg border border-white/20 shadow shrink-0" />
                         <div className="min-w-0">
                             <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{result.filename || 'Scanned Document'}</p>
                             <p className="text-[11px] text-blue-300 mt-0.5">Optical Character Recognition ({result.confidence_pct || 90}% confidence)</p>
@@ -774,7 +774,7 @@ function OcrPanel() {
                             setPreviewUrl(null);
                             setResult(null);
                         }}
-                        className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 border border-white/10 transition cursor-pointer"
+                        className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border border-white/10 transition cursor-pointer"
                     >
                         Clear / Scan New
                     </button>
@@ -922,7 +922,7 @@ function DonutPanel() {
             {previewUrl && result && (
                 <div className="flex items-center justify-between gap-3 p-3 bg-white dark:bg-slate-900/80 border border-violet-500/20 rounded-xl">
                     <div className="flex items-center gap-3 min-w-0">
-                        <img src={previewUrl} alt="Scanned Document" className="w-14 h-16 object-cover rounded-lg border border-white/20 shadow flex-shrink-0" />
+                        <img src={previewUrl} alt="Scanned Document" className="w-14 h-16 object-cover rounded-lg border border-white/20 shadow shrink-0" />
                         <div className="min-w-0">
                             <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{result.filename || 'Scanned Document'}</p>
                             <p className="text-[11px] text-violet-300 mt-0.5">Parsed to Structured JSON ({result.structured_output?.compliance_check || 'READY'})</p>
@@ -934,7 +934,7 @@ function DonutPanel() {
                             setPreviewUrl(null);
                             setResult(null);
                         }}
-                        className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 border border-white/10 transition cursor-pointer"
+                        className="text-xs px-2.5 py-1 rounded bg-white/5 hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border border-white/10 transition cursor-pointer"
                     >
                         Clear / Scan New
                     </button>
@@ -1700,7 +1700,7 @@ function TranscribePanel() {
                                 timestamp: new Date().toISOString()
                             });
                         }}
-                        className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white transition-all truncate max-w-xs"
+                        className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all truncate max-w-xs"
                     >
                         "{s.slice(0, 32)}…"
                     </button>
@@ -2406,7 +2406,7 @@ function PPEPanel() {
                         }}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${sourceMode === 'upload'
                                 ? 'bg-orange-500 text-slate-950 shadow-md shadow-orange-500/20'
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-white/5'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/5'
                             }`}
                     >
                         <Upload className="w-3.5 h-3.5" />
@@ -2420,7 +2420,7 @@ function PPEPanel() {
                         }}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${sourceMode === 'camera'
                                 ? 'bg-orange-500 text-slate-950 shadow-md shadow-orange-500/20'
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-white/5'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/5'
                             }`}
                     >
                         <Camera className="w-3.5 h-3.5" />
@@ -2497,7 +2497,7 @@ function PPEPanel() {
                                 <button
                                     type="button"
                                     onClick={capturePhoto}
-                                    className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 text-xs font-black tracking-wider uppercase transition shadow-lg shadow-orange-500/30 active:scale-95 cursor-pointer"
+                                    className="flex items-center gap-2 px-5 py-2 rounded-xl bg-linear-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 text-xs font-black tracking-wider uppercase transition shadow-lg shadow-orange-500/30 active:scale-95 cursor-pointer"
                                 >
                                     <Camera className="w-4 h-4" />
                                     Capture Photo & Check PPE
@@ -3104,7 +3104,7 @@ export default function AIWorkbench() {
             <div className="flex items-start justify-between flex-wrap gap-4">
                 <div>
                     <div className="flex items-center gap-3 mb-1">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
+                        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-violet-500 to-blue-600 flex items-center justify-center shadow-lg shadow-violet-500/30">
                             <Cpu className="w-4 h-4 text-slate-900 dark:text-white" />
                         </div>
                         <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">AI Workbench</h1>
@@ -3135,8 +3135,8 @@ export default function AIWorkbench() {
                             }}
                             title="Click to view or edit Hugging Face API token"
                             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all hover:scale-105 ${hfStatus.configured
-                                    ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-400 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:bg-emerald-500/20'
-                                    : 'bg-amber-100 dark:bg-amber-500/10 border-amber-400 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:bg-amber-500/20'
+                                    ? 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-400 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-500/20'
+                                    : 'bg-amber-100 dark:bg-amber-500/10 border-amber-400 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-500/20'
                                 }`}
                         >
                             <span className={`w-2 h-2 rounded-full ${hfStatus.configured ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-amber-400 animate-pulse'}`} />
@@ -3163,7 +3163,7 @@ export default function AIWorkbench() {
                             </div>
                             <button
                                 onClick={() => setShowTokenModal(false)}
-                                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white text-sm px-2 py-1 rounded-lg hover:bg-white/10"
+                                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm px-2 py-1 rounded-lg hover:bg-white/10"
                             >
                                 ✕
                             </button>
@@ -3183,7 +3183,7 @@ export default function AIWorkbench() {
                                     <button
                                         type="button"
                                         onClick={() => setShowTokenSecret(!showTokenSecret)}
-                                        className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded hover:bg-white/10"
+                                        className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded hover:bg-white/10"
                                         title={showTokenSecret ? "Hide" : "Show"}
                                     >
                                         {showTokenSecret ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -3191,7 +3191,7 @@ export default function AIWorkbench() {
                                     <button
                                         type="button"
                                         onClick={handleCopy}
-                                        className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:text-white rounded hover:bg-white/10"
+                                        className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded hover:bg-white/10"
                                         title="Copy token"
                                     >
                                         {copied ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -3241,10 +3241,10 @@ export default function AIWorkbench() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`relative p-3 rounded-xl border text-left transition-all group ${isActive ? `${c.bg} ${c.border}` : 'bg-slate-50 dark:bg-white/[0.02] border-slate-300 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/[0.05]'}`}
+                            className={`relative p-3 rounded-xl border text-left transition-all group ${isActive ? `${c.bg} ${c.border}` : 'bg-slate-50 dark:bg-white/2 border-slate-300 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5'}`}
                         >
-                            <tab.icon className={`w-5 h-5 mb-2 ${isActive ? c.text : 'text-slate-700 dark:text-slate-500 group-hover:text-slate-700 dark:text-slate-300'}`} />
-                            <p className={`text-xs leading-tight ${isActive ? 'font-black text-slate-950 dark:text-white' : 'font-semibold text-slate-600 dark:text-slate-400 group-hover:text-slate-800 dark:text-slate-200'}`}>{tab.label}</p>
+                            <tab.icon className={`w-5 h-5 mb-2 ${isActive ? c.text : 'text-slate-700 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'}`} />
+                            <p className={`text-xs leading-tight ${isActive ? 'font-black text-slate-950 dark:text-white' : 'font-semibold text-slate-600 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200'}`}>{tab.label}</p>
                         </button>
                     );
                 })}
@@ -3275,7 +3275,7 @@ export default function AIWorkbench() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className="p-4 rounded-xl bg-white/[0.02] border border-white/10 hover:bg-white/[0.05] hover:border-white/20 text-left group transition-all"
+                            className="p-4 rounded-xl bg-white/2 border border-white/10 hover:bg-white/5 hover:border-white/20 text-left group transition-all"
                         >
                             <div className="flex items-center justify-between mb-2">
                                 <tab.icon className={`w-4 h-4 ${c.text}`} />

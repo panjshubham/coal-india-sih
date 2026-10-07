@@ -164,23 +164,23 @@ export default function DataImport() {
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      <div className="flex items-center gap-4 border-b border-[var(--cg-border)] pb-6">
-        <div className="p-3 bg-[var(--cg-surface-elevated)] rounded-xl border border-[var(--cg-border)]">
-          <Database className="w-6 h-6 text-[var(--cg-text-primary)]" />
+      <div className="flex items-center gap-4 border-b border-(--cg-border) pb-6">
+        <div className="p-3 bg-(--cg-surface-elevated) rounded-xl border border-(--cg-border)">
+          <Database className="w-6 h-6 text-(--cg-text-primary)" />
         </div>
         <div>
-          <h1 className="!mb-1">Master Data Import</h1>
-          <p className="text-[var(--cg-text-muted)]">Bulk import or update mine records from Excel or CSV files.</p>
+          <h1 className="mb-1!">Master Data Import</h1>
+          <p className="text-(--cg-text-muted)">Bulk import or update mine records from Excel or CSV files.</p>
         </div>
       </div>
 
       {/* Progress Steps */}
       <div className="flex items-center gap-2 text-sm font-medium">
-        <div className={`px-4 py-2 rounded-full border ${step === 'upload' ? 'bg-[var(--cg-accent)] text-[var(--cg-accent-text)] border-transparent' : 'bg-[var(--cg-surface)] text-[var(--cg-text-muted)] border-[var(--cg-border)]'}`}>1. Upload</div>
-        <div className="w-8 h-px bg-[var(--cg-border)]"></div>
-        <div className={`px-4 py-2 rounded-full border ${step === 'mapping' ? 'bg-[var(--cg-accent)] text-[var(--cg-accent-text)] border-transparent' : 'bg-[var(--cg-surface)] text-[var(--cg-text-muted)] border-[var(--cg-border)]'}`}>2. Map Columns</div>
-        <div className="w-8 h-px bg-[var(--cg-border)]"></div>
-        <div className={`px-4 py-2 rounded-full border ${step === 'validation' ? 'bg-[var(--cg-accent)] text-[var(--cg-accent-text)] border-transparent' : 'bg-[var(--cg-surface)] text-[var(--cg-text-muted)] border-[var(--cg-border)]'}`}>3. Validate & Confirm</div>
+        <div className={`px-4 py-2 rounded-full border ${step === 'upload' ? 'bg-(--cg-accent) text-(--cg-accent-text) border-transparent' : 'bg-(--cg-surface) text-(--cg-text-muted) border-(--cg-border)'}`}>1. Upload</div>
+        <div className="w-8 h-px bg-(--cg-border)"></div>
+        <div className={`px-4 py-2 rounded-full border ${step === 'mapping' ? 'bg-(--cg-accent) text-(--cg-accent-text) border-transparent' : 'bg-(--cg-surface) text-(--cg-text-muted) border-(--cg-border)'}`}>2. Map Columns</div>
+        <div className="w-8 h-px bg-(--cg-border)"></div>
+        <div className={`px-4 py-2 rounded-full border ${step === 'validation' ? 'bg-(--cg-accent) text-(--cg-accent-text) border-transparent' : 'bg-(--cg-surface) text-(--cg-text-muted) border-(--cg-border)'}`}>3. Validate & Confirm</div>
       </div>
 
       {/* STEP 1: UPLOAD */}
@@ -189,13 +189,13 @@ export default function DataImport() {
           <div 
             {...getRootProps()} 
             className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors ${
-              isDragActive ? 'border-[var(--cg-accent)] bg-amber-50 dark:bg-amber-500/5' : 'border-[var(--cg-border-strong)] hover:border-[var(--cg-text-muted)] hover:bg-[var(--cg-surface-elevated)]'
+              isDragActive ? 'border-(--cg-accent) bg-amber-50 dark:bg-amber-500/5' : 'border-(--cg-border-strong) hover:border-(--cg-text-muted) hover:bg-(--cg-surface-elevated)'
             }`}
           >
             <input {...getInputProps()} />
-            <UploadCloud className="w-12 h-12 text-[var(--cg-text-faint)] mx-auto mb-4" />
+            <UploadCloud className="w-12 h-12 text-(--cg-text-faint) mx-auto mb-4" />
             <h3 className="text-lg font-bold mb-2">Drag & drop your file here</h3>
-            <p className="text-[var(--cg-text-muted)] mb-4">Supports .xlsx and .csv files</p>
+            <p className="text-(--cg-text-muted) mb-4">Supports .xlsx and .csv files</p>
             <button className="btn-secondary">Browse Files</button>
           </div>
         </div>
@@ -206,22 +206,22 @@ export default function DataImport() {
         <div className="space-y-6">
           <div className="card-surface p-6">
             <h3 className="flex items-center gap-2 mb-4">
-              <FileSpreadsheet className="w-5 h-5 text-[var(--cg-accent)]" />
+              <FileSpreadsheet className="w-5 h-5 text-(--cg-accent)" />
               Column Mapping
             </h3>
-            <p className="text-[var(--cg-text-muted)] mb-6 text-sm">
+            <p className="text-(--cg-text-muted) mb-6 text-sm">
               We detected {parsedData.headers.length} columns in your file. Please map them to the corresponding database fields.
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {DB_FIELDS.map(field => (
-                <div key={field.key} className="p-4 bg-[var(--cg-surface-low)] border border-[var(--cg-border)] rounded-lg flex items-center justify-between">
+                <div key={field.key} className="p-4 bg-(--cg-surface-low) border border-(--cg-border) rounded-lg flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="font-semibold text-sm">{field.label}</span>
-                    <span className="text-[11px] text-[var(--cg-text-faint)] uppercase tracking-wider">{field.key}</span>
+                    <span className="text-[11px] text-(--cg-text-faint) uppercase tracking-wider">{field.key}</span>
                   </div>
                   <select 
-                    className="form-input max-w-[200px] text-sm"
+                    className="form-input max-w-50 text-sm"
                     value={mapping[field.key] || ''}
                     onChange={e => setMapping({...mapping, [field.key]: e.target.value})}
                   >
@@ -243,19 +243,19 @@ export default function DataImport() {
           </div>
 
           <div className="card-surface p-6">
-            <h3 className="text-sm text-[var(--cg-text-muted)] uppercase tracking-wider mb-4">Data Preview (First 5 Rows)</h3>
+            <h3 className="text-sm text-(--cg-text-muted) uppercase tracking-wider mb-4">Data Preview (First 5 Rows)</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-[var(--cg-border)] text-[var(--cg-text-muted)]">
+                  <tr className="border-b border-(--cg-border) text-(--cg-text-muted)">
                     {parsedData.headers.slice(0, 8).map((h, i) => <th key={i} className="p-2 font-medium">{h}</th>)}
                     {parsedData.headers.length > 8 && <th className="p-2">...</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--cg-border)]">
+                <tbody className="divide-y divide-(--cg-border)">
                   {parsedData.rows.slice(0, 5).map((row, i) => (
-                    <tr key={i} className="hover:bg-[var(--cg-surface-high)]">
-                      {parsedData.headers.slice(0, 8).map((h, j) => <td key={j} className="p-2 max-w-[150px] truncate">{row[h]}</td>)}
+                    <tr key={i} className="hover:bg-(--cg-surface-high)">
+                      {parsedData.headers.slice(0, 8).map((h, j) => <td key={j} className="p-2 max-w-37.5 truncate">{row[h]}</td>)}
                       {parsedData.headers.length > 8 && <td className="p-2">...</td>}
                     </tr>
                   ))}
@@ -270,21 +270,21 @@ export default function DataImport() {
       {step === 'validation' && validationResults && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="card-surface p-6 border-l-4 border-l-[var(--cg-accent)]">
-              <div className="text-[var(--cg-text-muted)] text-sm mb-1 uppercase tracking-wider font-bold">Total Processed</div>
+            <div className="card-surface p-6 border-l-4 border-l-(--cg-accent)">
+              <div className="text-(--cg-text-muted) text-sm mb-1 uppercase tracking-wider font-bold">Total Processed</div>
               <div className="text-3xl font-serif">{validationResults.valid.length + validationResults.invalid.length}</div>
             </div>
             <div className="card-surface p-6 border-l-4 border-l-emerald-500">
-              <div className="text-[var(--cg-text-muted)] text-sm mb-1 uppercase tracking-wider font-bold">Ready to Import</div>
+              <div className="text-(--cg-text-muted) text-sm mb-1 uppercase tracking-wider font-bold">Ready to Import</div>
               <div className="text-3xl font-serif text-emerald-700 dark:text-emerald-400">{validationResults.valid.length}</div>
-              <div className="text-xs mt-2 text-[var(--cg-text-faint)] flex gap-4">
+              <div className="text-xs mt-2 text-(--cg-text-faint) flex gap-4">
                 <span>{validationResults.willCreate} New</span>
                 <span>{validationResults.willUpdate} Updates</span>
               </div>
             </div>
-            <div className={`card-surface p-6 border-l-4 ${validationResults.invalid.length > 0 ? 'border-l-rose-500' : 'border-l-[var(--cg-border)]'}`}>
-              <div className="text-[var(--cg-text-muted)] text-sm mb-1 uppercase tracking-wider font-bold">Errors</div>
-              <div className={`text-3xl font-serif ${validationResults.invalid.length > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-[var(--cg-text-primary)]'}`}>
+            <div className={`card-surface p-6 border-l-4 ${validationResults.invalid.length > 0 ? 'border-l-rose-500' : 'border-l-(--cg-border)'}`}>
+              <div className="text-(--cg-text-muted) text-sm mb-1 uppercase tracking-wider font-bold">Errors</div>
+              <div className={`text-3xl font-serif ${validationResults.invalid.length > 0 ? 'text-rose-700 dark:text-rose-400' : 'text-(--cg-text-primary)'}`}>
                 {validationResults.invalid.length}
               </div>
             </div>
@@ -296,22 +296,22 @@ export default function DataImport() {
                 <AlertTriangle className="w-5 h-5" />
                 Rows with Errors
               </h3>
-              <p className="text-sm text-[var(--cg-text-muted)] mb-4">
+              <p className="text-sm text-(--cg-text-muted) mb-4">
                 The following rows cannot be imported. You can either fix your source file and re-upload, or proceed to import only the valid rows.
               </p>
-              <div className="max-h-64 overflow-y-auto rounded border border-[var(--cg-border)]">
+              <div className="max-h-64 overflow-y-auto rounded border border-(--cg-border)">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-[var(--cg-surface-high)] sticky top-0">
+                  <thead className="bg-(--cg-surface-high) sticky top-0">
                     <tr>
-                      <th className="p-3 border-b border-[var(--cg-border)]">Row #</th>
-                      <th className="p-3 border-b border-[var(--cg-border)]">Name Found</th>
-                      <th className="p-3 border-b border-[var(--cg-border)]">Errors</th>
+                      <th className="p-3 border-b border-(--cg-border)">Row #</th>
+                      <th className="p-3 border-b border-(--cg-border)">Name Found</th>
+                      <th className="p-3 border-b border-(--cg-border)">Errors</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[var(--cg-border)]">
+                  <tbody className="divide-y divide-(--cg-border)">
                     {validationResults.invalid.map((row, i) => (
-                      <tr key={i} className="hover:bg-[var(--cg-surface-high)]">
-                        <td className="p-3 font-mono text-[var(--cg-text-muted)]">{row._originalIndex}</td>
+                      <tr key={i} className="hover:bg-(--cg-surface-high)">
+                        <td className="p-3 font-mono text-(--cg-text-muted)">{row._originalIndex}</td>
                         <td className="p-3 font-medium">{row.name || '(Empty)'}</td>
                         <td className="p-3 text-rose-700 dark:text-rose-400 text-xs">
                           <ul className="list-disc pl-4 space-y-1">
@@ -333,7 +333,7 @@ export default function DataImport() {
               </div>
               <div>
                 <h4 className="font-bold">Validation Complete</h4>
-                <p className="text-sm text-[var(--cg-text-muted)]">
+                <p className="text-sm text-(--cg-text-muted)">
                   {validationResults.invalid.length > 0 
                     ? `Proceeding will skip ${validationResults.invalid.length} invalid rows.`
                     : "All rows are valid and ready to import."}

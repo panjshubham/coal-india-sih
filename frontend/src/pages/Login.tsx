@@ -100,7 +100,7 @@ export default function Login() {
     >
       {/* Subtle ambient glow — decorative */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[320px] rounded-full opacity-20 pointer-events-none blur-3xl"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-150 h-80 rounded-full opacity-20 pointer-events-none blur-3xl"
         style={{ background: 'radial-gradient(ellipse, rgba(245,158,11,0.35) 0%, transparent 70%)' }}
       />
 

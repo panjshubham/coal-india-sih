@@ -59,7 +59,7 @@ export default function ThemeToggle({ variant = 'topbar' }: ThemeToggleProps) {
         }}
       >
         <Sun
-          className={`${iconSize} text-[var(--cg-toggle-icon)] hover:text-[var(--cg-accent)]`}
+          className={`${iconSize} text-(--cg-toggle-icon) hover:text-(--cg-accent)`}
           strokeWidth={2}
         />
       </span>
@@ -79,7 +79,7 @@ export default function ThemeToggle({ variant = 'topbar' }: ThemeToggleProps) {
         }}
       >
         <Moon
-          className={`${iconSize} text-[var(--cg-toggle-icon)] hover:text-[var(--cg-accent)]`}
+          className={`${iconSize} text-(--cg-toggle-icon) hover:text-(--cg-accent)`}
           strokeWidth={2}
         />
       </span>

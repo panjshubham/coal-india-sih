@@ -82,7 +82,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ variant = 't
       {/* Dropdown panel — fully theme-aware */}
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-52 rounded-xl shadow-2xl z-[9999] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="absolute right-0 mt-2 w-52 rounded-xl shadow-2xl z-9999 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
           style={{
             backgroundColor: 'var(--cg-surface)',
             border: '1px solid var(--cg-border-strong)',
