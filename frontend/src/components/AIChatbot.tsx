@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, User, Loader2, Mic, MicOff, Languages, Compass, ArrowRight } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, User, Mic, MicOff, Languages, Compass, ArrowRight, Trash2, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,8 @@ marked.setOptions({
   breaks: true,
   gfm: true
 });
+
+const LOCAL_STORAGE_KEY = 'coalguard_chat_history';
 
 const renderBotMessage = (text: string) => {
   try {
@@ -113,9 +115,21 @@ const INITIAL_MESSAGE: Message = {
 
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
+  
+  // Persist messages in localStorage
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        try { return JSON.parse(saved); } catch {}
+      }
+    }
+    return [INITIAL_MESSAGE];
+  });
+  
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   
   // Voice state
   const [isListening, setIsListening] = useState(false);
@@ -132,6 +146,26 @@ export default function AIChatbot() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(messages));
+    }
+  }, [messages]);
+
+  const clearChat = () => {
+    setMessages([INITIAL_MESSAGE]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
+  };
+
+  const handleCopy = (id: string, text: string) => {
+    const cleanText = text.replace(/\[NAVIGATE:[^\]]*\]?/g, '').trim();
+    navigator.clipboard.writeText(cleanText);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -397,15 +431,25 @@ export default function AIChatbot() {
                 </div>
               </div>
               
-              {/* Language Toggle */}
-              <button 
-                onClick={toggleLanguage}
-                className="flex items-center gap-1 bg-emerald-700/50 hover:bg-emerald-700 px-2 py-1 rounded-md text-xs transition-colors"
-                title="Toggle Voice Language"
-              >
-                <Languages className="w-3 h-3" />
-                {language === 'en-US' ? 'ENG' : 'HIN'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={toggleLanguage}
+                  className="flex items-center gap-1 bg-emerald-700/50 hover:bg-emerald-700 px-2 py-1 rounded-md text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  title="Toggle Voice Language"
+                  aria-label="Toggle Voice Language"
+                >
+                  <Languages className="w-3 h-3" />
+                  {language === 'en-US' ? 'ENG' : 'HIN'}
+                </button>
+                <button
+                  onClick={clearChat}
+                  className="flex items-center gap-1 bg-emerald-700/50 hover:bg-red-500 hover:text-white px-2 py-1 rounded-md text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+                  aria-label="Clear Chat History"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Clear
+                </button>
+              </div>
             </div>
 
             {/* Messages Area */}
@@ -421,30 +465,47 @@ export default function AIChatbot() {
                     </div>
                   )}
                   
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                      msg.type === 'user'
-                        ? 'bg-emerald-600 text-white rounded-br-none whitespace-pre-wrap'
-                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-none shadow-sm'
-                    }`}
-                  >
-                    {msg.type === 'user' ? msg.text : renderBotMessage(msg.text)}
+                  <div className="flex flex-col gap-1 max-w-[85%] relative group">
+                    <div
+                      className={`rounded-2xl px-4 py-3 text-sm ${
+                        msg.type === 'user'
+                          ? 'bg-emerald-600 text-white rounded-br-none whitespace-pre-wrap'
+                          : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-none shadow-sm'
+                      }`}
+                    >
+                      {msg.type === 'user' ? msg.text : renderBotMessage(msg.text)}
 
-                    {msg.navigatedTo && (
-                      <button
-                        type="button"
-                        onClick={() => navigate(msg.navigatedTo!.path)}
-                        className="mt-3 flex items-center justify-between w-full px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-emerald-800 dark:text-emerald-200 transition-all text-xs font-medium cursor-pointer shadow-xs group"
-                      >
-                        <span className="flex items-center gap-2 font-semibold truncate mr-2">
-                          <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:rotate-45 transition-transform" />
-                          <span className="truncate">{msg.navigatedTo.title}</span>
-                        </span>
-                        <span className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold shrink-0">
-                          <span>Open</span>
-                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                        </span>
-                      </button>
+                      {msg.navigatedTo && (
+                        <button
+                          type="button"
+                          onClick={() => navigate(msg.navigatedTo!.path)}
+                          className="mt-3 flex items-center justify-between w-full px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-emerald-800 dark:text-emerald-200 transition-all text-xs font-medium cursor-pointer shadow-xs group/nav"
+                        >
+                          <span className="flex items-center gap-2 font-semibold truncate mr-2">
+                            <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 group-hover/nav:rotate-45 transition-transform" />
+                            <span className="truncate">{msg.navigatedTo.title}</span>
+                          </span>
+                          <span className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold shrink-0">
+                            <span>Open</span>
+                            <ArrowRight className="w-3.5 h-3.5 group-hover/nav:translate-x-1 transition-transform" />
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                    {msg.type === 'bot' && msg.id !== '1' && (
+                      <div className="flex justify-start px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleCopy(msg.id, msg.text)}
+                          className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1.5 py-0.5"
+                          aria-label="Copy message"
+                        >
+                          {copiedId === msg.id ? (
+                            <><Check className="w-3 h-3 text-emerald-500" /> Copied</>
+                          ) : (
+                            <><Copy className="w-3 h-3" /> Copy</>
+                          )}
+                        </button>
+                      </div>
                     )}
                   </div>
 
