@@ -35,7 +35,6 @@ export default function GeospatialMap() {
   const [activeMineId, setActiveMineId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
   const [mapMode, setMapMode] = useState<'dark' | 'satellite'>('dark');
-  const cartoKey = import.meta.env.VITE_CARTO_API_KEY;
   
   const markerRefs = useRef<{[key: string]: L.Marker | null}>({});
 
@@ -281,11 +280,6 @@ export default function GeospatialMap() {
                 attribution='&copy; <a href="https://www.esri.com/">Esri</a>, Earthstar Geographics'
                 url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                 maxZoom={18}
-              />
-            ) : cartoKey ? (
-              <TileLayer
-                attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-                url={`https://{s}.basemaps.cartocdn.com/${isLight ? 'light_all' : 'dark_all'}/{z}/{x}/{y}{r}.png?key=${cartoKey}`}
               />
             ) : isLight ? (
               <>

@@ -14,7 +14,6 @@ Complete Multi-Modal AI Engine integrating:
 9. Automated Pipeline Chaining Endpoints (Voice -> Text -> Translate -> Classify -> NER)
 """
 
-import sys
 import os
 import io
 import re
@@ -24,8 +23,10 @@ import base64
 import datetime
 from datetime import datetime as dt_cls, timedelta, timezone
 from typing import List, Dict, Any, Optional
+import json
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -33,15 +34,15 @@ import httpx
 import pandas as pd
 import numpy as np
 import joblib
-import shap
-from supabase import create_client, Client
+import shap  # type: ignore
+from supabase import create_client, Client  # type: ignore
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 env_file = os.path.join(BASE_DIR, ".env")
 load_dotenv(env_file)
-# Also check parent directory if needed
-if not os.getenv("HF_API_TOKEN"):
-    load_dotenv(os.path.join(os.path.dirname(BASE_DIR), ".env"))
+# Also check parent directory and backend directory for env configs
+load_dotenv(os.path.join(os.path.dirname(BASE_DIR), ".env"))
+load_dotenv(os.path.join(os.path.dirname(BASE_DIR), "backend", ".env"))
 
 app = FastAPI(
     title="Khanan-Net AI Engine",
@@ -51,11 +52,52 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    # SECURITY: never use ["*"] together with allow_credentials=True — the
+    # browser would send the user's cookies to ANY origin. Restrict to the
+    # deployed frontend origin(s), comma-separated in ALLOWED_ORIGINS.
+    # e.g. ALLOWED_ORIGINS=https://coalguard.vercel.app,http://127.0.0.1:5173
+    allow_origins=[
+        o.strip()
+        for o in os.getenv(
+            "ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+        ).split(",")
+        if o.strip()
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
+
+# ─────────────────────────────────────────────────────────────
+# SECURITY HEADERS & RATE LIMITING MIDDLEWARE
+# ─────────────────────────────────────────────────────────────
+
+_ip_chat_tracker: Dict[str, List[float]] = {}
+
+def check_ip_rate_limit(client_ip: str, max_requests: int = 30, window_secs: int = 60) -> bool:
+    now = time.time()
+    history = [t for t in _ip_chat_tracker.get(client_ip, []) if now - t < window_secs]
+    if len(history) >= max_requests:
+        _ip_chat_tracker[client_ip] = history
+        return False
+    history.append(now)
+    _ip_chat_tracker[client_ip] = history
+    return True
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    # Request body size defense (reject anything > 15MB)
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Request payload exceeds maximum 15MB limit")
+
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 # ─────────────────────────────────────────────────────────────
 # CONFIGURATION & CLIENT INITIALIZATION
@@ -63,13 +105,22 @@ app.add_middleware(
 
 HF_API_TOKEN = os.getenv("HF_API_TOKEN", "").strip()
 HF_BASE = "https://api-inference.huggingface.co/models"
-HF_NAMESPACE = os.getenv("HF_NAMESPACE", "93shubhampanjiyara").strip()
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "93shubhampanjiyara").strip()
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "S3HFAKyzkX7ZsbCkqQPj5F7c5qM8M3XRD").strip()
+HF_NAMESPACE = os.getenv("HF_NAMESPACE", "").strip()
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "").strip()
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "").strip()
 HF_S3_ENDPOINT_URL = os.getenv("HF_S3_ENDPOINT_URL", "https://hub-ci.huggingface.co/s3").strip()
+GEMINI_API_KEY = (
+    os.getenv("GEMINI_API_KEY", "").strip()
+    or os.getenv("GOOGLE_API_KEY", "").strip()
+)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "").strip()
+# Accepts SUPABASE_SERVICE_ROLE_KEY (documented name). SUPABASE_KEY is kept as
+# a legacy fallback so existing deployments keep working.
+SUPABASE_KEY = (
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+    or os.getenv("SUPABASE_KEY", "").strip()
+)
 
 supabase: Optional[Client] = None
 if SUPABASE_URL and SUPABASE_KEY:
@@ -275,9 +326,9 @@ def _get_ppe_yolo_model():
             from ultralytics import YOLO  # type: ignore
             candidate_paths = [
                 os.path.join(BASE_DIR, "yolov8n-ppe.pt"),
-                os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), "ai-service", "yolov8n-ppe.pt"),
+                os.path.join(os.path.dirname(BASE_DIR), "backend", "ai-service", "yolov8n-ppe.pt"),
                 os.path.join(BASE_DIR, "yolov8n.pt"),
-                os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), "yolov8n.pt"),
+                os.path.join(os.path.dirname(BASE_DIR), "backend", "ai-service", "yolov8n.pt"),
             ]
             for p in candidate_paths:
                 if os.path.exists(p):
@@ -337,7 +388,6 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
                         elif "mask" in cls_name:
                             detected_items.append({"box": norm_box, "label": "mask", "score": conf})
 
-                # If YOLO identified persons or negative/positive PPE instances, return results
                 if detected_items:
                     return detected_items
             except Exception as ye:
@@ -376,18 +426,15 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
         py2 = min(h, face_cy + int(face_h * 5.0))
         person_score = 0.88
 
-        personH = py2 - py1
-        personW = px2 - px1
-
-        # 2. Anatomical Head Region (Top 18% of person height)
-        hy1 = py1
-        hy2 = min(h, py1 + int(personH * 0.18))
-        hx1 = max(0, px1)
-        hx2 = min(w, px2)
+        # Head zone
+        hy1 = max(0, face_cy - int(face_h * 1.4))
+        hy2 = max(0, face_cy - int(face_h * 0.2))
+        hx1 = max(0, face_cx - int(face_w * 0.9))
+        hx2 = min(w, face_cx + int(face_w * 0.9))
 
         head_area = max((hy2 - hy1) * (hx2 - hx1), 1)
-        head_rgb = arr_rgb[hy1:hy2, hx1:hx2]
         head_hsv = arr_hsv[hy1:hy2, hx1:hx2]
+        head_rgb = arr_rgb[hy1:hy2, hx1:hx2]
         head_skin = is_skin[hy1:hy2, hx1:hx2]
 
         hh, hs, hv = head_hsv[:, :, 0], head_hsv[:, :, 1], head_hsv[:, :, 2]
@@ -398,49 +445,38 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
         hair_pixels = int(np.sum(is_hair))
         hair_pct = round((hair_pixels / head_area) * 100, 1)
 
-        # 1. Strict Safety Color Matching for Hard Hats
-        # Yellow Hard Hat (hb < 80 excludes indoor yellow/beige walls with high blue channel)
-        y_helm = (hr > 175) & (hg > 155) & (hb < 80) & ((hg - hb) > 75) & ((hr - hb) > 85) & (np.abs(hr - hg) < 40) & (~head_skin)
-        # Orange Hard Hat
-        o_helm = (hr > 175) & (hg > 40) & (hg < 160) & (hb < 90) & ((hr - hg) > 30) & ((hr - hb) > 75) & (~head_skin)
-        # Blue Hard Hat
+        # Hard-hat signatures: high-chroma safety colors (NO plain white wall/ceiling matching)
+        y_helm = (hh >= 14) & (hh <= 35) & (hs >= 55) & (hv >= 90) & (hr > 130) & (hg > 110) & (~head_skin)
+        o_helm = (hh >= 6) & (hh <= 22) & (hs >= 60) & (hv >= 90) & (hr > 150) & (hg < 165) & (~head_skin)
         b_helm = (hh >= 90) & (hh <= 130) & (hs >= 55) & (hv >= 70) & (hb > hr) & (~head_skin)
-        # Red Hard Hat
         r_helm = ((hh <= 12) | (hh >= 165)) & (hs >= 55) & (hv >= 70) & (hr > hg) & (hr > hb) & (~head_skin)
 
         helm_mask = y_helm | o_helm | b_helm | r_helm
         helm_pixels = int(np.sum(helm_mask))
         helm_pct = round((helm_pixels / head_area) * 100, 1)
 
-        # If bare human hair is detected, helmet is strictly FALSE
         if hair_pct >= 4.0 or hair_pixels >= 15:
             helm_pct = 0.0
 
-        # 2. Anatomical Torso/Chest Region (headBottom to 58% of person height, inset 8% on sides)
-        vy1 = hy2
-        vy2 = min(h, py1 + int(personH * 0.58))
-        vx1 = max(0, px1 + int(personW * 0.08))
-        vx2 = min(w, px2 - int(personW * 0.08))
+        # Torso zone
+        vy1 = min(h - 1, face_cy + int(face_h * 0.7))
+        vy2 = min(h, face_cy + int(face_h * 3.8))
+        vx1 = max(0, face_cx - int(face_w * 1.5))
+        vx2 = min(w, face_cx + int(face_w * 1.5))
 
         torso_area = max((vy2 - vy1) * (vx2 - vx1), 1)
-        torso_rgb = arr_rgb[vy1:vy2, vx1:vx2]
         torso_hsv = arr_hsv[vy1:vy2, vx1:vx2]
+        torso_rgb = arr_rgb[vy1:vy2, vx1:vx2]
         torso_skin = is_skin[vy1:vy2, vx1:vx2]
 
         th, ts, tv = torso_hsv[:, :, 0], torso_hsv[:, :, 1], torso_hsv[:, :, 2]
         tr, tg, tb = torso_rgb[:, :, 0].astype(int), torso_rgb[:, :, 1].astype(int), torso_rgb[:, :, 2].astype(int)
 
-        # 1. Strict Safety Color Matching for Safety Vest
-        # Hi-Vis Lime Vest
-        lime_vest = (tg > 120) & (tr > 90) & (tb < 130) & ((tg - tb) > 35) & ((tr - tb) > 15) & (~torso_skin)
-        # Orange Safety Vest
-        orange_vest = (tr > 175) & (tg > 40) & (tg < 160) & (tb < 90) & ((tr - tg) > 30) & ((tr - tb) > 75) & (~torso_skin)
-        # Retroreflective Silver Stripes
-        max_rgb = np.maximum(np.maximum(tr, tg), tb)
-        min_rgb = np.minimum(np.minimum(tr, tg), tb)
-        silver_stripe = (tr > 180) & (tg > 180) & (tb > 180) & ((max_rgb - min_rgb) < 35) & (~torso_skin)
+        # Safety Vest: fluorescent dayglo only (NOT plain white shirts)
+        lime_vest = (th >= 22) & (th <= 85) & (ts >= 50) & (tv >= 70) & (tg > tb) & (~torso_skin)
+        orange_vest = ((th <= 22) | (th >= 165)) & (ts >= 55) & (tv >= 70) & (tr > tg) & (tr > tb) & (~torso_skin)
 
-        vest_mask = lime_vest | orange_vest | silver_stripe
+        vest_mask = lime_vest | orange_vest
         vest_pixels = int(np.sum(vest_mask))
         vest_pct = round((vest_pixels / torso_area) * 100, 1)
 
@@ -450,25 +486,21 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
             "score": round(float(person_score), 3)
         }]
 
-        # 3. Realistic Coverage Thresholds
-        has_helmet = helm_pct >= 5.0 or helm_pixels >= 15
-        has_vest = vest_pct >= 4.5 or vest_pixels >= 15
-
-        if has_helmet:
+        if hair_pct >= 4.0 or hair_pixels >= 15:
+            detections.append({
+                "box": {"xmin": round(hx1 / w, 3), "ymin": round(hy1 / h, 3), "xmax": round(hx2 / w, 3), "ymax": round(hy2 / h, 3)},
+                "label": "no-hard-hat",
+                "score": round(min(0.95, 0.70 + hair_pct / 100.0), 3),
+            })
+        elif helm_pct >= 6.0 and helm_pixels >= 15:
             detections.append({
                 "box": {"xmin": round(hx1 / w, 3), "ymin": round(hy1 / h, 3), "xmax": round(hx2 / w, 3), "ymax": round(hy2 / h, 3)},
                 "label": "hard-hat",
                 "score": round(min(0.98, 0.80 + helm_pct / 100.0), 3),
                 "coverage_pct": helm_pct
             })
-        else:
-            detections.append({
-                "box": {"xmin": round(hx1 / w, 3), "ymin": round(hy1 / h, 3), "xmax": round(hx2 / w, 3), "ymax": round(hy2 / h, 3)},
-                "label": "no-hard-hat",
-                "score": round(min(0.95, 0.70 + hair_pct / 100.0), 3),
-            })
 
-        if has_vest:
+        if vest_pct >= 6.0 and vest_pixels >= 20:
             detections.append({
                 "box": {"xmin": round(vx1 / w, 3), "ymin": round(vy1 / h, 3), "xmax": round(vx2 / w, 3), "ymax": round(vy2 / h, 3)},
                 "label": "safety-vest",
@@ -481,6 +513,11 @@ def _analyze_ppe_image(img_bytes: bytes) -> List[Dict]:
                 "label": "no-safety-vest",
                 "score": 0.85
             })
+
+        return detections
+    except Exception as e:
+        print(f"[WARN] Error analyzing PPE image: {e}")
+        return [{"box": {"xmin": 0.25, "ymin": 0.05, "xmax": 0.75, "ymax": 0.95}, "label": "person", "score": 0.90}]
 
         return detections
     except Exception as e:
@@ -920,22 +957,14 @@ async def ppe_detect(file: UploadFile = File(...)):
     else:
         missing.append("safety-vest")
 
-    if "hard-hat" in missing and "safety-vest" in missing:
-        compliance_status = "NON_COMPLIANT"
-        severity = "CRITICAL"
-        alert_msg = "⚠️ STATUTORY VIOLATION: Both HARD-HAT and SAFETY-VEST are missing! Breach of DGMS Regulation 115."
-    elif "hard-hat" in missing:
-        compliance_status = "NON_COMPLIANT"
-        severity = "HIGH"
-        alert_msg = "⚠️ STATUTORY VIOLATION: HARD-HAT Missing! Breach of DGMS Regulation 115."
-    elif "safety-vest" in missing:
-        compliance_status = "NON_COMPLIANT"
-        severity = "HIGH"
-        alert_msg = "⚠️ STATUTORY VIOLATION: SAFETY-VEST Missing! Breach of DGMS Regulation 115."
-    else:
+    if len(missing) == 0:
         compliance_status = "COMPLIANT"
         severity = "NONE"
-        alert_msg = "✅ COMPLIANT: All required PPE detected (DGMS Regulation 115 satisfied)."
+        alert_msg = f"✅ All required statutory PPE items detected ({helmet_coverage}% helmet, {vest_coverage}% vest). Worker compliant with DGMS Reg 115."
+    else:
+        compliance_status = "NON_COMPLIANT"
+        severity = "HIGH"
+        alert_msg = f"⚠️ Non-compliance detected: Missing {', '.join(missing)}. Worker not wearing required safety gear — DGMS Reg 115 violation."
 
     valid_detections = [d for d in raw_detections if d.get("score", 0) >= 0.25]
     confidence_avg = round(sum(d.get("score", 0) for d in valid_detections) / len(valid_detections), 3) if valid_detections else 0.0
@@ -2492,6 +2521,411 @@ async def train_water_inrush_csv(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"CSV training failed: {str(e)}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CMR STATUTORY REGISTER COMPLIANCE VALIDATION
+# ─────────────────────────────────────────────────────────────────────────────
+
+class CmrValidateRequest(BaseModel):
+    register_type: str  # e.g. "CMR_153_GAS_TESTING"
+    parameters: Dict[str, Any] = {}
+    seam_or_pit: str = ""
+    mine_id: int = 1
+
+@app.post("/api/cmr/validate-entry", summary="CMR Statutory Register Compliance Validator")
+async def cmr_validate_entry(req: CmrValidateRequest):
+    """
+    Server-side statutory compliance engine for Coal Mines Regulations 2017.
+    Validates register entries and returns compliance verdict with mandatory actions.
+    """
+    params = req.parameters
+    status: str = "COMPLIANT"
+    findings: list[str] = []
+    actions: list[str] = []
+    reg_ref = "CMR 2017 General"
+
+    if req.register_type == "CMR_153_GAS_TESTING":
+        reg_ref = "CMR 2017 Reg 153 & 155"
+        ch4 = float(params.get("ch4_pct", 0) or 0)
+        co  = float(params.get("co_ppm",  0) or 0)
+        o2  = float(params.get("o2_pct",  21) or 21)
+
+        if ch4 >= 1.25:
+            status = "STATUTORY_BREACH"
+            findings.append(f"CRITICAL: CH4 at {ch4}% exceeds statutory 1.25% limit (CMR Reg 155).")
+            actions.append("Mandatory personnel withdrawal under Section 22 Mines Act 1952.")
+        elif ch4 >= 0.75:
+            status = "WARNING"
+            findings.append(f"WARNING: CH4 at {ch4}% exceeds 0.75% working limit (CMR Reg 155).")
+            actions.append("Isolate non-flameproof electrical equipment and course fresh air.")
+
+        if co > 25:
+            status = "STATUTORY_BREACH"
+            findings.append(f"CRITICAL: CO at {co} ppm exceeds 25 ppm statutory limit.")
+            actions.append("Immediate evacuation and investigation under CMR Reg 153.")
+        elif co > 10:
+            if status == "COMPLIANT":
+                status = "WARNING"
+            findings.append(f"WARNING: CO at {co} ppm above 10 ppm watch threshold.")
+            actions.append("Increase ventilation and monitor continuously.")
+
+        if o2 < 19.0:
+            status = "STATUTORY_BREACH"
+            findings.append(f"CRITICAL: O2 at {o2}% below 19.0% minimum statutory level.")
+            actions.append("Personnel evacuation and ventilation rectification required immediately.")
+        elif o2 < 19.5:
+            if status == "COMPLIANT":
+                status = "WARNING"
+            findings.append(f"WARNING: O2 at {o2}% approaching minimum threshold.")
+            actions.append("Increase fresh air coursing and retest in 30 minutes.")
+
+    elif req.register_type == "CMR_83_HAUL_ROAD":
+        reg_ref = "CMR 2017 Reg 83"
+        berm = float(params.get("berm_height_m", 0) or 0)
+        tyre = float(params.get("dumper_tyre_dia_m", 2) or 2)
+        speed_limit = float(params.get("posted_speed_kmh", 25) or 25)
+        actual_speed = float(params.get("actual_speed_kmh", 0) or 0)
+
+        if berm < tyre * 0.75:
+            status = "STATUTORY_BREACH"
+            findings.append(f"DEFECT: Berm height ({berm}m) < 0.75× tyre diameter (required: {round(tyre*0.75,2)}m).")
+            actions.append("Suspend haulage until berm is dozed to statutory height.")
+
+        if actual_speed > speed_limit:
+            if status == "COMPLIANT":
+                status = "WARNING"
+            findings.append(f"SPEED: Actual {actual_speed} km/h exceeds posted limit {speed_limit} km/h.")
+            actions.append("Issue speed violation notice to operator and review under CMR Reg 84.")
+
+    elif req.register_type == "CMR_129_OVERMAN_DAILY":
+        reg_ref = "CMR 2017 Reg 129"
+        workers = int(params.get("workers_deployed", 0) or 0)
+        permitted = int(params.get("permitted_strength", 0) or 0)
+        support_ratio = float(params.get("support_resistance_ratio", 1.0) or 1.0)
+
+        if permitted > 0 and workers > permitted:
+            status = "STATUTORY_BREACH"
+            findings.append(f"OVERDEPLOYMENT: {workers} workers exceed permitted {permitted} under Reg 129.")
+            actions.append("Withdraw excess personnel immediately and update deployment register.")
+
+        if support_ratio < 0.9:
+            if status == "COMPLIANT":
+                status = "WARNING"
+            findings.append(f"SUPPORT: Resistance ratio {support_ratio} below 0.9 safety threshold.")
+            actions.append("Halt face advance until support resistance is restored.")
+
+    if not findings:
+        findings.append("All parameters compliant with Coal Mines Regulations 2017.")
+    if not actions:
+        actions.append("Normal shift operations approved by AI compliance engine.")
+
+    return {
+        "is_compliant": status == "COMPLIANT",
+        "compliance_status": status,
+        "statutory_regulation": reg_ref,
+        "findings": findings,
+        "mandatory_statutory_actions": actions,
+        "verified_under_act": "The Mines Act, 1952 & Coal Mines Regulations 2017",
+        "mine_id": req.mine_id,
+        "seam_or_pit": req.seam_or_pit,
+        "register_type": req.register_type,
+        "engine": "server-side-rule-engine-v1"
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONTRACTOR GATE-PASS VERIFICATION
+# ─────────────────────────────────────────────────────────────────────────────
+
+class GatePassRequest(BaseModel):
+    contractor_name: str = ""
+    company: str = ""
+    dgms_cert_no: str = ""
+    cert_expiry: str = ""   # ISO date string e.g. "2026-12-31"
+    mine_id: int = 1
+    work_area: str = ""
+    is_blacklisted: bool = False
+
+@app.post("/api/contractor/verify-gate-pass", summary="Contractor Gate-Pass Verification Engine")
+async def verify_gate_pass(req: GatePassRequest):
+    """
+    Verifies contractor eligibility for mine site entry.
+    Checks DGMS certification validity, expiry date, and blacklist status.
+    """
+    from datetime import date
+    issues: list[str] = []
+    actions: list[str] = []
+    status: str = "APPROVED"
+
+    # Blacklist check
+    if req.is_blacklisted:
+        status = "DENIED"
+        issues.append(f"Contractor '{req.contractor_name}' is on the DGMS blacklist for this mine.")
+        actions.append("Entry refused. Escalate to Colliery Manager under DGMS Circular 2019.")
+
+    # DGMS cert number presence
+    if not req.dgms_cert_no or req.dgms_cert_no.strip() == "":
+        if status == "APPROVED":
+            status = "DENIED"
+        issues.append("No valid DGMS certification number provided.")
+        actions.append("Contractor must produce DGMS certificate before entry is permitted.")
+
+    # Expiry date check
+    if req.cert_expiry:
+        try:
+            expiry = date.fromisoformat(req.cert_expiry[:10])
+            today = date.today()
+            days_until_expiry = (expiry - today).days
+            if days_until_expiry < 0:
+                status = "DENIED"
+                issues.append(f"DGMS certificate expired {abs(days_until_expiry)} days ago (on {expiry}).")
+                actions.append("Entry denied. Renewal mandatory before site access under Mines Rules 1955.")
+            elif days_until_expiry <= 30:
+                if status == "APPROVED":
+                    status = "CONDITIONAL"
+                issues.append(f"Certificate expires in {days_until_expiry} days. Renewal imminent.")
+                actions.append("Permitted entry today. Contractor must submit renewal proof within 7 days.")
+        except ValueError:
+            if status == "APPROVED":
+                status = "CONDITIONAL"
+            issues.append("Certificate expiry date could not be parsed. Manual verification required.")
+            actions.append("Security to manually inspect original DGMS certificate before entry.")
+
+    # Work area validation
+    if not req.work_area or req.work_area.strip() == "":
+        if status == "APPROVED":
+            status = "CONDITIONAL"
+        issues.append("Work area not specified in gate pass.")
+        actions.append("Contractor must declare work zone before entering mine premises.")
+
+    if not issues:
+        issues.append(f"All DGMS checks passed for {req.contractor_name} ({req.company}).")
+    if not actions:
+        actions.append("Gate pass approved. Issue visitor ID badge and log entry time.")
+
+    return {
+        "status": status,
+        "is_approved": status == "APPROVED",
+        "contractor_name": req.contractor_name,
+        "company": req.company,
+        "mine_id": req.mine_id,
+        "issues": issues,
+        "required_actions": actions,
+        "dgms_cert_no": req.dgms_cert_no,
+        "engine": "gate-pass-verifier-v1"
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECURE SERVER-SIDE GEMINI CHAT ENDPOINTS (Zero Frontend Key Exposure)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.post("/api/chat", summary="Secure Server-Side Gemini Chat Engine")
+async def chat_generate(request: Request):
+    """
+    Secure server-side proxy for Google Gemini AI.
+    The secret GEMINI_API_KEY stays strictly on the server and is NEVER exposed to the frontend.
+    """
+    api_key = GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "").strip() or os.getenv("GOOGLE_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Gemini API Key is not configured on the backend server. Please set GEMINI_API_KEY in the server .env."
+        )
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    contents = body.get("contents")
+    if not contents and "messages" in body:
+        contents = []
+        for m in body["messages"]:
+            role = "user" if m.get("role") == "user" or m.get("type") == "user" else "model"
+            text = m.get("text") or m.get("content") or ""
+            if text:
+                contents.append({"role": role, "parts": [{"text": text}]})
+
+    client_ip = request.client.host if request.client else "unknown"
+    if not check_ip_rate_limit(client_ip):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Please wait a minute before making more AI requests.")
+
+    if not contents:
+        raise HTTPException(status_code=400, detail="No prompt or contents provided")
+
+    # Bound and sanitize contents to eliminate token injection and overflow
+    contents = contents[-25:]
+    for c in contents:
+        for p in c.get("parts", []):
+            if "text" in p and isinstance(p["text"], str):
+                p["text"] = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', p["text"])[:4000]
+
+    system_instruction = body.get("systemInstruction") or body.get("system_instruction")
+    temp = float(body.get("temperature", 0.6))
+    max_tokens = int(body.get("maxOutputTokens", 800))
+
+    payload: Dict[str, Any] = {
+        "contents": contents,
+        "generationConfig": {
+            "temperature": temp,
+            "maxOutputTokens": max_tokens,
+        }
+    }
+    if system_instruction:
+        if isinstance(system_instruction, str):
+            payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
+        elif isinstance(system_instruction, dict):
+            payload["systemInstruction"] = system_instruction
+
+    candidate_models = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.8-flash"]
+    last_error = None
+
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        for model in candidate_models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            try:
+                resp = await client.post(url, json=payload, headers={"Content-Type": "application/json"})
+                if resp.status_code == 200:
+                    data = resp.json()
+                    candidates = data.get("candidates", [])
+                    reply_text = ""
+                    if candidates and "content" in candidates[0]:
+                        parts = candidates[0]["content"].get("parts", [])
+                        reply_text = "".join(p.get("text", "") for p in parts if "text" in p)
+                    return {
+                        "text": reply_text,
+                        "model": model,
+                        "status": "success"
+                    }
+                elif resp.status_code in [404, 503, 429]:
+                    last_error = f"{model} returned {resp.status_code}: {resp.text[:120]}"
+                    continue
+                else:
+                    last_error = f"{model} error: {resp.text[:120]}"
+            except Exception as e:
+                last_error = str(e)
+                continue
+
+    raise HTTPException(status_code=502, detail=f"Gemini API request failed. Last error: {last_error}")
+
+
+@app.post("/api/chat/stream", summary="Secure Server-Side Gemini Chat Stream (SSE)")
+async def chat_stream(request: Request):
+    """
+    Streaming SSE proxy for Google Gemini AI.
+    Yields chunks to the frontend in real time while keeping GEMINI_API_KEY strictly server-side.
+    """
+    api_key = GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "").strip() or os.getenv("GOOGLE_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Gemini API Key is not configured on the backend server."
+        )
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    contents = body.get("contents")
+    if not contents and "messages" in body:
+        contents = []
+        for m in body["messages"]:
+            role = "user" if m.get("role") == "user" or m.get("type") == "user" else "model"
+            text = m.get("text") or m.get("content") or ""
+            if text:
+                contents.append({"role": role, "parts": [{"text": text}]})
+
+    client_ip = request.client.host if request.client else "unknown"
+    if not check_ip_rate_limit(client_ip):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Please wait a minute before making more AI requests.")
+
+    if not contents:
+        raise HTTPException(status_code=400, detail="No prompt or contents provided")
+
+    # Bound and sanitize contents to eliminate token injection and overflow
+    contents = contents[-25:]
+    for c in contents:
+        for p in c.get("parts", []):
+            if "text" in p and isinstance(p["text"], str):
+                p["text"] = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', p["text"])[:4000]
+
+    system_instruction = body.get("systemInstruction") or body.get("system_instruction")
+    temp = float(body.get("temperature", 0.6))
+    max_tokens = int(body.get("maxOutputTokens", 800))
+
+    payload: Dict[str, Any] = {
+        "contents": contents,
+        "generationConfig": {
+            "temperature": temp,
+            "maxOutputTokens": max_tokens,
+        }
+    }
+    if system_instruction:
+        if isinstance(system_instruction, str):
+            payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
+        elif isinstance(system_instruction, dict):
+            payload["systemInstruction"] = system_instruction
+
+    candidate_models = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.8-flash"]
+
+    async def event_generator():
+        client = httpx.AsyncClient(timeout=25.0)
+        try:
+            for model in candidate_models:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
+                try:
+                    req_stream = client.build_request("POST", url, json=payload, headers={"Content-Type": "application/json"})
+                    resp = await client.send(req_stream, stream=True)
+                    if resp.status_code == 200:
+                        async for line in resp.aiter_lines():
+                            if line.startswith("data: "):
+                                data_str = line[6:].strip()
+                                try:
+                                    parsed = json.loads(data_str)
+                                    candidates = parsed.get("candidates", [])
+                                    if candidates and "content" in candidates[0]:
+                                        parts = candidates[0]["content"].get("parts", [])
+                                        chunk_text = "".join(p.get("text", "") for p in parts if "text" in p)
+                                        if chunk_text:
+                                            yield f"data: {json.dumps({'text': chunk_text})}\n\n"
+                                except Exception:
+                                    pass
+                        yield "data: [DONE]\n\n"
+                        await resp.aclose()
+                        return
+                    else:
+                        await resp.aclose()
+                except Exception:
+                    continue
+
+            # If streaming wasn't successful, fall back to non-streaming single chunk
+            for model in candidate_models:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+                try:
+                    resp = await client.post(url, json=payload, headers={"Content-Type": "application/json"})
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        candidates = data.get("candidates", [])
+                        reply_text = ""
+                        if candidates and "content" in candidates[0]:
+                            parts = candidates[0]["content"].get("parts", [])
+                            reply_text = "".join(p.get("text", "") for p in parts if "text" in p)
+                        if reply_text:
+                            yield f"data: {json.dumps({'text': reply_text})}\n\n"
+                        yield "data: [DONE]\n\n"
+                        return
+                except Exception:
+                    continue
+
+            yield f"data: {json.dumps({'error': 'Unable to complete Gemini generation'})}\n\n"
+            yield "data: [DONE]\n\n"
+        finally:
+            await client.aclose()
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 if __name__ == "__main__":

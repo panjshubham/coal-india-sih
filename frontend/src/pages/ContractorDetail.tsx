@@ -81,13 +81,16 @@ export default function ContractorDetail() {
     try {
       const { data: cData } = await supabase.from('contractors').select('*').eq('id', id).single();
       if (cData) {
+        const rawNum = typeof cData.id === 'number'
+          ? cData.id
+          : Math.abs(String(cData.id).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) || 71);
         const enriched: Contractor = {
           ...cData,
-          shram_suvidha_lin: `LIN-109284${(cData.id * 83).toString().padStart(4, '0')}`,
+          shram_suvidha_lin: cData.shram_suvidha_lin || `LIN-109284${(rawNum * 83 % 10000).toString().padStart(4, '0')}`,
           clra_max_workers: 250,
           active_workers: 184,
           epfo_status: new Date(cData.license_expiry) < new Date() ? 'overdue' : 'cleared',
-          esic_code: `41000${(cData.id * 1024).toString().slice(0, 7)}00101`,
+          esic_code: cData.esic_code || `41000${(rawNum * 1024 % 10000000).toString().padStart(7, '0')}00101`,
           dgms_standing: new Date(cData.license_expiry) < new Date() ? 'suspended' : 'grade_a'
         };
         setContractor(enriched);

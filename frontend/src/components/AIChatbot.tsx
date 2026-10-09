@@ -4,7 +4,6 @@ import {
   ArrowRight, Trash2, Copy, Check, ShieldCheck, ClipboardCheck, Loader2, Sparkles 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GoogleGenAI } from "@google/genai";
 import { useNavigate } from "react-router-dom";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -421,7 +420,14 @@ const renderBotMessage = (text: string) => {
   try {
     const cleanText = text.replace(/\[NAVIGATE:[^\]]*\]?/g, "").trim();
     const rawHtml = marked.parse(cleanText) as string;
-    const cleanHtml = typeof window !== "undefined" ? DOMPurify.sanitize(rawHtml) : rawHtml;
+    const cleanHtml = typeof window !== "undefined"
+      ? DOMPurify.sanitize(rawHtml, {
+          USE_PROFILES: { html: true },
+          FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "form", "input", "button", "frame", "frameset"],
+          FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur", "srcdoc"],
+          ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+        })
+      : "";
     return <div className="chatbot-prose text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
   } catch {
     return <span className="whitespace-pre-wrap">{text.replace(/\[NAVIGATE:[^\]]*\]?/g, "").trim()}</span>;
@@ -995,28 +1001,11 @@ export default function AIChatbot() {
 
     recordAiRequest();
 
-    // 5. Call Google Gemini API with strict 4.5s timeout for ultra-fast response
-    const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || "").trim();
-
-    if (!apiKey) {
-      setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          type: "bot",
-          text: "The Gemini API key is not configured. Please set `VITE_GEMINI_API_KEY` in Vercel.",
-        },
-      ]);
-      return;
-    }
-
+    // 5. Call Secure Server-Side Gemini Chat Engine (Zero Frontend Key Exposure)
     let completedStream = false;
     const newBotMsgId = (Date.now() + 1).toString();
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
-
       const history = messages.slice(1).reduce<Array<{ role: string; parts: Array<{ text: string }> }>>((acc, msg) => {
         const text = msg.text.replace(/\[NAVIGATE:[^\]]*\]/g, "").trim();
         if (!text) return acc;
@@ -1035,37 +1024,99 @@ export default function AIChatbot() {
       setMessages((prev) => [...prev, { id: newBotMsgId, type: "bot", text: "" }]);
       setIsTyping(false);
 
-      // 4.5 second timeout race so user is never left hanging
-      const streamPromise = ai.models.generateContentStream({
-        model: "gemini-3.8-flash",
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: 0.6,
-          maxOutputTokens: 800,
-        },
-        contents,
-      });
-
-      let timeoutId: any;
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error("Timeout")), 4500);
-      });
-
-      const stream = await Promise.race([streamPromise, timeoutPromise]);
+      const aiServiceUrl = (import.meta.env.VITE_AI_SERVICE_URL || "").trim();
+      const endpoints = [
+        "/api/chat/stream",
+        aiServiceUrl ? `${aiServiceUrl}/api/chat/stream` : null,
+        "/api/chat",
+        aiServiceUrl ? `${aiServiceUrl}/api/chat` : null,
+      ].filter(Boolean) as string[];
 
       let botResponse = "";
 
-      for await (const chunk of stream) {
-        if (timeoutId) clearTimeout(timeoutId);
-        const chunkText = chunk.text ?? "";
-        botResponse += chunkText;
-        setMessages((prev) =>
-          prev.map((m) => (m.id === newBotMsgId ? { ...m, text: botResponse } : m))
-        );
+      for (const endpoint of endpoints) {
+        if (completedStream) break;
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: controller.signal,
+            body: JSON.stringify({
+              contents,
+              systemInstruction: SYSTEM_INSTRUCTION,
+              temperature: 0.6,
+              maxOutputTokens: 800,
+              stream: true,
+            }),
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            continue;
+          }
+
+          const contentType = response.headers.get("content-type") || "";
+
+          if (contentType.includes("text/event-stream") && response.body) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
+
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed === "data: [DONE]") {
+                  completedStream = true;
+                  break;
+                }
+                if (trimmed.startsWith("data: ")) {
+                  try {
+                    const data = JSON.parse(trimmed.slice(6));
+                    if (data.text) {
+                      botResponse += data.text;
+                      setMessages((prev) =>
+                        prev.map((m) => (m.id === newBotMsgId ? { ...m, text: botResponse } : m))
+                      );
+                    }
+                  } catch {
+                    // ignore partial chunk
+                  }
+                }
+              }
+            }
+            if (botResponse.trim()) {
+              completedStream = true;
+              break;
+            }
+          } else {
+            const data = await response.json();
+            if (data && data.text) {
+              botResponse = data.text;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === newBotMsgId ? { ...m, text: botResponse } : m))
+              );
+              completedStream = true;
+              break;
+            }
+          }
+        } catch {
+          // Continue to next endpoint
+        }
       }
 
-      if (timeoutId) clearTimeout(timeoutId);
-      completedStream = true;
+      if (!completedStream || !botResponse.trim()) {
+        throw new Error("AI endpoints failed to respond");
+      }
 
       // Check navigation tag from model or query destination
       let targetPath: string | null = null;

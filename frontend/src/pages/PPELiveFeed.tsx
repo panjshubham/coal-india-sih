@@ -203,9 +203,9 @@ function CameraCard({ cam, latestEvent }: { cam: Camera; latestEvent?: PPEEvent 
             <span className={`text-[10px] font-bold uppercase tracking-wider ${cfg.text}`}>{cfg.label}</span>
             <span className="text-[11px] text-slate-800 dark:text-slate-500">{timeAgo(latestEvent.detected_at)}</span>
           </div>
-          {latestEvent.missing_ppe.length > 0 && (
+          {(latestEvent.missing_ppe || []).length > 0 && (
             <div className="flex gap-1 mt-1.5 flex-wrap">
-              {latestEvent.missing_ppe.map(p => (
+              {(latestEvent.missing_ppe || []).map(p => (
                 <span key={p} className="text-[10px] font-semibold bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 px-1.5 py-0.5 rounded border border-red-200 dark:border-red-800">
                   {p === 'helmet' ? '⛑️ No Helmet' : '🦺 No Vest'}
                 </span>
@@ -223,6 +223,7 @@ function CameraCard({ cam, latestEvent }: { cam: Camera; latestEvent?: PPEEvent 
 function EventRow({ event, onResolve }: { event: PPEEvent; onResolve: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const cfg = SEVERITY_CFG[event.severity];
+  const missingPpeList = event.missing_ppe || [];
   return (
     <div className={`border rounded-xl overflow-hidden transition-all ${
       event.is_resolved 
@@ -236,16 +237,16 @@ function EventRow({ event, onResolve }: { event: PPEEvent; onResolve: (id: strin
             <span className="text-xs font-bold text-slate-900 dark:text-white">{event.camera_id}</span>
             <span className="text-xs text-slate-600 dark:text-slate-400">·</span>
             <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{event.zone}</span>
-            {event.missing_ppe.length > 0 && (
+            {missingPpeList.length > 0 && (
               <div className="flex gap-1">
-                {event.missing_ppe.map(p => (
+                {missingPpeList.map(p => (
                   <span key={p} className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800">
                     {p === 'helmet' ? '⛑️ Missing Helmet' : '🦺 Missing Vest'}
                   </span>
                 ))}
               </div>
             )}
-            {event.missing_ppe.length === 0 && (
+            {missingPpeList.length === 0 && (
               <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">✅ Compliant</span>
             )}
           </div>

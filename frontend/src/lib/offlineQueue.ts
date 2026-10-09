@@ -104,10 +104,12 @@ export const syncOfflineItem = async (item: OfflineInspection): Promise<boolean>
 
     const mineId = Number(import.meta.env.VITE_DEFAULT_MINE_ID) || 1;
     const category = item.category || 'safety';
+    const latStr = item.gps?.lat != null ? item.gps.lat.toFixed(4) : '0.0000';
+    const lngStr = item.gps?.lng != null ? item.gps.lng.toFixed(4) : '0.0000';
     const description = item.notes || (
       item.type === 'voice'
-        ? `Pit Inspector Voice Report dictated on pit floor. Geotag: Lat ${item.gps.lat.toFixed(4)}, Lng ${item.gps.lng.toFixed(4)}`
-        : `Pit Inspector Photographic Visual Evidence. Geotag: Lat ${item.gps.lat.toFixed(4)}, Lng ${item.gps.lng.toFixed(4)}`
+        ? `Pit Inspector Voice Report dictated on pit floor. Geotag: Lat ${latStr}, Lng ${lngStr}`
+        : `Pit Inspector Photographic Visual Evidence. Geotag: Lat ${latStr}, Lng ${lngStr}`
     );
 
     // 2. Insert into `inspections` table
@@ -140,8 +142,8 @@ export const syncOfflineItem = async (item: OfflineInspection): Promise<boolean>
         severity: 'high',
         status: 'open',
         description,
-        latitude: item.gps.lat,
-        longitude: item.gps.lng,
+        latitude: item.gps?.lat ?? 0,
+        longitude: item.gps?.lng ?? 0,
         photo_url: photoUrl,
         regulation_ref: 'DGMS-CMR-2017-REG-115'
       };

@@ -101,13 +101,16 @@ export default function Contractors() {
           const isLapsed = new Date(c.license_expiry) < new Date();
           const isExpiring = !isLapsed && (new Date(c.license_expiry).getTime() - Date.now()) < 30 * 24 * 3600 * 1000;
           
+          const rawNum = typeof c.id === 'number'
+            ? c.id
+            : Math.abs(String(c.id).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) || (idx + 1));
           return {
             ...c,
-            shram_suvidha_lin: c.shram_suvidha_lin || `LIN-109284${(c.id * 83).toString().padStart(4, '0')}`,
+            shram_suvidha_lin: c.shram_suvidha_lin || `LIN-109284${(rawNum * 83 % 10000).toString().padStart(4, '0')}`,
             clra_max_workers: c.clra_max_workers || (idx % 2 === 0 ? 250 : 180),
             active_workers: c.active_workers || (idx % 2 === 0 ? 194 : 142),
             epfo_status: c.epfo_status || (isLapsed ? 'overdue' : idx === 3 ? 'pending' : 'cleared'),
-            esic_code: c.esic_code || `41000${(c.id * 1024).toString().slice(0, 7)}00101`,
+            esic_code: c.esic_code || `41000${(rawNum * 1024 % 10000000).toString().padStart(7, '0')}00101`,
             dgms_standing: isLapsed ? 'suspended' : idx === 1 ? 'show_cause' : 'grade_a'
           };
         });

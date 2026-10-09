@@ -52,9 +52,9 @@ export default function Violations() {
       try {
         const cached = localStorage.getItem('coalguard_violations_cache');
         if (cached) {
-          serverViolations = JSON.parse(cached);
-          if (filter !== 'all') {
-            serverViolations = serverViolations.filter((v: any) => v.status === filter);
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed)) {
+            serverViolations = filter !== 'all' ? parsed.filter((v: any) => v && v.status === filter) : parsed;
           }
         }
       } catch (ce) {}

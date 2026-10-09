@@ -16,6 +16,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import ConnectivityBadge from '../components/ConnectivityBadge';
 import LanguageSelector from '../components/LanguageSelector';
 import GlobalSearchModal from '../components/GlobalSearchModal';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { useTranslation } from 'react-i18next';
 
 function cn(...inputs: ClassValue[]) {
@@ -534,7 +535,9 @@ export default function DashboardLayout() {
 
         {/* Page content */}
         <main className="flex-1 overflow-auto relative" style={{ backgroundColor: 'var(--cg-bg)' }}>
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
 
         {/* Global Search Modal */}

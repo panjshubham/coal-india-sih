@@ -23,8 +23,10 @@ import base64
 import datetime
 from datetime import datetime as dt_cls, timedelta, timezone
 from typing import List, Dict, Any, Optional
+import json
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -38,9 +40,9 @@ from supabase import create_client, Client  # type: ignore
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 env_file = os.path.join(BASE_DIR, ".env")
 load_dotenv(env_file)
-# Also check parent directory if needed
-if not os.getenv("HF_API_TOKEN"):
-    load_dotenv(os.path.join(os.path.dirname(BASE_DIR), ".env"))
+# Also check parent directory and backend directory for env configs
+load_dotenv(os.path.join(os.path.dirname(BASE_DIR), ".env"))
+load_dotenv(os.path.join(os.path.dirname(BASE_DIR), "backend", ".env"))
 
 app = FastAPI(
     title="Khanan-Net AI Engine",
@@ -67,6 +69,37 @@ app.add_middleware(
 )
 
 # ─────────────────────────────────────────────────────────────
+# SECURITY HEADERS & RATE LIMITING MIDDLEWARE
+# ─────────────────────────────────────────────────────────────
+
+_ip_chat_tracker: Dict[str, List[float]] = {}
+
+def check_ip_rate_limit(client_ip: str, max_requests: int = 30, window_secs: int = 60) -> bool:
+    now = time.time()
+    history = [t for t in _ip_chat_tracker.get(client_ip, []) if now - t < window_secs]
+    if len(history) >= max_requests:
+        _ip_chat_tracker[client_ip] = history
+        return False
+    history.append(now)
+    _ip_chat_tracker[client_ip] = history
+    return True
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    # Request body size defense (reject anything > 15MB)
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Request payload exceeds maximum 15MB limit")
+
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+# ─────────────────────────────────────────────────────────────
 # CONFIGURATION & CLIENT INITIALIZATION
 # ─────────────────────────────────────────────────────────────
 
@@ -76,6 +109,10 @@ HF_NAMESPACE = os.getenv("HF_NAMESPACE", "").strip()
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "").strip()
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "").strip()
 HF_S3_ENDPOINT_URL = os.getenv("HF_S3_ENDPOINT_URL", "https://hub-ci.huggingface.co/s3").strip()
+GEMINI_API_KEY = (
+    os.getenv("GEMINI_API_KEY", "").strip()
+    or os.getenv("GOOGLE_API_KEY", "").strip()
+)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
 # Accepts SUPABASE_SERVICE_ROLE_KEY (documented name). SUPABASE_KEY is kept as
@@ -2678,6 +2715,217 @@ async def verify_gate_pass(req: GatePassRequest):
         "dgms_cert_no": req.dgms_cert_no,
         "engine": "gate-pass-verifier-v1"
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECURE SERVER-SIDE GEMINI CHAT ENDPOINTS (Zero Frontend Key Exposure)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.post("/api/chat", summary="Secure Server-Side Gemini Chat Engine")
+async def chat_generate(request: Request):
+    """
+    Secure server-side proxy for Google Gemini AI.
+    The secret GEMINI_API_KEY stays strictly on the server and is NEVER exposed to the frontend.
+    """
+    api_key = GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "").strip() or os.getenv("GOOGLE_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Gemini API Key is not configured on the backend server. Please set GEMINI_API_KEY in the server .env."
+        )
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    contents = body.get("contents")
+    if not contents and "messages" in body:
+        contents = []
+        for m in body["messages"]:
+            role = "user" if m.get("role") == "user" or m.get("type") == "user" else "model"
+            text = m.get("text") or m.get("content") or ""
+            if text:
+                contents.append({"role": role, "parts": [{"text": text}]})
+
+    client_ip = request.client.host if request.client else "unknown"
+    if not check_ip_rate_limit(client_ip):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Please wait a minute before making more AI requests.")
+
+    if not contents:
+        raise HTTPException(status_code=400, detail="No prompt or contents provided")
+
+    # Bound and sanitize contents to eliminate token injection and overflow
+    contents = contents[-25:]
+    for c in contents:
+        for p in c.get("parts", []):
+            if "text" in p and isinstance(p["text"], str):
+                p["text"] = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', p["text"])[:4000]
+
+    system_instruction = body.get("systemInstruction") or body.get("system_instruction")
+    temp = float(body.get("temperature", 0.6))
+    max_tokens = int(body.get("maxOutputTokens", 800))
+
+    payload: Dict[str, Any] = {
+        "contents": contents,
+        "generationConfig": {
+            "temperature": temp,
+            "maxOutputTokens": max_tokens,
+        }
+    }
+    if system_instruction:
+        if isinstance(system_instruction, str):
+            payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
+        elif isinstance(system_instruction, dict):
+            payload["systemInstruction"] = system_instruction
+
+    candidate_models = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.8-flash"]
+    last_error = None
+
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        for model in candidate_models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            try:
+                resp = await client.post(url, json=payload, headers={"Content-Type": "application/json"})
+                if resp.status_code == 200:
+                    data = resp.json()
+                    candidates = data.get("candidates", [])
+                    reply_text = ""
+                    if candidates and "content" in candidates[0]:
+                        parts = candidates[0]["content"].get("parts", [])
+                        reply_text = "".join(p.get("text", "") for p in parts if "text" in p)
+                    return {
+                        "text": reply_text,
+                        "model": model,
+                        "status": "success"
+                    }
+                elif resp.status_code in [404, 503, 429]:
+                    last_error = f"{model} returned {resp.status_code}: {resp.text[:120]}"
+                    continue
+                else:
+                    last_error = f"{model} error: {resp.text[:120]}"
+            except Exception as e:
+                last_error = str(e)
+                continue
+
+    raise HTTPException(status_code=502, detail=f"Gemini API request failed. Last error: {last_error}")
+
+
+@app.post("/api/chat/stream", summary="Secure Server-Side Gemini Chat Stream (SSE)")
+async def chat_stream(request: Request):
+    """
+    Streaming SSE proxy for Google Gemini AI.
+    Yields chunks to the frontend in real time while keeping GEMINI_API_KEY strictly server-side.
+    """
+    api_key = GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "").strip() or os.getenv("GOOGLE_API_KEY", "").strip()
+    if not api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Gemini API Key is not configured on the backend server."
+        )
+
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    contents = body.get("contents")
+    if not contents and "messages" in body:
+        contents = []
+        for m in body["messages"]:
+            role = "user" if m.get("role") == "user" or m.get("type") == "user" else "model"
+            text = m.get("text") or m.get("content") or ""
+            if text:
+                contents.append({"role": role, "parts": [{"text": text}]})
+
+    client_ip = request.client.host if request.client else "unknown"
+    if not check_ip_rate_limit(client_ip):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Please wait a minute before making more AI requests.")
+
+    if not contents:
+        raise HTTPException(status_code=400, detail="No prompt or contents provided")
+
+    # Bound and sanitize contents to eliminate token injection and overflow
+    contents = contents[-25:]
+    for c in contents:
+        for p in c.get("parts", []):
+            if "text" in p and isinstance(p["text"], str):
+                p["text"] = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', p["text"])[:4000]
+
+    system_instruction = body.get("systemInstruction") or body.get("system_instruction")
+    temp = float(body.get("temperature", 0.6))
+    max_tokens = int(body.get("maxOutputTokens", 800))
+
+    payload: Dict[str, Any] = {
+        "contents": contents,
+        "generationConfig": {
+            "temperature": temp,
+            "maxOutputTokens": max_tokens,
+        }
+    }
+    if system_instruction:
+        if isinstance(system_instruction, str):
+            payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
+        elif isinstance(system_instruction, dict):
+            payload["systemInstruction"] = system_instruction
+
+    candidate_models = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.8-flash"]
+
+    async def event_generator():
+        client = httpx.AsyncClient(timeout=25.0)
+        try:
+            for model in candidate_models:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
+                try:
+                    req_stream = client.build_request("POST", url, json=payload, headers={"Content-Type": "application/json"})
+                    resp = await client.send(req_stream, stream=True)
+                    if resp.status_code == 200:
+                        async for line in resp.aiter_lines():
+                            if line.startswith("data: "):
+                                data_str = line[6:].strip()
+                                try:
+                                    parsed = json.loads(data_str)
+                                    candidates = parsed.get("candidates", [])
+                                    if candidates and "content" in candidates[0]:
+                                        parts = candidates[0]["content"].get("parts", [])
+                                        chunk_text = "".join(p.get("text", "") for p in parts if "text" in p)
+                                        if chunk_text:
+                                            yield f"data: {json.dumps({'text': chunk_text})}\n\n"
+                                except Exception:
+                                    pass
+                        yield "data: [DONE]\n\n"
+                        await resp.aclose()
+                        return
+                    else:
+                        await resp.aclose()
+                except Exception:
+                    continue
+
+            # If streaming wasn't successful, fall back to non-streaming single chunk
+            for model in candidate_models:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+                try:
+                    resp = await client.post(url, json=payload, headers={"Content-Type": "application/json"})
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        candidates = data.get("candidates", [])
+                        reply_text = ""
+                        if candidates and "content" in candidates[0]:
+                            parts = candidates[0]["content"].get("parts", [])
+                            reply_text = "".join(p.get("text", "") for p in parts if "text" in p)
+                        if reply_text:
+                            yield f"data: {json.dumps({'text': reply_text})}\n\n"
+                        yield "data: [DONE]\n\n"
+                        return
+                except Exception:
+                    continue
+
+            yield f"data: {json.dumps({'error': 'Unable to complete Gemini generation'})}\n\n"
+            yield "data: [DONE]\n\n"
+        finally:
+            await client.aclose()
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 if __name__ == "__main__":

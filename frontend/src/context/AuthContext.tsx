@@ -84,7 +84,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.removeItem("coalguard_chat_history");
       localStorage.removeItem("coalguard_chat_is_open");
       localStorage.removeItem("coalguard_last_user_id");
-      sessionStorage.removeItem("coalguard_chat_history");
+      localStorage.removeItem("coalguard_ai_rate_limit");
+      localStorage.removeItem("coalguard_officer_profile");
+      sessionStorage.clear();
     } catch {}
     await supabase.auth.signOut();
   };

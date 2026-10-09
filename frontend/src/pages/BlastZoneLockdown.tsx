@@ -209,7 +209,6 @@ const INITIAL_WORKERS: WorkerTrack[] = [
 
 export default function BlastZoneLockdown() {
   const { role, user } = useAuth();
-  const cartoKey = import.meta.env.VITE_CARTO_API_KEY;
 
   // State
   const [blasts, setBlasts] = useState<BlastOperation[]>(INITIAL_BLASTS);
@@ -719,12 +718,6 @@ export default function BlastZoneLockdown() {
                 ) : mapMode === 'street' ? (
                   <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    maxZoom={19}
-                  />
-                ) : cartoKey ? (
-                  <TileLayer
-                    attribution='&copy; CARTO'
-                    url={`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`}
                     maxZoom={19}
                   />
                 ) : (
