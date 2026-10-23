@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSelector from '../components/LanguageSelector';
@@ -14,10 +15,16 @@ const HERO_IMAGES = [
 
 export default function Landing() {
   const { user, role, signOut } = useAuth();
+  const { setTheme } = useTheme();
   const navigate = useNavigate();
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // When opening landing page, ensure it is in dark theme by default
+  useEffect(() => {
+    setTheme('dark');
+  }, [setTheme]);
 
   // Click outside listener for profile menu
   useEffect(() => {

@@ -16,10 +16,14 @@ export const ThemeContext = createContext<ThemeContextType>({
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
-    // Read from localStorage, default to "light" if nothing saved
+    // If opening landing page, always start in dark theme
+    const isLanding = typeof window !== "undefined" && (window.location.pathname === "/" || window.location.pathname === "");
+    if (isLanding) return "dark";
+
+    // Read from localStorage, default to "light" for authenticated / portal pages
     const saved = localStorage.getItem("coalguard-theme");
     if (saved === "light" || saved === "dark") return saved;
-    return "light"; // Default to light mode for clean government portal look
+    return "light";
   });
 
   // Whenever a user logs in (or a new session begins upon sign-in), always default to light theme
