@@ -62,93 +62,95 @@
   --cg-hero-gradient:    linear-gradient(to right, #ffffff, #dbeafe, rgba(142, 213, 255, 0.8));
 }
 
-/* Light mode overrides — Clean, High-Contrast, Bold Official Government Portal */
+/* Light mode overrides — Premium Clean White Government Portal */
 [data-theme="light"], .light {
-  /* Backgrounds */
-  --cg-bg:               #F8FAFC;  /* Crisp slate-50 backdrop */
+  /* Backgrounds — layered white with subtle warmth */
+  --cg-bg:               #F5F7FA;  /* Warm off-white backdrop */
   --cg-surface:          #FFFFFF;  /* Pure white cards */
-  --cg-surface-elevated: #F1F5F9;  /* Light slate-100 */
-  --cg-surface-high:     #E2E8F0;  /* Slate-200 */
-  --cg-surface-highest:  #CBD5E1;  /* Slate-300 */
+  --cg-surface-elevated: #EFF2F7;  /* Light blue-gray */
+  --cg-surface-high:     #E4E8F1;  /* Slightly deeper */
+  --cg-surface-highest:  #D6DCE9;  /* Defined depth */
   --cg-surface-low:      #FFFFFF;
 
-  /* Sidebar & Topbar */
-  --cg-sidebar-bg:       #FFFFFF;  /* Pure clean white sidebar in light mode */
-  --cg-sidebar-border:   #E2E8F0;
-  --cg-topbar-bg:        #FFFFFF;
-  --cg-topbar-border:    #E2E8F0;
-  --cg-ribbon-bg:        #F1F5F9;
+  /* Sidebar & Topbar — crisp white with subtle shadow-driven depth */
+  --cg-sidebar-bg:       #FFFFFF;
+  --cg-sidebar-border:   #DDE3EE;
+  --cg-topbar-bg:        rgba(255, 255, 255, 0.97);
+  --cg-topbar-border:    #DDE3EE;
+  --cg-ribbon-bg:        #F0F4FA;
 
-  /* Text — Deep, high-contrast, bold, razor-sharp readability */
-  --cg-text-primary:     #0F172A;  /* Deep Slate-900 */
-  --cg-text-secondary:   #1E293B;  /* Slate-800 */
-  --cg-text-muted:       #334155;  /* Slate-700 — high contrast & visible */
-  --cg-text-faint:       #475569;  /* Slate-600 */
+  /* Text — deep ink-like contrast on white */
+  --cg-text-primary:     #0A1628;  /* Near-black navy */
+  --cg-text-secondary:   #1A2B48;  /* Deep navy */
+  --cg-text-muted:       #2D4167;  /* Medium navy-slate */
+  --cg-text-faint:       #4A5F8A;  /* Softer navy */
 
-  /* Borders — Clean structural delineation */
-  --cg-border:           #E2E8F0;
-  --cg-border-strong:    #CBD5E1;
+  /* Borders — clean structural delineation */
+  --cg-border:           #DDE3EE;
+  --cg-border-strong:    #C8D1E3;
 
-  /* Accent — Ministry Gold / Deep Amber */
-  --cg-accent:           #D97706;
-  --cg-accent-hover:     #B45309;
+  /* Accent — Rich Ministry Gold / Deep Amber */
+  --cg-accent:           #C8820A;  /* Warm government gold */
+  --cg-accent-hover:     #A66808;  /* Deeper gold */
   --cg-accent-text:      #FFFFFF;
 
   /* Status — Official, high contrast government badges */
-  --cg-success:          #047857;
-  --cg-success-bg:       #ECFDF5;
-  --cg-warning:          #B45309;
-  --cg-warning-bg:       #FFFBEB;
-  --cg-danger:           #B91C1C;
-  --cg-danger-bg:        #FEF2F2;
+  --cg-success:          #0A6B4A;  /* Deep emerald */
+  --cg-success-bg:       #E8F8F2;
+  --cg-warning:          #9E6500;  /* Rich amber */
+  --cg-warning-bg:       #FEF7E0;
+  --cg-danger:           #A81C1C;  /* Deep crimson */
+  --cg-danger-bg:        #FEF0F0;
 
-  /* Card shadows */
-  --cg-shadow:           0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --cg-shadow-lg:        0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  /* Card shadows — elevated, colored tints for premium depth */
+  --cg-shadow:           0 1px 4px rgba(10, 22, 40, 0.07), 0 2px 8px rgba(10, 22, 40, 0.05);
+  --cg-shadow-lg:        0 8px 30px -5px rgba(10, 22, 40, 0.12), 0 4px 12px -4px rgba(10, 22, 40, 0.07);
 
   /* Scrollbar */
-  --cg-scrollbar-track:  #F1F5F9;
-  --cg-scrollbar-thumb:  #94A3B8;
+  --cg-scrollbar-track:  #EFF2F7;
+  --cg-scrollbar-thumb:  #A0AECA;
 
   /* Toggle icon */
-  --cg-toggle-icon:      #1E293B;
+  --cg-toggle-icon:      #2D4167;
 
-  /* Code panel background (light paper look in light mode) */
-  --cg-code-panel-bg:    #F1F5F9;
-  --cg-code-divider:     rgba(0, 0, 0, 0.08);
-  --cg-hero-gradient:    linear-gradient(to right, #0F172A, #1E3A5F, #1D4ED8);
+  /* Code panel background — light paper look */
+  --cg-code-panel-bg:    #F0F4FA;
+  --cg-code-divider:     rgba(0, 0, 0, 0.07);
+  --cg-hero-gradient:    linear-gradient(to right, #0A1628, #1a3a6e, #1D4ED8);
 }
 
 /* Light mode bold & high-contrast typography enhancement */
 [data-theme="light"] body, .light body {
-  font-weight: 500;
-  color: #0F172A;
+  font-weight: 450;
+  color: #0A1628;
+  background-color: #F5F7FA;
 }
 
 [data-theme="light"] p, .light p {
-  color: #1E293B;
-  font-weight: 500;
+  color: #1A2B48;
+  font-weight: 450;
 }
 
 [data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3, [data-theme="light"] h4,
 .light h1, .light h2, .light h3, .light h4 {
-  color: #0F172A;
+  color: #0A1628;
   font-weight: 700;
 }
 
 [data-theme="light"] table, .light table {
-  color: #0F172A;
-  font-weight: 500;
+  color: #0A1628;
+  font-weight: 450;
 }
 
 [data-theme="light"] th, .light th {
-  color: #0F172A;
+  color: #0A1628;
   font-weight: 700;
+  background-color: #F0F4FA !important;
 }
 
 [data-theme="light"] td, .light td {
-  color: #1E293B;
-  font-weight: 500;
+  color: #1A2B48;
+  font-weight: 450;
 }
 
 [data-theme="light"] input, 
@@ -157,9 +159,10 @@
 .light input,
 .light select,
 .light textarea {
-  color: #0F172A;
-  font-weight: 500;
-  border-color: #CBD5E1;
+  color: #0A1628;
+  font-weight: 450;
+  border-color: #C8D1E3;
+  background-color: #FFFFFF;
 }
 
 /* Light mode specific high-contrast card and text visibility */
@@ -167,20 +170,42 @@
 [data-theme="light"] .text-slate-500,
 .light .text-slate-400,
 .light .text-slate-500 {
-  color: #334155 !important;
+  color: #2D4167 !important;
   font-weight: 600;
 }
 
 [data-theme="light"] .text-slate-600,
 .light .text-slate-600 {
-  color: #1E293B !important;
+  color: #1A2B48 !important;
   font-weight: 600;
 }
 
 [data-theme="light"] .text-slate-300,
 .light .text-slate-300 {
-  color: #0F172A !important;
+  color: #0A1628 !important;
   font-weight: 600;
+}
+
+[data-theme="light"] .text-slate-700,
+.light .text-slate-700 {
+  color: #1A2B48 !important;
+  font-weight: 600;
+}
+
+[data-theme="light"] .text-slate-900,
+.light .text-slate-900 {
+  color: #0A1628 !important;
+}
+
+/* Light mode table rows striped effect */
+[data-theme="light"] tbody tr:nth-child(even),
+.light tbody tr:nth-child(even) {
+  background-color: #F5F7FA;
+}
+
+[data-theme="light"] tbody tr:hover,
+.light tbody tr:hover {
+  background-color: #EFF2F7;
 }
 
 /* ============================================================
@@ -196,7 +221,7 @@
 
 [data-theme="light"] .bg-primary\/10,
 .light .bg-primary\/10 {
-  background-color: rgba(3, 105, 161, 0.1) !important;
+  background-color: rgba(3, 105, 161, 0.10) !important;
 }
 
 [data-theme="light"] .text-on-primary,
@@ -216,105 +241,116 @@
   background-color: #0284C7 !important;
 }
 
-/* Fix secondary color (amber/orange) — keep warm in light mode */
+/* Fix secondary color (amber/orange) — warm government gold in light mode */
 [data-theme="light"] .text-secondary,
 .light .text-secondary {
-  color: #B45309 !important; /* amber-700 — clearly visible on white */
+  color: #9E6500 !important; /* rich gold — visible on white */
 }
 
 [data-theme="light"] .bg-secondary,
 .light .bg-secondary {
-  background-color: #D97706 !important;
+  background-color: #C8820A !important;
 }
 
 [data-theme="light"] .hover\:bg-secondary-container:hover,
 .light .hover\:bg-secondary-container:hover {
-  background-color: #B45309 !important;
+  background-color: #A66808 !important;
 }
 
 [data-theme="light"] .bg-secondary\/15,
 .light .bg-secondary\/15 {
-  background-color: rgba(180, 83, 9, 0.12) !important;
+  background-color: rgba(200, 130, 10, 0.12) !important;
 }
 
 [data-theme="light"] .bg-secondary\/20,
 .light .bg-secondary\/20 {
-  background-color: rgba(180, 83, 9, 0.15) !important;
+  background-color: rgba(200, 130, 10, 0.15) !important;
+}
+
+/* Fix secondary/10 used in feature icon backgrounds */
+[data-theme="light"] .bg-secondary\/10,
+.light .bg-secondary\/10 {
+  background-color: rgba(200, 130, 10, 0.10) !important;
 }
 
 /* Fix: dark code panels on feature cards */
 [data-theme="light"] [style*="background-color: var(--cg-code-panel-bg)"],
 .light [style*="background-color: var(--cg-code-panel-bg)"] {
-  border-color: #CBD5E1 !important;
+  border-color: #C8D1E3 !important;
 }
 
-/* Fix: metric card backgrounds — too transparent/dark on light bg */
+/* Fix: metric card backgrounds — elevated white look on light bg */
 [data-theme="light"] .bg-surface-container-high\/70,
 .light .bg-surface-container-high\/70 {
-  background-color: #F1F5F9 !important;
-  border: 1px solid #E2E8F0;
+  background-color: #FFFFFF !important;
+  border: 1px solid #DDE3EE;
+  box-shadow: 0 1px 4px rgba(10, 22, 40, 0.06);
 }
 
 [data-theme="light"] .hover\:bg-surface-container-high:hover,
 .light .hover\:bg-surface-container-high:hover {
-  background-color: #E2E8F0 !important;
+  background-color: #EFF2F7 !important;
 }
 
 /* Fix: cards with low opacity backgrounds */
 [data-theme="light"] .bg-surface-container-low\/50,
 .light .bg-surface-container-low\/50 {
   background-color: #FFFFFF !important;
+  border-color: #DDE3EE !important;
 }
 
 [data-theme="light"] .bg-surface-container-low\/30,
 .light .bg-surface-container-low\/30 {
-  background-color: #F8FAFC !important;
+  background-color: #F5F7FA !important;
 }
 
 [data-theme="light"] .bg-surface-container-low\/80,
 .light .bg-surface-container-low\/80 {
-  background-color: #F1F5F9 !important;
+  background-color: #EFF2F7 !important;
 }
 
 /* Fix: header background which uses lowest/90 opacity */
 [data-theme="light"] .bg-surface-container-lowest\/90,
 .light .bg-surface-container-lowest\/90 {
-  background-color: rgba(255, 255, 255, 0.95) !important;
+  background-color: rgba(255, 255, 255, 0.97) !important;
+  backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow: 0 1px 0 #DDE3EE, 0 4px 16px -4px rgba(10, 22, 40, 0.06);
 }
 
 /* Fix: hero mini-badges opacity backgrounds */
 [data-theme="light"] .bg-surface-container-high\/60,
 .light .bg-surface-container-high\/60 {
-  background-color: #E2E8F0 !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: #DDE3EE !important;
 }
 
 [data-theme="light"] .bg-surface-container-lowest\/40,
 .light .bg-surface-container-lowest\/40 {
-  background-color: rgba(248, 250, 252, 0.9) !important;
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  border-color: #DDE3EE !important;
 }
 
 [data-theme="light"] .bg-surface-container-lowest\/80,
 .light .bg-surface-container-lowest\/80 {
-  background-color: #F8FAFC !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Fix: hero telemetry lock badge */
-[data-theme="light"] .bg-surface-container-lowest\/80.border-primary\/20,
 [data-theme="light"] [class*="bg-surface-container-lowest"],
 .light [class*="bg-surface-container-lowest"] {
-  border-color: rgba(3, 105, 161, 0.25) !important;
+  border-color: rgba(3, 105, 161, 0.22) !important;
 }
 
 /* Fix: white-alpha borders (invisible on light backgrounds) */
 [data-theme="light"] [class*="border-white"],
 .light [class*="border-white"] {
-  border-color: #CBD5E1 !important;
+  border-color: #C8D1E3 !important;
 }
 
 /* Fix: text-outline should be visible in light mode */
 [data-theme="light"] .text-outline,
 .light .text-outline {
-  color: #475569 !important;
+  color: #4A5F8A !important;
 }
 
 [data-theme="light"] .text-outline-variant,
@@ -322,32 +358,112 @@
   color: #64748B !important;
 }
 
-/* Fix: hero CTA secondary button (transparent with white border) */
+/* Fix: hero CTA secondary button — glass look on white bg */
 [data-theme="light"] button.border-white\/10,
 [data-theme="light"] button[class*="border-white"],
 .light button.border-white\/10,
 .light button[class*="border-white"] {
-  background-color: rgba(15, 23, 42, 0.08) !important;
-  border-color: #94A3B8 !important;
-  color: #0F172A !important;
+  background-color: rgba(10, 22, 40, 0.07) !important;
+  border-color: #A0AECA !important;
+  color: #0A1628 !important;
 }
 
 /* Fix: surface-bright hover on buttons */
 [data-theme="light"] .hover\:bg-surface-bright:hover,
 .light .hover\:bg-surface-bright:hover {
-  background-color: #E2E8F0 !important;
+  background-color: #E4E8F1 !important;
 }
 
 /* Fix: table row hover in light mode (was rgba white) */
 [data-theme="light"] .divide-surface-container-high\/40 > *,
 .light .divide-surface-container-high\/40 > * {
-  border-color: #E2E8F0;
+  border-color: #DDE3EE;
 }
 
 /* Fix: backdrop-blur containers in hero */
 [data-theme="light"] .backdrop-blur-md,
 .light .backdrop-blur-md {
-  backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(16px) saturate(1.5) !important;
+}
+
+/* Fix: hero section background should show image well */
+[data-theme="light"] #overview,
+.light #overview {
+  background-color: #F0F4FA !important;
+}
+
+/* Fix: hero status badge (Ministry of Coal pill) */
+[data-theme="light"] #overview .bg-surface-container-high\/60,
+.light #overview .bg-surface-container-high\/60 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(10, 22, 40, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(10, 22, 40, 0.08);
+}
+
+/* Fix: on-surface-variant text in hero */
+[data-theme="light"] .text-on-surface-variant,
+.light .text-on-surface-variant {
+  color: #2D4167 !important;
+}
+
+/* Fix: on-surface text in hero */
+[data-theme="light"] .text-on-surface,
+.light .text-on-surface {
+  color: #0A1628 !important;
+}
+
+
+/* ============================================================
+   LIGHT MODE — ENHANCED COMPONENT OVERRIDES
+   Premium white UI with proper depth and polish
+   ============================================================ */
+
+/* Topbar — white with subtle bottom shadow in light mode */
+[data-theme="light"] header,
+.light header {
+  box-shadow: 0 1px 0 #DDE3EE, 0 4px 16px -4px rgba(10, 22, 40, 0.06) !important;
+}
+
+/* Sidebar — white with elegant right-shadow */
+[data-theme="light"] aside#cg-main-sidebar,
+.light aside#cg-main-sidebar {
+  box-shadow: 4px 0 20px -4px rgba(10, 22, 40, 0.08) !important;
+}
+
+/* Cards — elevated white with clean blue-tinted shadows */
+[data-theme="light"] .card-surface,
+.light .card-surface {
+  box-shadow: 0 1px 4px rgba(10, 22, 40, 0.07), 0 2px 8px rgba(10, 22, 40, 0.04) !important;
+  border-color: #DDE3EE !important;
+}
+
+[data-theme="light"] .card-surface:hover,
+.light .card-surface:hover {
+  box-shadow: 0 4px 16px rgba(10, 22, 40, 0.10), 0 2px 6px rgba(10, 22, 40, 0.06) !important;
+  border-color: #C8D1E3 !important;
+}
+
+/* Nav active items — warm amber left strip with tinted bg */
+[data-theme="light"] nav a[class*="bg-amber-50"],
+.light nav a[class*="bg-amber-50"] {
+  background-color: #FFF8EC !important;
+  border-color: #F0C060 !important;
+  color: #7A4A00 !important;
+}
+
+/* Search bar in topbar — subtle inset look */
+[data-theme="light"] #cg-global-search-btn,
+.light #cg-global-search-btn {
+  background-color: #F0F4FA !important;
+  border-color: #D0D8EC !important;
+  color: #4A5F8A !important;
+}
+
+[data-theme="light"] #cg-global-search-btn:hover,
+.light #cg-global-search-btn:hover {
+  background-color: #E4EAF5 !important;
+  border-color: #B8C4DC !important;
+  color: #0A1628 !important;
 }
 
 /* ============================================================

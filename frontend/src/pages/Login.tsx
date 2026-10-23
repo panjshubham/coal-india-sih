@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { ShieldAlert, Loader2, Lock, KeyRound, Building2, HardHat, FileCheck, Eye, EyeOff, Fingerprint, ScanFace } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import LanguageSelector from '../components/LanguageSelector';
@@ -20,6 +21,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { session, role, loading: authLoading } = useAuth();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     if (!authLoading && session && role) {
@@ -49,6 +51,10 @@ export default function Login() {
 
       if (signInError) throw signInError;
       if (!data.user) throw new Error('No user returned from login');
+
+      // User logged in: ensure they always start in light theme
+      setTheme('light');
+      localStorage.setItem('coalguard-theme', 'light');
 
       const { data: userData, error: roleError } = await supabase
         .from('users')

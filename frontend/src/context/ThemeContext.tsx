@@ -1,23 +1,40 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { supabase } from "../supabase";
 
 interface ThemeContextType {
   theme: "light" | "dark";
   toggleTheme: () => void;
+  setTheme: (theme: "light" | "dark") => void;
 }
 
 export const ThemeContext = createContext<ThemeContextType>({
-  theme: "dark",
+  theme: "light",
   toggleTheme: () => {},
+  setTheme: () => {},
 });
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
-    // Read from localStorage, default to "dark" if nothing saved
+    // Read from localStorage, default to "light" if nothing saved
     const saved = localStorage.getItem("coalguard-theme");
     if (saved === "light" || saved === "dark") return saved;
-    return "dark"; // Never follow system preference — always default dark
+    return "light"; // Default to light mode for clean government portal look
   });
+
+  // Whenever a user logs in (or a new session begins upon sign-in), always default to light theme
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        setTheme("light");
+        localStorage.setItem("coalguard-theme", "light");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     // Apply theme via data-theme attribute AND class on <html> so both CSS vars and Tailwind dark: variants work
@@ -37,10 +54,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
 export const useTheme = () => useContext(ThemeContext);
+

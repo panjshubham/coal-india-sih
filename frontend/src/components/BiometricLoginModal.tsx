@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { useTheme } from '../context/ThemeContext';
 import {
   Fingerprint, ScanFace, ShieldCheck, UserCheck, Camera, CameraOff,
   Lock, Unlock, CheckCircle2, AlertCircle, Loader2, Building2, HardHat,
@@ -82,6 +83,7 @@ export default function BiometricLoginModal({ isOpen, onClose, onSuccessLogin }:
   const animFrameRef = useRef<number | null>(null);
 
   const navigate = useNavigate();
+  const { setTheme } = useTheme();
 
   // Reset state on open/close
   useEffect(() => {
@@ -299,6 +301,10 @@ export default function BiometricLoginModal({ isOpen, onClose, onSuccessLogin }:
     }
 
     setScanning(false);
+    // User logged in via biometrics: always start in light theme
+    setTheme('light');
+    localStorage.setItem('coalguard-theme', 'light');
+
     if (onSuccessLogin) {
       onSuccessLogin(selectedPersonnel);
     }

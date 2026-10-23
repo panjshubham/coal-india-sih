@@ -81,6 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      localStorage.setItem("coalguard-theme", "light");
       localStorage.removeItem("coalguard_chat_history");
       localStorage.removeItem("coalguard_chat_is_open");
       localStorage.removeItem("coalguard_last_user_id");
