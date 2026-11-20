@@ -702,7 +702,7 @@ function LiveAnomalyClassifier() {
           <div className="mt-3.5 bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
             <div className="h-2 rounded-full bg-indigo-600 dark:bg-indigo-500 transition-all duration-700" style={{ width: `${result.confidence * 100}%` }} />
           </div>
-          <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mt-2.5">Model: facebook/bart-large-mnli via Khanan-Net API · /api/analytics/anomaly-detect</p>
+          <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mt-2.5">Model: facebook/bart-large-mnli (Zero-Shot Classifier)</p>
         </div>
       )}
     </div>
