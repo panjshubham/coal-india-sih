@@ -302,6 +302,7 @@ export default function BiometricLoginModal({ isOpen, onClose, onSuccessLogin }:
 
     setScanning(false);
     // User logged in via biometrics: always start in light theme
+    sessionStorage.removeItem('coalguard_user_toggled_dark');
     setTheme('light');
     localStorage.setItem('coalguard-theme', 'light');
 

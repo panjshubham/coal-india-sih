@@ -13,6 +13,7 @@ import { getProfile, type InspectorProfile } from '../services/profileService';
 import { useAuth } from '../context/AuthContext';
 import AlertBell from '../components/AlertBell';
 import ThemeToggle from '../components/ThemeToggle';
+import { useTheme } from '../context/ThemeContext';
 import ConnectivityBadge from '../components/ConnectivityBadge';
 import LanguageSelector from '../components/LanguageSelector';
 import GlobalSearchModal from '../components/GlobalSearchModal';
@@ -130,6 +131,16 @@ export default function DashboardLayout() {
   const { t, i18n } = useTranslation();
   const [time, setTime] = useState('');
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  // Make light theme the primary mode for all post-login/sign-up dashboard screens
+  useEffect(() => {
+    const userToggledDark = sessionStorage.getItem('coalguard_user_toggled_dark') === 'true';
+    if (!userToggledDark && theme !== 'light') {
+      setTheme('light');
+      localStorage.setItem('coalguard-theme', 'light');
+    }
+  }, [theme, setTheme]);
 
   // Global Ctrl + K / Cmd + K keyboard shortcut
   useEffect(() => {

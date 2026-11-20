@@ -14,6 +14,12 @@ export default function ThemeToggle({ variant = 'topbar' }: ThemeToggleProps) {
   const handleClick = () => {
     if (animating) return;
     setAnimating(true);
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    if (nextTheme === 'dark') {
+      sessionStorage.setItem('coalguard_user_toggled_dark', 'true');
+    } else {
+      sessionStorage.removeItem('coalguard_user_toggled_dark');
+    }
     toggleTheme();
     setTimeout(() => setAnimating(false), 300);
   };

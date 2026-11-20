@@ -25,8 +25,11 @@ export default function Landing() {
   useEffect(() => {
     if (authLoading) return;
     if (user) {
-      setTheme('light');
-      localStorage.setItem('coalguard-theme', 'light');
+      const userToggledDark = sessionStorage.getItem('coalguard_user_toggled_dark') === 'true';
+      if (!userToggledDark) {
+        setTheme('light');
+        localStorage.setItem('coalguard-theme', 'light');
+      }
     } else {
       setTheme('dark');
     }

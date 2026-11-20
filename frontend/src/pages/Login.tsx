@@ -25,6 +25,7 @@ export default function Login() {
 
   useEffect(() => {
     if (!authLoading && session && role) {
+      sessionStorage.removeItem('coalguard_user_toggled_dark');
       setTheme('light');
       localStorage.setItem('coalguard-theme', 'light');
       const from = location.state?.from?.pathname;
@@ -55,6 +56,7 @@ export default function Login() {
       if (!data.user) throw new Error('No user returned from login');
 
       // User logged in: ensure they always start in light theme
+      sessionStorage.removeItem('coalguard_user_toggled_dark');
       setTheme('light');
       localStorage.setItem('coalguard-theme', 'light');
 

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { 
   ShieldAlert, 
   Loader2, 
@@ -56,10 +57,14 @@ export default function SignUp() {
   const navigate = useNavigate();
   const location = useLocation();
   const { session, role: activeRole, loading: authLoading } = useAuth();
+  const { setTheme } = useTheme();
 
   // If already authenticated with a role, redirect to appropriate dashboard
   useEffect(() => {
     if (!authLoading && session && activeRole) {
+      sessionStorage.removeItem('coalguard_user_toggled_dark');
+      setTheme('light');
+      localStorage.setItem('coalguard-theme', 'light');
       if (activeRole === 'mine_official') {
         navigate('/dashboard/colliery', { replace: true });
       } else if (activeRole === 'corporate') {
@@ -179,6 +184,10 @@ export default function SignUp() {
         }, 1500);
         return;
       }
+
+      sessionStorage.removeItem('coalguard_user_toggled_dark');
+      setTheme('light');
+      localStorage.setItem('coalguard-theme', 'light');
 
       // Navigate directly to the corresponding portal
       setTimeout(() => {

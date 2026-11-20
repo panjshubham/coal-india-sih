@@ -18,7 +18,19 @@
     <script>
       (function() {
         var isLanding = window.location.pathname === '/' || window.location.pathname === '';
-        var theme = isLanding ? 'dark' : (localStorage.getItem('coalguard-theme') || 'light');
+        var hasSession = false;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && k.indexOf('-auth-token') !== -1 && (localStorage.getItem(k) || '').indexOf('access_token') !== -1) {
+              hasSession = true;
+              break;
+            }
+          }
+        } catch(e) {}
+        var userToggledDark = false;
+        try { userToggledDark = sessionStorage.getItem('coalguard_user_toggled_dark') === 'true'; } catch(e) {}
+        var theme = (hasSession && userToggledDark) ? 'dark' : (hasSession ? 'light' : (isLanding ? 'dark' : (localStorage.getItem('coalguard-theme') || 'light')));
         document.documentElement.setAttribute('data-theme', theme);
         if (theme === 'dark') {
           document.documentElement.classList.add('dark');
