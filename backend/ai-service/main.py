@@ -2779,7 +2779,7 @@ async def chat_generate(request: Request):
         elif isinstance(system_instruction, dict):
             payload["systemInstruction"] = system_instruction
 
-    candidate_models = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.8-flash"]
+    candidate_models = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash", "gemini-flash-latest"]
     last_error = None
 
     async with httpx.AsyncClient(timeout=15.0) as client:
@@ -2869,7 +2869,7 @@ async def chat_stream(request: Request):
         elif isinstance(system_instruction, dict):
             payload["systemInstruction"] = system_instruction
 
-    candidate_models = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.8-flash"]
+    candidate_models = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.8-flash", "gemini-flash-latest"]
 
     async def event_generator():
         client = httpx.AsyncClient(timeout=25.0)

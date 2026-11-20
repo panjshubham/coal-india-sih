@@ -25,6 +25,8 @@ export default function Login() {
 
   useEffect(() => {
     if (!authLoading && session && role) {
+      setTheme('light');
+      localStorage.setItem('coalguard-theme', 'light');
       const from = location.state?.from?.pathname;
       if (from && from !== '/login') {
         navigate(from, { replace: true });
@@ -36,7 +38,7 @@ export default function Login() {
         navigate('/dashboard/regulator', { replace: true });
       }
     }
-  }, [session, role, authLoading, navigate, location]);
+  }, [session, role, authLoading, navigate, location, setTheme]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

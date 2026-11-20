@@ -16,17 +16,24 @@ export const ThemeContext = createContext<ThemeContextType>({
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
-    // If opening landing page, always start in dark theme
     const isLanding = typeof window !== "undefined" && (window.location.pathname === "/" || window.location.pathname === "");
+    const hasActiveSession = typeof window !== "undefined" && Object.keys(localStorage).some(k => k.includes("-auth-token") && localStorage.getItem(k)?.includes("access_token"));
+
+    // If logged in user enters, always default to light mode
+    if (hasActiveSession) {
+      const saved = localStorage.getItem("coalguard-theme");
+      if (saved === "light" || saved === "dark") return saved;
+      return "light";
+    }
+
     if (isLanding) return "dark";
 
-    // Read from localStorage, default to "light" for authenticated / portal pages
     const saved = localStorage.getItem("coalguard-theme");
     if (saved === "light" || saved === "dark") return saved;
     return "light";
   });
 
-  // Whenever a user logs in (or a new session begins upon sign-in), always default to light theme
+  // Whenever a user logs in, always default to light theme
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {

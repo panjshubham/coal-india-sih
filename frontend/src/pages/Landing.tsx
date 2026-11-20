@@ -14,17 +14,23 @@ const HERO_IMAGES = [
 ];
 
 export default function Landing() {
-  const { user, role, signOut } = useAuth();
+  const { user, role, loading: authLoading, signOut } = useAuth();
   const { setTheme } = useTheme();
   const navigate = useNavigate();
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // When opening landing page, ensure it is in dark theme by default
+  // If user is logged in, automatically activate light mode on the home page; visitors start in dark
   useEffect(() => {
-    setTheme('dark');
-  }, [setTheme]);
+    if (authLoading) return;
+    if (user) {
+      setTheme('light');
+      localStorage.setItem('coalguard-theme', 'light');
+    } else {
+      setTheme('dark');
+    }
+  }, [user, authLoading, setTheme]);
 
   // Click outside listener for profile menu
   useEffect(() => {
